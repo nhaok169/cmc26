@@ -1,0 +1,295 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Repository - Webpage of Lucian Busoniu</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Description" content="Useful material related to my research and teaching, including Matlab software, presentations, and demos.">
+<meta http-equiv="Keywords" content="Lucian Busoniu, Busoniu, Ion-Lucian Busoniu, Ion Lucian Busoniu, learning control, approximate reinforcement learning, approximate dynamic programming, adaptive control, nonlinear control, control theory, reinforcement learning, dynamic programming, machine learning, artificial intelligence, distributed control, multiagent reinforcement learning, planning">
+<!-- Core inclusions -->
+<!-- Scripts -->
+<script type="text/javascript" language="javascript" src="lib/core.js"></script>
+<script type="text/javascript" language="javascript" src="lib/page-startup.js"></script>
+<!-- Style -->
+<link href="style/main.css" rel="stylesheet" type="text/css">
+<link href="style/repository.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+<!-- Main layout table -->
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+
+<!-- Menu row -->
+<tr><td width="100%" height="1%">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+        <td width="1%" height="1%" class="logo" colspan="7">
+        <a href="home.php"><img width="320" height="27" src="img/logo.gif" alt="Lucian Busoniu at DCSC - TUDelft"></a>
+        </td>
+        <!--
+        <td class="up-link">
+        <a href="http://www.dcsc.tudelft.nl/" class="button"
+           onMouseOver="document.up.src=up_arrow_hi.src"
+           onMouseOut="document.up.src=up_arrow_lo.src">
+            <img name="up" width="12" height="16" src="img/up-arrow.gif" alt="Up"> to DCSC
+        </a>
+        </td>
+        -->
+    </tr>
+    <tr>
+        <td width="1%" class="menu-option">
+            <a class="strong" href="home.php" style="width: 10em">Home</a>
+        </td>
+        <td width="1%" class="menu-option">
+            <a class="strong" href="projects.php" style="width: 10em">Projects</a>
+        </td>
+        <td width="1%" class="menu-option">
+            <a class="strong" href="publications.php" style="width: 10em">Publications</a>
+        </td>
+        <td width="1%" class="menu-option">
+            <a class="strong" href="teaching.php" style="width: 10em">Teaching</a>
+        </td>
+        <td width="1%" class="menu-option">
+            <a class="strong" href="students.php" style="width: 10em">PhD students</a>
+        </td>
+        <td width="1%" class="menu-option-selected">
+            <span class="menu-option-selected-text" style="width: 10em">Repository</span>
+        </td>
+        <td class="menu-filler" width="94%">
+            <!-- Some sort of bug/implem change in MozFFX makes the right filler not scale vertically when imposed by the 100% image "height" -->
+            <!-- The manually imposed height in "style" is a messy workaround. TODO figure out how to fix this correctly -->
+            <img width="100%" height="100%" src="img/menu-filler-right.gif" alt="filler" style="width: 100%; height: 2.4em;">
+        </td>
+    </tr>
+    <tr><td width="100%" height="1%" colspan="7">
+        <img class="menu-filler-down" src="img/menu-filler-down.gif" alt="filler">
+    </td></tr>
+    </table>
+</td></tr>
+
+<!-- Content row -->
+<tr><td width="100%" height="99%" class="content">
+
+<!-- CONTENT BEGIN -->
+
+<p>
+The repository contains useful downloadable material related to my research and teaching, including Matlab software, presentations, and demonstration movies. Presentations are selectively chosen for tutorial value. If an item has a "&raquo;" button to its right, this button can be clicked to reveal more information; the "&laquo;" button then hides this information again (requires Javascript).
+<!-- and links to useful web pages. -->
+</p>
+
+<p>
+This section hasn't been updated in a long while; to be fixed sometime soon now, surely!
+</p>
+<!-- Software category -->
+<h1>Software</h1>
+<ul>
+<!-- Entry [latest_approxrl] -->
+<li>
+    <a name="latest_approxrl" class="strong" href="files/repository/2016-01-09_approxrl.zip" title="Open file [2016-01-09_approxrl.zip]">Approximate RL and DP toolbox</a>,
+    latest snapshot, including bugfixes and new, work-in-progress algorithms and experiments - possibly with their own, new bugs. (9 January 2016, 1.9 MBytes).
+    <a class="button" id="latest_approxrl-show"  title="Show details"
+       href="javascript: toggleDetails('latest_approxrl', 'on');"
+       style="display: inline">&raquo;</a>
+    <div class="embedded-details" id="latest_approxrl-details" style="display: none">
+    What's new:
+			<p>
+			<strong>9 Jan 2016</strong>
+			<ul>
+			<li>Compatibility fixes for recent versions of Matlab (changes in graphics handling, the optimization toolbox, etc.)
+			<li>Some bugfixes and extra comments
+			</ul>
+    <a class="hide-button" id="latest_approxrl-hide" title="Hide details"
+       href="javascript: toggleDetails('latest_approxrl', 'off');">&laquo;</a>
+    </div>
+</li>
+<!-- Entry [optimisticplanning] -->
+<li>
+    <a name="optimisticplanning" class="strong" href="files/repository/optimisticplanning.zip" title="Open file [optimisticplanning.zip]">Optimistic planning</a>,
+    a selection of algorithms as a stand-alone package. (13 July 2013, 79.3 KBytes).
+    <a class="button" id="optimisticplanning-show"  title="Show details"
+       href="javascript: toggleDetails('optimisticplanning', 'on');"
+       style="display: inline">&raquo;</a>
+    <div class="embedded-details" id="optimisticplanning-details" style="display: none">
+    This package is a subset of the Approximate RL and DP toolbox, containing only optimistic planning algorithms, and reorganized to be self-contained. It is helpful if you are only interested in this type of algorithm. The following algorithms are included:
+        optimistic planning for deterministic systems (<span class='mfile'>opd</span>), for discrete Markov decision processes (<span class='mfile'>opss</span>), with continuous actions (<span class='mfile'>sooplp</span>); and open-loop optimistic planning (<span class='mfile'>olop</span>) with the theoretical variant (<span class='mfile'>olop_theoretical</span>) as described in the paper by Bubeck and Munos.
+        <p>
+        See the <a href='files/repository/readme_optimisticplanning.txt'>readme file</a> for a more detailed description.
+        
+    <a class="hide-button" id="optimisticplanning-hide" title="Hide details"
+       href="javascript: toggleDetails('optimisticplanning', 'off');">&laquo;</a>
+    </div>
+</li>
+<!-- Entry [2013-07-13_approxrl] -->
+<li>
+    <a name="2013-07-13_approxrl" class="strong" href="files/repository/2013-07-13_approxrl.zip" title="Open file [2013-07-13_approxrl.zip]">Approximate RL and DP toolbox</a>,
+    July 2013 release. (13 July 2013, 1.6 MBytes).
+    <a class="button" id="2013-07-13_approxrl-show"  title="Show details"
+       href="javascript: toggleDetails('2013-07-13_approxrl', 'on');"
+       style="display: inline">&raquo;</a>
+    <div class="embedded-details" id="2013-07-13_approxrl-details" style="display: none">
+    Since the previous release of the toolbox was getting rather old, I decided to publish a new version. Be warned though: this is very much work-in-progress, a snapshot of the code that I use for my daily research. So expect undocumented behavior, bugs, but also plenty of new algorithms &ndash; <a href='http://en.wikipedia.org/wiki/Hic_sunt_leones'>hic sunt leones!</a>
+        <p>
+        <strong>New features:</strong>
+        <ul>
+        <li>Online, optimistic planning algorithms: for deterministic systems (<span class='mfile'>opd</span>), for discrete Markov decision processes (<span class='mfile'>opss</span>), with continuous actions (<span class='mfile'>sooplp</span>), open-loop optimistic planning (<span class='mfile'>olop</span>), and hierarchical OLOP (<span class='mfile'>holop</span>). The entry point connecting planning to the system is <span class='mfile'>genmpc</span>. OPD and OP-MDP can be used while applying longer sequences of actions / longer tree policies.
+        <li>Fitted Q-iteration with local linear regression approximation.
+        <li>An extensive mechanism for running batch experiments (testing an algorithm with a grid of parameters and inspecting results). See the <span class='path'>/batch</span> subdirectory, and as examples the batch experiment files left in system directories, such as <span class='mfile'>op_ip</span>.
+        <li>A standardized interface for real-time control problems, see e.g. <span  class='mfile'>ipsetup_rtproblem</span>. Another example is the implementation for the EdRo robot. Two online RL implementations compatible with this interface are <span class='mfile'>rtapproxqlearn</span> and <span class='mfile'>rtlspionline</span>.
+        <li>New simulation tasks include notably a resonating robot arm (where a spring is used to make the motion more energy efficient), and a simple navigation problem in 2D.
+        <li>Additional demonstration scripts, including one for planning and another focused on least-squares types of policy iteration.
+        <li>For classical, discrete RL: the Monte-Carlo and Dyna-Q implementations are new; Q-learning and SARSA now support experience replay. See <span class='mfile'>cleaningrobot_demo</span> for examples. Two new problems: machine replacement (as described by Bertsekas) and gridworld navigation. These are very simple tasks useful to explain or experiment with DP and RL.
+        </ul>
+        <p>
+        The same standardized task interface is followed as before, with some extensions. Things <em>should</em> be largely backward-compatible with the old version, if you encounter trouble let me know. I have left in the system directories functions and scripts for many experiments I have run, in case they are useful. See also the description and documentation for the previous version of the toolbox.
+        <p>
+        I have also included code related to my recent forays into cooperative multiagent control:
+		<ul>
+		<li>Multiagent planning (<span class='mfile'>magenmpc</span>, <span class='mfile'>maopd_...</span>), with specific focus on consensus problems (although generalizable). Multiagent tasks: linear agents and robot-arm agents. Standard linear consensus and flocking protocols. See the paper <a href='http://busoniu.net/publications.php#acc13-opconsensus'>OP for Consensus</a>.
+		<li>Multiagent consensus using optimistic optimization (<span class='mfile'>ooconsensus</span>), and as a side-benefit the DOO and SOO algorithms of Remi Munos (<span class='mfile'>doosoo</span>).
+		</ul>
+		
+    <a class="hide-button" id="2013-07-13_approxrl-hide" title="Hide details"
+       href="javascript: toggleDetails('2013-07-13_approxrl', 'off');">&laquo;</a>
+    </div>
+</li>
+<!-- Entry [rl-last] -->
+<li>
+    <a name="rl-last" class="strong" href="files/repository/2010-08-04_marl-1.3.zip" title="Open file [2010-08-04_marl-1.3.zip]">MARL toolbox ver. 1.3</a>,
+    a Matlab multi-agent reinforcement learning toolbox (4 August 2010, 336.9 KBytes).
+    <a class="button" id="rl-last-show"  title="Show details"
+       href="javascript: toggleDetails('rl-last', 'on');"
+       style="display: inline">&raquo;</a>
+    <div class="embedded-details" id="rl-last-details" style="display: none">
+    The Multi-Agent Reinforcement Learning toolbox is a package of Matlab functions and scripts that I used in my research on multi-agent learning. We prefer Matlab for its ease of use with numeric computations and its rapid prototyping facilities. Since no Matlab toolbox for dynamic multi-agent tasks was available when I started my PhD project, I started writing one of my own. This is the result. The toolbox is developed with modularity in mind, separating for instance the agent behaviour from the world engine and the latter from the rendering GUI. Currently the toolbox supports only episodic environments, but hooks are in place for continuing tasks as well. The learning, action selection and exploration methods can be independently plugged into the agents' behaviour.
+        <p>
+        Several types of gridworld-based environments are implemented, and agents can learn using a set of algorithms among which single-agent Q-learning, team Q-learning, minimax-Q, WoLF-PHC and an adaptive state expansion algorithm developed by us. Everything is written for the generic <i>n</i>-agent case, except minimax-Q, which is most meaningful in the two-agent case.
+        <p>
+        The latest version, 1.3, adds the Distributed Q-learning algorithm and the new 'robotic rescue' gridworld environment used in the example of our survey chapter <a href='publications.php#springer-marl'>Multi-Agent Reinforcement Learning: An Overview</a> (where the problem was described more generically as 'object transportation'). Also included is a demonstration script illustrating the experiments reported in the chapter.
+        
+    <a class="hide-button" id="rl-last-hide" title="Hide details"
+       href="javascript: toggleDetails('rl-last', 'off');">&laquo;</a>
+    </div>
+</li>
+<!-- Entry [rl-doc-last] -->
+<li>
+    <a name="rl-doc-last" class="strong" href="files/repository/2010-08-04_marldoc-1.3.zip" title="Open file [2010-08-04_marldoc-1.3.zip]">MARL toolbox documentation</a>,
+    the documentation files for the MARL toolbox (4 August 2010, 223.1 KBytes).
+    <a class="button" id="rl-doc-last-show"  title="Show details"
+       href="javascript: toggleDetails('rl-doc-last', 'on');"
+       style="display: inline">&raquo;</a>
+    <div class="embedded-details" id="rl-doc-last-details" style="display: none">
+    This archive accompanies the Multi-Agent Reinforcement Learning toolbox, and documents its features and usage. An up-to-date HTML reference of the functions and scripts in the toolbox is included, but the documentation itself has unfortunately not been updated since version 1.0 of the toolbox.
+    <a class="hide-button" id="rl-doc-last-hide" title="Hide details"
+       href="javascript: toggleDetails('rl-doc-last', 'off');">&laquo;</a>
+    </div>
+</li>
+<!-- Entry [approxrl] -->
+<li>
+    <a name="approxrl" class="strong" href="files/repository/approxrl.zip" title="Open file [approxrl.zip]">Approximate RL and DP toolbox</a>,
+    developed in Matlab. (6 June 2010, 967.6 KBytes).
+    <a class="button" id="approxrl-show"  title="Show details"
+       href="javascript: toggleDetails('approxrl', 'on');"
+       style="display: inline">&raquo;</a>
+    <div class="embedded-details" id="approxrl-details" style="display: none">
+    This toolbox contains Matlab implementations of a number of approximate reinforcement learning (RL) and dynamic programming (DP) algorithms, notably including the algorithms used in our book <a href='http://rlbook.busoniu.net'>Reinforcement Learning and Dynamic Programming Using Function Approximators</a>.
+        <p>
+        <strong>The toolbox features:</strong>
+        <ul>
+        <li>Algorithms for approximate value iteration: grid Q-iteration, fuzzy Q-iteration, and fitted Q-iteration with nonparametric and neural network approximators. In addition, an implementation of fuzzy Q-iteration with cross-entropy (CE) optimization of the membership functions is provided.
+        <li>Algorithms for approximate policy iteration: least-squares policy iteration (LSPI), policy iteration with LSPE-Q policy evaluation, online LSPI and online policy iteration with LSPE-Q, as well as online LSPI with explicitly parameterized and monotonic policies. These algorithms all support generic approximators, of which a variety are already implemented.
+        <li>Algorithms for approximate policy search: policy search with adaptive basis functions, using the CE or DIRECT methods for global optimization. An additional generic policy search algorithm, with a configurable optimization technique and generic policy approximators, is provided.
+        <li>Implementations of several well-known reinforcement learning benchmarks (the car-on-the-hill, bicycle balancing, inverted pendulum swingup), as well as more specialized control-oriented tasks (DC motor, robotic arm control) and a highly challenging HIV infection control task.
+        <li>A set of thoroughly commented demonstrations illustrating how all these algorithms can be used.
+        <li>A standardized task interface means that users will be able to implement their own tasks. The algorithms functions also follow standardized input-output conventions, and use a highly flexible, standardized configuration mechanism.
+        <li>Optimized Q-iteration and policy iteration implementations, taking advantage of Matlab built-in vectorized and matrix operations (many of them exploiting LAPACK and BLAS libraries) to run extremely fast.
+        <li>Extensive result inspection facilities (plotting of policies and value functions, execution and solution performance statistics, etc.).
+        <li>Implementations of several <em>classical</em> RL and DP algorithms for discrete problems: Q-learning and SARSA with or without eligibility traces, Q-iteration, and policy iteration with Q-functions.
+        </ul>
+        <p>
+        For more details, see the <a href='files/repository/readme_approxrl.html'>the readme file of the toolbox</a>. Note <em>you will need two additional functions</em> to make the toolbox work! The readme file describes how these functions can be obtained.
+        <p class='note'>Since June 6th 2010, the archive also includes the regression trees package of Pierre Geurts, redistributed with his kind permission.
+        <p>
+    <a class="hide-button" id="approxrl-hide" title="Hide details"
+       href="javascript: toggleDetails('approxrl', 'off');">&laquo;</a>
+    </div>
+</li>
+</ul>
+<!-- Presentations category -->
+<h1>Presentations</h1>
+<ul>
+<!-- Entry [acc19talk] -->
+<li>
+    <a name="acc19talk" class="strong" href="files/repository/acc19_handout.pdf" title="Open file [acc19_handout.pdf]">Learning control for a communicating mobile robot</a>,
+    on our recent research on machine learning for control of a robot that must, at the same time, learn a map and optimally transmit a data buffer. A short talk given at the American Control Conference, Philadelphia, US (10 July 2019, 1.2 MBytes).
+</li>
+<!-- Entry [tmlss] -->
+<li>
+    <a name="tmlss" class="strong" href="files/repository/tmlss18_handout.pdf" title="Open file [tmlss18_handout.pdf]">Basics of Reinforcement Learning</a>,
+    a very condensed introduction to basic dynamic programming and RL methods. Taught at the Transylvanian Summer School on Machine Learning, in Cluj-Napoca, Romania (20 July 2018, 4.5 MBytes).
+</li>
+<!-- Entry [cescit] -->
+<li>
+    <a name="cescit" class="strong" href="files/repository/cescit_handout.pdf" title="Open file [cescit_handout.pdf]">AI Planning with Applications to Switched Systems</a>,
+    discussing, in addition to some planning techniques, their adaptations for switched system control. Keynote at the IFAC CESCIT conference (6 June 2018, 5.4 MBytes).
+</li>
+<!-- Entry [acai] -->
+<li>
+    <a name="acai" class="strong" href="teaching/ssrl" title="Go to teaching/ssrl">Online, Optimistic Planning for Markov Decision Processes</a>,
+    an in-depth course mainly on my recent research into optimistic planning algorithms, with a practical session. Taught at the ACAI Summer School on RL, in Nieuwpoort, Belgium (10 October 2017).
+</li>
+<!-- Entry [valencia] -->
+<li>
+    <a name="valencia" class="strong" href="teaching/valencia" title="Go to teaching/valencia">Approximate Dynamic Programming and Reinforcement Learning for Control</a>,
+    an invited, three-day intensive Master course at the Polytechnic University of Valencia, Spain (21 June 2017).
+    <a class="button" id="valencia-show"  title="Show details"
+       href="javascript: toggleDetails('valencia', 'on');"
+       style="display: inline">&raquo;</a>
+    <div class="embedded-details" id="valencia-details" style="display: none">
+    This course provides methods for controlling systems that are too complex or insufficiently known to apply classical control design techniques. Classical foundations are connected to recent developments. The focus is placed on learning algorithms for control, in particular reinforcement learning (RL). Special attention is also paid to model-based techniques related to RL, as they can be very useful in controlling complex systems even when a model is known. After introducing the RL problem, the dynamic programming algorithms that sit at the foundation of RL are described. Then, classical, discrete-variable RL algorithms are introduced. In the second part of the course, the dynamical programming and RL algorithms are extended with approximation techniques, in order to make them applicable to continuous-variable control, as well as to large-scale discrete-variable problems. Several online planning techniques are discussed.
+    <a class="hide-button" id="valencia-hide" title="Hide details"
+       href="javascript: toggleDetails('valencia', 'off');">&laquo;</a>
+    </div>
+</li>
+</ul>
+<!-- Demonstration Movies category -->
+<h1>Demonstration Movies</h1>
+<ul>
+<!-- Entry [commdrone] -->
+<li>
+    <a name="commdrone" class="strong" href="http://rocon.utcluj.ro/files/commdrone.mp4" title="Go to http://rocon.utcluj.ro/files/commdrone.mp4">Learning control of a communicating drone</a>,
+    A Parrot AR.Drone 2 learns a radio map and transmits a buffer at the same time, with an approach similar to the one in <a href='#acc19talk'>the ACC 2019 talk</a> above. (1 December 2019).
+</li>
+<!-- Entry [uavfalldetection] -->
+<li>
+    <a name="uavfalldetection" class="strong" href="http://rocon.utcluj.ro/files/aufdemo.mp4" title="Go to http://rocon.utcluj.ro/files/aufdemo.mp4">Fall detection using a quadrotor</a>,
+    A Parrot AR.Drone 2 monitors a person for falls while flying at a set distance and orientation. The location of the person, as well as falls, are detected with deep-learning vision algorithms. With Paul Dragan and Cristi Iuga, see our <a href='/publications.php#cescit18uav'>conference paper</a> for details. (1 December 2017).
+</li>
+<!-- Entry [assistiverobot] -->
+<li>
+    <a name="assistiverobot" class="strong" href="https://www.youtube.com/watch?v=zxb6pLwydfg" title="Go to https://www.youtube.com/watch?v=zxb6pLwydfg">Assistive robot demo using online POMDP planning</a>,
+    Cyton Gamma 1500 robot arm, with Pioneer3AT mobile base and end-effector camera, flips off electrical switches forgotten on. Uses an online planning algorithm called AEMS2 for partially-observable Markov decision processes. With Elod Pall and Levente Tamas, see our <a href='/publications.php#iros16'>IROS paper</a> for details. (7 July 2016).
+</li>
+<!-- Entry [sooprotpend] -->
+<li>
+    <a name="sooprotpend" class="strong" href="https://www.youtube.com/watch?v=m9WowzQjk64" title="Go to https://www.youtube.com/watch?v=m9WowzQjk64">Planning to swing up a rotary pendulum in real time</a>,
+    using the continuous-action simultaneous optimistic optimization for planning (SOOP) algorithm. With Elod Pall. (24 November 2014).
+</li>
+</ul>
+
+
+
+
+<!-- CONTENT END -->
+
+<p class="footer">
+Last update: Friday, 13 December 2019.
+&nbsp;&nbsp;
+</p>
+
+</td></tr>
+
+
+</table>
+
+</body>
+</html>
+

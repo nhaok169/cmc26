@@ -1,0 +1,667 @@
+Multi-Agent Exploration-Based Search for
+an Unknown Number of Targets⋆
+Bilal Yousuf, Zs´ ofia Lendek, Lucian Bu¸ soniu
+Technical University of Cluj-Napoca, Romania
+e-mail: {bilal.yousuf, zsofia.lendek, lucian.busoniu }@aut.utcluj.ro
+Abstract: This paper presents an active sensor fusion technique for multiple mobile agents
+(robots) to detect an unknown number of static targets at unknown positions. To process and
+fuse sensor measurements from the agents, we use a random finite set formulation with an
+iterated-corrector probability hypothesis density filter. Our main contribution is to introduce two
+different multi-agent planners to quickly find the targets. The planners make greedy decisions for
+the next state of each agent by maximizing an objective function consisting of target refinement
+and exploration components. We demonstrate the performance of our approach through a
+series of simulations using homogeneous and heterogeneous agents. The results show that our
+framework works better than a lawnmower baseline, and that a centralized version of the planner
+works best.
+Keywords: Multi-agent system, sensor fusion, active sensing, planning
+1. INTRODUCTION
+Multi-agent systems are becoming increasingly popular
+in target search and tracking. Many researchers proposed
+approaches for multiple agents to find an unknown number
+of dynamic or static targets from uncertain measurements
+(Chen and Dames, 2020b; Leonard and Zoubir, 2019;
+Chen and Dames, 2020a; Ramachandran et al., 2021; Ma
+et al., 2015; Zhou et al., 2019). Compared to a single-
+agent scenario, multi-agent systems (Claudio et al., 2018)
+improve detection by combining information from the
+agents. For instance, Liu et al. (2020) defined a target-
+search estimator that fuses measurements from several
+agents using the iterated-corrector hypothesis density filter
+(IC-PHD). Zhou et al. (2019) demonstrate resilient target
+tracking against worst-case sensor failures in a receding-
+horizon manner.
+Most methods mentioned do not explicitly take environ-
+ment exploration into account. In our earlier paper (Yousuf
+et al., 2022), we already proposed an exploration-based
+method for a single drone to explore a 2D environment in
+search of an unknown number of static targets at unknown
+positions.
+The present paper extends the method of Yousuf et al.
+(2022), by adding multiple agents to explore a 2D environ-
+ment. We consider both homogeneous and heterogeneous
+agents that explore the target space to find the unknown
+number of static targets, see Fig. 1. Homogeneous agents
+have identical capabilities (dynamics, sensors, etc), while
+heterogeneous agents differ in their dynamics or sensors.
+⋆This work was been financially supported from H2020 SeaClear, a
+project that received funding from the European Union’s Horizon
+2020 research and innovation programme under grant agreement
+No 871295; and by the Romanian National Authority for Scientific
+Research, CNCS-UEFISCDI, SeaClear support project number PN-
+III-P3-3.6-H2020-2020-0060.
+Fig. 1. Block diagram of our framework
+The method for heterogeneous agents is motivated by
+our ongoing SeaClear project. In SeaClear, two robots,
+a remotely operated underwater vehicle (ROV) and an
+unmanned aerial vehicle (UAV), share a map and aim to
+find targets (litter) on the sea floor. Each robot is an agent.
+The UAV searches the area from the air, highlighting the
+regions with higher chances of containing targets, while
+the ROV investigates the highlighted regions to more ac-
+curately pinpoint the targets.
+In our framework, each agent is equipped with a sensor
+with a limited field of view (FOV), which is modeled
+using a position-dependent probability of detection. For
+those targets that are detected, the sensor provides noisy
+measurements and an IC-PHD filter (Liu et al., 2020) that
+runs in the framework of Random Finite Sets (RFS) (Ma
+et al., 2015; Mahler, 2010; Chen et al., 2003; Vo et al.,
+2014; Charrow et al., 2014) is used to fuse information
+from all agents and to estimate the location of the targets.
+The IC-PHD filter generates estimated target positions in
+the form of an intensity function, a generalization of the
+probability density that integrates to the expected number
+of targets (Dames, 2020).
+The key novelty of this paper consists of two multi-agent
+planning algorithms that generate the path of the agents
+by picking future discrete waypoints so as to maximize an
+objective function. In both algorithms, the objective func-
+tion maximized by the planner consists of two components:
+target refinement and exploration. The target refinement
+component aims to better find the locations of already
+seen targets. The second, exploration component drives
+the agents towards unseen regions of the space to find new
+targets. The two different planner algorithms are: 1) inde-
+pendent control, where the agents explore the environment
+fully independently, and 2) centralized control, where the
+actions of the agents are chosen jointly. In contrast to the
+work of other researchers discussed above, this method —
+like our previous one in (Yousuf et al., 2022) — includes
+exploration.
+We extensively test our framework in a series of simula-
+tions. As a baseline, we consider systematically generated
+lawnmower trajectories, as shown in Fig. 6. The proposed
+algorithms work better than this baseline to detect a large
+number of targets with either homogeneous or heteroge-
+neous agents.
+The remaining material is structured as follows, see also
+Fig. 1. Section 2 defines the problem, followed by the
+IC-PHD filtering framework in Section 3. In Section 4,
+we present the two different planners. Section 5 presents
+simulation results, and Section 6 concludes the paper.
+2. PROBLEM FORMULATION
+We consider naagents that explore a 2D space (environ-
+ment) E, to search for an unknown number of static tar-
+gets, see Fig. 2, in as few steps as possible. We implement
+an RFS framework, as detailed in (Vo et al., 2005). The
+current position of the agent in Cartesian coordinates is
+denoted by qo
+kat time step k, where o= 1,2, . . . , n ais the
+index of the agent.
+At each step, agents receive a set of measurements about
+the targets, affected by noise. Agents are equipped with
+sensors that are capable of detecting targets depending on
+a FOV, as in Fig. 2. Note that the sensors of different
+agents may have different parameters. The probability of
+agent owith position qoof detecting a target at position
+xis given by πo
+d(x, qo) =Ge−∥ζo∥/2, where G≤1 is
+a constant and ζo= (Xx−Xo
+q
+FX,Yx−Yo
+q
+FY) is the normalized
+distance of the target from the agents. Here, ( Xx,Yx)
+denotes the target’s position, ( Xo
+q,Yo
+q) defines the agent’s
+position, and FXandFYare the width and length of the
+sensor field of view. Whether the target xikis detected or
+not by agent ois decided using a Bernoulli distribution,
+bo
+ik∼ß(πo
+d(xik, qo
+k)). Then, the set of measurements Zo
+kis
+defined as in (Gao et al., 2021):
+Zo
+k=
+
+[
+i∈{1,...,N k}s.t. bo
+ik=1ho
+k(x) +ϱo
+k
+
+(1)
+where
+ho
+k= [do
+ik, θo
+ik]T
+do
+ik=q
+(Xxik− Xoqk)2+ (Yxik− Yoqk)2
+θo
+ik=arctanYxik− Yo
+qk
+Xxik− Xoqk(2)
+where ( Xxik,Yxik) is the position of target iin the space E,
+anddo
+ik, θo
+ikare the distance and bearing of target irelative
+Fig. 2. 2D target space with 12 targets and 2 agents.
+The colors show the probability of observation of each
+agent at their current position, orange to blue means
+higher to lower probability.
+to the agent’s position. Moreover, ϱo
+ik∼ N (.,0, Ro) is
+a Gaussian noise with mean 0= [0,0]⊤and covariance
+Ro= diag[( σo)2,(σo)2].
+The target measurement density go(zk|xk) can be writ-
+ten as:
+go(zo
+k|xk) =N(zo
+k, ho
+k(x), Ro) (3)
+i.e.,go(zo
+k|xk) is a Gaussian density function, with covari-
+ance Roand centered on ho
+k(x) from (2). This density will
+be used to estimate the target locations.
+3. ESTIMATION FRAMEWORK
+This section summarizes the Iterated-Corrector Probabil-
+ity Hypothesis Density (IC-PHD) filtering framework. In
+this framework, the objective is to estimate the location
+of the targets by fusing measurements from all agents. All
+computations are centralized. In Section 3.1, we discuss the
+intensity function and the single-agent PHD filter predic-
+tion and update operations, followed by IC-PHD update
+operations in Section 3.2. The elimination of targets found
+is defined in Section 3.3.
+3.1 Single-agent PHD Filter
+The Probability Hypothesis Density (PHD) D:E→
+[0,∞), or intensity function, is similar to a probability
+density function with the key difference that its integral
+over the entire domain is not 1, but the number of
+targets. The PHD filter performs Bayesian updates of an
+intensity function based on the target measurements and
+is summarized as:
+Dk|k−1= Φ k|k−1(Dk−1|k−1)
+Dk|k= Ψ k(Dk|k−1)(4)
+Here, Dk|k−1is the prior intensity function predicted based
+on intensity function Dk−1|k−1at time step k−1, and
+Dk|kdenotes the posterior generated after processing the
+measurements. The multi-target prior Dk|k−1at step kis
+defined by:
+Dk|k−1(xk) = Φ k|k−1(Dk−1|k−1)(xk) =
+Υk(xk) +Z
+Esps(ξ)δξ(xk)Dk−1|k−1(ξ)dξ(5)
+where ps(ξ) is the probability that the target still exists.
+In our specific problem, targets are stationary, so the
+Fig. 3. Illustration of an intensity measure defined over 2D
+space
+transition density of a target xkis defined as a Dirac
+delta δξ(xk), and Υ k(xk) denotes the intensity function
+of a new target appearing in the FOV, chosen here as a
+constant. The multi-target posterior Ψ k(Dk|k−1)(xk) can
+be written as:
+Dk|k(xk) = Ψ k(Dk|k−1)(xk) ="
+1−πdk(xk) +X
+z∈Zkψkz(xk)
+ψkz, Dk|k−1
+(xk)#
+·Dk|k−1(xk)
+(6)
+where ψkz(xk) =πo
+d(xk, qo
+k)go(zo
+k|xk) denotes the overall
+probability density of detecting a target at xkwith g
+defined in (3). In practice, we employ the SMC-PHD filter
+(Vo et al., 2005), which uses a set of weighted particles
+to represent the intensity function. An example of an
+intensity function is given in Fig. 2, where the yellow
+color shows the peaks of the intensity function, and the
+circles represent the weighted particles. For example, the
+red patch in Fig. 2 is Dover region S, and Sis the
+corresponding rectangle lying in the ( x1, x2) plane. The
+integral of the intensity function over the red region gives
+the expected number of targets in S.
+3.2 Sequential IC-PHD Filter
+Let us next consider a set of agents na, receiving noisy
+measurements per our proposed sensor model. Each agent
+oreceives a measurement set Zo
+kdepending on the proba-
+bility of detection πo
+d(x, qo), and computes likelihood func-
+tiongo(zo
+k|xk) based on those measurements. At time k,
+the IC-PHD filter (Liu et al., 2020) generates a posterior
+intensity function Do
+k|kof each sensor oin turn. In this
+filter, the prediction step is similar to that in (5). The
+prior is then taken to be the initial multi-agent posterior
+D0
+k|k, with index 0:
+Dk|k−1= Φ k|k−1(Dk−1|k−1)(x) =:D0
+k|k (7)
+Then, the measurement sets of the agents will be processed
+sequentially, in the posterior updates:
+Do
+k|k(x) = Ψo
+k(Do−1
+k|k)(x), o= 1, . . . , n a
+Dk|k(x) :=Dna
+k|k(x)(8)
+Each IC-PHD posterior update equation is defined as:Do
+k|k=
+1−πo
+dk(xk) +X
+zo
+k∈Zo
+kψo
+kz(xk)
+ψo
+kz, Dk|k−1
+(xk)
+·Do−1
+k|k
+(9)
+foro= 1,2, . . . , n a. The particle-based approximation
+from Section 3.1 is used. Note that for the special case of a
+single-sensor problem, the IC-PHD reduces to the original
+PHD filter.
+3.3 Marking and Removal of Found Targets
+The algorithm maintains two sets of targets (i) found
+targets and (ii) potential targets. At each step k, we
+extract the potential targets as clusters of particles with
+K-means. Then, two conditions are checked: (1) the width
+Wiof each cluster of particles should be below threshold
+TW, and (2) the sum of the weights ωjof the particles
+in the cluster should be above threshold Tm. If these two
+conditions are satisfied, i.e., the cluster is very narrow and
+contains a high concentration of particles, we shift the
+corresponding target from potential to found .
+To allow the drone to focus on refining poorly seen
+targets and finding new targets, we remove the particles
+corresponding to found targets, and to avoid reidentifying
+the found targets, we disregard future measurements likely
+to come from them, see (Yousuf et al., 2022) for details.
+4. MULTI-AGENT PLANNER
+Consider now the problem of designing a path for the
+agents to explore the 2D target space to quickly find the
+targets. Next states are picked by maximizing an objective
+function. The set of possible candidate next states of all
+agents is Qk=Q1
+k×Q2
+k×. . .×Qna
+k, where Qo
+kis the set of
+candidate next states for agent o.Qkis discrete and should
+be sufficiently rich for the agents to search for unknown
+targets, see e.g. Fig 4. We define two different cases: (i)
+independent planning, where each agent ooptimizes in its
+own set Qo
+k, and (ii) centralized planning, where agents
+optimize together in the joint set of candidates Qk.
+Independent planner. This planner works by making
+independent control decisions q∗o
+k+1for each agent. It is a
+direct application for each agent of the method in (Yousuf
+et al., 2022), where we used a single agent. Each agent
+runs their own PHD filter, like in equation (4), and takes
+decisions with:
+q∗o
+k+1= argmaxqo
+k+1∈Qo
+k
+To
+k(qo
+k+1) +α·Eo(qo
+k+1)	
+(10)
+The objective function has two components: target re-
+finement To
+k(qo
+k+1), aiming to better find the locations
+of the targets that were already seen; and exploration
+Eo(qo
+k+1), driving the agents to explore unseen regions.
+The tunable parameter αcontrols the tradeoff between
+the two components. The target refinement component is
+computed as the sum of the observation probabilities of
+particle cluster centers:
+To
+k=CoX
+j=1πo
+d(Co
+j, qo
+k+1) (11)
+and is different from the target refinement component of
+(Yousuf et al., 2022). In (11), Codenotes the cluster count,
+andCo
+jis the center of the jth cluster. The center Co
+jhas
+the meaning of an estimated target position. The intuition
+is that the probability of seeing estimated target locations
+is maximized.
+An exploration function ι(x) is defined to compute
+Eo(qo
+k+1), initially set to 1 for the whole target space.
+At each step k,ιshould decrease for each xwith an
+amount equal to the probability of detection πo
+d(x, qo
+k). The
+meaning is that position xhas been explored to an amount
+equal to the probability of detection at that position. In
+practice, ιis implemented by interpolation on a 2D grid
+xij. Each grid point is initialized with:
+ιo
+0(xij) = 1 ,∀i, j
+then decreased with the rule:
+ιo
+k(xij) =ιo
+k−1(xij)·(1−πo
+d(xij, qo
+k)),∀i, j (12)
+Then, the exploration component of (10) is defined as:
+Eo(qo
+k+1) =ιo
+k(qo
+k+1) (13)
+where ιo
+kis computed at qo
+k+1using interpolation on the
+grid. It is important to observe that when no target has
+been detected (or all targets were marked as found, see
+Section 3.3), the agent’s trajectory will be computed only
+based on the exploration component, and will fill the space
+with a lawnmower-like trajectory.
+As mentioned earlier, each agent runs its own PHD filter
+(Section 3.1) to generate the particle clusters (estimated
+target positions) and applies the target removal method to
+found targets (Section 3.3). The center Co
+jof such a cluster
+is added to a set ˆXof found targets that are common to all
+the agents. Agents therefore explicitly communicate with
+each other about target positions that have been found,
+and each agent will ignore measurements coming from any
+target in ˆX. Removal is done like in the last forloop of
+Algorithm 1.
+Centralized planner. The centralized planner works by
+making a centralized control decision q∗
+k+1= 
+q1∗
+k+1, q2∗
+k+1, . . . , qna∗
+k+1T
+for all agents at once, ,with the following rule:
+q∗
+k+1= argmaxqk+1∈Qk
+Tk(qk+1) +α·E(qk+1)	
+(14)
+In contrast to the independent planner, in this case, there
+is no separate set of weighted particle intensity function
+estimates for each agent. There is only one set of weighted
+particles generated using the IC-PHD filter based on the
+measurements of all the agents, as in Section 3.3. We
+extract clusters from this single set of particles, which
+are used to compute the target refinement component
+Tk(qk+1) as follows.
+Tk(qk+1) =T1(q1
+k+1) +T2
+k(q2
+k+1). . .+Tna
+k(qna
+k+1)
+where To
+k(qo
+k+1), with index o= 1,2, . . . , n a:
+To
+k=CX
+i=1πo
+d(Cj, qo
+k+1) (15)
+Here, Cjis defined as the center of cluster jin the set of
+particles, and Cis the number of such clusters.
+The exploration component E(qk+1) is formulated as the
+product of the exploration components of each agent:E(qk+1) =naY
+o=1ιo
+k(qo
+k+1) (16)
+Each exploration component is defined in the same way
+as for the independent planner. The intuition is that
+centralized exploration should cover more area compared
+to independent exploration, as agents are driven to explore
+different regions at each time step k.
+After a target is marked as found, the center of the corre-
+sponding cluster is added to a set ˆXof found targets. Simi-
+larly to the independent planner, after the target has been
+added, all particles related to it are deleted, and future
+measurements from that target are ignored. Algorithm 1
+summarizes the centralized planner procedure.
+Algorithm 1: Centralized control procedure at k
+Generate set Qkof candidate next states for all agents
+Compute exploration component Eusing (16)
+foreachqk+1∈Qkdo
+compute target refinement Tkand exploration E
+Find best next joint state q∗
+k+1using (14)
+Execute K-means to find clusters Cj, j= 1, . . . ,C
+foreach cluster j= 1, . . . ,Cdo
+ifWi≤ TWandP
+j∈Cωj≥ Tmthen
+/* target found */
+delete all particles i∈ Cj
+ˆX←ˆX∪ˆxi
+Get measurements Zo
+kfrom sensors of each agent o
+For each agent o
+forHo
+k(x)∈Zo
+kdo
+forˆx∈ˆXdo
+Zo
+aux={zo
+k∈Zo
+k| ∥h−1(zo
+k)−ˆx∥ ≤ T z}
+ifZo
+auxis nonempty then
+/* remove measurement */
+Zo
+k=Zo
+k\argminzo
+k∈Zoaux∥h−1(zo
+k)−ˆx∥
+run filter from Section 3.2 with measurements Zo
+k
+5. RESULTS
+In this section, we present simulation results to validate the
+above framework. Section 5.1 presents results using homo-
+geneous agents, followed by heterogeneous agents in Sec-
+tion 5.2. We compare how well the proposed algorithm per-
+forms versus a multi-agent lawnmower trajectory. These
+results also showcase the potential of our framework using
+heterogeneous agents e.g. for the SeaClear project. All
+simulations have been done using MATLAB.
+5.1 Homogeneous-Agent Results
+In these experiments, we consider 2 agents, and 12 tar-
+gets distributed uniformly in the 2D environment E=
+[−30,300]m ×[−30,300]m. The candidate position set of
+each agent has 8 different position choices: right, left, top,
+bottom, and the diagonals, as shown in Fig. 4 (left). 10
+different runs are made. As a baseline, we use a lawn-
+mower. The trajectory length is chosen as 120 steps for all
+experiments because the lawnmower needs this length to
+complete the search: at 120 steps, the agents’ trajectories
+Fig. 4. Candidate next positions for one agent, where
+the current position is in the middle. Left: candidate
+set for homogeneous agents. Right: candidate set for
+heterogeneous agents
+Fig. 5. Average number of targets detected across 10 maps
+with the 95% confidence intervals.
+Fig. 6. Multi-agent trajectories with a lawnmower.
+(a) Independent planner
+ (b) Centralized planner
+Fig. 7. Examples of trajectories using the two new planners
+meet in the middle, and they find all the targets. The
+threshold values in Algorithm 1 are experimentally set as
+TW= 1.2m,Tm= 2.5m, and Tz= 5m. The parameters
+of the probability of detection πo
+d(x, qo) are: G= 0.98,
+FX=FY= 25. The field of view is the same for all
+experiments for fairness. The distance from the current
+position at kto the future position at k+ 1 is set to 8
+meters at each step. The starting position of the agents is
+set as [0,0], and it is the same in all runs.
+Fig. 8. SeaClear system concept
+Fig. 5 shows the number of target detections over time,
+averaged in all the 10 experiments, along with their 95%
+confidence interval. The proposed algorithms find the
+target faster than the lawnmower. The centralized planner
+finds the targets faster than the independent planner
+because agents find targets at different locations. In Fig. 6
+we show the lawnmower trajectories, where the agents
+start in opposite corners and meet in the middle. It is
+visible that the multi-agent lawnmower has covered the
+whole target space. Fig. 7 shows the agents’ trajectories
+with the novel planners in one of the 10 experiments. The
+agents do not cover the whole environment uniformly but
+focus on relevant regions to find targets faster compared to
+the lawnmower. In Fig. 7a, for the independent planner, we
+see that since the agents take independent decisions, they
+sometimes focus on the same targets. In Fig. 7b, when the
+centralized planner is used to explore the target space, the
+agents focus on different targets.
+5.2 Heterogeneous-Agent Results
+To illustrate the performance of the proposed target lo-
+calization algorithm in a more realistic scenario, we link
+our research problem to the ongoing project SeaClear
+https://seaclear-project.eu/ . In SeaClear, we have
+two different robots: an unmanned aerial vehicle (UAV),
+and a remotely controlled underwater vehicle (ROV), both
+in search of litter on the sea floor, as shown in Fig. 8. The
+UAV is faster and has a larger sensor FOV. The ROV has
+better sensor accuracy but a lower speed and a smaller
+FOV. In the literature, to distinguish between target and
+sea life, Deep learning methods are used. Here we use the
+simulation with the simple sensor model of Section 2. We
+took agent 1 as the UAV and agent 2 as the ROV, to
+see how our algorithm handles these different types of
+agents. In this simulation, we used only the centralized
+planner, and the candidate set has 4 different position
+choices: right, left, top, and bottom, as shown in Fig. 4
+(right). The initial states of both agents are set as [0; 0], in
+the 2D environment E= [−30,300]m ×[−30,300]m. The
+threshold values in Algorithm 1 are set as TW= 1.2m,
+Tm= 2.4m, and Tz= 5m. The parameters of the proba-
+bility of detection for the first agent are G= 0.98, and the
+sensor FOV is set as FX=FY= 60, and the distance from
+the current position at kto the future position at k+ 1 is
+set to 12m. For the 2nd agent, G= 0.98, the sensor field
+of view is set as FX=FY= 15, and the distance from the
+current position of agent 2 at step kto the future position
+atk+1 is set to 4 m. The computation time is around 1 .88s
+and 3 .02s per time step for agents 1 and 2, respectively.
+50 100 150 200 250 300
+Steps024681012# of Targets
+Centralized with Heterogeneous agentFig. 9. Top: Heterogeneous agent trajectories using the
+centralized planner, along with the estimated target
+position. Bottom: Number of targets found over time.
+In this simulation, we consider 12 targets uniformly dis-
+tributed at random locations. The trajectory length is cho-
+sen as 320 steps since the slower agent takes more steps to
+find the targets. Fig. 9 (top) shows the agents’ trajectories.
+It is visible that the first agent roughly solves a coverage
+problem: it explores the whole environment with a large
+FOV. The sensor of agent 1 is unable to detect the target
+well, so agent 1 only highlights those areas that have higher
+chances of containing targets. The second agent, having
+a smaller FOV and better accuracy, focuses on relevant
+regions highlighted by the faster agent, and finds all the
+targets. Fig. 9 (top) also shows the estimated target posi-
+tions in green color. Fig. 9 (bottom) shows the number of
+target detections over time. The RMSE of the localization
+is 1.14 m. For a better understanding of this experiment,
+please refer to the full video of the heterogeneous agents’
+trajectories, available online at http://rocon.utcluj.
+ro/files/multiagent_targetsearch.mp4 .
+6. CONCLUSION
+In this paper, we introduced a novel strategy that enables
+multiple agents to search for an unknown number of static
+targets in a 2D environment. These agents are equipped
+with imperfect sensors, which are noisy and may fail
+to detect targets within the field of view. To estimate
+the number and location of the targets, the iterated-
+corrector Probability Hypothesis Density (IC-PHD) filter
+is used. We proposed two novel planners with target
+refinement and exploration components, and validate the
+performance of our framework through simulations. Future
+work includes the deployment of the framework on the real
+robots of the SeaClear project, where challenges include
+identifying the sensor model and hardware integration.
+REFERENCES
+Charrow, B., Michael, N., and Kumar, V.R. (2014). Active control
+strategies for discovering and localizing devices with range-only
+sensors. Algorithmic Foundations of Robotics , 107, 51–71.Chen, J. and Dames, P. (2020a). Collision-free distributed multi-
+target tracking using teams of mobile robots with localization un-
+certainty. In IEEE/RSJ International Conference on Intelligent
+Robots and Systems (IROS) , 6968–6974. Las Vegas, NV, USA.
+Chen, J. and Dames, P. (2020b). Distributed multi-target search and
+tracking using a coordinated team of ground and aerial robots.
+Robotics science and systems , 47, 971–977.
+Chen, J., Xie, Z., and Dames, P. (2003). The semantic PHD filter
+for multi-class target tracking: From theory to practice. Robotics
+and Autonomous Systems , 149, 1–14.
+Claudio, F., Ngu, V.B., Tuong, V.B., Giorgio, B., and Luigi, C.
+(2018). Robust fusion for multisensor multiobject tracking. IEEE
+Signal Processing Letters , 25(5), 640–644.
+Dames, P. (2020). Distributed multi-target search and tracking using
+the PHD filter. Autonomous robots , 44, 673–689.
+Gao, L., Battistelli, G., Chisci, L., and Farina, A. (2021). Fusion-
+based multidetection multitarget tracking with random finite sets.
+IEEE Transactions on Aerospace and Electronic Systems , 57(4),
+2438–2458.
+Leonard, M.R. and Zoubir, A.M. (2019). Multi-target tracking in
+distributed sensor networks using particle PHD filters. IEEE
+Transactions on Signal Processing , 159, 130–146.
+Liu, L., Ji, H., Zhang, W., and Liao, G. (2020). Multi-sensor fusion
+for multi-target tracking using measurement division. IET Radar
+Sonar Navigation , 14, 1451–1461.
+Ma, L., Xue, K., and Wang, P. (2015). Distributed multiagent control
+approach for multitarget tracking. Mathematical Problems in
+Engineering , 2015, 1–10.
+Mahler, R. (2010). Multitarget Bayes filtering via first-order multi-
+target moments. IEEE Transactions on Aerospace and Electronic
+Systems , 39(4), 1152–1178.
+Ramachandran, Kumar, R., Fronda, Nicole, Sukhatme, and S, G.
+(2021). Resilience in multirobot multitarget tracking with un-
+known number of targets through reconfiguration. IEEE Trans-
+actions on Control of Network Systems , 8(2), 609–620.
+Vo, B.N., S.Singh, and Doucet, A. (2005). Sequential Monte Carlo
+methods for multitarget filtering with random finite sets. IEEE
+Transactions on Aerospace and Electronic Systems , 41(4), 1224–
+1245.
+Vo, B.N., Vo, B.T., and Phung, D. (2014). Labeled random finite
+sets and the Bayes multi-target tracking filter. IEEE Transactions
+on Signal Processing , 6(24), 6554–6567.
+Yousuf, B., Lendek, Zs., and Bu¸ soniu, L. (2022). Exploration-
+based search for an unknown number of targets using a UAV.
+InProceedings of 6th IFAC Conference on Intelligent Control
+and Automation Sciences,(ICONS 22), IFAC-Papers Online , vol-
+ume 55, 93–98. Cluj, Romania.
+Zhou, L., Tzoumas, V., Pappas, G.J., and Tokekar, P. (2019).
+Resilient active target tracking with multiple robots. IEEE
+Robotics and Automation Letters , 4(1), 129–136.

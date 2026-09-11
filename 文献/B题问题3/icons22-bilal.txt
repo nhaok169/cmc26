@@ -1,0 +1,675 @@
+Exploration-Based Search for an Unknown
+Number of Targets using a UAV⋆
+Bilal Yousuf, Zs´ ofia Lendek, Lucian Bu¸ soniu
+Technical University of Cluj-Napoca, Romania
+e-mail: {bilal.yousuf, zsofia.lendek, lucian.busoniu }@aut.utcluj.ro
+Abstract: We consider a scenario in which a UAV must locate an unknown number of targets
+at unknown locations in a 2D environment. A random finite set formulation with a particle filter
+is used to estimate the target locations from noisy measurements that may miss targets. A novel
+planning algorithm selects a next UAV state that maximizes an objective function consisting
+of two components: target refinement and an exploration. Found targets are saved and then
+disregarded from measurements to focus on refining poorly seen targets. The desired next state
+is used as a reference point for a nonlinear tracking controller for the robot. Simulation results
+show that the method works better than lawnmower and mutual-information baselines.
+Keywords: Multi-target search, unmanned aerial vehicle, probability hypothesis density filter,
+backstepping control.
+1. INTRODUCTION
+Target search and tracking is a standard problem in
+robotics, occurring in many applications such as mapping,
+search and rescue, and surveillance. In these applications,
+one or several robots explore an area of interest to find
+an unknown number of targets and their precise locations.
+Robots require an estimation algorithm to locate targets,
+and a control law to explore the environment. There
+are various methods such as particle filtering, marginal
+distribution algorithms, multi-mode methods, etc. (Stoyan
+et al., 1995; Hauschild and Pelik´ an, 2011) which are used
+to find the unknown or known number of dynamic or static
+targets from the measurements collected at each step by
+imperfect sensors. These measurements are distorted by
+noise and may miss targets or give false detections.
+In this paper, we consider a single UAV exploring a
+2D environment to find an unknown number of targets
+at unknown locations. The UAV sensor may sometimes
+miss targets and generally receives noisy measurements of
+their location, but does not give false detections (clutter).
+The approach has three essential components: multi-target
+estimation, a planner to decide where the UAV goes at
+each step, and a low-level control algorithm to implement
+this decision. The whole framework can be seen in Fig. 1.
+For multi-target search estimation with our specific sen-
+sor model, we use the Random Finite Set (RFS) frame-
+work (Mahler, 2010; Vo et al., 2015; Chen et al., 2003) and
+a Sequential Monte Carlo-Probability Hypothesis Density
+(SMC-PHD) filter. The key novelty of the paper is a
+⋆This work was been financially supported from H2020 SeaClear, a
+project that received funding from the European Union’s Horizon
+2020 research and innovation programme under grant agreement
+No 871295; and by the Romanian National Authority for Scientific
+Research, CNCS-UEFISCDI, SeaClear support project number PN-
+III-P3-3.6-H2020-2020-0060 and Young Teams project number PN-
+III-P1-1.1-TE-2019-1956.
+Fig. 1. Block diagram of our framework, with the sections
+where each component is explained
+planning algorithm that is based not just on mutual infor-
+mation a statistical measure of the relationship between
+estimated targets and future measurements (Dames and
+Kumar, 2015) to focus on already found targets, but also
+an exploration component that drives the UAV towards
+unseen regions. To further encourage exploration, targets
+that are reliably detected are separately saved and then
+removed from the measurements, as in (Vo et al., 2014;
+Dames, 2020; Vo et al., 2006; Charrow et al., 2014), but
+using a different technique than in those papers. Finally,
+in contrast to the literature on target tracking with RFS,
+we fully specify the algorithm by designing a low-level
+dynamical nonlinear controller (Sun et al., 2014). In simu-
+lations, this algorithm works well to detect a large number
+of targets with a single robot. Using as metric the number
+of targets found over time, we compare our planner with
+a baseline lawnmower strategy and with a variant of the
+algorithm that only includes mutual information, similar
+to Dames and Kumar (2015).
+We next go in more detail about the relationship of our
+approach to the literature. Our estimation method is based
+on the RFS formulation with SMC-PHD particle filtering,
+similar to Vo et al. (2005). An RFS is a set containing
+a random number of elements at random locations. The
+PHD filter propagates only the first moment of the dis-
+tribution, which intuitively represents an expected count
+of targets in each area, rather than the full multi-target
+posterior (Dames, 2020). In robotics, many approaches
+were developed to solve target search and tracking prob-
+lems with RFS representations. E.g. Dames et al. (2017)
+define the planner based on mutual information between
+the target and a binary sensor. Xu et al. (2013) present the
+idea of mixed nonlinear programming for assigning robots
+to targets. A Voronoi-based method known as Lloyd’s
+algorithm is used to localize the targets by Dames (2020).
+In the present paper, we develop a planner algorithm that
+similar to the method of Dames and Kumar (2015) but
+with the key addition of the exploration function. For
+our specific problem, the trajectory tracking controller is
+designed using a backstepping-based dynamical nonlinear
+control algorithm for the UAV (Sun et al., 2014) as it is
+simple and computationally efficient.
+The remaining material is structured as follows, see again
+also Fig. 1. Section 2 defines the problem, followed by the
+SMC-PHD filtering framework in Section 3. In Section
+4, we develop the planner algorithm based on mutual
+information and exploration along with describing the con-
+trollere. Section 5 presents the simulation results. Finally,
+Section 6 concludes the paper.
+2. PROBLEM FORMULATION
+Fig. 2. 2D space with 6 targets and a UAV with a circular
+field of view. The dark orange, yellow, and blue colors
+show the probability of observation (higher to lower)
+at the current position of the UAV.
+The problem we consider is a single multi-rotor UAV
+exploring a 2D target space (environment) Esin search
+of static targets, as shown in Fig. 2. The UAV is assumed
+to localize itself within the environment with sufficient
+accuracy. The robot seeks to locate the set XkofNk
+stationary targets at positions xik∈Es, where kdenotes
+the discrete time step. Both the cardinality ( |Xk|=Nk)
+and the locations of the targets are unknown to UAV. In
+general, the number of targets varies with k, but here we
+will take it constant; nevertheless, the estimated number
+of targets still varies due to the motion of the UAV causing
+targets to appear in the sensor field of view (FOV). The
+pose of the UAV is denoted by qk+1∈ ℜnqand consists
+of the UAV’s current position, orientation, and velocity.
+Notation nqis the dimension of the UAV state. The
+nonlinear UAV dynamics are:
+qk+1=℘(qk, uk) (1)where uk∈ U ⊆ ℜnuis the control input. Notation Uis
+the input domain, nuis the dimension of the input space,
+and the sampling period is ∆.
+The objective is to find the position of all the targets in
+a small number of steps. To define the framework more
+explicitly, we discuss the RFS formulation in Section 2.1,
+and present our specific sensor model in Section 2.2.
+2.1 Random Finite Set Model
+In multi-target search, the states and observations are two
+collections of individual targets and measurements. Let
+Xk={x1k, x2k, ...., x Nkk} ⊂ Esdenote the realization
+of the RFS (Vo et al., 2005) target state at time step
+k. The UAV receives a set of Mkmeasurements at step
+kasZk={z1k, z2k, ...., z Mkk} ⊂ Eo. The multi-target
+state and measurement are characterized by RFS Ξ k, Σk
+respectively:
+Ξk=sk(Xk−1)∪Γk
+Σk=Θk(Xk)(2)
+Overall, Ξ kencapsulates the multi-target evolution, where
+sk(Xk−1) denotes the surviving targets at time step k
+depending on the previous set of targets Xk−1, and Γ k
+defines the target birth term. We consider target birth
+since even though all targets are present from the start
+in reality, they appear gradually in the sensor field of
+view. Σ kencloses the sensor characteristics consisting of
+measurements Θ k(Xk) generated by a set of targets Xk,
+which are affected by noise and a probabilistic sensor field
+of view that leads to missed detections, see Section 2.2.
+2.2 Sensor Model
+Here, we describe the sensor model specific for our problem
+using the RFS framework. Consider a robot equipped
+with a sensor that is capable to detect targets depending
+on the FOV, as in Fig. 2. The probability of the robot
+with pose qof detecting a target at position xis given
+byπd(x, q) =Ge−∥ζ∥/2, where G≤1 is a constant and
+ζ= (Xx−Xq
+FX,Yx−Yq
+FY) is the normalized distance of the
+target from the UAV. In ζ, (Xx,Yx) denotes the target
+position, ( Xq,Yq) defines the UAV position, and ( FX,FY)
+defines the height and width of the sensor field of view.
+Whether the target xikis detected or not is decided using
+a Bernoulli distribution, bik∼ß(πd(xik, qk)). Then Zkis
+defined as:
+Zk=[
+i∈{1,...,N k}s.t. bik=1
+dik
+θik
++ϱik
+(3)
+dik=q
+(Xxik− Xqk)2+ (Yxik− Yqk)2
+θik=arctanYxik− Yqk
+Xxik− Xqk
+where ϱik∼ N(.,0, R) is Gaussian noise with mean 0=
+[0,0]⊤and covariance R, taken as a diagonal matrix where
+every diagonal element is σ2; (Xxik,Yxik) is the position of
+target iin the space Es; and dik, θikare the distance and
+bearing of target irelative to the UAV position.
+3. SMC BASED PHD FRAMEWORK
+This section summarizes the Sequential Monte Carlo
+(SMC) based Probability Hypothesis Density (PHD) fil-
+tering framework. We start with discussing the intensity
+function in Section 3.1, followed by the PHD prediction
+and update operations on RFS in Section 3.2. The Se-
+quential Monte Carlo-based approximation is defined in
+Sections 3.3. Resizing and resampling the set of particles
+are discussed in Section 3.4.
+3.1 Intensity Function
+The Probability Hypothesis Density (PHD) is a function
+defined over the target space with the property that its
+integral over any region Sis the expected number of
+targets in that region. To define it formally, consider first
+a given set of targets X. A subset S⊆Escontains a
+number of targets NX(S) =P
+x∈X1S(x) =|X∩S|. The
+RFS Ξ, of which one realization is X, is similarly defined
+by the random counting measure NΞ(S) =|Ξ∩S|. The
+intensity measure VΞis defined as:
+VΞ(S)≡E[NΞ(S)]
+for each S⊆Es.VΞthus gives the expected number of
+elements of Ξ in S. The intensity function DΞis defined
+as:
+DΞ=dVΞ
+dλ(4)
+where λis the Lebesgue measure (Goodman et al., 1997).
+The intensity function is similar to a probability density
+function, with the key difference that its integral over the
+entire domain is not 1, but the number of targets. An
+example of the intensity measure is given in Fig. 3, where
+the sets Sare the squares and the shades of gray are the
+values VΞfor each S.
+3.2 PHD Filter
+The overall PHD filter (Vo et al., 2005) is summarized as:
+Dk|k−1= Φ k|k−1Dk−1|k−1
+Dk|k= Ψ kDk|k−1(5)
+Here Dk|k−1is the prior and Dk|kdenote the posterior.
+The PHD filter includes a prediction step Φ k|k−1that
+propagates the intensity function and an update step Ψ k.
+LetDk−1|k−1represent the intensity function correspond-
+ing to the multi-target prior at time step k−1, for k≥1
+The PHD prior Dk|k−1is defined by:.
+Dk|k−1= (Φ k|k−1Dk−1|k−1)(xk) =
+Υk(xk) +Z
+EsOk|k−1(xk, ξ)Dk−1|k−1(ξ)dξ(6)
+where Ok|k−1(xk, ξ) is the translation function, defining
+the new position of the target, and Υ k(xk) denotes the
+intensity function of the spontaneous birth chosen here as
+a constant. In our specific problem, targets are station-
+ary. The target translation function Ok|k−1can then be
+written:
+Ok|k−1(xk, ξ) =ps(ξ)fk|k−1(xk|ξ)
+where ps(ξ) is the probability that the target still exists
+at time step kgiven that it had previous location ξ, and
+fk|k−1(·|ξ) is the transition density of an individual target.
+The transition density of static targets is:
+fk|k−1(xk|ξ) =δξ(xk)
+with δξ(xk) the Dirac delta centered in xk.
+Fig. 3. Particle representation and illustration of the
+corresponding intensity measure. The red circles show
+the particles, and the shades of grid squares define the
+expected number of targets present in each square,
+equal to the sum of the weights of the particles in
+that square.
+Now, to compute the posterior intensity function Dk|kat
+stepk, we apply the PHD posterior operator Ψ k(x) on the
+intensity function Dk|k−1:
+Dk|k= (Ψ kDk|k−1)(xk) ="
+¯πdk(xk) +X
+z∈Zkψkz(xk)
+ψkz, Dk|k−1
+(xk)#
+·Dk|k−1(xk)(7)
+where ¯ πdk(xk) is the probability of non-detection, and
+ψkz(x) denotes the probability density function of detect-
+ing a target. We have:
+¯πdk(xk) =1−πd(xk, qk)
+ψkz(xk) =πd(xk, qk)g(zk|xk)
+
+ψkz, Dk|k−1
+=Z
+Esψkz(xk)Dk|k−1(xk)dxk(8)
+The target measurement density g(zk|xk) is defined as:
+g(zk|xk) =N(zk, h(xk), R)
+where g(zk|xk) is a Gaussian density function with covari-
+ance Rcentered on h(xk) = [dik, θik]Tfrom (3).
+3.3 SMC-PHD Filter
+At time step k−1, consider the intensity function
+Dk−1|k−1, represented in terms of particles ˆDk−1|k−1(xk−1)
+=PLk−1
+i=1ω(i)
+k−1δx(i)
+k−1(xk−1). This representation reduces
+the computational complexity of the filter updates. Note
+that E
+|Ξk∩S|Z1:k
+≈PLk
+j=11s(x(i)
+k)ω(j)
+k: the expected
+number of targets in a set Sis equal to the sum of the
+weights of the particles in that set, see again Fig. 3.
+Substituting ˆDk−1|k−1in equation (6), one gets
+(Φk|k−1ˆDk−1|k−1)(xk) =
+Lk−1X
+i=1ω(i)
+k−1Ok|k−1(xk, x(i)
+k−1) + Υ k(xk)(9)
+A particle approximation of Φ k|k−1ˆDk−1|k−1can be de-
+rived by applying importance sampling to each of its
+terms. Define the importance (or proposal) densities
+˜pk(·|Zk),and ˜ qk(·|xk−1, Zk). In our specific framework
+for static target tracking and detection, we take the
+proposal density for target birth to be ˜ pk(xk|Zk)∼
+N(xk, µ(Zk), R(Zk)) which is a Gaussian defined by the
+empirical mean µ(Zk) =1
+|Zk|P
+z∈Zkh−1(z) and co-
+variance R(Zk) =1
+|Zk|P
+z∈Zk[h−1(z)−µ(Zk)][h−1(z)−
+µ(Zk)]⊤of the set of observations Zk. To calculate the
+empirical mean and covariance, as the targets are in
+Cartesian space, we convert the measurement set Zkfrom
+polar to Cartesian coordinates by applying h−1(Zk). The
+transition proposal density in the static target scenario can
+be written as:
+˜qk(xk|x(i)
+k−1, Zk) =δx(i)
+k−1(xk).
+Equation (9) is then reformulated as:
+(Φk|k−1ˆDk−1|k−1)(xk) =Lk−1X
+i=1ω(i)
+k−1Ok|k−1(xk, x(i)
+k−1)
+˜qk(xk|x(i)
+k−1, Zk)·
+˜qk(xk|x(i)
+k−1, Zk) +Υk(xk)
+˜pk(xk|Zk)˜pk(xk|Zk)
+(10)
+Thus, the Monte-Carlo approximation is obtained as:
+(ˆΦk|k−1ˆDk−1|k−1)(xk)≡Lk−1+JkX
+i=1ω(i)
+k|k−1δx(i)
+k(xk) (11)
+where Lk−1is the number of existing particles and Jkis the
+number of new particles arising from the birth process. We
+denote Lk≡Lk−1+Jk. The required particles are drawn
+according to (Vo et al., 2005):
+x(i)
+k∼
+˜qk(·|x(i)
+k−1, Zk)i= 1, . . . , L k−1
+˜pk(·|Zk) i=Lk−1+ 1, . . . , L k
+The weights of the particles are computed as (Vo et al.,
+2005):
+ω(i)
+k|k−1=
+
+Ok|k−1(x(i)
+k, x(i)
+k−1)ω(i)
+k−1
+˜qk(x(i)
+k|x(i)
+k−1, Zk)i= 1, . . . , L k−1
+Υk(x(i)
+k)
+Jk·˜pk(x(i)
+k|Zk)i=Lk−1+ 1, . . . , L k
+Next we discuss the update step. The prior step yielded
+a function Dk|k−1represented by ( ω(i)
+k|k−1, x(i)
+k)Lk
+i=1. The
+update operator ˆΨkthen maps this function into one with
+particle representation ( w(i)
+k, x(i)
+k)Lk
+i=1:
+ˆDk|k(x) = ( ˆΨkˆDk|k−1)(x) =LkX
+i=1ω(i)
+kδx(i)
+k(x)
+by modifying the weights of the particles as follows:
+ω(i)
+k="
+¯πdk(x(i)
+k) +X
+z∈Zkψkz(x(i)
+k)
+Ck(z)#
+ω(i)
+k|k−1
+Ck(z) =LkX
+j=1ψkz(x(j)
+k)ω(j)
+k|k−1(12)
+Equation (12) is a particle-based representation of (7).
+3.4 Adapting Particle Numbers and Resampling Particles
+At any time step k≥1 let ˆDk|k=n
+ω(i)
+k, x(i)
+koLk
+i=1denote a particle approximation of Dk|k, where Lkis the
+particle count at k. The algorithm is designed such that
+the concentration of particles in a given region of the
+target space, say S, represents the approximated number
+of targets in S. At times there may be too few or toomany particles for a set of targets, depending on the sensor
+measurements. It would be more efficient to adapt the
+allocation, say lparticles per target at each time step k
+where lis a tunable parameter. Since the expected number
+of targets Nk|kis
+ˆNk|k=LkX
+j=1ω(j)
+k(13)
+it is natural to have the new number of particles L+
+k=
+lˆNk|k. Note that in this section, we use notations with
+superscript ‘+’ for the particle count and weights after
+resampling; to keep notation manageable, in all other sec-
+tions we simply use Lk,ω(i)
+k, leaving resampling implicit.
+In most scenarios, the variance of the weights increases
+with time. The basic solution of this problem is to resample
+the particles, eliminating particles having low weights and
+multiplying particles with high weights to focus attention
+on the important zones. This can be accomplished by
+importance resampling L+
+kparticles fromn
+ω(i)
+k, x(i)
+koLk
+i=1
+and redistributing the total mass ˆNk|kamong the L+
+kresampled particles. We resample the new particles by
+randomly drawing them from the old set of particles
+with probabilities ai=ω(i)
+kPLk
+j=1ω(j)
+k. Then, the new weights
+n
+ω+(i)
+koL+
+k
+i=1are not normalized to 1 (as in standard particle
+filtering) but must sum up to ˆNk|k=PLk
+i=1ω(i)
+k. Each new
+weight is thus ω+(i)
+k=ˆNk|k
+L+
+k.
+The PHD filter will be used by the planner in the following
+section to estimate target locations from measurements.
+4. PLANNER
+We now propose the planner algorithm to explore the
+environment so as to find and refine target positions. The
+planner integrates the filtering component from above. It
+works by making a greedy decision for the next UAV state
+q∗
+k+1with the following procedure:
+q∗
+k+1= argmaxqk+1∈Qk{I[xk+1; Λ] + α·ιk(xk+1)}(14)
+Note that xk+1denotes the position component of the next
+state qk+1. The set of candidate next states, Qk, should
+be reasonably small to limit computational complexity. In
+our case, the set has eight different position choices: right,
+left, top, bottom, forward, and the diagonals. In addition
+to the positions, we must define the desired angles, and
+those are always 0. The distance from the actual states k
+to the future states k+ 1 is set to 9 meters.
+The objective function have two components: target refine-
+mentTk(qk+1) and exploration E(qk+1), with αa tunable
+parameter that controls the tradeoff between the two com-
+ponents. The first, refinement component aims to better
+find the locations of the targets, and consists of the mutual
+information I[xk+1; Λ] between the next position and a bi-
+nary measurement event (Dames and Kumar, 2015). This
+event describes whether an empty measurement set Zkwill
+be received, based on the probability of detection: Λ = 0
+is the event that the robot receives no measurements, and
+Λ = 1 is the complement of this. The probabilities of these
+events are different for each position of the robot in Q. The
+procedure to compute the mutual information is shown
+in Dames and Kumar (2015).
+The second component of the objective, ιk(xk+1), is novel.
+It is an exploration function that drives the robot to
+cover the environment. The exploration component is
+initially set identically equal to 1, and at each step k
+should decrease at each xwith an amount equal to the
+probability of detection πd(x, qk). Thus, regions that were
+seen well have a low exploration bonus, while more poorly
+seen regions have ιvalues closer to 1. In practice, ιis
+implemented by interpolation on a grid xij. Each grid
+point is initialized to 1 and then decreased with the rule:
+ιk(xij) =ιk−1(xij)·(1−πd(xij, qk)) (15)
+Note that when all the targets seen so far have been
+marked as found, the motion is driven entirely by the
+exploration component (15), so the UAV performs a space-
+filling trajectory until new targets are seen
+Dames and Kumar (2015) only used the mutual infor-
+mation component, which would make the robot focus
+too much on already seen targets and would not explore
+enough. Moreover, to allow the robot to focus on refining
+poorly seen targets, we will remove targets about whose
+positions we are sure, similar to Vo et al. (2005); Beard
+et al. (2015); Vo et al. (2014); Charrow et al. (2014), but
+using a different technique. Specifically, we extract poten-
+tial targets as clusters of particles generated with K-means
+(Vo et al., 2005). The width Wiof each cluster of particles
+should be below threshold TW, and the sum of the weights
+ωjof the particles in the cluster should be above threshold
+Tm. If both conditions are satisfied, i.e. the cluster is very
+narrow and contains a high concentration of particles, we
+declare that cluster to be a found target. Each such target
+is added to a set ˆX, and then measurements which are
+likely to be generated by these targets are removed from
+the observation set. Specifically, if a measurement {zk}is
+closer than a threshold Tzto any previously found target
+ˆx, i.e.|h−1(zk)−ˆx| ≤ T z, then it is removed from Zk
+(note the transformation of zto Cartesian coordinates).
+Algorithm 1 summarizes the entire procedure.
+Algorithm 1: Procedure to apply at each step k
+generate set Qkof candidate next states
+update exploration component ιkusing (15)
+foreach qk+1∈Qkdo
+compute I[xk+1; Λ] and exploration ιk(xk+1)
+find best next state q∗
+k+1using (14)
+execute K-means clustering
+foreach cluster Cdo
+ifWi≤ TWandP
+j∈Cωj≥ Tmthen
+ˆX←ˆX∪ˆxi/* target found */
+forzk∈Zkdo
+forˆx∈ˆXdo
+if|h−1(zk)−ˆx| ≤ T zthen
+Zk=Zk\ {zk}/* remove meas. */
+run filter from Section 3 with measurements Zk
+execute path to qk+1using low-level controlTo bring the UAV to the desired next state qk+1, we design
+a tracking control for the UAV using its dynamical model.
+The control law is developed using backstepping. For the
+equation of the dynamical model, controller, and their
+parameters, the reader should refer to Sun et al. (2014). In
+our algorithm, in between discrete time steps kandk+ 1
+we use the continuous-time law to reach reference q∗
+k+1
+from the planner algorithm. An overall piecewise constant
+reference signal is obtained. The time required for the UAV
+to reach the desired future states q∗
+k+1from its current
+state qkis around 2 .6s.
+5. RESULTS
+To validate the efficiency of the proposed target localiza-
+tion algorithm, we ran two different simulated experiments
+using MATLAB. In the first experiment, we compared our
+proposed method with the standard lawnmower. Then,
+in a set of realistic environments obtained from a geo-
+graphical database, we evaluate the performance of the
+designed algorithm versus the lawnmower, and versus a
+method without exploration in (14), which therefore only
+uses mutual information, similarly to Dames and Kumar
+(2015). In this second experiment, targets represent litter
+and they are clustered at either high or low elevations (e.g.
+to model water carrying litter downhill). Note however
+that the target space and UAV motion remain in 2D,
+elevations are just used to decide where the targets are
+placed.
+In all experiments, the parameters required for the control
+law and UAV dynamic model law are those of Sun et al.
+(2014). The initial position of the UAV is set to [10 ,10],
+on the 2D environment Es= [−30,270]×[−30,270].
+The threshold values in Algorithm 1 are set as TW=
+0.5,Tm= 1, and Tz= 4. The parameters of the probability
+of detection πd(x, q) are: G= 0.98,FX= 15,FY= 15. The
+trajectory length kis chosen for each experiment so that
+all algorithms have a chance to detect all the targets.
+In the first experiment, we consider 18 targets distributed
+manually as 3 clusters of 6 targets shown in Fig. 4 (top).
+The trajectory length is 240 steps. The results in Fig. 4
+(top) show the lawnmower and our planner. It is seen in
+Fig. 4 (bottom) that the decision rule (14) leads the robot
+towards the targets quickly and therefore, the robot finds
+more targets earlier than the lawnmower.
+Finally, in the second experiment, we consider 14 targets in
+2 clusters in a realistic environment taken from a geograph-
+ical dataset (https://portal.opentopography.org). The di-
+mension of the entire map is [0 ,12000] ×[0,12000]. We
+extract 6 smaller 2D areas Es= [−30,250]×[−30,250]
+from the map to validate the performance of our method.
+The targets are generated manually in the lower and
+higher elevation between the mountains. This experiment
+runs for a trajectory length of 100 steps. Fig. 5 (top)
+shows the smaller extracted chunks of the map and target
+clusters. We run the experiment for each chunk shown in
+Fig. 5 (top) with the lawnmower, the mutual-information
+method of Dames and Kumar (2015) and our method,
+and we report in Fig. 5 (bottom) the number of targets
+detected over time, averaged across all the map chunks. It
+is clear that the performance of our proposed method is
+overall better than other algorithms.
+0 50 100 150 200 250
+X050100150200250Y
+Mutual Information + Exploration Lawnmower
+0 50 100 150 200 250
+Steps024681012141618# of TargetsMutual Information + Exploration
+LawnmowerFig. 4. Top: Trajectories of the UAV exploring the envi-
+ronment. The dashed line is the proposed algorithm
+and the solid line is for lawnmower. Bottom: Number
+of targets found over time
+0 10 20 30 40 50 60 70 80 90 100
+Steps02468101214# of TargetMutual Information
+Lawnmower
+Mutual Information + Exploration
+Fig. 5. Top: Geographical maps with litter at lower and
+upper elevations. Bottom: Comparison of detected
+number of targets over time between the proposed
+algorithm, lawnmower, and the mutual information
+method of Dames and Kumar (2015)
+6. CONCLUSION
+In this paper, we addressed the problem of finding an
+unknown number of static targets using a UAV in a
+2D environment. The proposed method is composed of
+a multi-target SMC-PHD estimator, a backstepping non-
+linear control algorithm, and planner based on mutual
+information and exploration. The algorithm works well
+both for uniformly distributed targets and sparse target
+clusters. In the future, we will extend this approach to
+explore a 3D environment. Another possibility is to add
+more, possibly heterogeneous agents.REFERENCES
+Beard, W., Vo, B.T., and Vo, B.N. (2015). Bayesian
+multi-target tracking with merged measurements using
+labelled random finite sets. IEEE Transactions on
+Signal Processing , 63(6), 1433–1447.
+Charrow, B., Michael, N., and Kumar, V.R. (2014). Active
+control strategies for discovering and localizing devices
+with range-only sensors. Algorithmic Foundations of
+Robotics , 107, 51–71.
+Chen, J., Xie, Z., and Dames, P. (2003). The semantic
+PHD filter for multi-class target tracking: From theory
+to practice. Robotics and Autonomous Systems , 149, 1–
+14.
+Dames, P. and Kumar, V. (2015). Autonomous localiza-
+tion of an unknown number of targets without data
+association using teams of mobile sensors. IEEE Trans-
+action on Automation Science and Engineering , 12(2),
+850–864.
+Dames, P., Tokekar, P., and Kumar, V. (2017). Detecting,
+localizing, and tracking an unknown number of moving
+targets using a team of mobile robots. The International
+Journal of Robotics Research , 36, 1540–1553.
+Dames, P. (2020). Distributed multi-target search and
+tracking using the PHD Bayse filter. Autonomous
+Robots , 44, 673–689.
+Goodman, I., Mahler, R., and Nguyen, H.T. (1997). Math-
+ematics of Data Fusion . Mathematical and Statistical
+Methods. Kluwer Academic Publishers, Boston.
+Hauschild, M. and Pelik´ an, M. (2011). An introduction
+and survey of estimation of distribution algorithms.
+Swarm and Evolutionary Computation , 1(3), 111–128.
+Mahler, R. (2010). Multitarget Bayes filtering via first-
+order multitarget moments. IEEE Transactions on
+Aerospace and Electronic Systems , 39(4), 1152–1178.
+Stoyan, D., Mecke, J., and Kendall, W. (1995). Stochastic
+Geometry and its Application . Probability and Statis-
+tics. Wiley, NewYork.
+Sun, L., Beard, R.W., and Pack, D. (2014). Trajectory-
+tracking control law design for unmanned aerial vehicles
+with an autopilot in the loop. In Proceedings Amer-
+ican Control Conference,(ACC-14) , 1390–1395. Port-
+land,USA.
+Vo, B.N., Beard, W., and Mahler, R. (2006). The Gaussian
+mixture probability hypothesis density filter. IEEE
+Transactions on Signal Processing , 54(11), 4091–4104.
+Vo, B.N., Mallick, M., Bar-shalom, Y., Coraluppi, S., III,
+R.O., Mahler, R., and Vo, B.T. (2015). Multitarget
+tracking. In Wiley Encyclopedia of Electrical and Elec-
+tronics Engineering .
+Vo, B.N., S.Singh, and Doucet, A. (2005). Sequential
+Monte Carlo methods for multitarget filtering with
+random finite sets. IEEE Transactions on Aerospace
+and Electronic Systems , 41(4), 1224–1245.
+Vo, B.N., Vo, B.T., and Phung, D. (2014). Labeled random
+finite sets and the Bayes multi-target tracking filter.
+IEEE Transactions on Signal Processing , 6(24), 6554–
+6567.
+Xu, Z., Fitch, R., Underwood, J., and Sukkarieh, S.
+(2013). Decentralized coordinated tracking with mixed
+discrete–continuous decisions. Journal of Field Robotics ,
+30, 717–740.

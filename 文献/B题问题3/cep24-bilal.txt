@@ -1,0 +1,1898 @@
+Contents lists available at ScienceDirect
+Control Engineering Practice
+journal homepage: www.elsevier.com/locate/conengprac
+Multi-agent active multi-target search with intermittent measurements✩
+Bilal Yousuf∗,1, Radu Herzal , Zsófia Lendek , Lucian Buşoniu∗,1
+Technical University of Cluj-Napoca, Memorandumului 28, Cluj-Napoca, 400114, Cluj, Romania
+A R T I C L E I N F O
+Keywords:
+Multi-target search
+Active sensing
+Multi-agent systems
+Event-triggered measurements
+Parrot Mambo minidrone
+TurtleBotA B S T R A C T
+Consider a multi-agent system that must find an unknown number of static targets at unknown locations
+as quickly as possible. To estimate the number and positions of targets from noisy and sometimes missing
+measurements, we use a customized particle-based probability hypothesis density filter. Novel methods are
+introduced that select waypoints for the agents in a decoupled manner from taking measurements, which allows
+optimizing over waypoints arbitrarily far in the environment while taking as many measurements as necessary
+along the way. Optimization involves control cost, target refinement, and exploration of the environment.
+Measurements are taken either periodically, or only when they are expected to improve target detection, in an
+event-triggered manner. All this is done in 2D and 3D environments, for a single agent as well as for multiple
+homogeneous or heterogeneous agents, leading to a comprehensive framework for (Multi-Agent) Active target
+Search with Intermittent measurements – (MA)ASI. In simulations and real-life experiments involving a Parrot
+Mambo drone and a TurtleBot3 ground robot, the novel framework works better than baselines including
+lawnmowers, mutual-information-based methods, active search methods, and our earlier exploration-based
+techniques.
+1. Introduction
+The search for multiple targets by mobile robots is essential in many
+applications, such as victim search and rescue ( Berger & Lo , 2015 ;
+Cooper , 2020 ; Pallin, Rashid, & Ögren , 2021 ), surveillance ( Papaioan-
+nou, Kolios, Theocharides, Panayiotou, & Polycarpou , 2021 ), and ex-
+ploration of unknown environments ( Aguilar, Bravo, Ruiz, Murrieta-
+Cid, & Chavez , 2019 ; Olcay, Bodeit, & Lohmann , 2020 ; Xu, Yang,
+Meng, Cai, & Fu , 2019 ). Here, we are motivated by the Horizon Europe
+SeaClear2.0 project ( https://www.seaclear2.eu/ ), in which a team of
+underwater, sea surface, and aerial robots must find targets consist-
+ing of ocean litter items. We therefore consider a multi-agent system
+(MAS) that explores a 3D or 2D environment to find an unknown
+number of static targets at unknown locations as quickly as possible.
+Each agent’s sensor probabilistically detects targets depending on their
+position relative to the agent and only provides noisy measurements for
+those targets that are detected. A particle-based Probability Hypothesis
+Density (PHD) filter ( Liu, Ji, Zhang, & Liao , 2020 ; Vo, Singh, & Doucet ,
+2005 ) maintains estimated target positions in the form of an intensity
+✩This work was been financially supported by SeaClear2.0, a project co-funded by the European Climate, Infrastructure and Environment Executive Agency
+(CINEA) under grant agreement no. 101093822; and by project DECIDE, no. 57/14.11.2022 funded under the PNRR I8 scheme by the Romanian Ministry of
+Research, Innovation, and Digitisation.
+∗Corresponding author.
+E-mail addresses: bilal.yousuf@aut.utcluj.ro (B. Yousuf), radu@student.utcluj.ro (R. Herzal), zsofia.lendek@aut.utcluj.ro (Zs. Lendek),
+lucian.busoniu@aut.utcluj.ro (L. Buşoniu).
+1The first and last authors are joint main authors with equal contribution.function, a generalization of the probability density that integrates to
+the expected number of targets ( Dames , 2020 ).
+Many ways have been proposed to identify a known or unknown
+number of dynamic or static targets from measurements taken by mo-
+bile agents, in robotics ( Bircher, Kamel, Alexis, Oleynikova, & Siegwart ,
+2018 ; Dang, Khattak, Mascarich, & Alexis , 2019 ; Ivić, 2022 ; Juliá,
+Gil, & Reinoso , 2012 ; Murillo, Sánchez, Genzelis, & Giovanini , 2018 ;
+Trenev, Tkachenko, & Kustov , 2021 ; Wang, Su, Zhu, & Shen , 2010 ;
+Yan, Di, Jiang, Jiang, & Fan , 2019 ; Zhou, Chen, He, & Bian , 2021 ),
+control ( Dames, Tokekar, & Kumar , 2017 ; Kim, 2021 ; Lin & Goodrich ,
+2014 ; Tyagi, Kumar, & Sujit , 2021 ), reinforcement learning ( Kim, Jang,
+& Kim , 2023 ; Li, Ren, & Li , 2024 ; Matzliach, Ben-Gal, & Kagan , 2022 ;
+Shen, Lei, Zhang, Li, Cai, & Zhang , 2023 ; Wang & Fang , 2023 ; Wang,
+Wei, Jiang, Zhao, Wang, & Qi , 2022 ; Xia, Luo, Liu, Zhang, Shi, &
+Liu, 2023 ; Xiao, Tan, Zhou, & Feroskhan , 2023 ; Zhang, Wang, Ge, &
+Huang , 2024 ; Zhou, Liu, Shi, Li, Ning, Liu, & Gao , 2023 ), multi-target
+filtering ( Chen & Dames , 2020 , 2022 ; Dames , 2020 ; Dames & Kumar ,
+2015 ; Kagan, Goren, & Ben-Gal , 2010 ), etc. MAS are often used ( Dames
+& Kumar , 2015 ; Dames et al. , 2017 ; Leonard & Zoubir , 2019 ; Liu et al. ,
+https://doi.org/10.1016/j.conengprac.2024.106094
+Received 29 January 2024; Received in revised form 5 September 2024; Accepted 9 September 2024Control  Engineering  Practice  153 (2024)  106094  
+Available  online  18 September  2024  
+0967-0661/©  2024  The Authors.  Published  by Elsevier  Ltd. This is an open access  article  under  the CC BY license  ( http://creativecommons.org/licenses/by/4.0/  ). 
+B. Yousuf et al.
+List of Notations
+Subscripts are used to specify the time step 𝑘and decision index
+𝑑, whereas superscript 𝑎indicates agent index and superscript 𝑤
+is the candidate waypoint index. Symbol ‘‘*’’ indicates optimal
+values. A tilde ‘‘ ̃’’ indicates a secondary/auxiliary notation. Left-
+superscript ‘‘ 2D’’ indicates the 2D special case of the framework.
+For sets, |⋅|denotes cardinality.
+Distributions
+𝛿𝜉 Dirac delta centered on 𝜉
+ Normal distribution
+ Bernoulli distribution
+Agent dynamics, targets and sensing
+𝑎,𝐴 Agent index, number of agents
+𝑓 Agent nonlinear dynamics
+𝑞,𝑛𝑞 Agent states, number of agent states
+̃ 𝑞 Agent position in Cartesian coordinates
+ℎ State feedback control law
+𝑢,𝑛𝑢 Agent control input, number of inputs
+𝑇𝑠 Control sampling period
+𝑘 Discrete time step
+𝐸 Environment
+𝑋 Set of targets
+𝑖,𝑁 Target index, total number of targets
+𝑥= (𝚇,𝚈,𝚉) Position of target in 3𝐷
+𝜋 Probability of detection
+𝙵 Size of probabilistic field of view
+𝑏 Binary target-detected event
+𝑧,𝑍 Measurement, set of measurements
+𝜚,𝑝 Gaussian measurement noise, Gaussian den-
+sity function
+𝑅,𝜎 Measurement covariance matrix, standard
+deviation
+𝛥 Measurement period
+𝑚,𝑘𝑚 Measurement index, time step of 𝑚th mea-
+surement
+𝑟,𝜃,𝜂 Range, heading angle, elevation angle
+Filtering
+𝐼 Intensity function
+𝛷,𝛹 Prediction mapping, update mapping
+𝛶 Intensity function of new targets
+𝑗 Particle index
+𝑥𝑗,𝜛𝑗Location, weight of particle 𝑗
+𝑟,𝑚,𝑧 Threshold value for cluster radius, cluster
+mass, measurement distance
+Planning
+𝑑,𝑘𝑑 Decision index, time step of decision with
+index𝑑
+𝑜, Waypoint candidate, set of waypoint candi-
+dates
+𝑤,𝑊 Candidate waypoint index, total number of
+candidate waypoints
+𝐾 Length of trajectory to a waypoint
+2020; Shirsat & Berman, 2021; Wang & Fang, 2023; Zheng, Galland,
+Tu, Yang, Lombard, & Gaud, 2020; Zhou, Tzoumas, Pappas, & Tokekar,𝐪,𝐮 Predicted state trajectory to a waypoint and
+corresponding input sequence
+𝑀 Number of measurements along a predicted
+trajectory
+C,T,E Control, target refinement, and exploration
+components of the objective function
+𝑐,𝐶 Index of a cluster, total number of clusters
+𝜈 Center of a cluster
+𝑒,̂ 𝑒 Real exploration function, predicted explo-
+ration function
+𝑙, Grid point index, set of grid point indices to
+represent𝑒
+𝛿 Threshold for triggering a measurement
+Multi-agent sensing and planning
+𝑘 Set of indices of agents that measure at step
+𝑘
+𝑘 Set of indices of agents that plan at step 𝑘
+𝐰 Joint waypoint candidate index for all
+planning agents
+𝐽 Objective function
+2019). Among all these fields, we focus here on (single and multi-agent)
+multi-target filtering, because it accommodates
+all the sources of uncertainty in our setting. Approaches in other
+fields use different models of uncertainty (e.g. joint uncertainty on the
+robot pose and map, versus our case of an unknown number of targets
+at unknown locations that are unreliably and noisily detected); and
+different representations, like occupancy maps, which are less suited
+to our setting than intensity functions. For instance, targets clustered
+in a single cell of an occupancy map will not be identified properly,
+and if the number of targets is not very large, an occupancy grid may
+be inefficient.
+In multi-target filtering, most methods use variants of mutual infor-
+mation (MI) to evaluate potential waypoints of the agents, e.g. Dames
+(2020), Dames and Kumar (2015), Dames et al. (2017). MI measures
+the amount of information between agent trajectories and the event
+of not seeing any targets, so maximizing MI increases the chances of
+seeing previously observed targets. A key shortcoming of such meth-
+ods is that exploration of the environment to find new targets is
+– to our best knowledge – not explicitly considered. Instead, some
+methods include a search component for an unknown-target intensity
+function (Chen, Chai, & Yi, 2022; Rost, Axehill, & Hendeby, 2021;
+Sung & Tokekar, 2022), which can be viewed as an indirect form of
+exploration. While methods from other fields do explore or aim to map
+the entire environment (Bircher et al., 2018; Dang et al., 2019; Juliá
+et al., 2012; Murillo et al., 2018; Shan, Yang, Liu, & Liu, 2023; Tindall,
+Mair, & Nguyen, 2023; Wang et al., 2010, 2022; Yan et al., 2019; Zhou
+et al., 2023), they are unsuitable for our context as explained above.
+In our previous works, we already showed that incorporating an
+explicit exploration objective in the optimization problem solved by
+the agents to choose waypoints works better than relying only on MI,
+both for a single agent in 2D (Yousuf, Lendek, & Buşoniu, 2022) or
+3D (Yousuf, Lendek, & Buşoniu, 2024), as well as for MAS (Yousuf,
+Lendek, & Buşoniu, 2023). To our knowledge, these methods were the
+first to combine multi-target filtering with exploration. However, they
+all take one measurement per agent waypoint. Here, we propose a set
+of methods with the key novelty that waypoint selection and control for
+navigation are decoupled from taking measurements . Since measurements
+are not taken at each control step (but several measurements are taken
+along the trajectory to the next waypoint) we call this framework
+intermittent-measurement . Its key advantage is that it allows compu-
+tationally feasible optimization over waypoints arbitrarily far in theControl  Engineering  Practice  153 (2024)  106094  
+2 
+B. Yousuf et al.
+environment,2while taking as many measurements as desired along
+the way, and taking control costs into account. Measurements are
+taken either periodically, or only when they are expected to improve
+target detection, in an event-triggered version that aims to reduce the
+computational cost of running posterior updates without losing search
+performance. All this is done in both 2D and 3D environments, for
+a single agent as well as for multiple homogeneous or heterogeneous
+agents, leading to a comprehensive framework for (Multi-Agent) Active
+target Search with Intermittent measurements – (MA)ASI. In the multi-
+agent case, agents can choose waypoints and take measurements fully
+asynchronously.
+To better explain, consider first a single agent, i.e. ASI. The agent’s
+path is chosen by repeatedly picking future waypoints from a set of
+candidates placed anywhere in the environment. For each candidate,
+a trajectory is generated by a low-level controller, with a length that
+depends on the candidate, and the best candidate is picked by solving
+an optimization problem with three components: control cost, target
+refinement, and exploration. The control component reduces the con-
+trol effort required to reach the waypoint. Target refinement focuses on
+better pinpointing the locations of targets about which measurements
+were previously received, and is computed by summing up probabilities
+of detection at estimated target locations. The exploration component
+encourages moving towards new, unseen regions and is computed via
+an exploration function that is initially large across the whole environ-
+ment, and then decreases in observed regions. The planner considers
+that measurements are taken at a constant multiple of the control
+sampling period, but during execution, the method allows skipping
+measurements when they are not expected to refine old targets nor
+discover new ones, leading to an event-triggered version of ASI.
+In the multi-agent case, MAASI repeatedly solves a joint problem
+in which several agents optimize their waypoints at once, using a
+multi-agent extension of the three-component objective above. In this
+extension, agents coordinate in two ways. First, a common intensity
+function is maintained using iterative-corrector PHD filtering (Liu et al.,
+2020). Secondly, during optimization, the agents’ exploration objec-
+tives are coupled, so each agent understands the regions that other
+agents will explore, and the team does not needlessly cluster in one
+region. A nontrivial extra challenge in MAASI is that agent trajectories
+are varying in length and sensor frequencies are different, so arbitrary
+subsets of agents may plan or measure at any given time step. Mecha-
+nisms are designed to cope with this, and an event-triggered version of
+MAASI is also provided.
+We evaluate the new methods ASI and MAASI in extensive sim-
+ulations as well as in real-life single- and multi-robot experiments.
+First, we pitch ASI against four single-agent baselines: a predefined
+lawnmower pattern (Otte, Kuhlman, & Sofge, 2018), and three active-
+search methods representative of the multi-target filtering field: an
+MI-only method without any exploration, adapted from Dames and
+Kumar (2015), a method with an unknown-target search component,
+adapted from Sung and Tokekar (2022), and our earlier exploration-
+based techniques (Yousuf et al., 2023), which take measurements only
+at waypoints, and which we therefore call AS. In simulations, ASI
+finds the targets faster (after fewer measurements) than the baselines,
+and since MI-only techniques do not explore, they miss some targets.
+Similarly, in the multiagent case, MAASI is better than multiagent
+versions of the lawnmower and of the method adapted from Sung
+and Tokekar (2022), as well as MAAS. Event-triggered measurements
+perform similarly in terms of target detections, while the number of
+measurements is reduced, for both single and multiple agents.
+The real-life single-agent experiment involves a Parrot Mambo
+minidrone exploring at a constant altitude to find targets on the
+2The method of Dames and Kumar (2015) is closest to this idea, but there
+the distance between measurements ‘‘dilates’’ with the length of the planned
+trajectory, so measurements are not really decoupled from control. In addition,
+that method is MI-only.floor using the camera. The results confirm that ASI improves over
+AS and lawnmower search. The multi-agent experiment additionally
+involves a TurtleBot3 ground robot, which is slower than the drone
+and has a narrower field of view, but a lower-variance sensor. This
+setup is notable for two reasons: it illustrates how the framework
+handles heterogeneous agents, and it approximates the field scenario of
+SeaClear2.0, where a fast drone with a wide field of view senses poorly
+underwater using the camera, whereas a slower underwater robot sees
+targets more accurately with a sonar that has a relatively narrow field
+of view. As in the single-agent case, MAASI is better than MAAS and a
+multi-agent lawnmower.
+Summarizing, the key contributions of our paper are:
+•A set of active target search methods in which the timescales of se-
+lecting waypoints, performing control for navigation, and taking
+measurements are decoupled, allowing for efficient optimiza-
+tion over waypoints placed anywhere in the environment. Mea-
+surements are taken either periodically or in an event-triggered
+manner, only when they are expected to improve target detection.
+•The methods are developed for both single agents and multi-
+ple homogeneous or heterogeneous agents, leading overall to a
+comprehensive framework for multi-agent active target search.
+•Different from existing multi-target filtering works of other au-
+thors, and similar to our earlier work, the methods include an
+explicit exploration objective.
+•In detailed simulation results, we demonstrate improvements
+compared to four baselines including a lawnmower, two active
+search methods from the literature, and our earlier exploration-
+based methods.
+•In real indoor experiments, a Parrot Mambo drone and (for the
+multi-agent case) a TurtleBot3 ground robot search for targets
+located on the floor. Real-life improvements are shown compared
+to lawnmowers and our earlier exploration-based method.
+Next, Section 2 formulates the problem directly in the 3D multi-
+agent case, pointing out how it specializes to 2D and one agent.
+Background on PHD filtering is provided in Section 3, separately for
+one agent (Vo et al., 2005) and several (Liu et al., 2020). The filtering
+framework is heavily customized for our purposes. Next, to make things
+easier to follow, we fully present the single-agent case, starting with the
+methods in Section 4, and followed by simulations and real-experiment
+results in separate subsections of Section 5. Mirroring this structure, we
+move to the multi-agent case, with the method in Section 6 and results
+in Section 7. Section 8 concludes the paper.
+2. Problem formulation
+Consider a number 𝐴of agents that explore a compact 2D or 3𝐷
+space (environment) 𝐸in search of an unknown number of static tar-
+gets, as illustrated in Fig. 1. The main objective is to find the positions
+of all the targets in as few steps as possible. We will mathematically
+formulate an optimization problem in Section 4, see (17) there. The
+dynamics of each agent are:
+𝑞𝑎
+𝑘+1=𝑓𝑎(𝑞𝑎
+𝑘,𝑢𝑎
+𝑘) (1)
+with𝑘being the discrete time step and 𝑎= 1,2,…,𝐴the index of the
+agent. The agent index will be dropped later on for the single-agent
+case. The state 𝑞𝑎
+𝑘∈ℜ𝑛𝑎
+𝑞, where𝑛𝑎
+𝑞is the dimension of the state of agent
+𝑎, contains the position – denoted by ̃ 𝑞𝑎
+𝑘– and will typically also include
+orientation, linear, and angular velocities. The input is 𝑢𝑎
+𝑘∈ℜ𝑛𝑎
+𝑢, and
+is applied with sampling period 𝑇𝑠. The control law can be, e.g., a state
+feedback:
+𝑢𝑎
+𝑘=ℎ𝑎(𝑞𝑎
+𝑘) (2)
+but this is just an example, and in general other controllers may be
+used. It is assumed that the agents’ state is known accurately enoughControl  Engineering  Practice  153 (2024)  106094  
+3 
+B. Yousuf et al.
+Fig. 1. Environments with 12 targets and 2 agents. Top: 3D. Bottom: 2D, where the
+color shows the probability of detection of each agent at their current position, orange
+to blue meaning higher to lower probability. (For interpretation of the usage of color
+in this and subsequent figures, the reader is referred to the web version of this article.).
+not to require an explicit treatment of state uncertainty, and that for
+any𝜖 > 0the controller is able to take the agent 𝜖-close to any
+position in 𝐸in a finite number of steps. The accurate-state assumption
+is justified by the fact that robot pose sensors (e.g. differential GPS,
+inertial measurement units) are generally significantly more accurate
+than sensors for target detection (e.g. 2D or 3D cameras). This as-
+sumption is generally made – although not always explicitly stated –
+in target search and tracking applications, see e.g. Dames (2020 ), Kim
+(2021 ), Kim et al. (2023 ), Papaioannou et al. (2021 ), Zhou et al. (2019 ).
+The controllability assumption is mild: since classic state-feedback con-
+trollers usually ensure exponential (not just asymptotic) convergence,
+it is easily satisfied. Furthermore, recent finite-time, fixed-time, and
+prescribed-performance control methods provide even stronger conver-
+gence guarantees, see e.g. Chung, Giri, and Son (2019 ), Gu, Sun, and
+Chen (2021 ), Pandey, Kamal, and Ghosh (2024 ), Shoufeng, Yingnan,
+Liang, and Lei (2024 ), Sun, Zhu, and Li (2024 ).
+In the environment 𝐸there are𝑁stationary targets, and each target
+𝑖is located at coordinates 𝑥𝑖= (𝚇𝑖,𝚈𝑖,𝚉𝑖) ∈𝐸,𝑖= 1,2,…,𝑁. The set
+of targets is denoted by 𝑋. Both the cardinality 𝑁and the locations of
+the targets are initially unknown.
+We use a Random Finite Set (RFS) framework ( Chen & Dames ,
+2022 ; Dames , 2020 ; Dames & Kumar , 2015 ; Dames et al. , 2017 ; Lin
+& Goodrich , 2014 ; Shirsat & Berman , 2021 ; Vo et al. , 2005 ) to esti-
+mate target locations, as detailed in Yousuf et al. (2024 ). Agents are
+equipped with different sensors in general. At each step, agents receive
+noisy measurements about a subset of targets that are detected. The
+probability with which agent 𝑎at Cartesian coordinates ̃ 𝑞𝑎= [𝚇𝑎,𝚈𝑎,𝚉𝑎]
+detects a target at position 𝑥= [𝚇,𝚈,𝚉]is denoted by 𝜋𝑎(𝑥,𝑞𝑎). For
+instance, in most of our simulations, we consider an omnidirectionalranging sensor for which the probability of detection is defined as:
+𝜋𝑎(𝑥,𝑞𝑎) =𝐺𝑎𝑒−‖𝜁𝑎‖∕2(3)
+where scalar 𝐺𝑎≤1, and:
+𝜁𝑎=(
+𝚇−𝚇𝑎
+𝙵𝑎
+𝚇,𝚈−𝚈𝑎
+𝙵𝑎
+𝚈,𝚉−𝚉𝑎
+𝙵𝑎
+𝚉)
+(4)
+is the normalized distance between target 𝑥and agent 𝑎. In (4),
+(𝙵𝑎
+𝚇,𝙵𝑎
+𝚈,𝙵𝑎
+𝚉)are normalization constants that may be interpreted as the
+size of the (probabilistic) field of view (FOV) of agent 𝑎. This detection
+probability is used often in the field of target search, see e.g. Dames
+et al. (2017 ), Vo et al. (2005 ). If𝙵𝑎
+𝚇=𝙵𝑎
+𝚈=𝙵𝑎
+𝚉,𝜋𝑎is radially symmetric
+around the position of the agent 𝑎, as illustrated in Fig. 1 (bottom), for
+the2𝐷case. Our method works for a general form of 𝜋𝑎; for instance,
+in the experiments, a form of 𝜋𝑎different from (3) will be used.
+Define𝑘𝑎
+𝑚as the time step at which agent 𝑎takes the𝑚th mea-
+surement, where 𝑚≥0denotes the index of the measurement. We
+consider two settings. In the periodic setting, measurements are taken
+with a multiple 𝛥𝑎of the control sampling period 𝑇𝑠. For example,
+𝛥𝑎= 2 corresponds to 𝑘𝑎
+𝑚= 0,2,4,6 …. Measurement instants are
+illustrated in the graphical representation of our framework for Active
+target Search with Intermittent measurements (ASI) in Fig. 3, with
+red lines along the black and green trajectories. In the event-triggered
+setting, measurements are taken aperiodically, in a manner that will be
+explained in Section 4.
+Remark 1. Much of the framework presented in this section is stan-
+dard, except for the mechanism for taking intermittent measurements
+(only at steps 𝑘𝑎
+𝑚), which is needed for the planners later.
+The binary event 𝑏𝑎
+𝑖𝑘𝑎𝑚of agent𝑎with position ̃ 𝑞𝑎
+𝑘𝑎𝑚= (𝚇𝑎
+𝑘𝑎𝑚,𝚈𝑎
+𝑘𝑎𝑚,𝚉𝑎
+𝑘𝑎𝑚)
+at step𝑘𝑎
+𝑚(i.e. when taking the 𝑚th measurement) detecting a target at
+position𝑥𝑖follows a Bernoulli distribution given by the probability of
+detection,𝑏𝑎
+𝑖𝑘𝑎𝑚∼(𝜋𝑎(𝑥𝑖,𝑞𝑎
+𝑘𝑎𝑚)). Given Bernoulli variables 𝑏𝑎
+𝑖𝑘𝑎𝑚, together
+with the actual target positions 𝑥𝑖= (𝚇𝑖,𝚈𝑖,𝚉𝑖), the set of measurements
+𝑍𝑎
+𝑘𝑎𝑚is:
+𝑍𝑎
+𝑘𝑎𝑚=⋃
+𝑖∈{1,…,𝑁}s.t.𝑏𝑎
+𝑖𝑘𝑎𝑚=1𝑧𝑎
+𝑘𝑎𝑚(5)
+where𝑧𝑎
+𝑘𝑎𝑚=𝑔𝑎
+𝑘𝑎𝑚(𝑥𝑖) +𝜚𝑎
+𝑘𝑎𝑚, and𝑔𝑎
+𝑘𝑎𝑚(𝑥𝑖)is defined as:
+𝑔𝑎
+𝑘𝑎𝑚(𝑥𝑖) =[
+𝑟𝑎
+𝑖𝑘𝑎𝑚,𝜃𝑎
+𝑖𝑘𝑎𝑚,𝜂𝑎
+𝑖𝑘𝑎𝑚]𝑇
+(6)
+with
+𝑟𝑎
+𝑖𝑘𝑎𝑚=√
+(𝚇𝑖−𝚇𝑎
+𝑘𝑎𝑚)2+ (𝚈𝑖−𝚈𝑎
+𝑘𝑎𝑚)2+ (𝚉𝑖−𝚉𝑎
+𝑘𝑎𝑚)2 (7)
+𝜃𝑎
+𝑖𝑘𝑎𝑚= arctan𝚈𝑖−𝚈𝑎
+𝑘𝑎𝑚
+𝚇𝑖−𝚇𝑎
+𝑘𝑎𝑚(8)
+𝜂𝑎
+𝑖𝑘𝑎𝑚= arcsin𝚉𝑖−𝚉𝑎
+𝑘𝑎𝑚
+𝑟𝑎
+𝑖𝑘𝑎𝑚(9)
+Thus, for each target 𝑖detected, the measurement consists of the range
+𝑟𝑎
+𝑖𝑘𝑎𝑚, bearing angle 𝜃𝑎
+𝑖𝑘𝑎𝑚, and elevation angle 𝜂𝑎
+𝑖𝑘𝑎𝑚relative to the agent.
+This measurement is affected by Gaussian noise 𝜚𝑎
+𝑘𝑎𝑚∼(,𝟎,𝑅𝑎), with
+mean 𝟎= [0,0,0]⊤and diagonal covariance 𝑅𝑎= diag[(𝜎𝑎)2,(𝜎𝑎)2,(𝜎𝑎)2].
+Based on the measurement model, the target measurement density
+𝑝𝑎(𝑧𝑎|𝑥)is:
+𝑝𝑎(𝑧𝑎|𝑥) =(𝑧𝑎,𝑔𝑎
+𝑘𝑎𝑚(𝑥),𝑅𝑎) (10)
+i.e. a Gaussian density centered on 𝑔𝑎
+𝑘𝑎𝑚(𝑥)with covariance matrix 𝑅𝑎.
+This density will be used to estimate the target locations.
+For the special case of 2D space, the measurements in (5) become
+𝑧𝑎
+𝑘𝑎𝑚=2D𝑔𝑎
+𝑘𝑎𝑚(𝑥𝑖) +2D𝜚𝑎
+𝑘𝑎𝑚. Here2D𝑔𝑎
+𝑘𝑎𝑚(𝑥𝑖) =[
+𝑟𝑎
+𝑖𝑘𝑎𝑚,𝜃𝑎
+𝑖𝑘𝑎𝑚]𝑇
+contains only
+the Euclidean distance 𝑟𝑎
+𝑖𝑘𝑎𝑚and the bearing angle 𝜃𝑎
+𝑖𝑘𝑎𝑚, computed re-
+spectively as in (7) and (8) while imposing 𝚉𝑎=𝚉𝑖= 0. Moreover,
+2𝐷𝜚𝑎
+𝑘𝑎𝑚is a 2D Gaussian noise with mean [0,0]𝑇and covariance 𝑅𝑎=
+diag[(𝜎𝑎)2,(𝜎𝑎)2].Control  Engineering  Practice  153 (2024)  106094  
+4 
+B. Yousuf et al.
+Fig. 2. Illustration of an intensity function defined over 2D space.
+3. Background on the estimation framework
+This section summarizes the background on Probability Hypothesis
+Density (PHD) and Iterated-Corrector PHD (IC-PHD) filtering, adapted
+from Vo et al. (2005 ) and Liu et al. (2020 ). We start with the single-
+agent PHD filter in Section 3.1, followed by the multi-agent IC-PHD fil-
+ter in Section 3.2. Finally, in Section 3.3 we present methods for mark-
+ing well-defined targets as found and ignoring future measurements
+that may come from these targets.
+Remark 2. Compared to standard PHD and IC-PHD filtering, the
+framework is modified here to accommodate the intermittent mea-
+surements of Section 2, by running posterior updates only when mea-
+surements are taken. These modifications become nontrivial in the
+multiagent case, where an arbitrary (possibly empty) subset of agents
+may measure at each step.
+3.1. Single-agent PHD filter
+Since in this section we consider a single agent, we drop the agent
+index (superscript) 𝑎. Define first the intensity function 𝐼∶𝐸→
+[0,∞), which is similar to a probability density function, with the key
+difference that its integral ∫𝑆𝐼(𝑥)𝑑𝑥over some subset 𝑆 ⊆ 𝐸 is not
+the probability mass of 𝑆, but the expected number of targets in 𝑆.
+An example of an intensity function in 2D is given in Fig. 2, where
+the three peaks correspond to possible target locations, and the circles
+illustrate the weighted particles.3For example, the red patch in Fig. 2
+is the intensity function 𝐼defined over the corresponding rectangle 𝑆
+lying in the (𝑋,𝑌)plane. The integral of 𝐼over this red region gives
+the expected number of targets in 𝑆.
+The PHD filter performs Bayesian updates of an intensity function
+based on the measurements 𝑍𝑘𝑚, and is summarized as:
+𝐼𝑘|𝑘−1=𝛷(𝐼𝑘−1|𝑘−1)
+𝐼𝑘|𝑘={
+𝐼𝑘𝑚|𝑘𝑚=𝛹𝑘𝑚(𝐼𝑘𝑚|𝑘𝑚−1,𝑍𝑘𝑚),if𝑘=𝑘𝑚for𝑚≥0
+𝐼𝑘|𝑘−1, otherwise(11)
+Here,𝐼𝑘|𝑘−1is the prior intensity function, predicted based on 𝐼𝑘−1|𝑘−1
+at the previous step 𝑘− 1, and𝐼𝑘𝑚|𝑘𝑚denotes the posterior generated
+after processing the new measurements at 𝑘𝑚. Note that prediction is
+performed at every step, while updates using 𝛹𝑘𝑚are performed only
+at𝑘=𝑘𝑚, when a new measurement becomes available. At any 𝑘≠𝑘𝑚,
+𝐼𝑘|𝑘remains equal to the prior, so it is not a true posterior, but we
+accept this abuse of notation to keep the updates coherent.
+3In reality, there is no constraint that particle weights are on the PHD
+surface, this situation is shown here to give a more intuitive representation.The prior𝐼𝑘|𝑘−1is defined as:
+𝐼𝑘|𝑘−1(𝑥) =𝛷(𝐼𝑘−1|𝑘−1)(𝑥) =𝛶+∫𝐸𝑝𝑠(𝜉)𝛿𝜉(𝑥)𝐼𝑘−1|𝑘−1(𝜉)𝑑𝜉 (12)
+where𝑝𝑠(𝜉)is the probability that a target previously located at position
+𝜉still exists. In our specific problem, targets are stationary, so the
+transition density of a target 𝑥at𝜉is defined as the Dirac delta 𝛿𝜉(𝑥)
+centered on 𝜉. Moreover, 𝛶, chosen here to be a constant, denotes the
+intensity function of a new target appearing anywhere.
+Now, to compute the posterior intensity function 𝐼𝑘𝑚|𝑘𝑚at step
+𝑘𝑚using the measurements 𝑍𝑘𝑚, we apply the multi-target posterior
+operator𝛹𝑘𝑚(𝐼𝑘𝑚|𝑘𝑚−1,𝑍𝑘𝑚)(𝑥)to the prior intensity function 𝐼𝑘𝑚|𝑘𝑚−1:
+𝐼𝑘𝑚|𝑘𝑚(𝑥) =𝛹𝑘𝑚(𝐼𝑘𝑚|𝑘𝑚−1,𝑍𝑘𝑚)(𝑥) =
+=⎡
+⎢
+⎢
+⎢⎣1 −𝜋(𝑥,𝑞𝑘𝑚) +∑
+𝑧∈𝑍𝑘𝑚𝜓𝑘𝑚𝑧(𝑥)
+⟨
+𝜓𝑘𝑚𝑧,𝐼𝑘𝑚|𝑘𝑚−1⟩⎤
+⎥
+⎥
+⎥⎦⋅𝐼𝑘𝑚|𝑘𝑚−1(𝑥)(13)
+where𝜓𝑘𝑚𝑧(𝑥) =𝜋(𝑥,𝑞𝑘𝑚)𝑝(𝑧|𝑥)denotes the overall probability density
+of detecting a target at 𝑥, via a measurement 𝑧with𝑝defined in (10),
+and
+⟨
+𝜓𝑘𝑚𝑧,𝐼𝑘𝑚|𝑘𝑚−1⟩
+=∫𝐸𝜓𝑘𝑚𝑧(𝑥)𝐼𝑘𝑚|𝑘𝑚−1(𝑥)𝑑𝑥
+In practice, we apply the Sequential Monte-Carlo Probability Hypothe-
+sis Density (SMC-PHD) filter ( Vo et al. , 2005 ), which uses at each 𝑘a
+set of weighted particles (𝑥𝑗,𝜛𝑗
+𝑘|𝑘)to represent 𝐼𝑘|𝑘, with the property
+that∫𝑆𝐼𝑘|𝑘(𝑥)𝑑𝑥≈∑
+𝑥𝑗∈𝑆𝜛𝑗
+𝑘|𝑘for any𝑆 ⊆ 𝐸 . For more details, refer
+to Yousuf et al. (2024 ).
+3.2. Multi-agent IC-PHD filter
+Let us next consider the full set of 𝐴agents, some of which receive
+noisy multi-target measurements at step 𝑘. Define 𝑘to be the set of
+indices of the agents that receive measurements at 𝑘. Thus, an agent
+𝑎∈𝑘has𝑘=𝑘𝑎
+𝑚for some𝑚. Multi-agent measurements are
+illustrated in Fig. 10 of Section 6, with red lines along the green and
+purple trajectories. In the example of that figure, there are two agents;
+if both agents happen to measure at 𝑘, then 𝑘= {1,2}, whereas if
+just one agent measures at 𝑘, then 𝑘= {1} or𝑘= {2} , respectively,
+depending on which agent measures. It is also possible that no agent
+measures at 𝑘, i.e.𝑘= ∅.
+In general, each agent 𝑎∈𝑘receives a measurement set 𝑍𝑎
+𝑘–
+that concerns targets at coordinates 𝑥– depending on the probability of
+detection𝜋𝑎(𝑥,𝑞𝑎
+𝑘)and on the measurement density 𝑝𝑎(𝑧𝑎|𝑥), see again
+Section 2. The prediction step is the same as in (11) and (12), as it does
+not depend on the measurements. The resulting prior 𝐼𝑘|𝑘−1is used to
+initialize the multi-agent posterior 𝐼0
+𝑘|𝑘, with agent index 0, meaning
+‘‘before processing measurements of any agent’’:
+𝐼𝑘|𝑘−1=𝛷(𝐼𝑘−1|𝑘−1)(𝑥) =∶𝐼0
+𝑘|𝑘(14)
+The IC-PHD filter ( Liu et al. , 2020 ) then generates a posterior intensity
+function𝐼𝑘|𝑘by processing sequentially the measurements of each
+agent𝑎∈𝑘:
+𝐼𝑎
+𝑘|𝑘(𝑥) =𝛹𝑎
+𝑘(𝐼𝑎−
+𝑘|𝑘,𝑍𝑎
+𝑘)(𝑥),for𝑎∈𝑘in increasing order
+𝐼𝑘|𝑘(𝑥) ∶=𝐼|𝑘|
+𝑘|𝑘(𝑥)(15)
+where𝑎−is the previous agent index in 𝑘, and𝑎− = 0 if𝑎is the first
+index in 𝑘. Each IC-PHD posterior update is defined as:
+𝐼𝑎
+𝑘|𝑘=⎡
+⎢
+⎢
+⎢⎣1 −𝜋𝑎(𝑥,𝑞𝑎
+𝑘) +∑
+𝑧𝑎∈𝑍𝑎
+𝑘𝜓𝑎
+𝑘,𝑧𝑎(𝑥)
+⟨
+𝜓𝑎
+𝑘,𝑧𝑎,𝐼𝑎−
+𝑘|𝑘⟩⎤
+⎥
+⎥
+⎥⎦⋅𝐼𝑎−
+𝑘|𝑘(𝑥) (16)
+with𝜓𝑎
+𝑘,𝑧𝑎(𝑥) =𝜋𝑎(𝑥,𝑞𝑎
+𝑘𝑎𝑚)𝑝𝑎(𝑧𝑎|𝑥), similarly to the single-agent case. As
+in Section 3.1, a particle-based approximation is used in practice. Note
+that for the single-agent case, the IC-PHD reduces to the original PHD
+filter where 𝑘= {1} at𝑘=𝑘𝑚and𝑘= ∅at other steps.Control  Engineering  Practice  153 (2024)  106094  
+5 
+B. Yousuf et al.
+Fig. 3. Illustration of active target search with intermittent measurements.
+3.3. Marking and removal of found targets
+In a naive implementation, a target search algorithm will con-
+tinue to concentrate on targets even when they are well-determined
+(i.e. when they have clear peaks in the intensity function), which is
+not beneficial since the time would be better spent refining poorly
+seen targets or looking for new ones. To achieve this, we remove well-
+determined targets. After the measurements of all agents in 𝑘are
+processed, we extract the potential targets as clusters of particles using
+K-means ( Gu, Zhou, & Chen , 2009 ). Two conditions are checked for
+each cluster 𝑐: the cluster radius must be below a threshold 𝑟, and the
+sum of the weights 𝜛𝑗of the particles in the cluster must be above
+a mass threshold 𝑚. Then, each cluster that is narrow enough, and
+associated with a large enough concentration of mass in the intensity
+function, is taken to correspond to a well-determined ( found ) target at
+position𝜈𝑐, equal to the center of the cluster. We remove the particles
+belonging to such clusters.
+To prevent the formation of another intensity peak at the locations
+of old, already found targets, measurements that are likely to be asso-
+ciated with these targets are also removed from future measurement
+sets𝑍𝑎
+𝑘𝑎𝑚. Naturally, the algorithm has no means of knowing which
+target led to a particular measurement, so for each agent, among all
+measurements that are below a threshold 𝑧(if any) to a found target,
+it removes the closest measurement 𝑧𝑎
+𝑘𝑎𝑚to it.
+4. Single-agent planner
+Consider now the problem of designing a path for oneagent to
+explore the environment to quickly find targets. A classical solution
+to this problem would be a lawnmower trajectory, which fills the
+space uniformly. We evaluate the lawnmower as a baseline in our
+experiments, but a quicker solution is desired. A framework similar
+to model predictive control (MPC) is used to find this solution. The
+planner ‘‘stitches together’’ a sequence of trajectories, each leading to
+a waypoint. The waypoints are generated by solving an optimization
+problem with an objective that combines control costs, refining poten-
+tial targets, and exploration of the space. All this is formalized and
+exemplified next. Since the single-agent case is considered in Sections 4
+and 5, we drop the superscript 𝑎for the duration of these sections.
+Consider the agent at decision index 𝑑that occurs at the discrete
+time step𝑘𝑑, where the next waypoint must be selected; the agent
+has state𝑞𝑘𝑑at this time step. Define a set of candidate waypoints
+𝑑={𝑜𝑤
+𝑑,𝑤= 1,…,𝑊}of the agent, where 𝑜𝑤
+𝑑is the𝑤th candidate
+waypoint at decision index 𝑑, and𝑊is the total number of candidate
+waypoints. Set 𝑑should be sufficiently rich for the agent to searchfor the targets and, in general, it may be defined differently at each 𝑑,
+e.g. relative to the agent’s state.
+Fig. 3 illustrates and exemplifies the framework. This figure shows
+the candidate waypoints from decision indices 𝑑and𝑑+ 1with dark
+red×-shaped outlines. The trajectories from the current state 𝑞𝑘𝑑to
+each candidate waypoint 𝑜𝑤
+𝑑,𝑤= 1,…,𝑊, are shown as lines, black for
+the candidates that were not chosen, and green for the optimal, chosen
+candidate𝑜∗
+𝑑and its corresponding trajectory. One candidate trajectory,
+to a generic waypoint 𝑜𝑤
+𝑑, is split into individual predicted steps and
+also points out with blue arrows the predicted inputs and with red
+vertical lines the measurement steps; see below for the mathematical
+formulation. The optimal trajectory 𝑜∗
+𝑑is also split into steps and
+highlights measurement instants as red lines. The past trajectory to the
+current decision index 𝑑is shown in a dashed green line. In general,
+green means optimal, actually executed trajectories, black is related to
+generic states, blue to inputs, and red to measurements.
+Each candidate waypoint 𝑜𝑤
+𝑑of the agent is fed as a reference point
+to the low-level controller, which generates the predicted trajectory
+𝐪𝑤
+𝑑=[
+𝑞𝑤
+𝑘𝑑+1,…,𝑞𝑤
+𝑘𝑑+𝐾𝑤
+𝑑]
+and corresponding control input sequence
+𝐮𝑤
+𝑑=[
+𝑢𝑤
+𝑘𝑑,…,𝑢𝑤
+𝑘𝑑+𝐾𝑤
+𝑑−1]
+, illustrated in Fig. 3 by the black lines and blue
+arrows, respectively. Here, 𝑞𝑤
+𝑘𝑑+𝑗+1=𝑓(𝑞𝑤
+𝑘𝑑+𝑗,𝑢𝑤
+𝑘𝑑+𝑗), for𝑗= 0,…,𝐾𝑤
+𝑑−
+1, and𝐾𝑤
+𝑑is the length of the trajectory to reach waypoint 𝑜𝑤
+𝑑from the
+current state 𝑞𝑘𝑑of the agent. We say the agent reached position 𝑜𝑤
+𝑑
+when the condition‖‖‖‖̃ 𝑞𝑤
+𝑘𝑑+𝐾𝑤
+𝑑−𝑜𝑤
+𝑑‖‖‖‖≤𝜀is satisfied, where 𝜀is a tunable
+threshold.
+Along each such predicted trajectory 𝐪𝑤
+𝑑, measurements are planned
+to be taken periodically at instants 𝑘𝑑,̃ 𝑚=𝑘𝑑+̃ 𝑚𝛥, ̃ 𝑚 = 0,…,𝑀𝑤
+𝑑− 1.
+Here,𝑀𝑤
+𝑑=⌈𝐾𝑤
+𝑑
+𝛥⌉
+is the measurement horizon, defined as the total
+number of measurements (including an imposed one at the decision
+step) along a candidate trajectory 𝐪𝑤
+𝑑. In Fig. 3, these instants are the
+red lines along agent trajectories.
+The optimal waypoint, 𝑜∗
+𝑑, reached by the green trajectory in Fig. 3,
+is selected by solving (by enumeration) the optimization problem:
+𝑤∗∈ argmax𝑤=1,…,𝑊−C(𝑤) +𝛼⋅T(𝑤) +𝛽⋅E(𝑤)
+𝐾𝑤
+𝑑(17)
+The objective function in (17) involves the control cost component
+C(𝑤), the target refinement component T(𝑤)aiming to better find the
+locations of the targets that were already seen, and the exploration
+component E(𝑤), which drives the agent to explore unseen regions.
+Tunable parameters 𝛼and𝛽control the tradeoff between these three
+components. We normalize the objective function by the length of the
+trajectory to avoid an incorrect preference for long trajectories.Control  Engineering  Practice  153 (2024)  106094  
+6 
+B. Yousuf et al.
+The control cost (effort) to reach the 𝑤th candidate waypoint is:
+C(𝑤) =𝐾𝑤
+𝑑−1∑
+𝑗=0(𝑢𝑤
+𝑘𝑑+𝑗)𝑇⋅𝑢𝑤
+𝑘𝑑+𝑗(18)
+i.e. the sum of squared predicted inputs.
+Target refinement is computed as the sum of the observation prob-
+abilities of particle cluster centers (recall that particles are clustered
+using K-means) across all predicted measurement steps:
+T(𝑤) =𝑀𝑤
+𝑑−1∑
+̃ 𝑚=0𝐶𝑘𝑑∑
+𝑐=1𝜋(𝜈𝑐
+𝑘𝑑,𝑞𝑤
+𝑘𝑑,̃ 𝑚) (19)
+where𝐶𝑘𝑑denotes the number of clusters at 𝑘𝑑, and the center 𝜈𝑐
+𝑘𝑑of
+the𝑐th cluster has the meaning of an estimated target position. Note
+that since we are actually not taking measurements while computing
+(19), the clusters remain ‘‘frozen’’ to their values at 𝑘𝑑. The intuition be-
+hind (19) is that the probability of detecting estimated target positions
+should be maximized.
+The exploration component E(𝑤)drives the agent to look at unseen
+regions of the environment. Define first an exploration function 𝑒,
+which is initialized to 1for the entire environment. We represent 𝑒on a
+grid of points with indices in a set , which may be 3D or 2D depending
+on the problem, initialized with:
+𝑒0(𝑥𝑙) = 1,∀𝑙∈
+At each real measurement step 𝑘𝑚,𝑒should decrease for each location
+𝑥with an amount related to the probability of detection 𝜋(𝑥,𝑞𝑘𝑚).
+Specifically, updates are performed on the grid:
+𝑒𝑘𝑚(𝑥𝑙) =𝑒𝑘𝑚−1(𝑥𝑙)⋅(
+1 −𝜋(𝑥𝑙,𝑞𝑘𝑚))
+∀𝑙∈ (20)
+The meaning of (20) is that position 𝑥𝑙has been explored to an amount
+equal to the probability of detection. We emphasize that predicted
+states are denoted with superscript 𝑤(e.g.,𝑞𝑤
+𝑘𝑑+𝑗), while real states
+are defined without such an index. Along each predicted trajectory 𝐪𝑤
+𝑑,
+we evaluate a predicted exploration function ̂ 𝑒𝑤
+𝑘𝑑,̃ 𝑚(̃ 𝑞𝑤
+𝑘𝑑,̃ 𝑚), computed at
+predicted position ̃ 𝑞𝑤
+𝑘𝑑,̃ 𝑚using multi-linear interpolation on the grid .
+At the current decision index, ̂ 𝑒is equal to the last real exploration
+function̂ 𝑒𝑤
+𝑘𝑑,−1∶=𝑒𝑘𝑚, and afterward it decreases with each predicted
+measurement along trajectory 𝐪𝑤
+𝑑as follows:
+̂ 𝑒𝑤
+𝑘𝑑,̃ 𝑚(𝑥𝑙) =̂ 𝑒𝑤
+𝑘𝑑,̃ 𝑚−1(𝑥𝑙)⋅(
+1 −𝜋(𝑥𝑙,𝑞𝑤
+𝑘𝑑,̃ 𝑚))
+(21)
+Finally, the exploration component along the 𝑤th trajectory is:
+E(𝑤) =𝑀𝑤
+𝑑−1∑
+̃ 𝑚=0̂ 𝑒𝑤
+𝑘𝑑,̃ 𝑚(̃ 𝑞𝑤
+𝑘𝑑,̃ 𝑚) (22)
+Now, the optimal trajectory, with index 𝑤∗from (17) gives the
+agent’s chosen trajectory to the new waypoint:
+𝑞𝑘𝑑+𝑗=𝑞∗
+𝑘𝑑+𝑗,for𝑗= 1,…,𝐾∗
+𝑑 (23)
+Note that besides 𝑤∗, we employ superscript ‘‘*’’ to denote the optimal
+solution for variables such as trajectories 𝐮∗
+𝑑,𝐪∗
+𝑑, and the length 𝐾∗
+𝑑.
+Recall that in Fig. 3, this optimal trajectory is highlighted in green.
+Measurements (at red lines) are taken along this trajectory as follows:
+if𝑘𝑚was the last prior measurement point to decision 𝑑, then:𝑘𝑚+1=
+𝑘𝑑,0,𝑘𝑚+2=𝑘𝑑,1,…,𝑘𝑚+𝑀∗
+𝑑=𝑘𝑑,𝑀∗
+𝑑−1. Note that measurements are not
+strictly periodic, since we enforce a measurement at each waypoint
+𝑘𝑚+1=𝑘𝑑,0, even if the number of elapsed steps after the last measure-
+ment is smaller than the period 𝛥. For simplicity, to contrast against
+our event-triggered version below, we nevertheless call this setting
+‘‘periodic’’. Both settings are referred to as ‘‘intermittent measurement’’
+since we do not take measurements at all control steps.
+The entire procedure is repeated at the next decision step 𝑑+ 1, at
+discrete time step 𝑘𝑑+1=𝑘𝑑+𝐾∗
+𝑑.
+Taking measurements and running the filter takes energy and com-
+putation time. To reduce these costs, we design an event-triggeredvariant of the method to allow the agent to take measurements only at
+certain steps, instead of at a constant period. For consistency, we still
+enforce measuring at each waypoint, for measurement index ̃ 𝑚= 0.
+Then, the sensor’s smallest sampling period, 𝛥, serves as our starting
+point. To decide whether to measure or not, at each potential measure-
+ment step𝑘𝑑,̃ 𝑚for measurement index ̃ 𝑚≥1, we use the following
+criterion:
+𝐶𝑘𝑚∑
+𝑐=1𝜋(𝜈𝑐
+𝑘𝑚,𝑞𝑘𝑑,̃ 𝑚) +𝛾⋅𝑒(̃ 𝑞𝑘𝑑,̃ 𝑚)>𝛿 (24)
+where𝛾is a tunable parameter and 𝛿is a threshold. We only measure
+at𝑘𝑑,̃ 𝑚if (24) is satisfied. The intuition behind (24) is that we skip
+measurements that are unlikely to contribute to either the refinement
+of known targets – captured by the first term in (24) – or the explo-
+ration of new locations along the trajectory – captured by the second
+term in (24). The event-triggered method is only implemented during
+actual execution, not at the planning stage. Note that the number of
+actual measurements 𝑚is only incremented when (24) holds, and that
+the clusters used in (24) are those found after processing the latest
+measurement at 𝑘𝑚.
+The overall procedure for Active target Search with Intermittent
+measurements (ASI) is outlined in Algorithm 1.
+Algorithm 1 Active target search with intermittent measurements
+1:𝑑= −1, 𝑚= −1
+2:foreach step𝑘≥0do
+3: if𝑘= 0or trajectory finished ( 𝑘=𝑘𝑑+𝐾∗
+𝑑)then
+4: Planning:
+5:𝑑=𝑑+ 1and𝑘𝑑=𝑘
+6: configure candidates 𝑑= {𝑜𝑤
+𝑑, 𝑤= 1,…, 𝑊}
+7: foreach candidate index 𝑤do
+8: compute C(𝑤)(18),T(𝑤)(19),E(𝑤)(22)
+9: end for
+10: find optimal next waypoint 𝑤∗by solving (17)
+11: end if
+12: if𝑘=𝑘𝑑+̃ 𝑚𝛥for somẽ 𝑚≥0and (̃ 𝑚= 0or (24) satisfied) then
+13: Measurement:
+14:𝑚=𝑚+ 1and𝑘𝑚=𝑘
+15: get measurements, and remove those closest
+to found targets per Section 3.3, leading to 𝑍𝑘𝑚
+16: run filter from Section 3.1 with 𝑍𝑘𝑚
+17: Filtering:
+18: run K-means to get clusters 𝑐= 1,…, 𝐶𝑘𝑚with centers 𝜈𝑐
+𝑘𝑚19: mark and delete found targets per Section 3.3.
+20: end if
+21: Control:
+22: execute next trajectory step, from 𝑞𝑘to𝑞𝑘+1
+23:end for
+Remark 3. Compared to our prior work (Yousuf et al., 2024), the
+optimization problem (17) additionally involves control cost. More
+importantly, each term is now a summation with its own timescale:
+control steps 𝑘in the control cost (18), and (potential) measurement
+steps̃ 𝑚in the target refinement (19) and exploration (22). Furthermore,
+the timescale of waypoint decisions 𝑑is different from those of both
+control and measurement. Finally, the framework further allows us
+to easily add the event-triggered mechanism (24) so that only some
+measurements are taken.
+5. Single-agent experiments
+In this section, to validate the efficiency of the proposed target
+search method, we present single-agent simulations involving a Parrot
+Mambo drone in Section 5.1, together with a real-life experiment
+involving the actual drone in Section 5.2.Control  Engineering  Practice  153 (2024)  106094  
+7 
+B. Yousuf et al.
+5.1. Simulation results
+To validate the efficiency of the proposed target search algorithm,
+we ran two sets of simulations in 3D target space. In the first set of
+simulations, we compare our novel ASI method against four baselines.
+The first baseline is a standard lawnmower that covers the environment
+uniformly. The second baseline is Active Search (AS) from our previous
+paper ( Yousuf et al. , 2024 ). Unlike ASI, which navigates to arbitrarily
+far away waypoints and takes multiple measurements along each tra-
+jectory, AS optimizes at each planning step in a smaller set of waypoints
+that are at a constant distance from the current position of the agent,
+and only measures once it reaches the next waypoint. Furthermore, AS
+does not consider control costs. The other two baselines are representa-
+tive of the literature on active target search with intensity functions: a
+planner that uses only MI without exploration, based on Dames and Ku-
+mar (2015 ), and one with an unknown-target search component, based
+on Sung and Tokekar (2022 ). The MI-only method uses only a target
+refinement objective, without including an exploration objective. The
+method of Sung and Tokekar (2022 ) represents the intensity function
+as a Gaussian mixture, achieves target refinement by driving to the
+closest Gaussian, and (in separate experiments) achieves target search
+by driving to the widest Gaussian. A future research direction suggested
+by Sung and Tokekar (2022 ) is to mix the two strategies. Here, like
+in our earlier work ( Yousuf et al. , 2024 ), we adapt their method by
+(1) applying it to the clusters instead of Gaussian components; and (2)
+choosing a simple mix between search and refinement: the drone first
+drives to the nearest cluster, then to the widest, then to the nearest,
+and so on.
+In the second simulation, we compare ASI with and without the
+event-triggered measurement mechanism, to see whether it retains
+its target detection performance with fewer measurements, and to
+investigate how much the number of measurements can be reduced.
+All experiments run in the 3D environment 𝐸= [0,260]m× [0,260]
+m× [0,260] m. A number of 12targets are uniformly randomly dis-
+tributed in the environment 𝐸. In ASI, we define the candidate set 𝑑
+as a grid of positions of size 3 ×3×3 (27 different choices) in 𝐸, having
+a spacing of 80 meters on each axis, and starting from [10,10,10]𝑇such
+that the grid is centered in the environment. In the 3𝐷lawnmower
+used as a baseline, the altitude difference on the 𝚉-axis between each
+2D ‘‘layer’’ of the lawnmower is constant and set to 48 m, and the 𝚇
+and 𝚈lawnmower spacings are also 48 m. The lawnmower also starts
+at[10,10,10]𝑇. In contrast to ASI, in AS, six waypoints candidates are
+defined at each step 𝑘, at a distance of 12m from the current position
+along six directions: up, down, left, right, forward, and backward.
+For simplicity, we use the linear model of a Parrot Mambo drone
+from Sütő, Codrean, and Lendek (2023 ), as our objective is to evaluate
+the performance of the planner, rather than that of the low-level
+control. The drone model parameters are the moments of inertia on
+each axis𝐼𝑥= 0.5829 ⋅10−4kg m2,𝐼𝑦= 0.7169 ⋅10−4kg m2,
+𝐼𝑧= 1.000 ⋅10−4kg m2, and the mass 𝑚= 0.063kg. The agent’s
+state𝑞𝑘∈ℜ12comprises the drone’s position in the north, east,
+down (NED) frame, the roll, pitch, and yaw angles, and the linear
+and angular velocities. The control signals 𝑢𝑘= [𝑢𝜙,𝑢𝜃,𝑢𝜓,𝑢𝑐𝑓]𝑇∈ℜ4
+includes the torques on the three rotational axes and the collective
+force. The control sampling period is 𝑇𝑠= 0.005s and the measure-
+ment period is 𝛥= 10 times𝑇𝑠, i.e. 0.05 s. A discrete-time Linear
+Quadratic Regulator (LQR) is designed to navigate the agent towards
+the waypoints, specified as setpoints for the LQR. In the setpoints, the
+angles and velocities are set to 0. The weight matrices are chosen as
+𝑄LQR= diag([0.1,0.1,10,0.01,0.01,0.01,0.01,1,0.1,0.1,0.1]), and𝑅LQR=
+diag([1
+15,1000,1000,100]). The initial position of the drone is ̃ 𝑞0=
+[1,1,1]𝑇for all the methods except the lawnmower, in which it is
+[10,10,10]𝑇as explained above.
+The probability of detection 𝜋(𝑥,𝑞)has form (3) with parameters:
+𝐺= 0.98,𝙵𝚇=𝙵𝚈=𝙵𝚉= 25 . The measurement noise covariance
+matrix in model (5) is determined through experimental tuning, and
+Fig. 4. Comparison between alternative target search methods. The lawnmower per-
+formance is shown with the blue continuous line, MI-only with the red dashed line, the
+method adapted from Sung and Tokekar (2022 ) with the orange dotted line, AS with
+the cyan dashed–dotted line, and ASI with the green dotted line. For each method,
+the line is the mean number of targets found on the 10 maps, and the shaded region
+gives a 95% confidence region on the mean. To make the figures easier to follow, the
+correspondence between methods and colors is the same in all subsequent plots.
+is𝑅= diag[1.5,0.175,0.295]. The threshold values for target marking
+and removal are experimentally set as 𝑟= 1.1m,𝑚= 2.2m, and
+𝑧= 5m. The experiment length is chosen so that all algorithms have
+a chance to detect all the targets. For each experiment, we performed
+10 independent runs and reported the mean number of targets detected
+along with the 95% confidence interval on the mean.
+Comparison of ASI to Baselines in the Case of Periodic Measurements.
+Execution Time and Sensitivity Study. We start by comparing ASI to
+the four baselines explained above: lawnmower, MI-only, the method
+adapted from Sung and Tokekar (2022 ), and AS. For fairness, the
+comparison is based on the number of measurement steps, and all
+methods maintain a distance of roughly 12 m between consecutive
+measurements (since in ASI measurements are time-based, the mea-
+surement period is tuned so the average distance between measurement
+points is 12 m).
+The results in Fig. 4 show the number of target detections as
+a function of the number of measurement steps. The proposed ASI
+planner works better than all the baselines, followed in order by AS,
+the method of Sung and Tokekar (2022 ), the lawnmower, and the MI-
+only method. Notably, since this last method does not include any way
+to search for new targets, it does not find all the targets, but focuses
+only on those that happen to be detected. Moreover, all active-search
+methods outperform the lawnmower.
+Fig. 5 shows trajectories of all the methods in one of the 10
+experiments, in the same order as in Fig. 4, and an extra trajectory
+with ASI, when there are no targets. The lawnmower covers the 3D
+environment uniformly. AS and ASI focus on relevant regions to find
+targets faster. As opposed to AS, which only takes a single measurement
+at each waypoint, the ASI planner generates longer trajectories that
+include many measurements. The method adapted from Sung and
+Tokekar (2022 ) also focuses on relevant regions so it is faster than the
+lawnmower but slower than AS and ASI. Using ASI, the RMSE between
+the actual and estimated target positions is 1.24 m, which is relatively
+small for a domain of size of 2603m3. For a better understanding, please
+refer to a video of an example trajectory with ASI, available online
+at http://rocon.utcluj.ro/files/ASI_targetsearch.mp4 . The final, bottom-
+right trajectory shows ASI in the case when there are no targets, to
+illustrate that in such a case it fills the space in a lawnmower-like way,
+which is correct behavior.
+Regarding computation time, in order, the lawnmower takes
+0.0043 ±0.00018 s per step, AS 0.018 ±0.0027 s, the method from Sung
+and Tokekar (2022 ) 0.008 ±0.00054 s, the ASI algorithm 0.035 ±Control  Engineering  Practice  153 (2024)  106094  
+8 
+B. Yousuf et al.
+Fig. 5. Examples of trajectories with the actual targets (black diamonds) and estimated
+targets (red diamonds). Top left: Lawnmower. Top right: MI-only. Middle left: Method
+adapted from Sung and Tokekar (2022 ). Middle right: AS. Bottom left: ASI. Bottom
+right: ASI with no targets.
+0.0021 s, and the MI-only algorithm 0.041 ±0.0018 s.4The format is
+mean value ± 95% confidence half-interval on the mean, in the 10
+experiments above (the same format will be used in the sequel). While
+ASI is relatively computationally intensive, recall that in practice the
+distance traveled by the real robot is the most significant cost, and ASI
+is the fastest on that metric.
+Next, we study the sensitivity of ASI with respect to the three
+parameters deemed most important: weights 𝛼and𝛽in the planning
+objective, and the number of particles. For each value or combination
+of values, we perform 5 independent runs of ASI in the periodic-
+measurement setting above. Table 1 shows that the best value for
+both𝛼and𝛽is 0.75, and that ASI is moderately sensitive to these
+parameters, with performance dropping on either side of the optimal
+value but not very fast (recall that the next best method in Fig. 4
+takes around 300 steps). For example, any combination of values in
+0.5, 0.75, 2.5 leads to finding all the targets in at most 221 steps on
+average, whereas the next best method in Fig. 4 takes around 300 steps.
+Table 2 illustrates that performance reliably improves up to 10 000
+particles and then plateaus. As expected, the filtering time increases
+with the number of particles, while the planning time is largely constant
+and therefore not shown in the table (e.g. for 2000 particles, it is
+0.0263 ±0.0004 s and for 20 000, 0.0294 ±0.00088 s). Neither of these
+execution times varied in the experiments of Table 1, so they were not
+included there. Importantly, given the 0.05s measurement period, the
+algorithm is applicable in real time up to 10 000 particles. Note that
+the results of Table 1 were obtained with 10 000 particles, and those of
+Table 2 with𝛼=𝛽= 0.75. These best settings were also used to obtain
+the results of Fig. 4 and 5, as well as all the single-agent results in the
+sequel.
+4The computer used is equipped with an Intel 1365U CPU, 32 GB of RAM,
+and runs Matlab R2024.Table 1
+Effect of𝛼and𝛽parameters on the number of steps taken by ASI to find all the
+targets.
+𝛼𝛽0.05 0.5 0.75 2.5 5
+0.05 153±6 171±8 182±10 167±9 248±12
+0.5 173±7 155±10 184±12 200±7 233±10
+0.75 177±6 151±10 117±11 182±13 241±10
+2.5 242±8 221±10 183±10 151±6 267±12
+5 359±10 329±8 286±7 259±12 375±10
+Table 2
+The effect of the number of particles on ASI. Results include the number
+of measurement steps required to find all targets (in regular font),
+together with the computation time taken by filtering (in bold).
+Number of particles Number of steps
+Filtering time
+2000278±8 steps
+0.0006 ±0.00002 s
+4000250 ±10 steps
+0.0009 ±0.000052 s
+6000212 ±12 steps
+0.0021 ±0.00062 s
+8000167±6 steps
+0.0057 ±0.00088 s
+10000117±11 steps
+0.0083 ±0.00021 s
+15000114±9 steps
+0.0564 ±0.00981 s
+20000113±10 steps
+0.11264 ±0.0867 s
+Fig. 6. Comparison between periodic measurement (light green continuous line) and
+event-triggered measurements (dark green continuous line): targets found over time.
+Event-triggered Measurements. Next, we implemented the event-
+triggered mechanism from the end of Section 4. The threshold 𝛿is
+set to 4, tuned experimentally. Fig. 6 shows the number of target
+detections, this time as a function of the number of control steps. By
+using the event-triggered measurement mechanism, the target detection
+performance of the algorithm is statistically indistinguishable from
+the periodic case, but the number of measurements is reduced with
+statistical significance: on average in the 10experiments, the drone took
+100 ± 10 measurement steps in the event-triggered case, compared to
+145±17 in the periodic case. This means that fewer measurements must
+be processed and the PHD filter update equations are run fewer times,
+leading to computational and possibly communication savings.
+Fig. 7 (top) shows a trajectory of the original ASI where the drone
+takes measurements along the trajectory periodically, highlighting
+these measurements. Fig. 7 (bottom) shows a trajectory of the event-
+triggered ASI. Measurements are rarer than in the periodic case, andControl  Engineering  Practice  153 (2024)  106094  
+9 
+B. Yousuf et al.
+Fig. 7. Examples of trajectories with periodic sampling (top) and event-triggered
+sampling (bottom). The positions from which the robot measures are shown as red
+circles.
+they are also taken at widely varying distances, as needed to improve
+target detection.
+5.2. Real-drone results
+As a final piece of the single-agent part of the paper, real-life
+implementation results using a Parrot Mambo drone are given. We
+again compare our new ASI framework to AS and a lawnmower.
+For this experiment, the problem is reduced to a 2D search, with
+the targets on the floor and the drone flying at a constant altitude of
+1 m to maintain the same FOV. The 2D environment is [0,2] × [0,2]m,
+and the targets are represented by blue markers, see Fig. 8 (top).
+We consider 12 targets manually placed at arbitrary locations. The
+candidate waypoints of the drone 𝑑are defined as a 3 ×3 grid
+having a spacing of 0.6 meters on both the 𝚇and 𝚈axis and the
+corner at [0.1,0.1], so the grid is centered in the environment. The 𝚇
+and 𝚈lawnmower spacings are set to 0.2 m. Up to 120s are allocated
+to complete each experiment. The threshold values for target marking
+and removal are experimentally set as 𝑊= 0.02m,𝑚= 0.04m, and
+𝑧= 0.05m.
+The drone communicates with MATLAB via Bluetooth to receive
+waypoints and send target measurements. The low-level controller
+operates in a closed loop on the drone. The pictures taken by the
+drone-mounted camera are fed into an image-processing algorithm for
+marker identification and localization. For details on the experimental
+framework, including the image processing algorithm, communication
+protocol, and controller, please refer to Yousuf et al. (2024 ).
+The detection probability, unlike in the simulations, is now binary
+(i.e, a deterministic detection model is used):
+𝜋(𝑥,𝑞) ={
+1𝑥∈
+0𝑥∉(25)
+where = [𝚇𝑞− 0.2,𝚇𝑞+ 0.2] × [ 𝚈𝑞− 0.2,𝚈𝑞+ 0.2]is the drone camera’s
+field of view at a 1 m altitude, illustrated in Fig. 8 (bottom). Here, 𝚇𝑞,𝚈𝑞
+is the 2D position of the drone. Target measurements consist of range
+and bearing. To determine the measurement covariance 𝑅, we collected
+Fig. 8. Top Parrot Mambo minidrone searching for targets (blue markers). Bottom:
+Field of view of the Parrot Mambo and the TurtleBot. The latter robot will be used in
+the multi-agent experiments of Section 7.2.
+100 images of a single target at different positions in the camera image,
+and then calculated the empirical covariance of the target positioning
+errors, obtaining 𝑅= diag[0.016,0.052].
+Note that in reality, due to model uncertainty, the optimal predicted
+trajectory 𝐪∗
+𝑑will be different from the actual trajectory achieved by
+implementing the closed-loop onboard controller of the drone. Even
+though our notation overlooks this difference for simplicity, the actual
+measurements are taken along the real path, and the PHD filter uses
+the actual drone states (up to pose estimation errors).
+Fig. 9 (top), shows the number of target detections as a function
+of the number of measurements, for ASI together with the lawnmower
+and AS baselines. ASI works best, followed by AS and the lawnmower,
+thereby confirming the results seen in the simulations. Fig. 9 (bottom),
+illustrates the trajectory for ASI. The drone finds all the targets with
+an RMSE between the actual and estimated target locations of 0.08 m,
+which is small compared to the environment size. Note that there
+is some drift because we rely on the onboard sensors. A video of
+the experiment is available at http://rocon.utcluj.ro/files/ASI_mambo.
+mp4.
+6. Multi-agent planner
+In this second part of the paper, we consider the problem of design-
+ing a fast target search path for multiple agents , in a framework that we
+call Multi-Agent Active Target Search with Intermittent Measurements
+(MAASI).
+Similarly to the set 𝑘of agents that measure at step 𝑘, see
+Section 3.2, define 𝑘as the set of indices of the agents that planat𝑘.
+An agent𝑎must plan at 𝑘if its previously planned trajectory has just
+finished. All other agents 𝑎∉𝑘continue their trajectories. Initially,
+0consists of all the agents, while at other steps, it can consist of any
+subset of agents, including the whole set if all the agents happen to
+finish their earlier trajectories simultaneously. Set 𝑘may also oftenControl  Engineering  Practice  153 (2024)  106094  
+10 
+B. Yousuf et al.
+Fig. 9. Top: Detected number of targets using the real Parrot Mambo minidrone.
+Bottom: ASI trajectory in a real experiment. The same color correspondence as in Fig. 4
+applies. In addition to the trajectory, actual and estimated targets, drone waypoints are
+shown as pink stars.
+be empty, implying that no planning is needed and all agents continue
+their existing trajectory.
+An agent𝑎∈𝑘is at its𝑑𝑎th decision and has a set of next waypoint
+candidates 𝑎
+𝑑𝑎={𝑜𝑤𝑎
+𝑑𝑎,𝑤𝑎= 1,…,𝑊𝑎}. Note that, although agents
+may be at different decision indices (e.g., agent 1 at 𝑑1= 3, agent 2
+at𝑑2= 2, etc.), the time step of these synchronous decisions is the
+same:𝑘=𝑘𝑑𝑎for all𝑎∈𝑘.
+The joint candidate index is 𝐰𝑘∈⨉
+𝑎∈𝑘{1,…,𝑊𝑎}, where⨉
+denotes cross product, i.e. 𝐰𝑘is a vector consisting of one candidate
+index𝑤𝑎for each agent 𝑎∈𝑘. As in the single-agent planner of
+Section 4, each candidate waypoint 𝑜𝑤𝑎
+𝑑𝑎of each agent 𝑎∈𝑘is fed as a
+reference point to the low-level controller of agent 𝑎, which generates
+the predicted agent trajectory 𝐪𝑤𝑎
+𝑑𝑎of length𝐾𝑤𝑎
+𝑑𝑎and the corresponding
+control input sequence 𝐮𝑤𝑎
+𝑑𝑎. Note that to simplify the notation, we use
+e.g.𝐪𝑤𝑎
+𝑑𝑎instead of the full form 𝐪𝑎,𝑤𝑎
+𝑑𝑎, since the agent index is already
+declared in 𝑤𝑎and𝑑𝑎.
+A centralized planner is run to find an optimal next joint waypoint
+for all planning agents 𝑎∈𝑘:
+𝐰∗
+𝑘= argmax𝐰𝑘∑
+𝑎∈𝑘𝐽𝑎(𝑤𝑎) (26)
+where𝐽𝑎(𝑤𝑎)is the objective function of agent 𝑎∈𝑘, defined similarly
+to (17):
+𝐽𝑎(𝑤𝑎) =−C𝑎(𝑤𝑎) +𝛼T𝑎(𝑤𝑎) +𝛽E𝑎(𝑤𝑎)
+𝐾𝑤𝑎
+𝑑𝑎(27)
+andC𝑎,T𝑎, and E𝑎are the cost, target refinement, and exploration
+components. These components extend the single-agent versions (18),
+(19), and (22) as follows.
+The control cost to waypoint candidate 𝑜𝑤𝑎
+𝑑𝑎for agent𝑎is defined as:
+C𝑎(𝑤𝑎) =𝐾𝑤𝑎
+𝑑𝑎−1∑
+𝑗=0(𝑢𝑤𝑎
+𝑘𝑑𝑎+𝑗)𝑇⋅𝑢𝑤𝑎
+𝑘𝑑𝑎+𝑗(28)
+The target refinement is computed as the sum of the observation
+probabilities of agent 𝑎at the particle cluster centers, summed overthe predicted measurement steps of agent 𝑎:
+T𝑎(𝑤𝑎) =𝑀𝑤𝑎
+𝑑𝑎−1∑
+̃ 𝑚=0𝐶𝑘𝑑𝑎∑
+𝑐=1𝜋𝑎(𝜈𝑐
+𝑘𝑑𝑎,𝑞𝑤𝑎
+𝑘𝑑𝑎,̃ 𝑚) (29)
+where𝑀𝑤𝑎
+𝑑𝑎is the total number of measurements (including at the
+starting step) along the agent’s candidate trajectory 𝐪𝑤𝑎, and𝑘𝑑𝑎,̃ 𝑚, ̃ 𝑚=
+0,…,𝑀𝑤𝑎
+𝑑𝑎− 1are the steps when measurements should be taken by
+agent𝑎. Note that we work with the clusters available at step 𝑘𝑑𝑎,
+the same for all planning agents. As can be seen in (28) and (29),
+given the clusters, C𝑎andT𝑎are computed independently for each
+agent. This is not the case for the exploration component E𝑎(𝑤𝑎): the
+agents remain coupled via this component. Let us first generalize the
+exploration function 𝑒. This function is initialized in the same way as
+for a single agent in Section 4, 𝑒0(𝑥𝑙) = 1 at all points 𝑥𝑙on a grid .
+Then, at each step 𝑘:
+𝑒𝑘(𝑥𝑙) =𝑒𝑘−1(𝑥𝑙)∏
+𝑎∈𝑘(1 −𝜋𝑎(𝑥𝑙,𝑞𝑎
+𝑘))∀𝑙∈ (30)
+i.e.,𝑒is decreased according to the probability of detection by all the
+agents𝑎∈𝑘. By convention, the product in (30) is equal to 1 when
+𝑘= ∅, so when no agents measure, 𝑒stays constant.
+The exploration component of agent 𝑎is then:
+E𝑎(𝑤𝑎) =𝑀𝑤𝑎
+𝑑𝑎−1∑
+̃ 𝑚=0̂ 𝑒𝐰𝑘
+𝑘𝑑𝑎,̃ 𝑚(̃ 𝑞𝑤𝑎
+𝑘𝑑𝑎,̃ 𝑚) (31)
+wherê 𝑒𝐰𝑘
+𝑘is a predicted version of 𝑒𝑘(𝑥𝑙):
+̂ 𝑒𝐰𝑘
+𝑘(𝑥𝑙) =̂ 𝑒𝐰𝑘
+𝑘−1(𝑥𝑙)∏
+𝑎∈𝐰𝑘
+𝑘(1 −𝜋𝑎(𝑥𝑙,𝑞𝑎,𝐰𝑘
+𝑘))(32)
+In (32), 𝐰𝑘
+𝑘is the predicted set of measuring agents at step 𝑘if
+the planning agents 𝑘were to select joint index 𝐰𝑘. Function ̂ 𝑒𝐰𝑘
+depends both on the predicted trajectories 𝑞𝑎,𝐰𝑘
+𝑘of agents𝑎∈𝑘,
+which are directly determined by the indices 𝑤𝑎in the joint index 𝐰𝑘;
+and on the predicted trajectories 𝑞𝑎,𝐰𝑘
+𝑘of the other, continuing agents
+𝑎∉𝑘. The predicted states 𝑞𝑎,𝐰𝑘
+𝑘, the predicted sets of measuring
+agents 𝐰𝑘
+𝑘, and therefore the predicted exploration function ̂ 𝑒𝐰𝑘
+𝑘, all
+depend on the candidate joint waypoint 𝐰𝑘. Note that, with an abuse
+of notation, we use index 𝐰𝑘even for the trajectories of non-planning
+(continuing) agents 𝑎∉𝑘, because the trajectories of these agents may
+be completed in different ways for different joint waypoint indices 𝐰𝑘,
+as explained next.
+The planner must predict some trajectories for the continuing agents
+𝑎∉𝑘. Each such agent will continue executing the remaining tail of its
+current trajectory, and this tail goes into the first part of the predicted
+trajectory. Define now the maximal length of the predicted trajectories
+of planning agents, max𝑎∈𝑘𝐾𝑤𝑎
+𝑑𝑎. Some trajectory tails of continuing
+agents will be shorter than this maximal length; this issue is solved by
+appending constant states, equal to the last state, to each such agent’s
+trajectory. The same is done for trajectories of planning agents that are
+shorter than the maximal length (e.g. because the waypoint is close).
+Once the optimal index 𝐰∗
+𝑘is determined, real agent trajectories to
+the new waypoints are produced, similarly to the single-agent planner
+in Section 4. Along the way, agents measure and IC-PHD is applied as
+in Section 3.2.
+Fig. 10 illustrates the framework. In this example, we have two
+agents𝑎= 1,2that are shown with green and purple trajectories,
+respectively, and ×-shaped outlines are the decision steps, with the
+decision indices 𝑑𝑎. When both agents are at their initial decision,
+i.e.𝑑1=𝑑2= 0,𝑘=0= {1,2}since𝑘= 0, and the two agents
+jointly plan their next waypoints. The agents again happen to perform
+joint planning at decision indices 𝑑1= 3and𝑑2= 2, which correspond
+to the same discrete time step of 𝑘=𝑘1
+𝑑=𝑘2
+𝑑, so that 𝑘= {1,2}. At
+other decision indices, either agent 1 chooses its waypoint, 𝑘= {1} ,
+or agent 2 does, 𝑘= {2} . For instance, at decision index 𝑑1= 1, onlyControl  Engineering  Practice  153 (2024)  106094  
+11 
+B. Yousuf et al.
+Fig. 10. Illustration of multi-agent active target search with intermittent measurements.
+agent𝑎= 1performs planning, and 𝐰𝑘=𝑤1. In this case, we use the
+existing trajectory ‘‘tail’’ of agent 𝑎= 2, indicated by a thick purple line,
+to apply (32). Since this tail is too short in this specific case, we extend
+it using constant states, which are represented by a dashed purple line.
+At decision index 𝑑2= 1we follow a similar procedure for agent 2,
+with 𝐰𝑘=𝑤2. In this case, the ‘‘tail’’ of agent 𝑎= 1used to plan is
+shown as a thick green line and is supplemented with constant states
+illustrated by a green dashed line.
+Finally, we adapt our event-triggered approach from Section 4,
+introduced there for single-agent scenarios, to accommodate multiple
+agents. For each agent 𝑎, we will use an auxiliary measurement index
+̃ 𝑚≥0, so that the interval passing since the last decision step 𝑘𝑑𝑎
+is a multiple ̃ 𝑚of the measurement period 𝛥𝑎. In other words, 𝑘=
+𝑘𝑑𝑎+̃ 𝑚𝛥𝑎=∶𝑘𝑑𝑎,̃ 𝑚. At waypoints, when ̃ 𝑚= 0, agent𝑎always measures,
+so it gets added to the measuring set 𝑘. For̃ 𝑚>0,𝑎is added to 𝑘
+only if the following multi-agent extension of (24) holds:
+𝐶𝑘∑
+𝑐=1𝜋𝑎(𝜈𝑐
+𝑘,𝑞𝑎
+𝑘𝑑𝑎,̃ 𝑚) +𝛾⋅𝑒𝑘(̃ 𝑞𝑎
+𝑘𝑑𝑎,̃ 𝑚)>𝛿 (33)
+The parameters 𝛾,𝛿in (33) have the same meaning as in Section 4.
+Therefore, in Fig. 10 we no longer automatically take measurements at
+all red lines, but only at those red lines where (33) is satisfied.
+To exemplify, let us return to the two-agent scenario of Fig. 10.
+Initially, agents are at decision indices 𝑑1=𝑑2= 0. At this point,
+both agents must take measurements: 0= {1,2}. Consider next as
+an example a step 𝑘at which both agents would have measured in the
+periodic setting. In the event-triggered case, at such a step 𝑘,𝑘can
+be either ∅,{1},{2}, or{1,2}, depending on whether condition (33) is
+satisfied by no agent, by agent 1, by agent 2, or by both agents.
+The overall MAASI method is summarized in Algorithm 2.
+Remark 4. Similarly to the single-agent case of Section 4, the main
+difference between the new planner and our prior work in Yousuf
+et al. (2023 ) is that in the new planner different timescales are used
+for waypoint decisions, control, and measurements. This has nontrivial
+implications on the planner, e.g. notably on how the objectives of
+different agents interact. Decision and measurement timescales can also
+differ among agents, but we choose to keep control timescales the sameAlgorithm 2 Multi-agent active target search with intermittent
+measurements
+1:𝑑𝑎= −1 ∀𝑎
+2:foreach step𝑘≥0do
+3: 𝑘= ∅
+4: Planning:
+5: foreach𝑎do
+6: if𝑎finished its trajectory ( 𝑘=𝑘𝑑𝑎+𝐾∗,𝑎
+𝑑𝑎)then
+7: 𝑑𝑎=𝑑𝑎+ 1and𝑘𝑑𝑎=𝑘
+8: 𝑘=𝑘∪ {𝑎}
+9: end if
+10: end for
+11: if𝑘≠∅then
+12: foreach joint index w𝑘and𝑎∈𝑘do
+13: findC𝑎(𝑤𝑎)(28),T𝑎(𝑤𝑎)(29),E𝑎(𝑤𝑎)(31)
+14: find𝐽𝑎(𝑤𝑎)(27)
+15: end for
+16: find best next joint waypoint w∗
+𝑘by solving (26)
+17: end if
+18: Measurement:
+19: 𝑘= ∅
+20: forall𝑎do
+21: if𝑘=𝑘𝑑𝑎+̃ 𝑚𝛥𝑎for̃ 𝑚≥0and (̃ 𝑚= 0or (33) satisfied) then
+22: 𝑘=𝑘⋃{𝑎}
+23: get measurements, and remove those closest
+to found targets per Section 3.3, leading to 𝑍𝑎
+𝑘
+24: end if
+25: end for
+26: Filtering:
+27: run filter from Section 3.2 with 𝑘and𝑍𝑎
+𝑘,𝑎∈𝑘
+28: execute K-means to find clusters 𝑐= 1,…, 𝐶𝑘with centers 𝜈𝑐
+𝑘
+29: mark and delete any found targets, per Section 3.3
+30: Control:
+31: execute the next step of all agents’ trajectories
+32:end forControl  Engineering  Practice  153 (2024)  106094  
+12 
+B. Yousuf et al.
+to avoid complicating the notation. The framework then allows us to
+easily add per-agent event-triggered measurement rules.
+7. Multi-agent results
+In this section, we present MAASI simulations in Section 7.1 and
+real-life experiments involving a Parrot Mambo drone and a Robotis
+TurtleBot3 ground robot in Section 7.2.
+7.1. Simulation results
+Section 7.1.1 presents results using homogeneous agents in a 3D
+environment. We evaluate the performance of MAASI versus multiagent
+versions of the two baselines that worked best in the single-agent case:
+a multiagent version of the method adapted from Sung and Tokekar
+(2022 ), in which the agents compute waypoints independently like in
+Section 5.1, but run the IC-PHD filter jointly; and Multi-Agent Active
+Search (MAAS) from our previous paper ( Yousuf et al. , 2023 ). The
+differences between MAASI and MAAS mirror those between ASI and
+AS: MAASI navigates to potentially faraway waypoints and acquires
+multiple measurements along the trajectories of the agents, whereas
+MAAS defines for each agent a set of waypoint candidates at a constant
+distance from its current position, and only takes measurements once
+agents reach the next waypoints. Additionally, MAAS does not involve
+asynchronous decision-making, as agents reach the waypoints simulta-
+neously. Note that most multi-agent methods in the literature ( Chen
+& Dames , 2022 ; Dames , 2020 ; Dames & Kumar , 2015 ; Ivić, 2022 ; Lin
+& Goodrich , 2014 ; Zhou et al. , 2019 ) are MI-only, and it would make
+little sense to compare them since we expect that they fail in the same
+way as the MI-only method in the single-agent case: they will not find
+all the targets.
+In Section 7.1.2 , still with homogeneous agents, we compare MAASI
+with and without the event-triggered measurement mechanism.
+Finally, in Section 7.1.3 , we consider heterogeneous agents navigat-
+ing a 2D space in a simulated version of the real experiment that will
+follow in Section 7.2. To make the problem more challenging, obstacles
+are added in Section 7.1.3 .
+7.1.1. Homogeneous-agent results with periodic measurements. Execution
+time and sensitivity study
+Two agents (drones) search for 12 targets in the 3𝐷environ-
+ment𝐸= [0,260]m×[0,260]m×[0,260]m. The following settings are the
+same as in the single-agent case of Section 5, but now apply to both
+agents:
+•The candidate waypoints for each agent is a centered 3 ×3×3
+grid of positions with a spacing of 80 m on each axis, with the
+corner at [10,10,10]𝑇.
+•The linear Parrot Mambo drone model.
+•The form (3) of the probability of detection and its parameters
+𝐺= 0.98,𝙵𝚇=𝙵𝚈=𝙵𝚉= 25.
+•The sensor noise covariance matrix 𝑅= diag[1.5,0.175,0.295], and
+the threshold values are 𝑟= 1.1m,𝑚= 2.2m, and 𝑧= 5m.
+•In MAAS, the waypoints of each agent are generated in the same
+way as in AS, see Section 5.
+The initial positions are ̃ 𝑞1
+0= [1,1,1]𝑇for the first agent (like the
+drone in the single-agent experiment) and ̃ 𝑞2
+0= [250,250,250]𝑇for the
+second agent, (in the opposite corner of the environment). For fairness,
+like in the single-agent case, we compare MAASI and MAAS based on
+the number of measurement steps. The measurements are taken for
+MAASI and MAAS in the same way as for ASI and AS in Section 5. The
+MAASI control sampling period is 𝑇𝑎
+𝑠= 0.005s and the measurement
+period is𝛥𝑎= 10 for both agents. We performed 10 independent runs
+for each experiment and reported the mean number of targets detected
+along with the 95% confidence on the mean. Fig. 11 shows that MAASi
+outperforms the two baselines and finds targets with good accuracy.
+Fig. 11. Top: Comparison between alternative target search methods in the multi-agent
+case: The performance of the method from Sung and Tokekar (2022 ) is shown by the
+orange dotted line, MAAS is shown with the cyan continuous line, and MAASI with the
+green dashed line. For each method, the line is the mean number of targets found in the
+10 runs, and the shaded region gives the 95% confidence region on the mean. Bottom:
+MAASI trajectory with the actual targets (black diamonds) and estimated targets (red
+diamonds).
+Table 3
+Effect of𝛼and𝛽parameters on the number of steps taken by MAASI to find all
+targets.
+𝛼𝛽0.05 0.5 0.75 2.5 5
+0.05 148±10 124±8 118±12 164±12 195±10
+0.5 133±8 104±10 128±8 162±14 188±12
+0.75 174±12 157±14 133±8 177±7 203±10
+2.5 193±8 181±12 162±10 181±7 193±12
+5 235±10 206±14 176±10 187±12 202±14
+As in Section 5.1, we study next computation time and sensitivity to
+parameters. In the simulations above, in order, the method from Sung
+and Tokekar (2022 ) takes 0.014 ±0.0056 s per step, MAAS 0.022
+±0.0079 s, and MAASI 0.046 ±0.0034 s.5This ordering is similar to
+that in the single-agent case.
+Regarding sensitivity, Table 3 shows that the best value for both 𝛼
+and𝛽is 0.5, slightly smaller than in the single-agent case, and exhibits
+similar, moderate drops in performance around the optimal value. In
+Table 4, execution times and performance evolve like in the single-
+agent case. In particular, performance plateaus after the same number
+of particles, 10 000, because the complexity of the intensity functions
+to be represented does not change. The results of Table 3 were obtained
+with 10 000 particles, and those of Table 4 with𝛼=𝛽= 0.5. These best
+settings were also used to obtain the results of Fig. 11, as well as all
+the multi-agent results in the sequel.
+7.1.2. Homogeneous agents with event-triggered measurements
+Next, in the same setting as above, we implement the event-
+triggered mechanism from the end of Section 6. We reuse the single-
+agent threshold value 𝛿= 4from Section 5.
+5The computer used is the same one as before (Intel 1365U CPU, 32 GB
+RAM, Matlab R2024).Control  Engineering  Practice  153 (2024)  106094  
+13 
+B. Yousuf et al.
+Table 4
+The effect of the number of particles on MAASI.
+Number of particles Number of steps
+Filtering time
+2000193±12 steps
+0.0009 ±0.000072 s
+4000166 ±8 steps
+0.0028 ±0.0023 s
+6000151±10 steps
+0.0067 ±0.0042 s
+8000122±14 steps
+0.0091 ±0.0047 s
+10000104±8 steps
+0.0123 ±0.0078 s
+15000102±10 steps
+0.0744 ±0.0176 s
+20000101±14 steps
+0.144 ±0.0893 s
+Fig. 12. Comparison between MAASI with periodic measurements (light green
+continuous line) and event-triggered measurements (dark green continuous line).
+Fig. 12 shows the number of target detections as a function of the
+number of control steps, which is now fair since we no longer compare
+to methods that measure only at waypoints. Like in the single-agent
+case, by using the event-triggered measurement mechanism, the target
+detection performance of the algorithm is statistically indistinguishable
+from the performance in the periodic case. On the other hand, on aver-
+age across the 10experiments, the sum of the number of measurements
+taken by the two drones is 81±10 in the event-triggered case, compared
+to104 ± 17 in the periodic case. The mean number of measurements is
+reduced, but the advantage is less clear than in the single-agent case
+since the two confidence intervals overlap.
+7.1.3. Heterogeneous agents with periodic measurements
+Next, we test the performance of MAASI in a scenario motivated
+by our ongoing SeaClear2.0 project: https://www.seaclear2.eu/ , where
+two different robots search for seafloor litter: a drone and a remotely
+operated underwater vehicle (ROV).
+In this paper, we use a Parrot Mambo drone for agent 1, but instead
+of the ROV, we use a TurtleBot 3 ground robot for agent 2, with a
+different velocity and sensor model from the drone. We obtain in this
+way a simulation version of the real experiment presented in the next
+section. To match that experiment, the environment is now 2𝐷, equal
+to[−0.3,2.4]m× [−0.3,2.4]m. A number of 12 targets are distributed
+uniformly in 𝐸.
+Agent 1 (Parrot Mambo) remains the same as in Section 7.1.1 –7.1.2 ,
+but now it flies at a constant 1m altitude above the ground. Addition-
+ally, we used a unicycle robot model ( Khoukhi & Shahab , 2013 ) for
+agent 2 (TurtleBot). Agent 2’s states 𝑞2∈ℜ3contain the position in𝚇and 𝚈coordinates, along with the heading angle. Its control signal
+contains linear and angular velocities: 𝑢2= [𝑢𝑣,𝑢𝜔]. We used a discrete-
+time feedback controller developed by Khoukhi and Shahab (2013 ) to
+navigate with agent 2 towards the waypoints, and also to control the
+heading angle to a constant reference in the direction of travel from
+the previous waypoint to the current one.
+To make the problem more challenging, four circular obstacles of
+various sizes are placed manually at arbitrary locations, and obstacle
+avoidance is performed with the method from Yousuf et al. (2024 )
+where the threshold on the distance between each agent and the
+obstacle nearest to it is set to 0.12 m and the obstacle avoidance gain
+to 0.002.
+For MAASI, the set of the waypoints candidate set is a 3 ×3 grid of
+positions in the environment 𝐸for the drone, with a spacing of 0.6 m
+on each axis. The initial position of the drone is set as [0.1; 0.1]. In
+contrast, the candidate set for the TurtleBot is a grid of positions of
+size 8 ×8 with a spacing of 0.25 m on each axis. The TurtleBot is
+initialized at [0; 0]. For each agent in MAAS, we used a candidate set
+having 4 different choices at a constant distance of 0.25 m from the
+current position in the 4 cardinal directions.
+For the probability of detection, we once again used (3) from
+Section 2 with parameters: 𝐺1=𝐺2= 0.98,𝙵1
+𝚇=𝙵1
+𝚈= 0.3, and 𝙵2
+𝚇=
+𝙵2
+𝚈= 0.15. Thus, the FOV of agent 1 is larger than that of agent 2, and
+agent 1 is also faster. However, the sensor of agent 2 is slightly more
+precise, as shown by the covariances matrices 𝑅1= diag[0.016,0.052]
+and𝑅2= diag[0.011,0.0311] . The values of the covariance matrices
+come from the upcoming real experiment in Section 7.2.6The threshold
+values for target marking and removal are experimentally set as 𝑊=
+0.02m,𝑚= 0.04m, and 𝑧= 0.05m.
+Fig. 13 (top) shows the number of targets detected as a function
+of the number of measurement steps summed up across both agents.
+As for homogeneous agents before, MAASI works faster than MAAS,
+and both algorithms find all the targets. Fig. 13 (bottom) shows the
+agents searching for the targets while avoiding the obstacles. The drone
+explores the environment faster than the TurtleBot.
+7.2. Experimental results
+Next, MAASI is implemented in a real-life scenario similar to the
+simulations of Section 7.1.3 , using a Parrot Mambo drone together with
+a TurtleBot3. We placed 12 blue markers (targets) manually on the floor
+at arbitrary locations, as seen in Fig. 14. We conducted a comparison
+between MAASI, MAAS, and a lawnmower version for multiple agents.
+First, we explain the setup of the experiments, and then we delve into
+the results.
+To enable the simultaneous control of two robots, each with a
+distinct software architecture, we designed a heterogeneous framework
+using Matlab, ROS (Robot Operating System), and Bluetooth commu-
+nication. For the Parrot Mambo framework, please refer to Section 5.2.
+The planner interfaces with the TurtleBot via ROS. Pictures are taken
+by the camera mounted on the TurtleBot, which are fed into an image
+processing algorithm for marker identification and localization via seg-
+mentation. The majority of segmentation, estimation, and planning for
+the TurtleBot are executed on the host computer. A waypoint command
+is dispatched to the TurtleBot. Continuous control of the robot’s actions
+is achieved using the dynamic window algorithm ( Liu, Yao, Chen,
+Huang, Xu, Wang, & Guo , 2021 ).
+The detection probability, unlike in the simulations, is now binary
+like in Section 5.2 before:
+𝜋𝑎(𝑥,𝑞𝑎) ={
+1𝑥∈𝑎
+0𝑥∉𝑎(34)
+6Just like in the single-agent experiment ofSection 5.2, but now for both
+agents, we collected 100 images of a single target at different positions in
+the camera images, then calculated the empirical covariance of target position
+error.Control  Engineering  Practice  153 (2024)  106094  
+14 
+B. Yousuf et al.
+Fig. 13. Top: Comparison between MAASI and MAAS for heterogeneous robots, with
+obstacles. MAASI is represented by a green continuous line, and MAAS by a cyan
+dashed line. Bottom: Trajectories of the two agents with MAASI.
+Fig. 14. Parrot Mambo minidrone and TurtleBot searching for targets (blue markers).
+For the drone, the FOV is 1= [𝚇1−0.2,𝚇1+0.2]×[ 𝚈1−0.2,𝚈1+0.2]and
+for the TurtleBot it is 2= [𝚇2− 0.1,𝚇2+ 0.2] × [ 𝚈2− 0.1,𝚈2+ 0.2]. Thus,
+the TurtleBot’s FOV is off-center, as shown earlier in Fig. 8 (bottom).
+For MAASI, we use the candidate waypoint grids from Section 7.1.3 ,
+and for MAAS we use the candidate set from Section 7.1.3 . For all
+methods, the two agents start their motion from opposite corners:
+the drone from [1.9,1.9]𝑇, maintaining a constant altitude of 1m, and
+the TurtleBot from [0,0]𝑇. The lawnmowers of the two agents have a
+spacing of 0.25 m on both the 𝚇and 𝚈axes and meet in the middle.
+Similarly to the lawnmower, for MAASI and MAAS, the two agents start
+their motion simultaneously from opposite corners of the environment.
+The empirical covariances we found are 𝑅1= diag[0.016,0.052]for the
+drone and 𝑅2= diag[0.011,0.0311] for the TurtleBot. The threshold
+values for target marking and removal are experimentally set as 𝑊=
+0.02m,𝑚= 0.04m, and 𝑧= 0.05m.
+At the start of each experiment, both agents simultaneously gen-
+erate waypoints. However, due to limited battery life and Bluetooth
+connectivity, the drone is unable to search for the full length of the
+experiment. When the drone trajectory finishes, the TurtleBot switches
+from MAASI to ASI to find the remaining targets.
+Fig. 15. Top: Detected number of targets using the Parrot Mambo minidrone and the
+TurtleBot in real experiments. Bottom: Trajectories of the two agents with MAASI.
+With these settings, we compare the number of detected targets
+MAASI framework with MAAS and the lawnmower. The results in
+Fig. 15 (top) show the target detection as a function of the number
+of measurement steps summed up across both agents. Fig. 15 (bottom)
+shows the real agents searching for the targets. MAASI performs best,
+with the agents finding all targets the fastest; followed by MAAS and
+then by the lawnmower. These relationships are similar both to those
+in the single-agent real-robot results and to those in the multi-agent
+simulations.
+A video of the real-life experiment is available at http://rocon.
+utcluj.ro/files/MAASI_mambo_turtlebot.mp4 . In the video, in the mid-
+dle of the experiment at 3 min and 30 s, the drone finishes its trajectory,
+and the TurtleBot finds the rest of the targets alone, as discussed
+previously.
+8. Conclusion
+We introduced a framework for multi-agent active target search that
+aims to quickly find an unknown number of static targets at unknown
+locations. The framework works in 3D or 2D, for homogeneous or
+heterogeneous agents, as well as for a single agent; accommodates
+asynchronous planning and measurements by agents in the team; and
+allows each agent to optionally only take measurements when they
+are expected to improve target detection. Simulations and real-life
+experiments illustrated better performance than several representative
+baselines.
+Our solution has a few limitations that need to be addressed in fu-
+ture work. The experiments were conducted indoors, and running them
+outdoors presents significant new challenges, such as detecting targets
+in adverse weather conditions. Additionally, our algorithm relies on
+knowing the robots’ poses; joint filtering of target and pose measure-
+ments, as described by Mahler (2007 ), can be performed to address
+pose uncertainty. Moreover, future research could explore applying the
+technique in the field to search for ocean litter using a combination of
+aerial, surface, and underwater robots. One of the key challenges in
+this scenario will be devising appropriate sensor models for each type
+of robot.Control  Engineering  Practice  153 (2024)  106094  
+15 
+B. Yousuf et al.
+CRediT authorship contribution statement
+Bilal Yousuf: Writing – original draft, Visualization, Validation,
+Software, Resources, Methodology, Formal analysis, Data curation,
+Conceptualization. Radu Herzal: Software, Validation, Visualization.
+Zsófia Lendek: Writing – review & editing, Supervision, Method-
+ology. Lucian Buşoniu: Writing – review & editing, Supervision,
+Methodology, Project administration, Funding acquisition.
+Declaration of competing interest
+The authors declare that they have no known competing finan-
+cial interests or personal relationships that could have appeared to
+influence the work reported in this paper.
+References
+Aguilar, G., Bravo, L., Ruiz, U., Murrieta-Cid, R., & Chavez, E. (2019). A distributed
+algorithm for exploration of unknown environments with multiple robots. Journal
+of Intelligent and Robotics Systems ,95(3), 1021–1040.
+Berger, J., & Lo, N. (2015). An innovative multi-agent search-and-rescue path planning
+approach. Computers & Operations Research ,53, 24–31.
+Bircher, A., Kamel, M. S., Alexis, K., Oleynikova, H., & Siegwart, R. (2018). Receding
+horizon path planning for 3D exploration and surface inspection. Autonomous
+Robots ,42, 291–306.
+Chen, K., Chai, & Yi, W. (2022). Multi-sensor control for jointly searching and
+tracking multi-target using the Poisson multi-Bernoulli mixture. In 11th international
+conference on control, automation and information sciences (pp. 240–247). Hanoi,
+Vietnam.
+Chen, J., & Dames, P. (2020). Collision-free distributed multi-target tracking using
+teams of mobile robots with localization uncertainty. In IEEE/RSJ international
+conference on intelligent robots and systems (pp. 6968–6974). Las Vegas, NV, USA.
+Chen, J., & Dames, P. (2022). Active multi-target search using distributed Thompson
+sampling :Technical report Research Square .
+Chung, W., Giri, D. K., & Son, H. (2019). Finite-time control of multirotor UAVs under
+disturbances. IEEE Access ,7, 173549–173558.
+Cooper, J. (2020). Optimal multi-agent search and rescue using potential field theory.
+InAIAA Scitech 2020 forum (pp. 1–9).
+Dames, P. (2020). Distributed multi-target search and tracking using the PHD filter.
+Autonomous Robots ,44, 673–689.
+Dames, P., & Kumar, V. (2015). Autonomous localization of an unknown number of
+targets without data association using teams of mobile sensors. IEEE Transaction on
+Automation Science and Engineering ,12(2), 850–864.
+Dames, P., Tokekar, P., & Kumar, V. (2017). Detecting, localizing, and tracking an
+unknown number of moving targets using a team of mobile robots. The International
+Journal of Robotics Research ,36, 1540–1553.
+Dang, T., Khattak, S., Mascarich, F., & Alexis, K. (2019). Explore locally, plan globally:
+A path planning framework for autonomous robotic exploration in subterranean
+environments. In 19th international conference on advanced robotics (pp. 9–16). Belo
+Horizonte, Brazil.
+Gu, J., Sun, R., & Chen, J. (2021). Improved back-stepping control for nonlinear
+small UAV systems with transient prescribed performance design. IEEE Access ,9,
+128786–128798.
+Gu, J., Zhou, J., & Chen, X. (2009). An enhancement of K-means clustering algorithm.
+InInternational conference on business intelligence and financial engineering (pp.
+237–240). Beijing, China.
+Ivić, S. (2022). Motion control for autonomous Heterogeneous Multiagent Area search
+in uncertain conditions. IEEE Transactions on Cybernetics ,52(5), 3123–3135.
+Juliá, M., Gil, A., & Reinoso, O. (2012). A comparison of path planning strategies
+for autonomous exploration and mapping of unknown environments. Autonomous
+Robots ,33, 427–444.
+Kagan, E., Goren, G., & Ben-Gal, I. (2010). Probabilistic double-distance algorithm of
+search after static or moving target by autonomous mobile agent. In 2010 IEEE
+26-th convention of electrical and electronics engineers (pp. 160–164). Eilat, Israel.
+Khoukhi, A., & Shahab, M. (2013). Stabilized feedback control of unicycle mobile
+robots. International Journal of Advanced Robotic Systems ,10(4), 1–8.
+Kim, J. (2021). Tracking controllers to chase a target using multiple autonomous
+underwater vehicles measuring the sound emitted from the target. IEEE Transactions
+on Systems, Man, and Cybernetics: Systems ,51(7), 4579–4587.
+Kim, J., Jang, D., & Kim, J. (2023). Distributed multi-agent target search and
+tracking with Gaussian process and reinforcement learning. Intelligent Control and
+Applications ,21, 3057–3067.
+Leonard, M., & Zoubir, A. (2019). Multi-target tracking in distributed sensor networks
+using particle PHD filters. IEEE Transactions on Signal Processing ,130–146 , 640–644.
+Li, X., Ren, J., & Li, Y. (2024). Multi-mode filter target tracking method for mobile
+robot using multi-agent reinforcement learning. Engineering Applications of Artificial
+Intelligence ,127, 1–9.Lin, L., & Goodrich, M. (2014). Hierarchical heuristic search using a Gaussian mixture
+model for UAV coverage planning. IEEE Transactions on Cybernetics ,44(12),
+2432–2544.
+Liu, L., Ji, H., Zhang, W., & Liao, G. (2020). Multi-sensor fusion for multi-target tracking
+using measurement division. IET Radar Sonar Navigation ,14, 1451–1461.
+Liu, L., Yao, J., Chen, J., Huang, J., Xu, H., Wang, B., et al. (2021). Global dynamic
+path planning fusion algorithm combining jump-A* algorithm and dynamic window
+approach. IEEE Access ,9, 19632–19638.
+Mahler, R. (2007). Statistical multisource-multitarget information fusion . Artech.
+Matzliach, B., Ben-Gal, I., & Kagan, E. (2022). Detection of static and mobile targets
+by an autonomous agent with deep Q-learning abilities. Entropy ,24(8), 1–24.
+Murillo, M., Sánchez, G., Genzelis, L., & Giovanini, L. (2018). A real-time path-planning
+algorithm based on receding horizon techniques. Journal of Intelligent Robotics
+System ,91, 445–457.
+Olcay, E., Bodeit, J., & Lohmann, B. (2020). Sensor-based exploration of an unknown
+area with multiple mobile agents. In 21st IFAC World Congress (pp. 2405–8963).
+Berlin, Germany.
+Otte, M., Kuhlman, M., & Sofge, D. (2018). Competitive target search with multi-agent
+teams: symmetric and asymmetric communication constraints. Autonomous Robots ,
+42(2), 1207–1230.
+Pallin, M., Rashid, J., & Ögren, P. (2021). Formulation and solution of the multi-agent
+concurrent search and rescue problem. In IEEE international symposium on safety,
+security, and rescue robotics (pp. 27–33). New York, NY, USA.
+Pandey, V., Kamal, S., & Ghosh, S. (2024). Finite-time discrete control for two-DOF
+helicopter system. IEEE Transactions on Circuits and Systems II: Express Briefs ,71(8),
+3800–3804.
+Papaioannou, S., Kolios, P., Theocharides, T., Panayiotou, C. G., & Polycarpou, M.
+M. (2021). A cooperative multiagent probabilistic framework for search and track
+missions. IEEE Transactions on Control of Network Systems ,8(2), 847–857.
+Rost, P. B., Axehill, D., & Hendeby, G. (2021). Sensor management for search and track
+using the Poisson multi-Bernoulli mixture filter. IEEE Transactions on Aerospace and
+Electronic Systems ,57(5), 2771–2783.
+Shan, J., Yang, Y., Liu, H., & Liu, T. (2023). Infrared small target tracking based on
+OSTrack model. IEEE Access ,11, 123938–123946.
+Shen, G., Lei, L., Zhang, X., Li, Z., Cai, S., & Zhang, L. (2023). Multi-UAV cooper-
+ative search based on reinforcement learning with a digital twin driven training
+framework. IEEE Transactions on Vehicular Technology ,72(7), 8354–8368.
+Shirsat, A., & Berman, S. (2021). Decentralized multi-target tracking with multiple
+quadrotors using a PHD filter . Reston, Virginia: AIAA Scitech 2021 Forum.
+Shoufeng, Y., Yingnan, P., Liang, C., & Lei, C. (2024). Predefined-time fault-tolerant
+consensus tracking control for Multi-UAV systems with prescribed performance and
+attitude constraints. IEEE Transactions on Aerospace and Electronic Systems ,60(4),
+4058–4072.
+Sun, P., Zhu, B., & Li, S. (2024). Vision-based prescribed performance control for
+UAV target tracking subject to actuator saturation. IEEE Transactions on Intelligent
+Vehicles ,9(1), 2382–2389.
+Sung, Y., & Tokekar, P. (2022). GM-PHD filter for searching and tracking an unknown
+number of targets with a mobile sensor with limited FOV. IEEE Transactions on
+Automation Science and Engineering ,19(3), 2122–2134.
+Sütő, B., Codrean, A., & Lendek, Zs. (2023). Optimal control of multiple drones for
+obstacle avoidance. In 22nd IFAC World Congress (pp. 5980–5986). Yokohama,
+Japan.
+Tindall, L., Mair, E., & Nguyen, T. (2023). Radio frequency signal strength based
+multi-target tracking with robust path planning. IEEE Access ,11, 43472–43484.
+Trenev, I., Tkachenko, A., & Kustov, A. (2021). Movement stabilization of the Parrot
+Mambo quadcopter along a given trajectory based on PID controllers. In 20th IFAC
+conference on technology, culture, and international stability, (TECIS 21), IFAC-papers
+online :54, (pp. 227–232). Russia, Moscow.
+Tyagi, P., Kumar, Y., & Sujit, P. B. (2021). NMPC-based UAV 3D target tracking in
+the presence of obstacles and visibility constraints. In International conference on
+unmanned aircraft systems (pp. 858–867). Athens, Greece.
+Vo, B. N., Singh, S., & Doucet, A. (2005). Sequential Monte Carlo methods for
+multitarget filtering with random finite sets. IEEE Transactions on Aerospace and
+Electronic Systems ,41(4), 1224–1245.
+Wang, X., & Fang, X. (2023). A multi-agent reinforcement learning algorithm with the
+action preference selection strategy for massive target cooperative search mission
+planning. Expert Systems with Applications ,231, 1–20.
+Wang, L., Su, F., Zhu, H., & Shen, L. (2010). Active sensing based cooperative target
+tracking using UAVs in an urban area. In 2010 2nd International conference on
+advanced computer control :2, (pp. 486–491). Shenyang, China.
+Wang, G., Wei, F., Jiang, Y., Zhao, M., Wang, K., & Qi, H. (2022). A multi-
+AUV maritime target search method for moving and invisible objects based on
+multi-agent deep reinforcement learning. Sensors ,22(21), 1–18.
+Xia, J., Luo, Y., Liu, Z., Zhang, Y., Shi, H., & Liu, Z. (2023). Cooperative multi-target
+hunting by unmanned surface vehicles based on multi-agent reinforcement learning.
+Defence Technology ,29, 80–94.
+Xiao, J., Tan, X. M., Zhou, X., & Feroskhan, M. (2023). Learning collaborative multi-
+target search for a visual drone swarm. In IEEE conference on Artificial Intelligence
+(pp. 5–7). Santa Clara, CA, USA.
+Xu, X., Yang, L., Meng, W., Cai, Q., & Fu, M. (2019). Multi-agent coverage search in
+unknown environments with obstacles: A survey. In Chinese control conference (pp.
+2317–2322). Guangzhou, China.Control  Engineering  Practice  153 (2024)  106094  
+16 
+B. Yousuf et al.
+Yan, F., Di, K., Jiang, J., Jiang, Y., & Fan, H. (2019). Efficient decision-making for
+multiagent target searching and occupancy in an unknown environment. Robotics
+and Autonomous Systems ,114, 41–56.
+Yousuf, B., Lendek, Zs., & Buşoniu, L. (2022). Exploration-based search for an unknown
+number of targets using a UAV. In 6th IFAC conference on intelligent control and
+automation sciences :55, (pp. 93–98). Cluj,Romania.
+Yousuf, B., Lendek, Zs., & Buşoniu, L. (2023). Multi-agent exploration-based search for
+an unknown number of targets. In 22nd IFAC World Congress (pp. 5999–6004).
+Yokohama, Japan.
+Yousuf, B., Lendek, Zs., & Buşoniu, L. (2024). Exploration-based planning for
+multiple-target search with real-drone results. Sensors ,24(9), 1–20.
+Zhang, R., Wang, J., Ge, J., & Huang, Q. (2024). Multiagent cooperative search learning
+with intermittent communication. IEEE Intelligent Systems ,39(02), 11–20.
+Zheng, X., Galland, S., Tu, X., Yang, Q., Lombard, A., & Gaud, N. (2020). Obstacle
+avoidance model for UAVs with joint target based on multi-strategies and follow-
+up vector field. In 11th international conference on ambient systems, networks and
+technologies :170, (pp. 257–264). Warsaw, Poland.
+Zhou, Y., Chen, A., He, X., & Bian, X. (2021). Multi-target coordinated search algorithm
+for swarm robotics considering practical constraints. Frontiers in Neurorobotics ,15,
+144–156.
+Zhou, Y., Liu, Z., Shi, H., Li, S., Ning, N., Liu, F., et al. (2023). Cooperative multi-
+agent target searching: a deep reinforcement learning approach based on parallel
+hindsight experience replay. Complex and Intelligent Systems ,9, 4887–4898.
+Zhou, L., Tzoumas, V., Pappas, G., & Tokekar, P. (2019). Resilient active target tracking
+with multiple robots. IEEE Robotics and Automation Letters ,4(1), 129–136.
+Bilal Yousuf was born in Karachi, Pakistan in 1993. He
+received the Master’s degree in Electrical Engineering (Con-
+trol Systems) from the Pakistan Navy Engineering College,
+a part of the National University of Science and Technology
+(PNEC-NUST) in 2018. Bilal’s passion for research and
+engineering led him to pursue a PhD in robotics and control
+systems. Bilal works as a full-time Research Assistant and
+PhD student at the Technical University of Cluj-Napoca, Ro-
+mania, within the Robotics and Nonlinear Control (ROCON)
+group. His research interests primarily revolve around the
+design of nonlinear control systems for robotic vehicles and
+artificial intelligence.
+Radu Herzal is an undergraduate student at the Technical
+University of Cluj-Napoca, pursuing a BSc degree in Control
+Engineering. Due to his passion for technology and research,
+he joined the Robotics and Nonlinear Control (ROCON)
+group as a student researcher. His research interests include
+robotics, nonlinear control systems, and multiagent systems.
+Zsofia Lendek received the MSc degree in control en-
+gineering from the Technical University of Cluj-Napoca,
+Romania, in 2003, and the PhD degree from the Delft
+University of Technology, the Netherlands, in 2009. She is
+currently a full professor at the Technical University of Cluj-
+Napoca, Romania. Her research interests include observer
+and controller design for nonlinear systems, in particular
+Takagi–Sugeno fuzzy systems. She is an Associate Editor
+for IEEE Transaction on Fuzzy systems and Engineering
+Applications of Artificial Intelligence.
+Lucian Busoniu received his Ph.D. degree cum laude from
+the Delft University of Technology, the Netherlands, in
+2009. He is a full professor with the Department of Au-
+tomation at the Technical University of Cluj-Napoca, where
+he leads the group on Robotics and Nonlinear Control. He
+has previously held research positions in the Netherlands
+and France. His research interests include nonlinear optimal
+control using artificial intelligence and reinforcement learn-
+ing techniques, robotics, and multiagent systems. He serves
+on the editorial board of the Elsevier journal Engineering
+Applications of Artificial Intelligence and was the recipient
+of the 2009 Andrew P. Sage Award for the Best Paper in
+the IEEE Transactions on Systems, Man, and Cybernetics.Control  Engineering  Practice  153 (2024)  106094  
+17 

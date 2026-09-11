@@ -1,0 +1,1420 @@
+Trajectory Optimization in Single and Dual-UA V Bearing-Only Target Localization
+Zhijian Xiaoa,b, Huayu Huanga,b, Bin Lia,b,1, Yang Shanga,b,1, Banglei Guana,b
+aCollege of Aerospace Science and Engineering, National University of Defense Technology, Changsha 410073, China
+bHunan Key Laboratory of Image Measurement and Visual Navigation, Changsha 410073, China
+Abstract
+Bearing-only target localization is a fundamental problem in optical measurement and finds extensive applications in unmanned
+aerial vehicle (UA V) technology. Effective trajectory planning establishes favorable observation geometries, thereby enhancing the
+target localization accuracy of bearing-only UA V systems. This paper proposes an trajectory optimization method for unmanned
+aerial vehicles (UA Vs) in bearing-only target localization scenarios. By leveraging the Fisher Information Matrix (FIM), the
+proposed approach dynamically integrates the geometric configuration and vehicle maneuverability into the optimization framework.
+Specifically, we introduce a spectrally-weighted FIM objective function that provides better gradient dynamics near degenerate
+configurations, enabling the planner to rapidly escape from poor observation conditions. For dual-UA V scenarios, an intersection
+angle sine term is introduced to optimize triangulation geometry by improving the sight-line intersection angle, thereby preventing
+trajectory aggregation. Furthermore, we propose an improved Particle Swarm Optimization (PSO) algorithm with motion model
+constraints and particle normalization to ensure the physical feasibility of the trajectory and enhance the compatibility with the
+objective functions. Simulation results demonstrate that the proposed method reduces the median localization error by 99.21%
+compared to conventional FIM-based approaches in single-UA V scenarios, and achieves a 69.70% improvement for dual-UA V
+configurations, exhibits superior performance in long-duration bearing-only target localization of maneuverability targets at extended
+ranges.
+Keywords:Fisher Information Matrix, Trajectory Optimization, Bearing-Only Target Localization, Particle Swarm Optimization
+1. Introduction
+Unmanned Aerial Vehicles (UA Vs) have widely become in-
+dispensable tools in civilian and military applications, including
+infrastructure inspection, precision agriculture, search and res-
+cue operations, and surveillance missions [ 1,2]. The ability
+of UA Vs to access areas that are difficult to reach and operate
+in hazardous environments has driven their rapid adoption in
+recent years. Central to the effectiveness of these applications
+is the capability to accurately localize and track targets of in-
+terest in real-time, which forms the foundation for autonomous
+decision-making and mission execution [3, 4].
+Target localization techniques for UA Vs can be categorized
+based on the type of measurements employed. While range-
+based methods using GPS, LiDAR, or ultrasonic sensors pro-
+vide direct distance information, bearing-only localization using
+monocular cameras has gained significant attention due to its low
+cost, light weight, and minimal payload requirements [ 5,6,7].
+In most cases, the direction of the targets relative to the UA V is
+measured through visual sensors, and the position of the targets
+is estimated through geometric triangulation over time [8].
+The development of bearing-only localization has been driven
+by advances in both theoretical understanding and practical al-
+gorithms. Early work established the fundamental observability
+∗Corresponding author.
+E-mail address:libin19a@nudt.edu.cn; shangyang1977@nudt.edu.cn.conditions for bearing-only tracking, demonstrating that the ob-
+server must execute specific maneuvers to guarantee that the
+target state is recoverable from angle measurements alone [ 9,10].
+Subsequent research introduced the Fisher Information Matrix
+(FIM) and Cramér-Rao Lower Bound (CRLB) as theoretical
+tools for quantifying localization accuracy and optimizing sensor
+placement [ 11,12]. These frameworks revealed that localization
+performance is critically dependent on the relative geometry
+between observers and targets that means poor viewing angles
+can lead to unbounded estimation uncertainty even with high-
+precision sensors [13, 14].
+Recent advances have significantly expanded the capabilities
+of bearing-only localization systems. Li et al. [15] proposed an
+observability-enhanced helical guidance law that drives UA Vs
+along three-dimensional spiral trajectories, exploiting the ad-
+ditional degree of freedom in altitude to improve observabil-
+ity. Peng et al. [ 16] developed trajectory optimization methods
+using control barrier functions to actively enhance observabil-
+ity while accounting for sensor bias calibration. Meanwhile,
+learning-based approaches have emerged as promising alterna-
+tives: Fu et al. [ 17] introduced Gaussian process learning for
+bearing-only target tracking, providing probabilistic bounds on
+prediction errors. Su et al. [ 18] developed a real-time remote
+sensing framework for uneven terrain using monocular bearing-
+only micro UA Vs, achieving 3.79 m RMSE in field experiments.
+These developments collectively demonstrate the rich potential
+of bearing-only methods for practical UA V applications.arXiv:2606.09188v1  [cs.RO]  8 Jun 2026
+Despite these advances, a fundamental limitation persists:
+most existing approaches treat the UA V as a passive observer,
+neglecting its inherent mobility as a controllable degree of free-
+dom for improving localization performance. This observation
+motivates the paradigm of active perception, where the sensing
+platform dynamically adjusts its motion to maximize informa-
+tion acquisition [ 19]. In contrast to passive data collection with
+pre-defined trajectories, active perception tightly couples sens-
+ing and decision-making, enabling the platform to respond to
+real-time observations and optimize the quality of gathered in-
+formation by controlling the motion of the platform [20, 21].
+The benefits of active perception for bearing-only localization
+are substantial. By intelligently planning trajectories that maxi-
+mize observability, UA Vs can achieve significantly higher local-
+ization accuracy with fewer measurements compared to passive
+approaches [ 22,23]. Popovi ´c et al. [ 24] demonstrated that infor-
+mative path planning using the Covariance Matrix Adaptation
+Evolution Strategy (CMA-ES) can reduce map entropy by 45%
+compared to coverage-based planners. Rúckin et al. [ 25] showed
+that deep reinforcement learning for adaptive informative path
+planning achieves 8–10 ×speedup over evolutionary methods
+while maintaining superior information gathering performance.
+Recent work by Mudrik et al. [ 26] further demonstrated that
+coordinated teams of fixed-field-of-view UA Vs can match or
+surpass the localization accuracy of single gimballed systems
+while substantially lowering system complexity and cost. These
+results highlight the transformative potential of leveraging UA V
+mobility for active observation.
+However, existing active perception approaches for bearing-
+only localization face several challenges. First, the conven-
+tional FIM-based optimization typically maximizes the determi-
+nant [ 27]. The D-optimality gradient vanishes near degenerate
+geometries, causing the optimizer to become trapped in singu-
+lar configurations. Second, multi-UA V coordination strategies
+often assume static geometric configurations or decouple trajec-
+tory planning from target dynamics [ 28]. Third, conventional
+trajectory optimization methods use the direction angle as the
+optimization vector, resulting in the generation of unreasonable
+waypoints. [ 29,30]. Recent advances in self-supervised learning
+for trajectory planning [ 31] and particle filter-guided neural net-
+works for multi-target tracking [ 32] offer promising directions.
+However, their methods have not been fully integrated into the
+frameworks of active perception.
+To address these limitations, this paper presents an trajectory
+optimization framework for UA V bearing-only target localiza-
+tion as shown in Fig. 1. Our main contributions are threefold:
+•We propose a spectrally-weighted FIM objective function
+that reshapes the optimization landscape near degenerate
+configurations. By logarithmically aggregating FIM eigen-
+values, the objective function generates diverging gradients
+that enables the optimizer to escape local optima more
+easily, thereby generating optimal trajectories.
+•We extend this formulation by introducing an intersection
+angle sine objective function for dual-UA V scenarios that
+optimizes triangulation geometry by optimizing the sight-line intersection angle, thereby preventing trajectory aggre-
+gation and enhancing cross-bearing information diversity.
+•We develop a motion-constrained PSO algorithm with parti-
+cle normalization that embeds platform motion constraints
+into the particle generation iteration process and uses par-
+ticle diversity features to automatically adjust the weights
+of sub-functions. This ensures the physical feasibility of
+the trajectory without manual tuning of objective weights,
+enhancing compatibility with the objective functions.
+The remainder of this paper is organized as follows. Section 2
+reviews related work on active perception and informative path
+planning for UA V-based localization. Section 3 presents the
+theoretical foundation of our approach, including the spectrally-
+weighted FIM formulation, the intersection angle sine objec-
+tive for dual-UA V coordination, and our optimization algorithm
+framework. Section 4 presents simulation results validating the
+effectiveness of the proposed method. Section 5 discusses the
+obtained results, analyzes the strong and weak points of our
+method, and outlines future research directions. Section 6 makes
+a conclusion for this paper.
+2. Related Work
+Active perception refers to the paradigm where a sensing
+platform dynamically adjusts its state or motion to maximize
+the information content of acquired measurements [ 19]. Unlike
+passive perception where sensor configuration is fixed or fol-
+lows pre-defined patterns, active perception treats sensing and
+decision-making as coupled processes that mutually inform each
+other. This concept has its roots in active vision research, where
+camera parameters such as gaze direction, focus, and aperture
+are controlled to facilitate visual tasks [ 20,21]. In the context of
+UA V-based localization, active perception manifests as trajectory
+optimization that maximizes information-theoretic objectives
+while respecting platform dynamics and mission constraints.
+The effectiveness of active perception stems from its ability
+to exploit the fundamental relationship between sensor geome-
+try and estimation uncertainty. For bearing-only measurements,
+the Fisher Information Matrix provides a theoretical charac-
+terization of how observer-target geometry affects localization
+accuracy [ 11,12]. By optimizing trajectories to maximize in-
+formation content, active perception methods can achieve the
+same estimation accuracy with significantly fewer measurements
+compared to passive approaches [ 22,23]. This efficiency is par-
+ticularly valuable for UA V operations where battery life and
+mission duration are constrained.
+Early work in active perception for target localization focused
+on establishing observability conditions and developing guid-
+ance laws that enhance estimation performance. Nardone and
+Aidala [ 9] derived fundamental observability criteria for bearing-
+only tracking, demonstrating that observer acceleration must
+satisfy specific conditions to guarantee target state recoverabil-
+ity. Aidala et al. [ 10] introduced the Fisher Information Matrix
+for quantifying observability in bearing-only systems, establish-
+ing optimal sensor-target geometries that maximize information
+2
+Figure 1: The flow diagram of the proposed method.
+content. These theoretical foundations laid the groundwork for
+subsequent trajectory optimization approaches.
+The framework of Informative Path Planning (IPP) formalizes
+active perception as an optimization problem where trajecto-
+ries are selected to maximize information-theoretic objectives
+subject to platform constraints [ 24,25]. Within this framework,
+existing approaches can be broadly classified into two categories:
+sampling-based and optimization-based methods. Sampling-
+based algorithms, such as those proposed by Hollinger et al. [ 22],
+balance exploration and exploitation in unknown environments.
+Choudhury et al. [ 23] combined Monte Carlo Tree Search with
+cost-benefit rollouts to improve sampling efficiency in large
+action spaces. These methods demonstrated that adaptive re-
+planning based on accumulated information significantly out-
+performs pre-computed coverage patterns. Optimization-based
+approaches directly maximize information objectives through
+continuous trajectory refinement. Popovi ´c et al. [ 24] employed
+the Covariance Matrix Adaptation Evolution Strategy (CMA-
+ES) to optimize measurement positions for UA V-based active
+classification, achieving substantial reductions in map entropy
+compared to coverage planners. Hitz et al. [ 33] extended this
+approach to persistent monitoring applications, demonstrating
+continuous refinement of informative trajectories over extended
+mission durations.
+Recent years have witnessed growing interest in learning-
+based methods for active perception. Rúckin et al. [ 25] pro-
+posed deep reinforcement learning for adaptive informative path
+planning, training a convolutional neural network to predict
+informative actions from environmental observations. Their
+approach achieved 8–10 ×speedup over CMA-ES while main-
+taining superior uncertainty reduction performance. Vashisth et
+al. [34] extended this framework with dynamic graph networks
+for multi-UA V coordination, enabling scalable adaptive planningthrough learned communication protocols. Jiang et al. [ 31] in-
+troduced a self-supervised learning approach with differentiable
+optimization for UA V trajectory planning, achieving 31.33%
+improvement in position tracking error and 49.37% reduction
+in control effort. These learning-based methods offer promising
+computational efficiency but require extensive offline training
+and may struggle with generalization to unseen environments.
+Several approaches specifically address the challenges of
+bearing-only localization through active perception. He et
+al. [8] developed trajectory optimization methods that maxi-
+mize bearing-based observability metrics, revealing that circu-
+lar motion around the target provides optimal observability for
+stationary targets. Li et al. [ 15] extended this analysis to three-
+dimensional scenarios, proposing helical guidance laws that
+exploit altitude variation to enhance observability. Recent work
+by Zhou et al. [ 35] proposed distributed fixed-time estimators for
+multi-UA V bearing-only target tracking, enabling complete state
+estimation within preset time bounds. These methods demon-
+strate the importance of tailoring active perception strategies to
+the specific characteristics of bearing measurements.
+Multi-UA V active perception introduces additional challenges
+related to coordination and information fusion. Doostmoham-
+madian et al. [ 28] developed distributed estimation approaches
+for tracking mobile targets via UA V formations, incorporating
+observability analysis into the control design. Dai et al. [ 36]
+addressed asynchronous multi-target tracking through collabora-
+tive trajectory optimization, demonstrating the benefits of tem-
+poral coordination in multi-platform scenarios. Wang et al. [ 37]
+proposed energy-efficient cooperative localization by measure-
+ment scheduling, demonstrating that optimized fusion strate-
+gies can significantly reduce communication costs in large-scale
+swarms. However, these formation-based and scheduling-centric
+approaches typically decouple geometric configuration optimiza-
+3
+tion from trajectory planning, limiting their effectiveness when
+tracking maneuvering targets. The challenge of dynamically
+optimizing geometric configuration while accounting for target
+motion and platform constraints remains an open problem.
+In contrast to existing approaches, this work addresses the
+limitations of current active perception methods for bearing-only
+localization through three key innovations. First, our spectrally-
+weighted FIM formulation explicitly promotes robust gradi-
+ent dynamics near degenerate configurations, overcoming the
+vanishing-gradient issue of conventional D-optimality criteria.
+Second, the intersection angle sine objective function integrates
+geometric configuration planning with trajectory optimization
+in a unified framework. Third, the motion-constrained PSO with
+particle normalization ensures the physical feasibility of the tra-
+jectory, and enhances compatibility with the objective functions.
+These contributions collectively advance the state-of-the-art in
+active perception for UA V-based bearing-only localization.
+3. Methods
+In this section, we establish the objective functions for UA V
+trajectory planning and propose a new algorithmic framework
+based on PSO algorithm. Section 3.1 introduces the conven-
+tional FIM objective function based on the D-optimality crite-
+rion and derives its functional expression. Section 3.2 presents
+the spectrally-weighted FIM objective function and analyzes its
+gradient dynamics near degenerate configurations. Section 3.3
+introduces the intersection angle objective for dual-UA V coor-
+dination and establishes its equivalence with the GDOP. Sec-
+tion 3.4 presents the optimization algorithm framework for the
+UA V trajectory planning problem.
+3.1. Fundamentals of Fisher Information Matrix
+The FIM is a fundamental concept in statistics and information
+theory, quantifying the sensitivity of probability distributions to
+parameter variations and serving as a core tool for measuring
+parameter estimation uncertainty. For a parameterized probabil-
+ity distribution p(z|θ), where zrepresents the state vector and
+θrepresents the parameter vector, the FIM is defined based on
+second-order derivatives of the log-likelihood function. The
+general expectation-based definition is
+[J]i j=E"∂ln(p(z|θ))
+∂θi·∂ln(p(z|θ))
+∂θj#
+,(1)
+where [J] i jdenotes the element in the i-th row and j-th column
+of the FIM, and∂lnp
+∂θirepresents the partial derivative of the
+log-likelihood function with respect to thei-th parameter.
+Diagonal elements of FIM represent the information content
+for corresponding parameters. Generally, larger diagonal ele-
+ments indicate stronger sensitivity of the probability distribution
+to parameter variations, signifying greater parameter importance.
+According to Cramér-Rao Lower Bound (CRLB) theory, for
+an unbiased estimator ˆθ, the covariance matrix satisfies
+cov(ˆθ)≥J−1.(2)Eq.(2)establishes that the inverse of the FIM constitutes the
+lower bound for the parameter estimation error covariance ma-
+trix. When the observation angle is treated as the observation
+parameter θ, the target position as the state vector z, and the tri-
+angulation equation as the probability distribution functionp(·)
+in Eq. 1, the inverse of FIM represents the lower bound of the
+achievable measurement accuracy. Consequently, researchers
+often use FIM to assess the impact of observations on estimates.
+To derive FIM for UA V observations, we simplify the motion
+of target over a short time interval to uniform acceleration. The
+state equation for the target is expressed as:
+u(k+1)=Φu(k)+w,(3)
+u(k)=x(k),y(k),z(k),˙x(k),˙y(k),˙z(k),¨x(k),¨y(k),¨z(k)T,(4)
+Φ=I3tI3t2
+2I3
+0 I 3tI3
+0 0 I 3,(5)
+where Φdenotes the state transition matrix, u(k) denotes the
+state vector of the target at the k-th time, wdenotes the system
+process noise, [ x(k),y(k),z(k)]Tdenotes the position of the target
+at thek-th time, and t denotes the sampling time.
+The observation equation relating the target state to the mea-
+sured bearings is:
+h(k)="α(k)
+β(k)#
+=arctany(k)−y 0
+x(k)−x 0
+arctan 
+z(k)−z 0√
+(x(k)−x 0)2+(y(k)−y 0)2!+η,(6)
+where [ x0,y0,z0]Tdenotes the position of the observer at present,
+[α(k),β(k)]Tdenotes the azimuth and elevation, and ηdenotes
+the observation noise.
+The FIM matrix for the target observation angle can be calcu-
+lated using the following formula:
+J(k)=(Φ−1)TJ(k−1)Φ−1+HT(k)R−1H(k),(7)
+H(k)=∂h
+∂uˆu(k|k−1)
+=−sinα
+rxycosα
+rxy00 1×6
+−cosαsinβ
+r−sinαsinβ
+rcosβ
+r01×6
+ˆu(k|k−1),(8)
+where ˆu(k|k− 1) represents the predicted state at the k-th time,
+andrandrxydenote the distance of the predicted position of the
+target relative to the observation platform and its projection onto
+the horizontal plane.
+Using Eq. (7), we can obtain the FIM of the observer’s obser-
+vation of the target at the next time step. As shown in Eq. (2),
+to reduce the observation error, we need to increase the observa-
+tion FIM. According to the D-optimization criterion, the most
+common form of FIM quantifier is the determinant form:
+fdopt=det(J).(9)
+4
+3.2. Spectrally-Weighted FIM Objective Function
+The conventional D-optimality criterion maximizes the deter-
+minant of the FIM, which geometrically corresponds to minimiz-
+ing the volume of the uncertainty ellipsoid. In online trajectory
+optimization, however, the direct use of the determinant presents
+practical difficulties when the FIM approaches rank deficiency—
+a situation that arises whenever multiple sight lines become
+collinear or nearly collinear. This motivates the adoption of a
+spectrally-weighted formulation that preserves the fundamental
+optimality structure while introducing favorable gradient dynam-
+ics near such degenerate configurations.
+The spectrally-weighted objective function is formulated as
+the logarithmic aggregation of FIM eigenvalues:
+fspec(u)=nX
+i=1ln λi(J(u)),(10)
+whereλi(J(u)) denotes the i-th eigenvalue of the FIMJparame-
+terized by the platform motion parameters u. Recalling that the
+determinant of a matrix equals the product of its eigenvalues,
+this objective function can be rewritten compactly as:
+fspec(u)=ln det(J(u))=ln fdopt(u),(11)
+Because the natural logarithm is a strictly monotone increas-
+ing function on (0 ,+∞), the ordering of objective function values
+is preserved under this transformation. Consequently, any pa-
+rameter vector uthat maximizes fdoptalso maximizes fspec, and
+vice versa. The two objective functions therefore share identical
+local and global maxima, as well as identical stationary-point
+structure. The spectrally-weighted formulation does not alter the
+fundamental optimality properties of the FIM-based trajectory
+planning problem; rather, its practical advantages stem from the
+gradient dynamics induced by the logarithmic transformation,
+which we examine next.
+In bearing-only localization, adegenerate (or singular)
+configurationoccurs whenever multiple sight lines become
+collinear or nearly collinear. Under such configurations, the
+FIM loses full rank, its determinant tends to zero, and the cor-
+responding Cramér-Rao lower bound diverges, rendering the
+target state practically unobservable. Both D-optimality and
+the spectrally-weighted objective function are maximized at the
+same non-degenerate geometry. The critical difference lies in
+how their gradients behave when the platform trajectory ap-
+proaches such degenerate situation.
+To see this, differentiate Eq. (11) with respect to the motion
+parameters using the chain rule:
+∇fspec(u)=1
+det(J(u))∇fdopt(u).(12)
+Taking norms on both sides yields the gradient magnitude
+ratio as the following:
+∥∇f spec(u)∥
+∥∇f dopt(u)∥=1
+det(J(u)).(13)
+Equation (13) reveals a fundamental behavioral difference.
+Near a degenerate configuration, det(J)→0+, so the right-handside diverges to+ ∞. In other words, the spectrally-weighted
+objective function generates a gradient whose magnitude scales
+inversely with the determinant of the FIM. As the observation
+geometry approaches singularity, this gradient grows without
+bound, producing a strongrepulsive forcethat pushes the op-
+timization away from the degenerate locus. By contrast, the
+D-optimality gradient ∇fdoptremains bounded (in fact, it tends
+linearly to zero as the configuration approaches degeneracy),
+offering no comparable escape mechanism.
+To make this concrete, consider the FIM of a dual-UA V sys-
+tem as a function of the intersection angle θbetween two sight
+lines. When the UA Vs are positioned such that θ→ 0 (collinear
+sight lines), the FIM determinant behaves asymptotically as
+det(J)∼Cθ2for some positive constant Cdetermined by the
+range and measurement noise variance. Substituting this into
+Eq. (13) gives:
+∥∇f spec∥
+∥∇f dopt∥∼1
+Cθ2→+∞asθ→0.(14)
+The spectrally-weighted gradient therefore diverges as 1 /θ2
+near collinearity, whereas the D-optimality gradient vanishes as
+θ. This disparity is not a matter of numerical conditioning; it is
+an intrinsic property of the logarithmic transformation.
+The degeneracy-avoidance property translates directly into
+three operational benefits for online UA V trajectory planning.
+(1) Automatic observability safeguarding.During trajectory
+optimization, if a candidate motion direction would cause the
+UA V’s sight line to align with a previously recorded bearing, the
+FIM approaches rank deficiency and det(J) shrinks. Under D-
+optimality, the resulting gradient would be too weak to steer the
+optimizer away from this hazardous direction. The spectrally-
+weighted objective function, by virtue of Eq. (13), generates
+an increasingly strong counter-gradient that repels the planned
+trajectory from collinear geometries. This objective function
+acts as an implicit observability safeguard without requiring
+explicit enforcement of minimum bearing-separation angles or
+hard constraints on angular diversity.
+(2) Robust initialization.In practice, the UA V may begin
+its mission with a suboptimal initial trajectory—for example,
+a straight-line approach that keeps the target bearing nearly
+constant. Such initial segments are close to degenerate, so the
+D-optimality objective function contributes negligible gradient
+information, effectively freezing the optimization in its early
+iterations. Because the spectrally-weighted gradient scales in-
+versely with det(J), it maintains substantial magnitude precisely
+in these near-degenerate regions, allowing the planner to correct
+poor initial geometries rapidly rather than waiting for the UA V
+to drift into a more favorable configuration by chance.
+(3) Stabilized multi-objective function interactions.When
+the FIM term is combined with multi-UA V coordination objec-
+tive functions (addressed in Sections 3.3 and 3.4), the dynamic
+range of the D-optimality objective function becomes a practical
+concern. Near-degenerate flight segments can drive det(J) down
+to 10−6or lower, whereas favorable geometries may yield values
+of 104or higher. Spanning ten orders of magnitude within a
+single sub-objective function destabilizes the relative weighting
+5
+among competing terms. The logarithmic transformation com-
+presses this range into a moderate interval (roughly −14 to+9 in
+natural-log units), ensuring that the FIM term contributes stable
+gradient information across the entire planning horizon without
+swamping or being swamped by other sub-objective functions.
+It is worth emphasizing that the advantages described above
+do not arise from any difference in the global optima of the
+two formulations. As established by Eq. (11), the spectrally-
+weighted and D-optimality objective functions share the same
+optimal geometry. The benefits are insteaddynamicalin na-
+ture: the logarithmic transformation reshapes the optimization
+landscape near degenerate boundaries, providing stronger repul-
+sive forces and more stable multi-objective function interactions
+during the finite-iteration trajectory optimization process.
+3.3. Intersection Angle Objective Function Extended for Dual-
+UAV Configuration
+When multiple observation platforms are deployed, the ge-
+ometric configuration between the UA Vs fundamentally deter-
+mines the triangulation accuracy. For a dual-UA V bearing-only
+system, the critical geometric parameter is theintersection an-
+gleθbetween the two sight lines at the target location. Intuitively,
+when the two UA Vs view the target from orthogonal directions,
+the bearing measurements provide complementary information
+along independent axes, yielding the most reliable position es-
+timate. Conversely, when the sight lines are nearly parallel
+(θ→ 0), the two measurements become redundant, the triangu-
+lation geometry collapses, and the target position uncertainty
+grows without bound. This angular dependence is therefore
+central to the design of a multi-UA V objective function.
+Figure 2: Definition of intersection angle in dual-UA V scenario.
+Consider two observation platforms at positions s1,s2∈R3
+measuring bearing vectors to a target at p∈R3. Let a=s2−p
+andb=s1−pdenote the relative position vectors from the target
+to UA V 2 and UA V 1, respectively. Under equal measurement
+noise variance σ2for both azimuth and elevation angles, the
+bearing measurement model yields a Fisher information contri-
+bution from each platform that takes the form of a projection
+matrix orthogonal to the corresponding sight line.Specifically, the FIM contribution from a single platform with
+sight line vis proportional toP⊥
+v=I3−vv⊤/∥v∥2, which projects
+onto the plane perpendicular to the line of sight. The total FIM
+for target position estimation is the sum of contributions from
+both UA Vs as the following:
+Jpos=1
+σ2
+P⊥
+a+P⊥
+b
+.(15)
+This additive structure reveals that the total information de-
+pends on the relative orientation of the two sight lines. When
+the sight lines are orthogonal, the two projection matrices span
+complementary subspaces, and the FIM accumulates maximal
+directional diversity. When the sight lines are parallel, the pro-
+jection matrices coincide, and the total information degenerates
+to that of a single observation.
+To quantify this angular dependence, assume for simplicity
+that both UA Vs are at the same distance dfrom the target, so
+∥a∥=∥b∥=d. Select a coordinate frame in which the two
+sight lines are symmetrically disposed about the z-axis with
+intersection angleθ:
+a=0
+dsin(θ/2)
+dcos(θ/2),b=0
+−dsin(θ/2)
+dcos(θ/2).(16)
+Substituting these into the FIM expression and carrying out
+the matrix algebra, the position FIM becomes diagonal:
+Jpos=1
+σ22 0 0
+0 1+cosθ0
+0 0 2 sin2(θ/2)
+=1
+σ22 0 0
+0 1+cosθ0
+0 0 1−cosθ.(17)
+From this diagonal form, the determinant evaluates directly
+as the product of the diagonal entries:
+det(J pos)=4(1+cosθ)(1−cosθ)
+σ6=4 sin2θ
+σ6d4.(18)
+Since sin2θ≤1 with equality if and only if θ=90◦, the FIM
+determinant is maximized precisely when the two sight lines are
+orthogonal. The maximum value is 4 /(σ6d4), achieved at the
+ideal triangulation geometry.
+The preceding derivation establishes that maximizing the FIM
+determinant is equivalent to maximizing sin2θ. It remains to
+connect this to a more familiar metric in the navigation and sur-
+veying literature: the Geometric Dilution of Precision (GDOP).
+The GDOP for position estimation is defined as the square
+root of the trace of the inverse FIM:
+GDOP=q
+tr(J−1pos).(19)
+For the diagonal FIM structure above, the inverse is immediate
+as the following:
+J−1
+pos=σ21/2 0 0
+0 1/(1+cosθ) 0
+0 0 1/(1−cosθ),(20)
+6
+from which
+GDOP2=σ2 1
+2+1
+1+cosθ+1
+1−cosθ!
+=σ2 1
+2+2
+sin2θ!
+.
+(21)
+This expression makes the geometric dependence explicit. As
+θ→ 0,sinθ→ 0 and GDOP→ +∞, reflecting the collapse of
+triangulation accuracy under collinear sight lines. Conversely,
+atθ=90◦,sinθ=1 and the GDOP attains its minimum value
+σ√5/2. Because GDOP2is a monotone decreasing function of
+sin2θon (0,π), maximizing sinθ is fully equivalent to minimiz-
+ing the GDOP, and both are equivalent to maximizing the FIM
+determinant. These equivalences justify the use of the intersec-
+tion angle sine as the multi-UA V coordination objective function.
+So we define the objective function as the following:
+fsin=sinθ=∥a×b∥
+∥a∥·∥b∥,(22)
+where aand bare the sight-line vectors from the target to the
+two UA Vs. The cross-product formulation is coordinate-free and
+directly computable from the instantaneous relative positions
+of the platforms and the target, without requiring any angular
+decomposition into azimuth or elevation components.
+In the trajectory optimization framework, maximizing fsin
+drives the two UA Vs toward an orthogonal viewing geometry.
+This prevents the multi-platform system from collapsing into a
+degenerate configuration where both observers occupy the same
+bearing direction—a failure mode that is particularly dangerous
+during long-duration tracking of high-maneuverability targets,
+where uncoordinated trajectories can converge onto similar flight
+paths. By incorporating fsinas an explicit objective function, the
+planner ensures that the dual-UA V formation maintains favorable
+triangulation geometry.
+In summary, under symmetric equal-distance assumptions,
+maximizing the intersection angle sine fsin=sinθ is equiva-
+lent to maximizing the FIM determinant and minimizing the
+position GDOP. This trifold equivalence provides both a theoret-
+ical foundation and a practical metric for real-time multi-UA V
+coordination in bearing-only target localization.
+3.4. Motion-Constrained PSO with Particle Normalization
+The objective functions established in Sections 3.2 and 3.3
+are highly non-convex with numerous local optima, and their an-
+alytical derivatives are intractable due to the geometric coupling
+between UA V motion and bearing measurements. Evolution-
+ary algorithms are therefore natural candidates for this problem.
+Among them, Particle Swarm Optimization (PSO) is particularly
+well suited because its population-based search explores multi-
+ple candidate trajectories simultaneously, and its gradient-free
+nature avoids the need for explicit derivative computation.
+However, applying conventional PSO directly to UA V trajec-
+tory planning encounters two practical obstacles. First, since
+the traditional methods treat the azimuth and pitch of UA Vs
+as the optimization vectors, randomly generated particles may
+violate platform maneuverability limits, producing physically
+infeasible trajectories. Second, the weighted-sum aggregation
+of sub-objective functions requires tedious manual tuning ofcoefficients when dealing with multiple sub-objective functions,
+and suffers from scale disparity among terms: the FIM term
+can range from 10−6in near-degenerate geometries to 104in
+favorable ones, while the intersection sine is bounded in [0 ,1].
+Without normalization, the large terms dominate the gradient
+and the swarm effectively optimizes only these terms, ignoring
+the others. The consensus is that manual weighting can solve
+this problem, but inefficiently.
+We address both issues through a two-stage enhancement
+built upon standard PSO. The complete optimization procedure
+is presented in Algorithm 1 (The same to PSO algorithm, c1
+andc2denotes learning factor, r1andr2denotes stochastic fac-
+tor,pgbestdenots the best particle value discovered by the entire
+population, pbest
+idenotes the best value that the i-th particle has
+reached since the beginning of the search). The algorithm op-
+erates in a receding-horizon manner: at each planning instant,
+it receives the current UA V state ( p0,v0),where p0presents to
+the position of the UA V at the last time and v0presents to the
+velocity of the UA V at the last time, the current target state
+estimate ˆu(k), and the desired planning horizon. It then gener-
+ates a population of candidate next-waypoints, evaluates them
+using the spectrally-weighted FIM objective function and the
+intersection-angle objective function, and returns the waypoint
+with the highest information utility. The two key enhancements,
+motion-constrained initialization and projection and particle nor-
+malization, are embedded in the particle generation and fitness
+evaluation steps.
+Algorithm 1Motion-Constrained PSO with Praticle Normaliza-
+tion
+Require: Current UA V state s1=(p0,v0); target estimate ˆu(k);
+other-UA V state s2; interval t; swarm size n; iterations k;
+acceleration range of UA VsΩ a; velocity range of particles
+Ωv.
+Ensure:Optimal waypointp∗.
+1://Step 1: Motion-constrained initialization
+2:fori=1tondo
+3:a i∼U(Ω a);pi←p0+tv 0+1
+2t2ai
+4:v i∼U(Ω v);pbest
+i←pi
+5:end for
+6://Step 2: First-generation normalization factors
+7:Evaluate fspec,fsinat all pi;M(m)←max i|f(m)
+i|form=
+spec,sin
+8://Step 3: Iterative evolution
+9:forj=1tokdo
+10:fori=1tondo
+11:F i←P
+mwmf(m)
+i
+M(m); updatepbest
+iandpgbest
+12:v i←wv i+c1r1(pbest
+i−pi)+c 2r2(pgbest−pi)
+13:p′
+i←pi+vi;a′←2
+t2(p′
+i−p0−tv 0)
+14:ifa′<Ω athen
+15:a′←a maxa′
+∥a′∥;p′
+i←p0+tv 0+1
+2t2a′
+16:end if
+17:pi←p′
+i; re-evaluatef spec,fsinatpi
+18:end for
+19:end for
+20:returnp∗←pgbest
+7
+3.4.1. Motion-Constrained Initialization and Projection
+The first enhancement concerns physical feasibility. In algo-
+rithmic applications, the motion angles of UA Vs are typically
+treated as the search space. While this approach has the advan-
+tage of reducing the dimensionality of the search space, it fails
+to account for the dynamic performance. For UA Vs with iner-
+tial and actuator limits, waypoints optimized using traditional
+methods may require instantaneous turns or accelerations that
+exceed the capabilities, causing the inner-loop controller to fail
+to track the planned trajectory. Alternatively, such methods may
+fail to fully utilize the maneuverability of UA Vs, resulting in
+overly tightly spaced waypoints. Algorithm 1 addresses this by
+encoding the kinematic model directly into the initialization as
+the following (Step 1, line 3):
+pi=p0+tv 0+1
+2t2ai,(23)
+where the maneuver load aiis sampled from the admissible inter-
+valΩarather than the position space itself. This guarantees by
+construction that every particle represents a waypoint reachable
+within one sampling interval under the actual motion capabilities
+of the platform.
+Figure 3: Feasible motion domains: (a) spherical domain assuming omnidi-
+rectional agility; (b) ellipsoidal domain considering velocity and acceleration
+constraints.
+Geometrically, the set of all such positions forms an ellip-
+soidal feasible domain (as illustrated in Fig. 3), whose principal
+axes are determined by the velocity vector and the acceleration
+bounds. The spherical feasible region assumed in conventional
+PSO (which implicitly presumes omnidirectional agility) is re-
+placed by this physically grounded ellipsoid.
+The same motion model is enforced again during swarm evo-
+lution (Step 3, lines 9–12). When a particle’s velocity update
+proposes a new position p′
+i, the algorithm computes the acceler-
+ation required to reach it from the current state in time t:
+a′=2
+t2(p′
+i−p0−tv 0).(24)
+Ifa′exceeds the platform limit Ωa, the acceleration vector is
+clipped to the maximum magnitude ( amax) and the position is
+projected back onto the ellipsoidal boundary. This projectionstep ensures that every iterate (not merely the initialization) re-
+mains dynamically feasible. The swarm therefore explores only
+the physically attainable subset of the search space, preventing
+the optimizer from wasting evaluations on unreachable way-
+points and ensuring that the returned trajectory can be executed
+by the autopilot without replanning or saturation.
+3.4.2. Particle Normalization for Adaptive Weighting
+The second enhancement addresses the multi-objective func-
+tion aggregation problem. Trajectory planning must balance
+information acquisition (via fspec) and, in dual-UA V scenarios,
+triangulation geometry (via fsin). A conventional weighted sum
+function is defined as the following:
+ftotal(u)=X
+mwmfm(u),m=spec,sin.(25)
+where wmrepresents the weight coefficient, and satisfiesP
+mwm=1.
+This function suffers from two defects. First, as noted above,
+the magnitudes of different sub-objective functions may differ
+by orders of magnitude. Without normalization, the largest term
+dominates the gradient and the swarm effectively optimizes only
+that term, ignoring the others. Second, fixing constant weights
+across the entire mission is suboptimal because the relative im-
+portance of information versus geometric coordination evolves
+as the target maneuvers and the UA V-target geometry changes.
+Algorithm 1 resolves both issues through particle normaliza-
+tion (Step 2 and Step 3, line 6). During the first generation, the
+algorithm records the maximum absolute value observed for
+each sub-objective function across the entire swarm:
+M(m)=max
+i∈[1,N]|fm(pi)|,m=spec,sin.(26)
+These maxima serve as per-generation normalization denom-
+inators. The fitness of the i-th particle in generation kis then
+computed as the following:
+Fi=X
+mwmfm(pi)
+M(m).(27)
+By construction, every normalized sub-objective function
+value lies in [0, 1] (or a similar range, due to the uncertainty in
+the distribution of particle states), so no single term can over-
+whelm the others regardless of its raw scale. The swarm there-
+fore receives balanced gradient contributions from both objective
+functions, preventing the trajectory planner from sacrificing tri-
+angulation geometry for raw information gain, or vice versa.
+It is worth noting that we have retained the weight wm, which
+facilitates more intuitive manual allocation rather than requiring
+multiple rounds of debugging, as is the case with traditional
+methods. Furthermore, we can even build upon this foundation
+to add more sub-objective functions while still ensuring that the
+optimization treats all cases equally.
+Moreover, because the normalization denominators are com-
+puted from the first-generation population, they adapt to the
+current operating region. In a long-range observation phase
+where all particles exhibit small FIM values, the normalized
+8
+Table 1: Simulation parameters for single UA V observer scenario
+Entity Initial Position (m) Initial Velocity (m/s) Acceleration (m/s2) Trajectory Order
+Target [0,100,400] [−8,0,0] [1,1,0.5] 2
+UA V [−1000,100,900] [10,0,0] [1,2,0] 2
+FIM term retains comparable influence to the intersection term.
+Conversely, during close-proximity tracking where FIM values
+are large, the same normalization prevents the FIM term from
+drowning out the geometric coordination objective function.
+This adaptive balancing is particularly important in dual-UA V
+scenarios, where the intersection-angle term must remain ac-
+tive to prevent the two platforms from converging onto similar
+bearing directions even as the individual FIM terms grow large.
+3.4.3. Integration with Trajectory Planning
+In the online execution loop, Algorithm 1 is invoked at each
+planning instant with updated state estimates. The returned
+waypoint p∗serves as the reference for the UA V’s low-level
+controller for the next sampling interval t. At the subsequent
+planning cycle, the UA V’s measured position and velocity re-
+place ( p0,v0), the target estimator provides an updated ˆu, and
+the optimizer runs again. This receding-horizon structure allows
+the swarm to react to target maneuvers in real time: if the tar-
+get changes heading abruptly, the intersection-angle and FIM
+objective functions shift accordingly, and the swarm naturally
+migrates toward the new optimal geometry.
+In summary, Algorithm 1 combines motion-constrained initial-
+ization and projection with particle normalization, addressing the
+two principal limitations of conventional PSO in UA V trajectory
+planning. The motion constraints ensure that every evaluated
+waypoint is dynamically feasible, while the particle normaliza-
+tion guarantees balanced optimization across information and
+geometric objective functions without manual adjustments.
+4. Simulation
+To validate the effectiveness of the proposed method, MAT-
+LAB was employed as the simulation platform to model a sce-
+nario involving multiple observation UA Vs tracking a flying
+target. The trajectory planning for the UA Vs was conducted us-
+ing both the conventional FIM-based trajectory planning method
+and our proposed method. Sections 4.1 and 4.2 present detailed
+analyses of the positioning accuracy and axial error distribution
+for single-UA V and dual-UA V target localization, respectively.
+4.1. Single-UAV Scenario
+The initial position of the target is set to (0 ,100,400) m with
+initial velocity (−8,0,0) m/s and acceleration (1 ,1,0.5) m/s2,
+executing parabolic motion. To demonstrate the superiority
+of trajectory planning methods, the initial position of UA V is
+set to (−1000,100,900) m with initial velocity (10 ,0,0) m/s
+and acceleration (1 ,2,0) m/s2, also executing parabolic motion
+with the same Trajectory Order as the target. The setup of the
+simulation environment is shown in Tab. 1.To simulate observation errors, camera payload pixel extrac-
+tion error is set to 2 pixels, camera attitude systematic error to
+0.1◦, camera attitude random error to 0 .05◦, and camera self-
+localization random error to 0.1 m.
+This section simulates single-UA V observation of moving
+targets, utilizing bearing-only measurements as the sole infor-
+mation source for target position estimation. The observation
+frequency of UA V was set to 10 Hz. During the initial 8 seconds,
+the UA V follows the predetermined trajectory. Subsequently,
+trajectory planning is performed every 2 seconds, with the UA V
+executing planned trajectories while continuously estimating the
+target position in real-time [38].
+The experimental methods are designated as follows for
+the ablation study:D+PSOdenotes the conventional D-
+optimality FIM with standard PSO (baseline);S+PSOdenotes
+the spectrally-weighted FIM with standard PSO, testing the ef-
+fect of the spectral weighting objective function in isolation;
+D+IPSOdenotes the conventional D-optimality FIM with the
+improved PSO (motion constraints and normalization), testing
+the effect of the enhanced optimizer in isolation;S+IPSOde-
+notes the spectrally-weighted FIM with the improved PSO, repre-
+senting the full proposed method that integrates all contributions.
+4.1.1. Experimental Setup and Feasibility Verification
+Fig. 4 presents observer and target trajectories, and fig. 5
+presents a comparison between the estimated target positions and
+the actual trajectory for 5 cases:Raw(No Planning),D+PSO,
+S+PSO,D+IPSO, andS+IPSO(proposed method).
+Figure 4: Trajectories of target and single UA V observer.
+Evidently, when directly employing the original parabolic tra-
+jectory for triangulation-based measurement (No Planning), the
+estimation erroneously converges to the UA V’s own trajectory.
+This phenomenon may be attributed to the initialization of the
+9
+Figure 5: Convergence comparison of target localization.
+UA V’s motion parameters as prior values during target position
+estimation, causing the solution to rapidly converge to the UA V
+trajectory with minimal iterations based on the observation data.
+Through trajectory planning, the UA V can promptly escape from
+this erroneous convergence state and rapidly converge to the true
+target trajectory, regardless of whether the conventional FIM
+method or our proposed method is employed. The measure-
+ment results during the initial estimation in Fig. 5 approximate
+the UA V trajectory because the target motion parameter esti-
+mates obtained during the unplanned initial phase were used as
+initialization values. As the estimation process continues, the
+estimated position gradually converges toward the truth.
+4.1.2. Ablation Study and Accuracy Analysis
+To validate the accuracy of each component and eliminate
+the influence of stochastic factors, 100 Monte Carlo simulation
+trials were conducted. In each trial, the line-of-sight vector errors
+arising from pixel errors and self-localization errors followed
+a normal distribution. The measurement results at a specific
+convergence moment were recorded and statistically analyzed
+against the ground truth.
+Fig. 6 represents the statistical distribution of target position
+measurement errors using boxplots across the four methods.
+The results demonstrate that the adoption of planned trajectories
+renders the originally inestimable target position information
+measurable. The proposed method (S+IPSO) exhibits the most
+concentrated error distribution with the lowest median and the
+tightest interquartile range.
+Table 2: Statistical comparison of localization errors for single-UA V scenario
+(meters)
+Method Median Mean Std Dev Outliers Max Min
+Raw – 815.65 32.68 – – –
+D+PSO 587.97 548.53 218.96 0 820.39 166.36
+S+PSO 587.82 548.49 218.44 0 820.91 148.33
+D+IPSO 4.94 8.38 8.03 5 39.58 0.06
+S+IPSO 4.63 6.77 6.78 5 38.10 0.08
+The ablation study results in Table 2 reveal distinct roles of
+200300400500600700800Values
+D+PSO S+PSO D+IPSO S+IPSO
+Data Set0510152025303540
+ValuesFigure 6: Boxplots of localization errors for the four compared methods (single-
+UA V scenario).
+the proposed components. ComparingS+PSOagainstD+PSO,
+the replacement of D-optimality with the spectrally-weighted
+objective function while retaining the standard PSO yields negli-
+gible improvement (0.03% reduction in median error, 0.01% in
+mean error). This indicates that the spectrally-weighted formu-
+lation alone, without the motion-constrained optimizer, cannot
+overcome the limitations of conventional PSO in navigating the
+highly non-convex planning landscape.
+ComparingD+IPSOagainstD+PSO, the introduction of
+the improved PSO (motion-model-constrained initialization and
+adaptive normalization) while retaining the conventional D-
+optimality criterion produces a dramatic accuracy improvement:
+the median error is reduced by99.16%and the mean error by
+98.47%. This confirms that the motion-constrained PSO is
+the dominant contributor to performance gain, as its physically
+grounded initialization prevents infeasible waypoints and the
+adaptive normalization stabilizes the optimization process.
+Finally, comparingS+IPSO(proposed method) against
+D+PSO, the integration of both the spectrally-weighted ob-
+jective function and the improved PSO achieves the best overall
+performance, with a99.21%reduction in median error and
+a98.77%reduction in mean error. Relative to D+IPSO,
+S+IPSO achieves an additional6.28%median reduction
+and19.21%mean reduction, demonstrating that the spectrally-
+weighted objective function provides further refinement when
+coupled with the improved optimizer. The spectral weighting
+reshapes the local optimization landscape near degenerate ge-
+ometries, allowing the swarm to more efficiently exploit favor-
+able configurations once the motion constraints have brought
+particles into physically attainable regions.
+4.1.3. Axial Error Distribution Analysis
+To examine how localization errors are distributed across the
+three spatial dimensions, the target position estimation errors
+along the x,y, and zaxes were extracted from the simulation
+results. Fig. 7 illustrates the localization errors along the x,y,
+andzaxes during UA V target tracking. The results indicate that,
+under comparable total localization errors, the proposed method
+10
+0 10 20 30 40 50 60 70 80 90 100
+time-1000-5000errX(m)Raw D+PSO S+PSO
+D+IPSO S+IPSO
+0 10 20 30 40 50 60 70 80 90 100
+time-1000100200errY(m)
+0 10 20 30 40 50 60 70 80 90 100
+time0200400errZ(m)Figure 7: Localization error decomposition along x, y, and z axes for single UA V observer scenario.
+x y z
+Dimension051015202530354045ValueD+PSO
+S+PSO
+D+IPSO
+S+IPSO
+Figure 8: Box plots of localization error components for single UA V observer
+scenario.
+(S+IPSO) yields more balanced error components across all
+three axes compared to the conventional FIM method (D+PSO),
+which exhibits strongly axis-dependent behavior.
+To mitigate stochastic effects, the error components along
+thex,y, and zaxes from the 100 simulation trials were statis-
+tically analyzed and presented as boxplots. Fig. 8 and Table 3
+demonstrate the differences in the distribution of axial errors.
+The conventional FIM method (D+PSO) achieves substan-
+tially different accuracy levels along different axes: the me-
+dian error along the y-axis (47.91 m) is an order of magnitude
+smaller than that along the x-axis (517.18 m), reflecting the
+anisotropic nature of D-optimality when the observer trajectory
+is predominantly aligned with one direction. In contrast, the pro-Table 3: Axial error distribution comparison for single-UA V scenario (meters)
+Axis Method Median Mean Std Dev Outliers Max Min
+xD+PSO 517.18 482.23 192.21 0 721.04 147.51
+S+PSO 517.04 483.19 191.76 0 721.27 131.96
+D+IPSO 4.62 7.63 7.19 5 35.49 0.04
+S+IPSO 4.34 6.16 6.08 4 34.05 0.02
+yD+PSO 47.91 48.95 23.74 0 84.29 10.91
+S+PSO 48.54 48.97 23.65 0 84.58 9.64
+D+IPSO 0.43 0.66 0.62 8 2.97 0.004
+S+IPSO 0.39 0.54 0.53 4 2.86 0.004
+zD+PSO 276.24 256.70 102.39 0 386.06 76.16
+S+PSO 276.24 256.70 102.15 0 386.63 67.04
+D+IPSO 1.77 3.39 3.54 6 17.26 0.02
+S+IPSO 1.60 2.73 2.96 5 16.87 0.02
+posed method (S+IPSO) reduces errors consistently across all
+axes. Notably, the y-axis accuracy remains the highest (median
+0.39 m), while the x- and z-axis errors are brought to comparable
+levels (median 4.34 m and 1.60 m, respectively), indicating that
+our method slightly mitigates the directional bias inherent in
+conventional determinant maximization.
+4.2. Dual-UAV Scenario
+The target initial position is set the same as Section 4.1.
+Two UA Vs’ initial positions are set to ( −1000,100,900) m and
+(−1000,0,900) m, both with initial velocity (5 ,2,0) m/s, execut-
+ing constant velocity motion (Trajectory Order is 1). The setup
+of the simulation environment is shown in Tab. 4. Observation
+error parameters are identical to Section 4.1.
+To simulate observation errors, camera payload pixel extrac-
+tion error is set to 2 pixels, camera attitude systematic error to
+11
+Table 4: Simulation parameters for dual-UA V scenario
+Entity Initial Position (m) Initial Velocity (m/s) Acceleration (m/s2) Trajectory Order
+Target [0,100,400] [−8,0,0] [1,1,0.5] 2
+UA V 1 [−1000,100,900] [5,2,0] [0,0,0] 1
+UA V 2 [−1000,0,900] [5,2,0] [0,0,0] 1
+Figure 9: Trajectories of target and dual UA V observers.
+0.1◦, camera attitude random error to 0 .05◦, and camera self-
+localization random error to 0.1 m.
+This section simulates dual-UA V observation of moving tar-
+gets, utilizing bearing-only measurements from two platforms
+for target position estimation. The observation frequency was
+set to 10 Hz. During the initial 8 seconds, the UA Vs followed
+predetermined trajectories to acquire sufficient target informa-
+tion. Subsequently, trajectory planning was performed every 2
+seconds, and the UA Vs were controlled to follow the optimized
+trajectories while continuously estimating the position of the
+target via triangulation.
+The experimental methods are designated as follows for
+the ablation study:D+PSOdenotes the conventional D-
+optimality FIM with standard PSO (baseline);S+PSOdenotes
+the spectrally-weighted FIM with standard PSO;D+IPSOde-
+notes the conventional D-optimality FIM with the improved
+PSO;DA+PSOdenotes the D-optimality FIM with the inter-
+section angle sine and standard PSO, testing the geometric co-
+ordination objective function in isolation;SA+IPSOdenotes
+the spectrally-weighted FIM with the intersection angle sine and
+the improved PSO, representing the full proposed method that
+integrates all contributions.
+4.2.1. Experimental Setup and Feasibility Verification
+Fig. 10 presents a comparison between the estimated target po-
+sitions and the actual trajectory for 6 cases:Raw(No Planning),
+D+PSO,S+PSO,D+IPSO,DA+PSO, andSA+IPSO.
+Unlike the monocular measurement scenario, the dual-UA V
+configuration enables adequate target information acquisition
+even when the UA V trajectory order is lower than that of the
+target motion, yielding relatively reliable target position esti-
+Figure 10: Convergence comparison for dual-UA V scenario.
+mates. Nevertheless, trajectory planning enables the UA Vs to
+achieve superior position solutions using the same triangulation
+algorithm.
+4.2.2. Ablation Study and Accuracy Analysis
+To validate accuracy and eliminate stochastic effects, 100
+Monte Carlo simulation trials were conducted. Line-of-sight vec-
+tor errors followed a normal distribution in each trial. Measure-
+ment results at a specific convergence moment were recorded
+and statistically analyzed.
+Table 5: Statistical comparison of localization errors for dual-UA V scenario
+(meters)
+Method Median Mean Std Dev Outliers Max Min
+Raw 1.31 1.60 1.16 4 5.48 0.15
+D+PSO 0.66 0.77 0.57 0 2.41 0.06
+S+PSO 0.61 0.73 0.52 0 2.20 0.07
+D+IPSO 0.63 0.79 0.67 7 2.96 0.03
+DA+PSO 0.66 0.75 0.56 2 2.53 0.03
+SA+IPSO 0.20 0.22 0.12 2 0.62 0.04
+The ablation study results in Table 5 reveal important synergis-
+tic interactions among the proposed components in the dual-UA V
+setting. ComparingS+PSOagainstD+PSO, the spectrally-
+weighted objective function with standard PSO achieves a mod-
+est improvement: median error is reduced by7.58%and mean
+error by5.19%. This demonstrates that the spectral weighting
+provides some benefit in the dual-UA V context, likely due to its
+stabilizing effect on the multi-objective function landscape, but
+the improvement is limited without the enhanced optimizer.
+12
+RAW D+PSO S+PSO D+IPSO DA+PSO SA+IPSO
+Data Set012345ValuesFigure 11: Boxplots of localization errors for the five compared methods (dual-
+UA V scenario).
+ComparingD+IPSOagainstD+PSO, the improved PSO
+alone with conventional D-optimality yields mixed results: the
+median error is reduced by4.55%, but the mean error actually
+increases by2.60%, and the number of outliers rises from 0
+to 7. This indicates that in multi-UA V scenarios, the motion-
+constrained optimizer without proper geometric coordination
+can destabilize the planning process. The particle normalization,
+when applied to the FIM objective function alone, may overem-
+phasize the information gain ignoring the triangulation geometry,
+leading to poor geometric configurations occasionally.
+ComparingDA+PSOagainstD+PSO, adding the intersec-
+tion angle sine objective function to the conventional D-opt+
+standard PSO yields no improvement in median error (0.00%
+reduction) and only a marginal2.60%reduction in mean error.
+This is a critical finding: the intersection angle objective func-
+tion, when paired with the conventional PSO and D-optimality,
+cannot effectively guide the swarm toward favorable triangula-
+tion geometries because the standard optimizer lacks the motion
+constraints to execute the required maneuvers and the normal-
+ization to balance competing objective functions.
+Finally, comparingSA+IPSO(the full proposed method)
+againstD+PSO, the integration of all three contributions—
+spectrally-weighted FIM, intersection angle sine, and improved
+PSO—achieves a69.70%reduction in median error and a
+71.43%reduction in mean error. Relative toS+PSO(spec-
+tral weighting alone),SA+IPSOachieves an additional67.21%
+median reduction, demonstrating that the intersection angle ob-
+jective function and the improved optimizer are essential for
+realizing the full potential of the spectral weighting. Relative
+toDA+PSO(intersection angle with conventional optimizer),
+SA+IPSOachieves a69.70%median reduction, confirming that
+the intersection angle sine objective function requires the im-
+proved PSO to effectively steer the dual-UA V formation toward
+orthogonal viewing geometries.
+4.2.3. Axial Error Distribution Analysis
+Following the approach in Section 4.1.3, the target localiza-
+tion errors along the x,y, and zaxes were extracted from the 100Table 6: Axial error distribution comparison for dual-UA V scenario (meters)
+Axis Method Median Mean Std Dev Outliers Max Min
+xD+PSO 0.58 0.68 0.51 0 2.11 0.01
+S+PSO 0.52 0.64 0.46 0 1.91 0.02
+D+IPSO 0.58 0.74 0.64 7 2.79 0.01
+DA+PSO 0.59 0.66 0.49 2 2.25 0.003
+SA+IPSO 0.17 0.19 0.12 1 0.59 0.01
+yD+PSO 0.11 0.13 0.11 3 0.48 0.001
+S+PSO 0.11 0.13 0.09 0 0.41 0.004
+D+IPSO 0.04 0.05 0.04 0 0.15 0.001
+DA+PSO 0.12 0.14 0.10 3 0.46 0.002
+SA+IPSO 0.05 0.05 0.04 5 0.23 0.001
+zD+PSO 0.30 0.33 0.25 0 1.06 0.01
+S+PSO 0.26 0.31 0.23 1 1.00 0.001
+D+IPSO 0.19 0.26 0.22 6 0.96 0.01
+DA+PSO 0.29 0.32 0.26 3 1.11 0.001
+SA+IPSO 0.08 0.09 0.05 0 0.20 0.002
+simulation trials. Fig. 12 illustrates the localization errors along
+three orthogonal axes for a representative trial. The results indi-
+cate that target localization errors following trajectory planning
+via our method are more uniformly distributed.
+To mitigate stochastic effects, error components along the
+x,y, and zaxes from 100 trials were statistically analyzed as
+boxplots. Fig. 13 and Table 6 demonstrate the differences in
+error distribution across three directions.
+The results exhibit distinct characteristics across the methods.
+The conventional FIM method (D+PSO) achieves higher accu-
+racy along the y-axis but suffers from significant accuracy degra-
+dation in the other two dimensions.S+PSO(spectral weight-
+ing alone) shows modest balanced improvements.D+IPSO
+(improved PSO alone) achieves the best y-axis accuracy (me-
+dian 0.04 m) but produces numerous outliers in xand z(7
+and 6, respectively), indicating unstable geometric coordination.
+DA+PSO(intersection angle with conventional optimizer) actu-
+ally degrades y-axis accuracy relative to D+PSO. In contrast,
+SA+IPSO(the full proposed method) appropriately relaxes the
+y-axis accuracy requirements to achieve balanced improvements
+across all three dimensions, with median errors of 0.17 m ( x),
+0.05 m (y), and 0.08 m (z), most lower than the baseline.
+For dual-UA V observation, the proposed full method achieves
+a median accuracy of 0.20 m for 1100 m range targets, repre-
+senting a69.70%improvement over conventional FIM methods.
+Furthermore, the proposed method exhibits more balanced axial
+error characteristics: while conventional FIM methods achieve
+high accuracy along the UA V motion direction but poor accuracy
+in other directions, the proposed method effectively improves
+localization accuracy across all directions simultaneously.
+5. Discussion
+This paper proposes novel trajectory planning methods based
+on conventional FIM optimization. To validate feasibility and
+theoretical performance improvements, simulations were de-
+signed for single-UA V and dual-UA V observation scenarios of
+a single moving target. Comparisons were conducted among
+13
+0 10 20 30 40 50 60 70 80 90 100
+time-2024errX(m)Raw D+PSO S+PSO
+D+IPSO DA+PSO SA+IPSO
+0 10 20 30 40 50 60 70 80 90 100
+time-0.500.5errY(m)
+0 10 20 30 40 50 60 70 80 90 100
+time-202errZ(m)Figure 12: Localization error decomposition along x , y , and z axes for dual-UA V scenario.
+x y z
+Dimension00.20.40.60.811.2ValueD+PSO
+S+PSO
+D+IPSO
+DA+PSO
+SA+IPSO
+Figure 13: Box plots of localization error components for dual-UA V observers
+scenario.
+Raw(no planning), D-optimality FIM with intersection an-
+gle (D+PSO), spectrally-weighted FIM with standard PSO
+(S+PSO), D-optimality FIM with improved PSO (D+IPSO),
+D-optimality FIM and intersection angle with standard PSO
+(DA+PSO), spectrally-weighted FIM with improved PSO
+(S+IPSO), and spectrally-weighted FIM and intersection an-
+gle with improved PSO (SA+IPSO).
+Experimental results demonstrate that for single-UA V ob-
+servation, the proposed method achieves approximately 5 m
+terminal prediction point median distance error after planning,
+representing a99.21%reduction compared to the conventional
+FIM method. For dual-UA V observation, terminal prediction
+point median distance error is reduced by69.70%. The tra-jectory optimization algorithm exhibits superior performance
+in bearing-only localization tasks involving long-range, high-
+maneuverability targets.
+The ablation study design provides valuable insight into
+the individual and synergistic contributions of each proposed
+component. In the single-UA V scenario, the improved PSO
+emerges as the dominant factor:D+IPSO(improved PSO with
+D-optimality) achieves 99.16% error reduction, whileS+PSO
+(spectral weighting with standard PSO) shows virtually no im-
+provement. This suggests that in single-observer settings, the
+primary bottleneck is optimizer feasibility and stability rather
+than the FIM criterion itself. The spectrally-weighted objec-
+tive function contributes marginal additional gain (6.28% over
+D+IPSO) by refining local search near degenerate boundaries.
+In the dual-UA V scenario, the story is more nuanced. Here,
+no single component alone achieves substantial improvement:
+S+PSOprovides modest gain (7.58%),D+IPSOyields mixed
+results with increased outliers, andDA+PSOshows no median
+improvement at all. Only when all three components are inte-
+grated (SA+IPSO) does the method realize its full potential.
+This strong synergy arises because the intersection angle objec-
+tive function demands precise geometric coordination that the
+standard PSO cannot deliver, while the improved PSO requires
+a geometric guidance term to prevent the normalization scheme
+from over-emphasizing FIM at the expense of triangulation qual-
+ity. The spectrally-weighted FIM stabilizes the multi-objective
+function landscape, ensuring that neither term dominates.
+However, one potential limitation of our method is its require-
+ment for adequate prior observation information to guarantee
+convergence. As described in Section 4.1.1, the UA V must first
+track the target along a predetermined trajectory for a period to
+acquire sufficient information. Without adequate prior observa-
+14
+tions, convergence requires significantly longer duration.
+Second, in single-UA V observation scenarios, the target must
+not undergo drastic motion changes within short time intervals,
+otherwise localization accuracy may rapidly diverge. This funda-
+mental limitation arises because the proposed method employs
+Trajectory Intersection to obtain target motion parameters within
+short time windows. If the target undergoes abrupt motion
+changes, the Trajectory Order may change abruptly, leading to
+convergence failure.
+Future work will investigate adaptive weight adjustment mech-
+anisms for the multi-objective function and extend the frame-
+work to heterogeneous UA V swarms with mixed sensor modali-
+ties. Additionally, the development of online initialization strate-
+gies that reduce the required prior observation window would
+further enhance the practical applicability of the method.
+6. Conclusion
+This paper presents an online trajectory optimization method
+for bearing-only localization using single and dual UA V plat-
+forms in dynamic environments. Beyond conventional FIM con-
+siderations, the method incorporates an intersection angle sine
+objective function for dual-UA V coordination and a spectrally-
+weighted FIM objective function that provides stronger gradients
+near degenerate configurations. The planning method improves
+upon conventional Particle Swarm Optimization by incorpo-
+rating platform motion model constraints to prevent trajectory
+discontinuities and ensure physical feasibility. For objective
+function weighting, a particle normalization adaptive scheme
+is proposed based on PSO characteristics, addressing trajectory
+divergence under data singularity conditions.
+Simulation results demonstrate that for single-UA V scenar-
+ios, target trajectories are reasonably predicted, with terminal
+prediction point median distance error reduced by99.21%after
+planning. For dual-UA V scenarios, terminal prediction point
+median distance error is reduced by69.70%. Our method ex-
+hibits superior performance in long-duration bearing-only target
+localization of maneuverability targets at extended ranges.
+References
+[1]Jorge Pe ¨na Queralta, Niko L Taipalmaa, Barias Chakare
+Pullinen, Victor Kathan Sarker, Gia Thinh Nguyen,
+Tuan Nguyen Gia, Mohammed Sijad Ali, Matti Raitoharju,
+Tomi Westerlund, et al. Collaborative multi-robot search
+and rescue: Planning, coordination, perception, and active
+vision.IEEE Access, 8:191617–191643, 2020.
+[2]Wang Shule, Wang Jianhua, Li Xingxing, and Di Xi-
+aoguang. Uwb- and imu-based indoor positioning fusion
+algorithm for uav.Procedia Computer Science, 175:357–
+364, 2020.
+[3]Freddy Demaine, Sanaa Sharafeddine, and Omar Farhat.
+An optimized uav trajectory planning for localization in
+disaster scenarios.Computer Networks, 179:107378, 2020.[4]Zhaoyu Zhang, Nan Li, Gongmin Yan, and Weiqi Li. The
+development of distributed cooperative localization algo-
+rithms for multi-uav systems in the past decade.Measure-
+ment, 256, 2025.
+[5]Václav Pritzl, Matouš Vrba, Petr Št ˘epán, and Martin Saska.
+Cooperative navigation and guidance of a micro-scale
+aerial vehicle by an accompanying uav using 3d lidar
+relative localization. In2022 International Conference
+on Unmanned Aircraft Systems (ICUAS), pages 526–535,
+2022.
+[6]Zhenjing Guo, Feng Zhao, Yin Sun, Xin Chen, and Ruiying
+Wu. Research on target localization in airborne electro-
+optical stabilized platforms based on adaptive extended
+kalman filtering.Measurement, 234:114794, 2024.
+[7]Luka Kramari, Niko Jelui, Tomislav Radii, and Mario Mu-
+tra. A comprehensive survey on short-distance localization
+of uavs.Drones, 9(3), 2025.
+[8]Lang He, Pan Gong, Xiaofei Zhang, and Zheng Wang.
+The bearing-only target localization via the single uav:
+Asymptotically unbiased closed-form solution and path
+planning.IEEE Access, 7:153592–153604, 2019.
+[9]Steven C Nardone and Vincent J Aidala. Observability
+criteria for bearings-only target motion analysis.IEEE
+Transactions on Aerospace and Electronic Systems, AES-
+17(2):162–166, 1981.
+[10] V . Aidala and S. Hammel. Utilization of modified polar
+coordinates for bearings-only tracking.IEEE Transactions
+on Automatic Control, 28(3):283–294, 1983.
+[11] Sheng Xu. Optimal sensor placement for target localiza-
+tion using hybrid rss, aoa and toa measurements.IEEE
+Communications Letters, 24(9):1966 – 1970, 2020.
+[12] Sheng Xu, Yongsheng Ou, and Xinyu Wu. Optimal sen-
+sor placement for 3-d time-of-arrival target localization.
+IEEE Transactions on Signal Processing, 67(19):5018–
+5031, 2019.
+[13] Kutluyil Dogancay. Optimal geometries for AOA localiza-
+tion in the Bayesian sense.Sensors, 22(24):9802, 2022.
+[14] Augusto Aubry, Prabhu Babu, Paolo Braca, Antonio
+De Maio, and Kuntal Panwar. Sensor placement strate-
+gies for target localization via 3-d aoa measurements.
+IEEE Transactions on Aerospace and Electronic Systems,
+61(2):2134 – 2148, 2025.
+[15] Jianan Li, Zian Ning, Shaoming He, Chang-Hun Lee, and
+Shiyu Zhao. Three-dimensional bearing-only target fol-
+lowing via observability-enhanced helical guidance.IEEE
+Transactions on Robotics, 39(2):1509–1526, 2023.
+[16] Jicheng Peng, Qianshuai Wang, Bingyu Jin, Yong Zhang,
+and Kelin Lu. Trajectory optimization to enhance observ-
+ability for bearing-only target localization and sensor bias
+calibration.Biomimetics, 9(9):510, 2024.
+15
+[17] Yingbo Fu, Ziwen Yang, Liang Xu, Yi Guo, Shanying Zhu,
+and Xinping Guan. Trajectory optimization of multiple
+uavs for bearing-only measurements.Ocean Engineering,
+343:123308, 2026.
+[18] Peng Sun, Shiji Tong, Kaiyu Qin, Zhenbing Luo, Boxian
+Lin, and Mengji Shi. Low-cost real-time remote sensing
+and geolocation of moving targets via monocular bearing-
+only micro uavs.Remote Sensing, 17(23), 2025.
+[19] Nikolay Atanasov, Jerome Le Ny, Kostas Daniilidis, and
+George J. Pappas. Information acquisition with sensing
+robots: Algorithms and error bounds. InIEEE Interna-
+tional Conference on Robotics and Automation, pages 6447
+– 6454, 2014.
+[20] Ruzena Bajcsy, Yiannis Aloimonos, and John K Tsot-
+sos. Revisiting active perception.Autonomous Robots,
+42(2):177–196, 2018.
+[21] Benjamin Charrow, Vijay Kumar, and Nathan Michael.
+Information-theoretic mapping using cauchy-schwarz
+quadratic mutual information. In2015 IEEE International
+Conference on Robotics and Automation (ICRA), pages
+4971–4978, 2015.
+[22] Geoffrey A. Hollinger and Gaurav S. Sukhatme. Sampling-
+based robotic information gathering algorithms.Interna-
+tional Journal of Robotics Research, 33(9):1271 – 1287,
+2014.
+[23] Sanjiban Choudhury, Ashish Kapoor, Gireeja Ranade, Se-
+bastian Scherer, and Debadeepta Dey. Adaptive informa-
+tion gathering via imitation learning. InRobotics: Science
+and Systems, volume 13, 2017.
+[24] Marija Popovi ´c, Gregory Hitz, Juan Nieto, Inkyu Sa,
+Roland Siegwart, and Enric Galceran. Online informa-
+tive path planning for active classification using uavs. In
+IEEE International Conference on Robotics and Automa-
+tion (ICRA), pages 5753–5758, 2017.
+[25] Julius Rückin, Liren Jin, and Marija Popovi ´c. Adaptive
+informative path planning using deep reinforcement learn-
+ing for UA V-based active sensing. InIEEE International
+Conference on Robotics and Automation (ICRA), pages
+4473–4479, 2022.
+[26] Alfonso Sciacchitano, Liraz Mudrik, Sean Kragelund, and
+Isaac Kaminer. Multi-UA V trajectory optimization for
+bearing-only localization in GPS denied environments.
+arXiv preprint arXiv:2602.11116, 2026.
+[27] Liraz Mudrik, Alfonso Sciacchitano, Sean Kragelund,
+Justin Kang, and Isaac Kaminer. Optimization of observer
+trajectory for coordinated bearing-only localization in con-
+strained three-dimensional scenarios. InAIAA Science and
+Technology Forum and Exposition, AIAA SciTech Forum
+2025, 2025.[28] Mohammadreza Doostmohammadian, Amin Taghieh, and
+Houman Zarrabi. Distributed estimation approach for track-
+ing a mobile target via formation of UA Vs.IEEE Transac-
+tions on Automation Science and Engineering, 19(4):3765–
+3776, 2022.
+[29] Xuesheng Qin, Kebo Li, Yangang Liang, and Yuanhe Liu.
+Minimum-effort waypoint-following differential geometric
+guidance law design for endo-atmospheric flight vehicles.
+Drones, 7:369, 2023.
+[30] Xingyi Pan, Xingyu He, Xiaoyue Ren, and Duo Qi. Spher-
+ical coordinate system-based fusion path planning algo-
+rithm for uavs in complex emergency rescue and civil
+environments.Drones, 10(4):285, 2026.
+[31] Rui Jiang, Ru Li, Zixuan Guo, Jianping Li, Kai Su, Zhe
+Cao, and Jian Li. Self-supervised learning of lidar 3d point
+clouds via motion estimation and fusion.arXiv preprint
+arXiv:2504.04289, 2026.
+[32] Jianan Wang, Lujun Wang, Zhuoran Wang, Liang Xie, and
+Huang Hu. Particle filter-guided online neural networks for
+multi-target bearing-only tracking in passive sonar systems.
+Sensors, 25(18), 2025.
+[33] Gregory Hitz, Enric Galceran, Marie-Eve Garneau,
+Francois Pomerleau, and Roland Siegwart. Adaptive
+continuous-space informative path planning for online
+environmental monitoring.Journal of Field Robotics,
+34(8):1427–1449, 2017.
+[34] Apoorva Vashisth, Julius Ruckin, Federico Magistri, Cyrill
+Stachniss, and Marija Popovic. Deep reinforcement learn-
+ing with dynamic graphs for adaptive informative path plan-
+ning.IEEE Robotics and Automation Letters, 9(9):7747 –
+7754, 2024.
+[35] Zican Zhou, Jiangping Hu, Xuesong Wu, Shangzhi Liao,
+and Jiao Yuan. Fixed-time target tracking and encirclement
+control for multi-UA Vs with bearing-only measurements.
+Drones, 10(1):63, 2026.
+[36] Jinhui Dai, Wenqiang Pu, Junkun Yan, Qingjiang Shi, and
+Hongwei Liu. Multi-uav collaborative trajectory optimiza-
+tion for asynchronous 3-d passive multitarget tracking.
+IEEE Transactions on Geoscience and Remote Sensing,
+61:1–16, 2023.
+[37] Hanyu Wang and Xingqun Zhan. Energy-efficient multi-
+uav cooperative localization by measurement scheduling.
+InProceedings of the 38th International Technical Meeting
+of the Satellite Division of The Institute of Navigation (ION
+GNSS+2025), pages 427–436, 2025.
+[38] Huayu Huang, Banglei Guan, Yang Shang, and Qifeng Yu.
+3d trajectory reconstruction of moving points based on a
+monocular camera.Measurement, 256, 2025.
+16
