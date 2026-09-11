@@ -61,7 +61,7 @@ def arrow(ax, p1, p2, text=None, text_side="right"):
 def main():
     fig, ax = plt.subplots(figsize=(7.6, 10.2))
     ax.set_xlim(-2.35, 2.55)
-    ax.set_ylim(-0.15, 10.15)
+    ax.set_ylim(-0.45, 10.15)
     ax.set_aspect("equal")
     ax.axis("off")
 
@@ -73,8 +73,8 @@ def main():
 
     p2 = box(ax, (0, 7.28), 2.70, 0.55, "由 $\\theta_i\\pm\\delta$ 构造 $2N$ 条边界直线\n及对应半平面", "proc")
     p3 = box(ax, (0, 6.42), 2.70, 0.55, "直线两两求交，保留满足全部\n半平面约束的交点，得顶点集 $V$", "proc")
-    dV = diamond(ax, (0, 5.52), 1.70, 0.72, "$V$ 为空？")
-    e1 = box(ax, (1.85, 5.52), 1.20, 0.48, "EMPTY\n（定位失败）", "fail")
+    dE = diamond(ax, (0, 5.52), 1.95, 0.78, "半平面交为空？\n（无可行点）")
+    e1 = box(ax, (1.90, 5.52), 1.15, 0.48, "EMPTY\n（定位失败）", "fail")
 
     dU = diamond(ax, (0, 4.58), 1.95, 0.78, "公共区域无界？\n（法向最大间隙$\\geq 180^\\circ$）")
     u2 = box(ax, (1.90, 4.58), 1.15, 0.48, "UNBOUNDED", "fail")
@@ -92,9 +92,9 @@ def main():
     arrow(ax, (dN[0] + 0.85, dN[1]), (u1[0] - 0.60, u1[1]), "是", "right")
     arrow(ax, (dN[0], dN[1] - 0.36), (p2[0], p2[1] + 0.275), "否", "right")
     arrow(ax, (p2[0], p2[1] - 0.275), (p3[0], p3[1] + 0.275))
-    arrow(ax, (p3[0], p3[1] - 0.275), (dV[0], dV[1] + 0.36))
-    arrow(ax, (dV[0] + 0.85, dV[1]), (e1[0] - 0.60, e1[1]), "是", "right")
-    arrow(ax, (dV[0], dV[1] - 0.36), (dU[0], dU[1] + 0.39), "否", "right")
+    arrow(ax, (p3[0], p3[1] - 0.275), (dE[0], dE[1] + 0.39))
+    arrow(ax, (dE[0] + 0.975, dE[1]), (e1[0] - 0.575, e1[1]), "是", "right")
+    arrow(ax, (dE[0], dE[1] - 0.39), (dU[0], dU[1] + 0.39), "否", "right")
     arrow(ax, (dU[0] + 0.975, dU[1]), (u2[0] - 0.575, u2[1]), "是", "right")
     arrow(ax, (dU[0], dU[1] - 0.39), (p7[0], p7[1] + 0.24), "否", "right")
     arrow(ax, (p7[0], p7[1] - 0.24), (p8[0], p8[1] + 0.25))
@@ -116,6 +116,11 @@ def main():
     arrow(ax, (1.15, 0.17), (out[0] + 0.70, out[1] + 0.12))
 
     ax.set_title("算法 1  交会定位区域直径与圆覆盖", fontsize=13, pad=8)
+    ax.text(
+        0.0, -0.22,
+        "本问仅计算示向度误差锥的角度交会区域，不叠加半径 1800 m 目标圆域。",
+        ha="center", va="top", fontsize=8.5, color="#333333",
+    )
 
     os.makedirs(OUT_DIR, exist_ok=True)
     png = os.path.join(OUT_DIR, "fig_algorithm_flow.png")

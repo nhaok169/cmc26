@@ -1,22 +1,17 @@
 """问题1示意：交会定位区域的形状、直径与圆覆盖。
 
-求解算法见 q1/solver.py（两两求交 + 半平面筛选，与第一问_论文参考稿.md 一致）。
-本文件生成论文用几何示意图 figs/fig_geometry.png。
-图中把测向误差从 ±1° 放大到 ±8°，便于看清形状。
+顶点、直径、圆覆盖一律调用 q1/solver.py，避免示意图与求解结果不一致。
+本文件只负责绘图。图中把测向误差从 ±1° 放大到 ±8°，便于看清形状。
 """
 import os
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
 
+from solver import bearing_deg, locate
+
 plt.rcParams["font.sans-serif"] = ["Microsoft YaHei", "SimHei", "SimSun"]
 plt.rcParams["axes.unicode_minus"] = False
-
-
-# ========================= 几何 =========================
-def bearing_deg(src, dst):
-    v = np.asarray(dst, float) - np.asarray(src, float)
-    return float(np.degrees(np.arctan2(v[1], v[0])) % 360.0)
 
 
 def unit(ang_deg):
@@ -24,80 +19,11 @@ def unit(ang_deg):
     return np.array([np.cos(t), np.sin(t)])
 
 
-def clip_by_halfplane(poly, p0, nvec, eps=1e-12):
-    """Sutherland–Hodgman：保留 (X-p0)·nvec >= 0 的一侧。"""
-    if poly is None or len(poly) == 0:
-        return np.zeros((0, 2))
-    p0 = np.asarray(p0, float)
-    nvec = np.asarray(nvec, float)
-    out = []
-    m = len(poly)
-    for i in range(m):
-        a = poly[i]
-        b = poly[(i + 1) % m]
-        da = np.dot(a - p0, nvec)
-        db = np.dot(b - p0, nvec)
-        a_in, b_in = da >= -eps, db >= -eps
-        if a_in and b_in:
-            out.append(b)
-        elif a_in and not b_in:
-            out.append(a + (da / (da - db)) * (b - a))
-        elif (not a_in) and b_in:
-            out.append(a + (da / (da - db)) * (b - a))
-            out.append(b)
-    return np.array(out, float) if out else np.zeros((0, 2))
-
-
-def cone_halfplane_normals(S, theta, delta):
-    """误差锥 [θ-δ, θ+δ] 对应的两个半平面内法向（指向锥内）。"""
-    u_lo = unit(theta - delta)  # 顺时针边界
-    u_hi = unit(theta + delta)  # 逆时针边界
-    # 在 lo 射线的逆时针侧；在 hi 射线的顺时针侧
-    n_lo = np.array([-u_lo[1], u_lo[0]])
-    n_hi = np.array([u_hi[1], -u_hi[0]])
-    return [(S, n_lo), (S, n_hi)]
-
-
-def intersect_cones(sensors, thetas, delta, box):
-    """所有误差锥的公共交 = 凸多边形（先用大矩形裁成有界）。"""
-    poly = box.copy()
-    for S, th in zip(sensors, thetas):
-        for p0, nvec in cone_halfplane_normals(S, th, delta):
-            poly = clip_by_halfplane(poly, p0, nvec)
-            if len(poly) == 0:
-                return poly
-    return poly
-
-
-def order_convex(poly):
-    c = poly.mean(axis=0)
-    ang = np.arctan2(poly[:, 1] - c[1], poly[:, 0] - c[0])
-    return poly[np.argsort(ang)]
-
-
-def polygon_diameter(poly):
-    """凸多边形直径必在顶点对上。"""
-    m = len(poly)
-    dmax, a, b = 0.0, poly[0], poly[0]
-    for i in range(m):
-        for j in range(i + 1, m):
-            d = float(np.linalg.norm(poly[i] - poly[j]))
-            if d > dmax:
-                dmax, a, b = d, poly[i], poly[j]
-    return dmax, a, b
-
-
-def circle_covers(poly, A, B, tol=1e-8):
-    O = (A + B) / 2.0
-    R = np.linalg.norm(A - B) / 2.0
-    dist = np.linalg.norm(poly - O, axis=1)
-    return bool(np.all(dist <= R + tol)), O, R, dist
-
-
-def make_box(xmin, xmax, ymin, ymax):
-    return np.array(
-        [[xmin, ymin], [xmax, ymin], [xmax, ymax], [xmin, ymax]], float
-    )
+def require_ok(sensors, thetas, delta):
+    r = locate(sensors, thetas, delta)
+    if r.status != "OK" or r.vertices is None:
+        raise RuntimeError("locate 失败：{} {}".format(r.status, r.message))
+    return r
 
 
 # ========================= 场景（示意用，非题面数据） =========================
@@ -112,7 +38,6 @@ THETAS = [bearing_deg(S, G) for S in SENSORS]
 DELTA_TRUE = 1.0   # 题面真实误差
 DELTA_DRAW = 8.0   # 画形状用的放大误差（1° 在全图上几乎是一条线）
 
-BOX = make_box(-2200, 2200, -1800, 2000)
 COLORS = ["#1f77b4", "#2ca02c", "#ff7f0e"]  # S1蓝 S2绿 S3橙
 
 
@@ -192,21 +117,20 @@ def style_ax(ax, title, xlim, ylim, xlabel=False, ylabel=False):
     ax.set_facecolor("#fafafa")
 
 
-# ========================= 计算各情形的定位区域 =========================
-P2 = order_convex(intersect_cones(SENSORS[:2], THETAS[:2], DELTA_DRAW, BOX))
-P3 = order_convex(intersect_cones(SENSORS[:3], THETAS[:3], DELTA_DRAW, BOX))
-P2_true = order_convex(intersect_cones(SENSORS[:2], THETAS[:2], DELTA_TRUE, BOX))
-
-D2, A2, B2 = polygon_diameter(P2)
-covers2, O2, R2, _ = circle_covers(P2, A2, B2)
+# ========================= 计算各情形的定位区域（与 solver.py 同一套几何） =========================
+r2 = require_ok(SENSORS[:2], THETAS[:2], DELTA_DRAW)
+r3 = require_ok(SENSORS[:3], THETAS[:3], DELTA_DRAW)
+r2_true = require_ok(SENSORS[:2], THETAS[:2], DELTA_TRUE)
+P2, P3, P2_true = r2.vertices, r3.vertices, r2_true.vertices
+D2, A2, B2 = r2.diameter, r2.A, r2.B
+covers2, O2, R2 = r2.covers, r2.center, r2.radius
 
 print("==== 放大误差 ±{}° 下的形状 ====".format(DELTA_DRAW))
 print("2 个检测点: {} 边形, 直径 = {:.1f} m, 直径圆覆盖? {}".format(
     len(P2), D2, "是" if covers2 else "否"))
-print("3 个检测点: {} 边形, 直径 = {:.1f} m".format(
-    len(P3), polygon_diameter(P3)[0]))
+print("3 个检测点: {} 边形, 直径 = {:.1f} m".format(len(P3), r3.diameter))
 print("真实 ±1° 两站交会: {} 边形, 直径 = {:.1f} m （更细长）".format(
-    len(P2_true), polygon_diameter(P2_true)[0]))
+    len(P2_true), r2_true.diameter))
 
 
 # ========================= 绘图 =========================
@@ -256,7 +180,7 @@ style_ax(
     (-1600, 1600), (-1100, 1500),
 )
 
-# ---- (c) 3 个检测点：六边形 = 四边形被第三锥切开 ----
+# ---- (c) 3 个检测点：本示例切成六边形 ----
 fill_cone(ax_c, S1, THETAS[0], DELTA_DRAW, COLORS[0], 2400, 0.06)
 fill_cone(ax_c, S2, THETAS[1], DELTA_DRAW, COLORS[1], 2400, 0.06)
 fill_cone(ax_c, S3, THETAS[2], DELTA_DRAW, COLORS[2], 2400, 0.10)
@@ -273,7 +197,7 @@ mark_sensor(ax_c, S3, r"$S_3$", COLORS[2], (10, 12))
 ax_c.plot(G[0], G[1], marker="*", color="k", ms=13, zorder=8)
 ax_c.legend(loc="lower right", fontsize=9, framealpha=0.92)
 ax_c.annotate(
-    "橙色锥切掉四边形两角\n得到凸六边形（边数最多 2n=6）",
+    "本示例中橙色锥切掉四边形两角\n得到凸六边形（一般至多 2n 边）",
     xy=P3[np.argmax(P3[:, 1])],
     fontsize=9, ha="center",
     xytext=(0.70, 0.88), textcoords="axes fraction",
@@ -284,7 +208,7 @@ ax_c.annotate(
 pc = np.vstack([P2, P3])
 style_ax(
     ax_c,
-    "(c) $N=3$：第三锥切入，四边形变为至多六边形",
+    "(c) $N=3$：本示例中切成六边形（一般至多 $2N$ 边）",
     (pc[:, 0].min() - 140, pc[:, 0].max() + 180),
     (pc[:, 1].min() - 100, pc[:, 1].max() + 160),
     xlabel=True, ylabel=True,
@@ -334,8 +258,9 @@ fig.suptitle(
 )
 fig.text(
     0.5, -0.01,
-    "注：为显示形状，将测向误差由题面 $\\pm 1^\\circ$ 放大为 $\\pm 8^\\circ$；真实区域更细长，但拓扑相同："
-    "$N=1$ 为无界锥，$N=2$ 多为四边形，$N=n$ 为边数不超过 $2n$ 的凸多边形。",
+    "注：为显示形状，将测向误差由题面 $\\pm 1^\\circ$ 放大为 $\\pm 8^\\circ$；真实区域更细长。"
+    "本图只画角度交会区域，不叠加半径 1800 m 目标圆域。"
+    "$N=1$ 为无界锥，$N=2$ 多为四边形；$N=3$ 在本示例中为六边形，一般边数不超过 $2N$。",
     ha="center", va="top", fontsize=9.0, color="#333333",
 )
 
