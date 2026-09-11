@@ -1,0 +1,19 @@
+__pycache__/
+*.pyc
+*.swp
+~$*
+.DS_Store
+
+# 登录凭据，不要上传
+账号.txt
+**/账号.txt
+
+# GitHub 单文件上限 100MB
+simulator/模拟器操作演示.mp4
+
+# 模拟器运行时本地队列
+simulator/JammersSimulatorData/*.sqlite3
+simulator/JammersSimulatorData/*.log
+
+# 本地旧稿
+_backup/
