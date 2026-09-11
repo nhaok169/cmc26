@@ -1,0 +1,3495 @@
+Journal of Artiﬁcial Intelligence Research 42 (2011) 427-486 Submitted 1/11; published 11/11
+Adaptive Submodularity: Theory and Applications in Active Learning
+and Stochastic Optimization
+Daniel Golovin DGOLOVIN @CALTECH .EDU
+California Institute of Technology
+Pasadena, CA 91125, USA
+Andreas Krause KRAUSEA @ETHZ .CH
+Swiss Federal Institute of Technology
+8092 Zurich, Switzerland
+Abstract
+Many problems in artiﬁcial intelligence require adaptively making a sequence of decisions with
+uncertain outcomes under partial observability. Solving such stochastic optimization problems
+is a fundamental but notoriously difﬁcult challenge. In this paper, we introduce the concept of
+adaptive submodularity , generalizing submodular set functions to adaptive policies. We prove
+that if a problem satisﬁes this property, a simple adaptive greedy algorithm is guaranteed to be
+competitive with the optimal policy. In addition to providing performance guarantees for both
+stochastic maximization and coverage, adaptive submodularity can be exploited to drastically speed
+up the greedy algorithm by using lazy evaluations. We illustrate the usefulness of the concept
+by giving several examples of adaptive submodular objectives arising in diverse AI applications
+including management of sensing resources, viral marketing and active learning. Proving adaptive
+submodularity for these problems allows us to recover existing results in these applications as
+special cases, improve approximation guarantees and handle natural generalizations.
+1. Introduction
+In many problems arising in artiﬁcial intelligence one needs to adaptively make a sequence of deci-
+sions, taking into account observations about the outcomes of past decisions. Often these outcomes
+are uncertain, and one may only know a probability distribution over them. Finding optimal policies
+for decision making in such partially observable stochastic optimization problems is notoriously in-
+tractable (see, e.g. Littman, Goldsmith, & Mundhenk, 1998). A fundamental challenge is to identify
+classes of planning problems for which simple solutions obtain (near-) optimal performance.
+In this paper, we introduce the concept of adaptive submodularity, and prove that if a partially
+observable stochastic optimization problem satisﬁes this property, a simple adaptive greedy algo-
+rithm is guaranteed to obtain near-optimal solutions. In fact, under reasonable complexity-theoretic
+assumptions, no polynomial time algorithm is able to obtain better solutions in general. Adaptive
+submodularity generalizes the classical notion of submodularity1, which has been successfully used
+to develop approximation algorithms for a variety of non-adaptive optimization problems. Submod-
+ularity, informally, is an intuitive notion of diminishing returns, which states that adding an element
+to a small set helps more than adding that same element to a larger (super-) set. A celebrated result of
+the work of Nemhauser, Wolsey, and Fisher (1978) guarantees that for such submodular functions,
+a simple greedy algorithm, which adds the element that maximally increases the objective value,
+1. For an extensive treatment of submodularity, see the books of Fujishige (2005) and Schrijver (2003).
+c©2011 AI Access Foundation. All rights reserved.
+
+GOLOVIN & KRAUSE
+selects a near-optimal set of k elements. Similarly, it is guaranteed to ﬁnd a set of near-minimal
+cost that achieves a desired quota of utility (Wolsey, 1982), using near-minimum average time to do
+so (Streeter & Golovin, 2008). Besides guaranteeing theoretical performance bounds, submodular-
+ity allows us to speed up algorithms without loss of solution quality by using lazy evaluations (Mi-
+noux, 1978), often leading to performance improvements of several orders of magnitude (Leskovec,
+Krause, Guestrin, Faloutsos, VanBriesen, & Glance, 2007). Submodularity has been shown to be
+very useful in a variety of problems in artiﬁcial intelligence (Krause & Guestrin, 2009a).
+The challenge in generalizing submodularity to adaptive planning — where the action taken in
+each step depends on information obtained in the previous steps — is that feasible solutions are
+now policies (decision trees or conditional plans) instead of subsets. We propose a natural gener-
+alization of the diminishing returns property for adaptive problems, which reduces to the classical
+characterization of submodular set functions for deterministic distributions. We show how these
+results of Nemhauser et al. (1978), Wolsey (1982), Streeter and Golovin (2008), and Minoux (1978)
+generalize to the adaptive setting. Hence, we demonstrate how adaptive submodular optimization
+problems enjoy theoretical and practical beneﬁts similar to those of classical, nonadaptive submod-
+ular problems. We further demonstrate the usefulness and generality of the concept by showing
+how it captures known results in stochastic optimization and active learning as special cases, admits
+tighter performance bounds, leads to natural generalizations and allows us to solve new problems
+for which no performance guarantees were known.
+As a ﬁrst example, consider the problem of deploying (or controlling) a collection of sensors to
+monitor some spatial phenomenon. Each sensor can cover a region depending on its sensing range.
+Suppose we would like to ﬁnd the best subset ofk locations to place the sensors. In this application,
+intuitively, adding a sensor helps more if we have placed few sensors so far and helps less if we have
+already placed many sensors. We can formalize this diminishing returns property using the notion
+of submodularity – the total area covered by the sensors is a submodular function deﬁned over all
+sets of locations. Krause and Guestrin (2007) show that many more realistic utility functions in
+sensor placement (such as the improvement in prediction accuracy w.r.t. some probabilistic model)
+are submodular as well. Now consider the following stochastic variant: Instead of deploying a ﬁxed
+set of sensors, we deploy one sensor at a time. With a certain probability, deployed sensors can fail,
+and our goal is to maximize the area covered by the functioning sensors. Thus, when deploying
+the next sensor, we need to take into account which of the sensors we deployed in the past failed.
+This problem has been studied by Asadpour, Nazerzadeh, and Saberi (2008) for the case where
+each sensor fails independently at random. In this paper, we show that the coverage objective is
+adaptive submodular, and use this concept to handle much more general settings (where, e.g., rather
+than all-or-nothing failures there are different types of sensor failures of varying severity). We also
+consider a related problem where the goal is to place the minimum number of sensors to achieve the
+maximum possible sensor coverage (i.e., the coverage obtained by deploying sensors everywhere),
+or more generally the goal may be to achieve any ﬁxed percentage of the maximum possible sensor
+coverage. Under the ﬁrst goal, the problem is equivalent to one studied by Goemans and V ondr ´ak
+(2006), and generalizes a problem studied by Liu, Parthasarathy, Ranganathan, and Yang (2008).
+As with the maximum coverage version, adaptive submodularity allows us to recover and generalize
+previous results.
+As another example, consider a viral marketing problem, where we are given a social network,
+and we want to inﬂuence as many people as possible in the network to buy some product. We do that
+by giving the product for free to a subset of the people, and hope that they convince their friends
+428
+
+ADAPTIVE SUBMODULARITY : T HEORY AND APPLICATIONS
+to buy the product as well. Formally, we have a graph, and each edge e is labeled by a number
+0≤ pe≤ 1. We “inﬂuence” a subset of nodes in the graph, and for each inﬂuenced node, their
+neighbors get randomly inﬂuenced according to the probability annotated on the edge connecting
+the nodes. This process repeats until no further node gets inﬂuenced. Kempe, Kleinberg, and
+Tardos (2003) show that the set function which quantiﬁes the expected number of nodes inﬂuenced
+is submodular. A natural stochastic variant of the problem is where we pick a node, get to see
+which nodes it inﬂuenced, then adaptively pick the next node based on these observations and so
+on. We show that a large class of such adaptive inﬂuence maximization problems satisﬁes adaptive
+submodularity.
+Our third application is in active learning, where we are given an unlabeled data set, and we
+would like to adaptively pick a small set of examples whose labels imply all other labels. The same
+problem arises in automated diagnosis, where we have hypotheses about the state of the system (e.g.,
+what illness a patient has), and would like to perform tests to identify the correct hypothesis. In both
+domains we want to pick examples / tests to shrink the remaining version space (the set of consistent
+hypotheses) as quickly as possible. Here, we show that the reduction in version space probability
+mass is adaptive submodular, and use that observation to prove that the adaptive greedy algorithm
+is a near-optimal querying policy, recovering and generalizing results by Kosaraju, Przytycka, and
+Borgstrom (1999) and Dasgupta (2004). Our results for active learning and automated diagnosis
+are also related to recent results of Guillory and Bilmes (2010, 2011) who study generalizations of
+submodular set cover to an interactive setting. In contrast to our approach however, Guillory and
+Bilmes analyze worst-case costs, and use rather different technical deﬁnitions and proof techniques.
+We summarize our main contributions below, and provide a more technical summary in Table 1.
+At a high level, our main contributions are:
+• We consider a particular class of partially observable adaptive stochastic optimization prob-
+lems, which we prove to be hard to approximate in general.
+• We introduce the concept ofadaptive submodularity, and prove that if a problem instance sat-
+isﬁes this property, a simple adaptive greedy policy performs near-optimally, for both adaptive
+stochastic maximization and coverage, and also a natural min-sum objective.
+• We show how adaptive submodularity can be exploited by allowing the use of an accelerated
+adaptive greedy algorithm using lazy evaluations, and how we can obtain data-dependent
+bounds on the optimum.
+• We illustrate adaptive submodularity on several realistic problems, including Stochastic Max-
+imum Coverage, Stochastic Submodular Coverage, Adaptive Viral Marketing, and Active
+Learning. For these applications, adaptive submodularity allows us to recover known results
+and prove natural generalizations.
+1.1 Organization
+This article is organized as follows. In§2 (page 430) we set up notation and formally deﬁne the rel-
+evant adaptive optimization problems for general objective functions.For the reader’s convenience,
+we have also provided a reference table of important symbols on page 480.In§3 (page 433) we re-
+view the classical notion of submodularity and introduce the novel adaptive submodularity property.
+429
+
+GOLOVIN & KRAUSE
+Name New Results Location
+A.S. Maximization Tight (1− 1/e)-approx. for A.M.S. objectives §5.1,
+page 438
+A.S. Min Cost Coverage Tight logarithmic approx. for A.M.S. objectives §5.2,
+page 440
+A.S. Min Sum Cover Tight 4-approx. for A.M.S. objectives §5.3,
+page 443
+Data Dependent Bounds Generalization to A.M.S. functions §5.1,
+page 438
+Accelerated Greedy Generalization of lazy evaluations to the adaptive setting §4, page 436
+Stochastic Submodular
+Maximization
+Generalization of the previous (1− 1/e)-approx. to
+arbitrary per–item set distributions, and to item costs
+§6, page 445
+Stochastic Set Cover Generalization of the previous (ln(n) + 1)-approx. to
+arbitrary per-item set distributions, with item costs
+§7, page 446
+Adaptive Viral
+Marketing
+Adaptive analog of previous (1− 1/e)-approx. for non-
+adaptive viral marketing, under more general reward
+functions; tight logarithmic approx. for the adaptive min
+cost cover version
+§8, page 448
+Active Learning Improved approx. factor of generalized binary search
+and its approximate versions with and without item costs
+§9, page 454
+Hardness in the absence
+of Adapt. Submodularity
+Ω(|E|1−ϵ)-approximation hardness for A.S. Maximiza-
+tion, Min Cost Coverage, and Min-Sum Cover, if f is
+not adaptive submodular.
+§12,
+page 464
+Table 1: Summary of our theoretical results. A.S. is shorthand for “adaptive stochastic”, and A.M.S.
+is shorthand for “adaptive monotone submodular.”
+In§4 (page 436) we introduce the adaptive greedy policy, as well as an accelerated variant. In §5
+(page 438) we discuss the theoretical guarantees that the adaptive greedy policy enjoys when applied
+to problems with adaptive submodular objectives. Sections 6 through 9 provide examples on how to
+apply the adaptive submodular framework to various applications, namely Stochastic Submodular
+Maximization (§6, page 445), Stochastic Submodular Coverage (§7, page 446), Adaptive Viral Mar-
+keting (§8, page 448), and Active Learning (§9, page 454). In §10 (page 459) we report empirical
+results on two sensor selection problems. In §11 (page 462) we discuss the adaptivity gap of the
+problems we consider, and in §12 (page 464) we prove hardness results indicating that problems
+which are not adaptive submodular can be extremely inapproximable under reasonable complexity
+assumptions. We review related work in §13 (page 465) and provide concluding remarks in §14
+(page 467). The Appendix (page 468) gives details of how to incorporate item costs and includes
+all of the proofs omitted from the main text.
+2. Adaptive Stochastic Optimization
+We start by introducing notation and deﬁning the general class of adaptive optimization problems
+that we address in this paper. For sake of clarity, we will illustrate our notation using the sensor
+placement application mentioned in§1. We give examples of other applications in§6,§7,§8, and§9.
+430
+
+ADAPTIVE SUBMODULARITY : T HEORY AND APPLICATIONS
+2.1 Items and Realizations
+LetE be a ﬁnite set of items (e.g., sensor locations). Each item e∈ E is in a particular (initially
+unknown) state from a set O of possible states (describing whether a sensor placed at location e
+would malfunction or not). We represent the item states using a function φ : E → O, called a
+realization (of the states of all items in the ground set). Thus, we say that φ(e) is the state of e
+under realization φ. We use Φ to denote a random realization. We take a Bayesian approach and
+assume that there is a known prior probability distributionp (φ) := P [Φ =φ] over realizations (e.g.,
+modeling that sensors fail independently with failure probability), so that we can compute posterior
+distributions2. We will consider problems where we sequentially pick an item e∈ E, get to see
+its state Φ(e), pick the next item, get to see its state, and so on (e.g., place a sensor, see whether it
+fails, and so on). After each pick, our observations so far can be represented as a partial realization
+ψ, a function from some subset of E (i.e., the set of items that we already picked) to their states
+(e.g.,ψ encodes where we placed sensors and which of them failed). For notational convenience,
+we sometimes representψ as a relation, so thatψ⊆E×O equals{(e,o ) :ψ(e) =o}. We use the
+notation dom(ψ) ={e :∃o.(e,o )∈ψ} to refer to the domain of ψ (i.e., the set of items observed
+inψ). A partial realization ψ is consistent with a realization φ if they are equal everywhere in the
+domain of ψ. In this case we write φ∼ ψ. If ψ and ψ′ are both consistent with some φ, and
+dom(ψ)⊆ dom(ψ′), we sayψ is a subrealization ofψ′. Equivalently,ψ is a subrealization ofψ′ if
+and only if, when viewed as relations,ψ⊆ψ′.
+Partial realizations are similar to the notion of “belief states” in Partially Observable Markov
+Decision Problems (POMDPs), as they encode the effect of all actions taken (items selected) and
+observations made, and determine our posterior belief about the state of the world (i.e., the state of
+all itemse not yet selected,p (φ|ψ) := P [Φ =φ| Φ∼ψ]).
+2.2 Policies
+We encode our adaptive strategy for picking items as a policyπ, which is a function from a set of
+partial realizations to E, specifying which item to pick next under a particular set of observations
+(e.g.,π chooses the next sensor location given where we have placed sensors so far, and whether they
+failed or not). We also allow randomized policies that are functions from a set of partial realizations
+to distributions onE, though our emphasis will primarily be on deterministic policies. Ifψ is not in
+the domain ofπ, the policy terminates (stops picking items) upon observation ofψ. We use dom(π)
+to denote the domain of π. Technically, we require that dom(π) be closed under subrealizations.
+That is, if ψ′∈ dom(π) andψ is a subrealization of ψ′ thenψ∈ dom(π). We use the notation
+E(π,φ ) to refer to the set of items selected by π under realization φ. Each deterministic policy π
+can be associated with a decision tree Tπ in a natural way (see Fig. 1 for an illustration). Here, we
+adopt a policy-centric view that admits concise notation, though we ﬁnd the decision tree view to
+be valuable conceptually.
+Since partial realizations are similar to POMDP belief states, our deﬁnition of policies is similar
+to the notion of policies in POMDPs, which are usually deﬁned as functions from belief states
+to actions. We will further discuss the relationship between the stochastic optimization problems
+considered in this paper and POMDPs in Section 13.
+2. In some situations, we may not have exact knowledge of the prior p (φ). Obtaining algorithms that are robust to
+incorrect priors remains an interesting source of open problems. We brieﬂy discuss some robustness guarantees of
+our algorithm in§4 on page 437.
+431
+
+GOLOVIN & KRAUSE
+Figure 1: Illustration of a policy π, its corresponding decision tree representation, and the decision
+tree representation ofπ[2], the level 2 truncation ofπ (as deﬁned in§5.1).
+2.3 Adaptive Stochastic Maximization, Coverage, and Min-Sum Coverage
+We wish to maximize, subject to some constraints, a utility function f : 2E×OE → R≥0 that
+depends on which items we pick and which state each item is in (e.g., modeling the total area
+covered by the working sensors). Based on this notation, the expected utility of a policy π is
+favg(π) := E [f(E(π, Φ), Φ)] where the expectation is taken with respect to p (φ). The goal of the
+Adaptive Stochastic Maximization problem is to ﬁnd a policyπ∗ such that
+π∗∈ arg max
+π
+favg(π) subject to|E(π,φ )|≤ k for allφ, (2.1)
+wherek is a budget on how many items can be picked (e.g., we would like to adaptively choose k
+sensor locations such that the working sensors provide as much information as possible in expecta-
+tion).
+Alternatively, we can specify a quotaQ of utility that we would like to obtain, and try to ﬁnd the
+cheapest policy achieving that quota (e.g., we would like to achieve a certain amount of information,
+as cheaply as possible in expectation). Formally, we deﬁne the average cost cavg(π) of a policy as
+the expected number of items it picks, so thatcavg(π) := E [|E(π, Φ)|]. Our goal is then to ﬁnd
+π∗∈ arg min
+π
+cavg(π) such thatf(E(π,φ ),φ )≥Q for allφ, (2.2)
+i.e., the policyπ∗ that minimizes the expected number of items picked such that under all possible
+realizations, at least utility Q is achieved. We call Problem 2.2 the Adaptive Stochastic Minimum
+Cost Cover problem. We will also consider the problem where we want to minimize the worst-case
+costcwc(π) := maxφ|E(π,φ )|. This worst-case costcwc(π) is the cost incurred under adversarially
+chosen realizations, or equivalently the depth of the deepest leaf inTπ, the decision tree associated
+withπ.
+Yet another important variant is to minimize the average time required by a policy to obtain
+its utility. Formally, let u(π,t ) be the expected utility obtained by π after t steps3, let Q =
+E [f(E, Φ)] be the maximum possible expected utility, and deﬁne the min-sum cost cΣ(π) of a
+policy as cΣ(π) := ∑∞
+t=0 (Q−u(π,t )). We then deﬁne the Adaptive Stochastic Min-Sum Cover
+problem as the search for
+π∗∈ arg min
+π
+cΣ(π). (2.3)
+3. For a more formal deﬁnition of u(π,t ), see§A.5 on page 478.
+432
+
+ADAPTIVE SUBMODULARITY : T HEORY AND APPLICATIONS
+Unfortunately, as we will show in§12, even for linear functionsf, i.e., those wheref(A,φ ) =∑
+e∈Awe,φ is simply the sum of weights (depending on the realization φ), Problems (2.1), (2.2),
+and (2.3) are hard to approximate under reasonable complexity theoretic assumptions. Despite the
+hardness of the general problems, in the following sections we will identify conditions that are
+sufﬁcient to allow us to approximately solve them.
+2.4 Incorporating Item Costs
+Instead of quantifying the cost of a set E(π,φ ) by the number of elements|E(π,φ )|, we can also
+consider the case where each item e∈ E has a cost c(e), and the cost of a set S⊆ E isc(S) =∑
+e∈Sc(e). We can then consider variants of Problems (2.1), (2.2), and (2.3) with the |E(π,φ )|
+replaced byc(E(π,φ )). For clarity of presentation, we will focus on the unit cost case, i.e.,c(e) = 1
+for alle, and explain how our results generalize to the non-uniform case in the Appendix.
+3. Adaptive Submodularity
+We ﬁrst review the classical notion of submodular set functions, and then introduce the novel notion
+of adaptive submodularity.
+3.1 Background on Submodularity
+Let us ﬁrst consider the very special case where p (φ) is deterministic or, equivalently, |O| = 1
+(e.g., in our sensor placement applications, sensors never fail). In this case, the realization φ is
+known to the decision maker in advance, and thus there is no beneﬁt in adaptive selection. Given
+the realizationφ, Problem (2.1) is equivalent to ﬁnding a setA∗⊆E such that
+A∗∈ arg max
+A⊆E
+f(A,φ ) such that|A|≤ k. (3.1)
+For most interesting classes of utility functions f, this is an NP-hard optimization problem. How-
+ever, in many practical problems, such as those mentioned in§1,f(A) =f(A,φ ) satisﬁes submod-
+ularity. A set function f : 2E→ R is called submodular if, wheneverA⊆B⊆E ande∈E\B
+it holds that
+f(A∪{e})−f(A)≥f(B∪{e})−f(B), (3.2)
+i.e., adding e to the smaller set A increases f by at least as much as adding e to the superset B.
+Furthermore,f is called monotone, if, whenever A⊆ B it holds that f(A)≤ f(B) (e.g., adding
+a sensor can never reduce the amount of information obtained). A celebrated result by Nemhauser
+et al. (1978) states that for monotone submodular functions with f(∅) = 0 , a simple greedy algo-
+rithm that starts with the empty set,A0 =∅ and chooses
+Ai+1 =Ai∪{ arg max
+e∈E\Ai
+f(Ai∪{e})} (3.3)
+guarantees thatf(Ak)≥ (1− 1/e) max|A|≤kf(A). Thus, the greedy setAk obtains at least a (1−
+1/e) fraction of the optimal value achievable using k elements. Furthermore, Feige (1998) shows
+that this result is tight if P⁄= NP; under this assumptionno polynomial time algorithmcan do strictly
+better than the greedy algorithm, i.e., achieve a(1− 1/e +ϵ)-approximation for any constantϵ> 0,
+even for the special case of Maximum k-Cover where f(A) is the cardinality of the union of sets
+433
+
+GOLOVIN & KRAUSE
+indexed byA. Similarly, Wolsey (1982) shows that the same greedy algorithm also near-optimally
+solves the deterministic case of Problem (2.2), called the Minimum Submodular Cover problem:
+A∗∈ arg min
+A⊆E
+|A| such thatf(A)≥Q. (3.4)
+Pick the ﬁrst set A𝓁 constructed by the greedy algorithm such that f(A𝓁)≥ Q. Then, for integer-
+valued submodular functions,𝓁 is at most|A∗|(1 + log maxef(e)), i.e., the greedy set is at most a
+logarithmic factor larger than the smallest set achieving quotaQ. For the special case of Set Cover,
+wheref(A) is the cardinality of a union of sets indexed by A, this result matches a lower bound
+by Feige (1998): Unless NP⊆ DTIME(nO(log logn)), Set Cover is hard to approximate by a factor
+better than (1−ε) lnQ, whereQ is the number of elements to be covered.
+Now let us relax the assumption that p (φ) is deterministic. In this case, we may still want to
+ﬁnd a non-adaptive solution (i.e., a constant policy πA that always picks set A independently of
+Φ) maximizing favg(πA). If f is pointwise submodular, i.e., f(A,φ ) is submodular in A for any
+ﬁxed φ, the function f(A) = favg(πA) is submodular, since nonnegative linear combinations of
+submodular functions remain submodular. Thus, the greedy algorithm allows us to ﬁnd a near-
+optimal non-adaptive policy. That is, in our sensor placement example, if we are willing to commit
+to all locations before ﬁnding out whether the sensors fail or not, the greedy algorithm can provide
+a good solution to this non-adaptive problem.
+However, in practice, we may be more interested in obtaining a non-constant policy π, that
+adaptively chooses items based on previous observations (e.g., takes into account which sensors are
+working before placing the next sensor). In many settings, selecting items adaptively offers huge
+advantages, analogous to the advantage of binary search over sequential (linear) search4. Thus, the
+question is whether there is a natural extension of submodularity to policies. In the following, we
+will develop such a notion – adaptive submodularity.
+3.2 Adaptive Monotonicity and Submodularity
+The key challenge is to ﬁnd appropriate generalizations of monotonicity and of the diminishing
+returns condition (3.2). We begin by again considering the very special case where p (φ) is de-
+terministic, so that the policies are non-adaptive. In this case a policy π simply speciﬁes a se-
+quence of items (e1,e 2,...,e r) which it selects in order. Monotonicity in this context can be
+characterized as the property that “the marginal beneﬁt of selecting an item is always nonnega-
+tive,” meaning that for all such sequences (e1,e 2,...,e r), items e and 1≤ i≤ r it holds that
+f({ej :j≤i}∪{ e})− f({ej :j≤i}) ≥ 0. Similarly, submodularity can be viewed as the
+property that “selecting an item later never increases its marginal beneﬁt,” meaning that for all
+sequences (e1,e 2,...,e r), items e, and all i ≤ r, f({ej :j≤i}∪{ e})− f({ej :j≤i}) ≥
+f({ej :j≤r}∪{ e})−f({ej :j≤r}).
+We take these views of monotonicity and submodularity when deﬁning their adaptive analogues,
+by using an appropriate generalization of the marginal beneﬁt. When moving to the general adaptive
+setting, the challenge is that the items’ states are now random and only revealed upon selection. A
+natural approach is thus to condition on observations (i.e., partial realizations of selected items),
+and take the expectation with respect to the items that we consider selecting. Hence, we deﬁne our
+4. We provide a well–known example in active learning that illustrates this phenomenon crisply in §9; see Fig. 4 on
+page 454. We consider the general question of the magnitude of the potential beneﬁts of adaptivity in§11 on page 462
+.
+434
+
+ADAPTIVE SUBMODULARITY : T HEORY AND APPLICATIONS
+adaptive monotonicity and submodularity properties in terms of the conditional expected marginal
+beneﬁt of an item.
+Deﬁnition 3.1 (Conditional Expected Marginal Beneﬁt) . Given a partial realization ψ and an
+iteme, the conditional expected marginal beneﬁt ofe conditioned on having observed ψ, denoted
+∆(e|ψ), is
+∆(e|ψ) := E
+[
+f(dom(ψ)∪{e}, Φ)−f(dom(ψ), Φ)
+⏐⏐⏐⏐ Φ∼ψ
+]
+(3.5)
+where the expectation is computed with respect to p (φ|ψ) = P [Φ =φ| Φ∼ψ]. Similarly, the
+conditional expected marginal beneﬁt of a policyπ is
+∆(π|ψ) := E
+[
+f(dom(ψ)∪E(π, Φ), Φ)−f(dom(ψ), Φ)
+⏐⏐⏐⏐ Φ∼ψ
+]
+. (3.6)
+In our sensor placement example, ∆(e|ψ) quantiﬁes the expected amount of additional area cov-
+ered by placing a sensor at location e, in expectation over the posterior distribution pΦ(e)(o) :=
+P [Φ(e) =o| Φ∼ψ] of whether the sensor will fail or not, and taking into account the area cov-
+ered by the placed working sensors as encoded by ψ. Note that the beneﬁt we have accrued upon
+observingψ (and hence after having selected the items in dom(ψ)) is E [f(dom(ψ), Φ) | Φ∼ψ],
+which is the beneﬁt term subtracted out in Eq. (3.5) and Eq. (3.6). Similarly, the expected total
+beneﬁt obtained after observing ψ and then selecting e is E [f(dom(ψ)∪{e}, Φ) | Φ∼ψ]. The
+corresponding beneﬁt for running π after observingψ is slightly more complex. Under realization
+φ∼ ψ, the ﬁnal cumulative beneﬁt will be f(dom(ψ)∪E(π,φ ),φ ). Taking the expectation with
+respect to p (φ|ψ) and subtracting out the beneﬁt already obtained by dom(ψ) then yields the
+conditional expected marginal beneﬁt ofπ.
+We are now ready to introduce our generalizations of monotonicity and submodularity to the
+adaptive setting:
+Deﬁnition 3.2 (Adaptive Monotonicity). A functionf : 2E×OE→ R≥0 is adaptive monotonewith
+respect to distributionp (φ) if the conditional expected marginal beneﬁt of any item is nonnegative,
+i.e., for allψ with P [Φ∼ψ]> 0 and alle∈E we have
+∆(e|ψ)≥ 0. (3.7)
+Deﬁnition 3.3 (Adaptive Submodularity). A functionf : 2E×OE→ R≥0 is adaptive submodular
+with respect to distributionp (φ) if the conditional expected marginal beneﬁt of any ﬁxed item does
+not increase as more items are selected and their states are observed. Formally, f is adaptive
+submodular w.r.t.p (φ) if for all ψ andψ′ such thatψ is a subrealization ofψ′ (i.e.,ψ⊆ ψ′), and
+for alle∈E\ dom(ψ′), we have
+∆(e|ψ)≥ ∆
+(
+e|ψ′)
+. (3.8)
+From the decision tree perspective, the condition ∆(e|ψ)≥ ∆(e|ψ′) amounts to saying that
+for any decision treeT , if we are at a nodev inT which selects an iteme, and compare the expected
+marginal beneﬁt of e selected at v with the expected marginal beneﬁt e would have obtained if it
+were selected at an ancestor of v in T , then the latter must be no smaller than the former. Note
+that when comparing the two expected marginal beneﬁts, there is a difference in both the set of
+435
+
+GOLOVIN & KRAUSE
+items previously selected (i.e., dom(ψ) vs. dom(ψ′)) and in the distribution over realizations (i.e.,
+p (φ|ψ) vs.p (φ|ψ′)). It is also worth emphasizing that adaptive submodularity is deﬁned relative
+to the distribution p (φ) over realizations; it is possible that f is adaptive submodular with respect
+to one distribution, but not with respect to another.
+We will give concrete examples of adaptive monotone and adaptive submodular functions that
+arise in the applications introduced in §1 in§6,§7,§8, and§9. In the Appendix, we will explain
+how the notion of adaptive submodularity can be extended to handle non-uniform costs (since, e.g.,
+the cost of placing a sensor at an easily accessible location may be smaller than at a location that is
+hard to get to).
+3.3 Properties of Adaptive Submodular Functions
+It can be seen that adaptive monotonicity and adaptive submodularity enjoy similar closure prop-
+erties as monotone submodular functions. In particular, if w1,...,w m ≥ 0 and f1,...,f m are
+adaptive monotone submodular w.r.t. distributionp (φ), thenf(A,φ ) = ∑m
+i=1wifi(A,φ ) is adap-
+tive monotone submodular w.r.t.p (φ). Similarly, for a ﬁxed constantc≥ 0 and adaptive monotone
+submodular function f, the function g(E,φ ) = min( f(E,φ ),c ) is adaptive monotone submod-
+ular. Thus, adaptive monotone submodularity is preserved by nonnegative linear combinations
+and by truncation. Adaptive monotone submodularity is also preserved by restriction, so that if
+f : 2E×OE→ R≥0 is adaptive monotone submodular w.r.t.p (φ), then for any e∈E, the func-
+tiong : 2E\{e}×OE→ R≥0 deﬁned by g(A,φ ) := f(A,φ ) for allA⊆E\{e} and allφ is also
+adaptive submodular w.r.t.p (φ). Finally, iff : 2E×OE→ R≥0 is adaptive monotone submodular
+w.r.t.p (φ) then for each partial realizationψ the conditional functiong(A,φ ) :=f(A∪dom(ψ),φ )
+is adaptive monotone submodular w.r.t.p (φ|ψ) := P [Φ =φ| Φ∼ψ].
+3.4 What Problem Characteristics Suggest Adaptive Submodularity?
+Adaptive submodularity is a diminishing returns property for policies. Speaking informally, it can
+be applied in situations where there is an objective function to be optimized does not feature syner-
+gies in the beneﬁts of items conditioned on observations. In some cases, the primary objective might
+not have this property, but a suitably chosen proxy of it does, as is the case with active learning with
+persistent noise (Golovin, Krause, & Ray, 2010; Bellala & Scott, 2010). We give example appli-
+cations in§6 through§9. It is also worth mentioning where adaptive submodularity is not directly
+applicable. An extreme example of synergistic effects between items conditioned on observations
+is the class of “treasure hunting” instances used to prove Theorem 12.1 on page 464, where the (bi-
+nary) state of certain groups of items encode the treasure’s location in a complex manner. Another
+problem feature which adaptive submodularity does not directly address is the possibility that items
+selection can alter the underlying realizationφ, as is the case for the problem of optimizing policies
+for general POMDPs.
+4. The Adaptive Greedy Policy
+The classical non-adaptive greedy algorithm (3.3) has a natural generalization to the adaptive set-
+ting. The greedy policyπgreedy tries, at each iteration, to myopically increase the expected objective
+value, given its current observations. That is, suppose f : 2E×OE→ R≥0 is the objective, and
+ψ is the partial realization indicating the states of items selected so far. Then the greedy policy will
+436
+
+ADAPTIVE SUBMODULARITY : T HEORY AND APPLICATIONS
+select the item e maximizing the expected increase in value, conditioned on the observed states of
+items it has already selected (i.e., conditioned on Φ∼ ψ). That is, it will select e to maximize the
+conditional expected marginal beneﬁt ∆(e|ψ) as deﬁned in Eq. (3.5). Pseudocode of the adaptive
+greedy algorithm is given in Algorithm 1. The only difference to the classic, non-adaptive greedy
+algorithm studied by Nemhauser et al. (1978), is Line 6, where an observationΦ(e∗) of the selected
+iteme∗ is obtained. Note that the algorithms in this section are presented for Adaptive Stochastic
+Maximization. For the coverage objectives, we simply keep selecting items as prescribed byπgreedy
+until achieving the quota on objective value (for the min-cost objective) or until we have selected
+every item (for the min-sum objective).
+4.1 Incorporating Item Costs
+The adaptive greedy algorithm can be naturally modiﬁed to handle non-uniform item costs by re-
+placing its selection rule by
+e∗∈ arg max
+e
+∆(e|ψ)
+c(e) .
+In the following, we will focus on the uniform cost case (c≡ 1), and defer the analysis with costs
+to the Appendix.
+4.2 Approximate Greedy Selection
+In some applications, ﬁnding an item maximizing ∆(e|ψ) may be computationally intractable, and
+the best we can do is ﬁnd an α-approximation to the best greedy selection. This means we ﬁnd an
+e′ such that
+∆
+(
+e′|ψ
+)
+≥ 1
+α max
+e
+∆(e|ψ).
+We call a policy which always selects such an item anα-approximate greedy policy.
+Input: Budgetk; ground setE; distributionp (φ); functionf.
+Output: SetA⊆E of sizek
+begin
+A←∅ ;ψ←∅ ;1
+fori = 1 tok do2
+foreach e∈E\A do compute ∆(e|ψ) = E [f(A∪{e}, Φ)−f(A, Φ)| Φ∼ψ] ;3
+Selecte∗∈ arg maxe ∆(e|ψ);4
+SetA←A∪{e∗};5
+Observe Φ(e∗); Setψ←ψ∪{ (e∗, Φ(e∗))};6
+end
+Algorithm 1: The adaptive greedy algorithm, which implements the greedy policy.
+4.3 Robustness & Approximate Greedy Selection
+As we will show,α-approximate greedy policies have performance guarantees on several problems.
+The fact that these performance guarantees of greedy policies are robust to approximate greedy
+selection suggests a particular robustness guarantee against incorrect priors p (φ). Speciﬁcally, if
+our incorrect priorp′ is such that when we evaluate ∆(e|ψ) we err by a multiplicative factor of at
+437
+
+GOLOVIN & KRAUSE
+mostα, then when we compute the greedy policy with respect to p′ we are actually implementing
+anα-approximate greedy policy (with respect to the true prior), and hence obtain the corresponding
+guarantees. For example, a sufﬁcient condition for erring by at most a multiplicative factor of α is
+that there existsc≤ 1 andd≥ 1 withα =d/c such thatcp (φ)≤p′ (φ)≤dp (φ) for allφ, where
+p is the true prior.
+4.4 Lazy Evaluations and the Accelerated Adaptive Greedy Algorithm
+The deﬁnition of adaptive submodularity allows us to implement an “accelerated” version of the
+adaptive greedy algorithm using lazy evaluations of marginal beneﬁts as originally suggested for
+the non-adaptive case by Minoux (1978). The idea is as follows. Suppose we run πgreedy under
+some ﬁxed realization φ, and select items e1,e 2,...,e k. Let ψi :={(ej,φ (ej) :j≤i)} be the
+partial realizations observed during the run of πgreedy. The adaptive greedy algorithm computes
+∆(e|ψi) for all e∈ E and 0≤ i < k, unless e∈ dom(ψi). Naively, the algorithm thus needs
+to compute Θ(|E|k) marginal beneﬁts (which can be expensive to compute). The key insight is
+that i↦→ ∆(e|ψi) is nonincreasing for all e∈ E, because of the adaptive submodularity of the
+objective. Hence, if when deciding which item to select as ei we know ∆(e′|ψj)≤ ∆(e|ψi) for
+some itemse′ ande andj < i, then we may conclude ∆(e′|ψi)≤ ∆(e|ψi) and hence eliminate
+the need to compute ∆(e′|ψi). The accelerated version of the adaptive greedy algorithm exploits
+this observation in a principled manner, by computing ∆(e|ψ) for items e in decreasing order of
+the upper bounds known on them, until it ﬁnds an item whose value is at least as great as the upper
+bounds of all other items. Pseudocode of this version of the adaptive greedy algorithm is given in
+Algorithm 2.
+In the non-adaptive setting, the use of lazy evaluations has been shown to signiﬁcantly reduce
+running times in practice (Leskovec et al., 2007). We evaluated the naive and accelerated implemen-
+tations of the adaptive greedy algorithm on two sensor selection problems, and obtained speedup
+factors that range from roughly 4 to 40 for those problems. See§10 on page 459 for details.
+5. Guarantees for the Greedy Policy
+In this section we show that if the objective function is adaptive submodular with respect to the
+probabilistic model of the environment in which we operate, then the greedy policy inherits pre-
+cisely the performance guarantees of the greedy algorithm for classic (non-adaptive) submodular
+maximization and submodular coverage problems, such as Maximum k-Cover and Minimum Set
+Cover, as well as min-sum submodular coverage problems, such as Min-Sum Set Cover. In fact,
+we will show that this holds true more generally: α–approximate greedy policies inherit precisely
+the performance guarantees ofα–approximate greedy algorithms for these classic problems. These
+guarantees suggest that adaptive submodularity is an appropriate generalization of submodularity
+to policies. In this section we focus on the unit cost case (i.e., every item has the same cost). In
+the Appendix we provide the proofs omitted in this section, and show how our results extend to
+non-uniform item costs if we greedily maximize the expected beneﬁt/cost ratio.
+5.1 The Maximum Coverage Objective
+In this section we consider the maximum coverage objective, where the goal is to select k items
+adaptively to maximize their expected value. The task of maximizing expected value subject to
+438
+
+ADAPTIVE SUBMODULARITY : T HEORY AND APPLICATIONS
+Input: Budgetk; ground setE; distributionp (φ); functionf.
+Output: SetA⊆E of sizek
+begin
+A←∅ ;ψ←∅ ; Priority QueueQ← EMPTY QUEUE ;1
+foreach e∈E doQ. insert(e, +∞);2
+fori = 1 tok do3
+δmax←−∞ ;emax← NULL ;4
+while δmax<Q. maxPriority( ) do5
+e←Q. pop( );6
+δ← ∆(e|ψ) = E [f(A∪{e}, Φ)−f(A, Φ)| Φ∼ψ];7
+Q. insert(e,δ );8
+if δmax<δ then9
+δmax←δ;emax←e;10
+A←A∪{emax};Q. remove(emax);11
+Observe Φ(emax); Setψ←ψ∪{ (emax, Φ(emax))};12
+end
+Algorithm 2: The accelerated version of the adaptive greedy algorithm. Here,Q. insert(e,δ )
+inserts e with priority δ, Q. pop( ) removes and returns the item with greatest priority,
+Q. maxPriority( ) returns the maximum priority of the elements in Q, and Q. remove(e)
+deletese fromQ.
+more complex constraints, such as matroid constraints and intersections of matroid constraints, is
+considered in the work of Golovin and Krause (2011). Before stating our result, we require the
+following deﬁnition.
+Deﬁnition 5.1 (Policy Truncation). For a policyπ, deﬁne the level-k-truncationπ[k] ofπ to be the
+policy obtained by running π until it terminates or until it selects k items, and then terminating.
+Formally,dom(π[k]) ={ψ∈ dom(π) : |ψ|<k}, andπ[k](ψ) =π(ψ) for allψ∈ dom(π[k]).
+We have the following result, which generalizes the classic result of the work of Nemhauser et al.
+(1978) that the greedy algorithm achieves a(1− 1/e)-approximation to the problem of maximizing
+monotone submodular functions under a cardinality constraint. By setting 𝓁 = k and α = 1 in
+Theorem 5.2, we see that the greedy policy which selectsk items adaptively obtains at least(1−1/e)
+of the value of the optimal policy that selectsk items adaptively, measured with respect tofavg. For a
+proof see Theorem A.10 in Appendix A.3, which generalizes Theorem 5.2 to nonuniform item costs.
+Theorem 5.2. Fix anyα≥ 1. If f is adaptive monotone and adaptive submodular with respect to
+the distributionp (φ), andπ is anα-approximate greedy policy, then for all policiesπ∗ and positive
+integers𝓁 andk,
+favg(π[𝓁])>
+(
+1−e−𝓁/αk
+)
+favg(π∗
+[k]).
+In particular, with 𝓁 = k this implies any α-approximate greedy policy achieves a
+(
+1−e−1/α)
+approximation to the expected reward of the best policy, if both are terminated after running for an
+equal number of steps.
+If the greedy rule can be implemented only with small absolute error rather than small relative
+error, i.e., ∆(e′|ψ)≥ maxe ∆(e|ψ)−ε, an argument similar to that used to prove Theorem 5.2
+439
+
+GOLOVIN & KRAUSE
+shows that
+favg(π[𝓁])≥
+(
+1−e−𝓁/k
+)
+favg(π∗
+[k])−𝓁ε.
+This is important, since small absolute error can always be achieved (with high probability) when-
+everf can be evaluated efﬁciently, and samplingp (φ|ψ) is efﬁcient. In this case, we can approxi-
+mate
+∆(e|ψ)≈ 1
+N
+N∑
+i=1
+[
+f(dom(ψ)∪{e},φi)−f(dom(ψ),φi)
+]
+,
+whereφi are sampled i.i.d. fromp (φ|ψ).
+5.1.1 D ATA DEPENDENT BOUNDS
+For the maximum coverage objective, adaptive submodular functions have another attractive feature:
+they allow us to obtain data dependent bounds on the optimum, in a manner similar to the bounds
+for the non-adaptive case (Minoux, 1978). Consider the non-adaptive problem of maximizing a
+monotone submodular function f : 2A→ R≥0 subject to the constraint |A|≤ k. Let A∗ be an
+optimal solution, and ﬁx anyA⊆E. Then
+f(A∗)≤f(A) + max
+B:|B|≤k
+∑
+e∈B
+(f(A∪{e})−f(A)) (5.1)
+because settingB =A∗ we havef(A∗)≤f(A∪B)≤f(A)+∑
+e∈B (f(A∪{e})−f(A)). Note
+that unlike the original objective, we can easily compute maxB:|B|≤k
+∑
+e∈B (f(A∪{e})−f(A))
+by computing δ(e) := f(A∪{e})−f(A) for each e, and summing the k largest values. Hence
+we can quickly compute an upper bound on our distance from the optimal value, f(A∗)−f(A).
+In practice, such data-dependent bounds can be much tighter than the problem-independent per-
+formance guarantees of Nemhauser et al. (1978) for the greedy algorithm (Leskovec et al., 2007).
+Further note that these bounds hold for any setA, not just sets selected by the greedy algorithm.
+These data dependent bounds have the following analogue for adaptive monotone submodular
+functions. See Appendix A.2 for a proof.
+Lemma 5.3 (The Adaptive Data Dependent Bound). Suppose we have made observations ψ after
+selecting dom(ψ). Let π∗ be any policy such that |E(π∗,φ )|≤ k for all φ. Then for adaptive
+monotone submodularf
+∆(π∗|ψ) ≤ max
+A⊆E,|A|≤k
+∑
+e∈A
+∆(e|ψ). (5.2)
+Thus, after running any policyπ, we can efﬁciently compute a bound on the additional beneﬁt
+that the optimal solution π∗ could obtain beyond the reward of π. We do that by computing the
+conditional expected marginal beneﬁts for all elementse, and summing thek largest of them. Note
+that these bounds can be computed on the ﬂy when running the greedy algorithm, in a similar
+manner as discussed by Leskovec et al. (2007) for the non-adaptive setting.
+5.2 The Min Cost Cover Objective
+Another natural objective is to minimize the number of items selected while ensuring that a sufﬁcient
+level of value is obtained. This leads to the Adaptive Stochastic Minimum Cost Coverage problem
+described in§2, namely π∗∈ arg minπcavg(π) such thatf(E(π,φ ),φ )≥ Q for allφ. Recall that
+440
+
+ADAPTIVE SUBMODULARITY : T HEORY AND APPLICATIONS
+cavg(π) is the expected cost of π, which in the unit cost case equals the expected number of items
+selected by π, i.e., cavg(π) := E [|E(π, Φ)|]. If the objective is adaptive monotone submodular,
+this is an adaptive version of the Minimum Submodular Cover problem (described on line (3.4) in
+§3.1). Recall that the greedy algorithm is known to give a(ln(Q) + 1)-approximation for Minimum
+Submodular Cover assuming the coverage function is integer-valued in addition to being monotone
+submodular (Wolsey, 1982). Adaptive Stochastic Minimum Cost Coverage is also related to the
+(Noisy) Interactive Submodular Set Cover problem studied by Guillory and Bilmes (2010, 2011),
+which considers the worst-case setting (i.e., there is no distribution over states; instead states are
+realized in an adversarial manner). Similar results for active learning have been proved by Kosaraju
+et al. (1999) and Dasgupta (2004), as we discuss in more detail in§9.
+We assume throughout this section that there exists a quality thresholdQ such thatf(E,φ ) =Q
+for all φ, and for all S⊆ E and all φ, f(S,φ )≤ Q. Note that, as discussed in Section 3, if we
+replace f(S,φ ) by a new function g(S,φ ) = min( f(S,φ ),Q′) for some constant Q′, g will be
+adaptive submodular if f is. Thus, if f(E,φ ) varies across realizations, we can instead use the
+greedy algorithm on the function truncated at some thresholdQ′≤ minφf(E,φ ) achievable by all
+realizations.
+In contrast to Adaptive Stochastic Maximization, for the coverage problem additional subtleties
+arise. In particular, it is not enough that a policyπ achieves valueQ for the true realization; in order
+forπ to terminate, it also requires a proof of this fact. Formally, we require thatπ coversf:
+Deﬁnition 5.4 (Coverage). Letψ =ψ(π,φ ) be the partial realization encoding all states observed
+during the execution ofπ under realizationφ. Given f : 2E×OE→ R, we say a policy π covers
+φ with respect tof iff(dom(ψ),φ′) =f(E,φ′) for allφ′∼ψ. We say thatπ coversf if it covers
+every realization with respect tof.
+Coverage is deﬁned in such a way that upon terminating, π might not know which realization
+is the true one, but has guaranteed that it has achieved the maximum reward in every possible case
+(i.e., for every realization consistent with its observations). We obtain results for both the average
+and worst-case cost objectives.
+5.2.1 M INIMIZING THE AVERAGE COST
+Before presenting our approximation guarantee for the Adaptive Stochastic Minimum Cost Cov-
+erage, we introduce a special class of instances, called self–certifying instances. We make this
+distinction because the greedy policy has stronger performance guarantees for self–certifying in-
+stances, and such instances arise naturally in applications. For example, the Stochastic Submodular
+Cover and Stochastic Set Cover instances in§7, the Adaptive Viral Marketing instances in§8, and
+the Pool-Based Active Learning instances in§9 are all self–certifying.
+Deﬁnition 5.5 (Self–Certifying Instances). An instance of Adaptive Stochastic Minimum Cost Cov-
+erage is self–certifying if whenever a policy achieves the maximum possible value for the true
+realization it immediately has a proof of this fact. Formally, an instance(f,p (φ)) is self–certifying
+if for allφ,φ′, andψ such thatφ∼ψ andφ′∼ψ, we havef(dom(ψ),φ ) =f(E,φ ) if and only if
+f(dom(ψ),φ′) =f(E,φ′).
+One class of self–certifying instances which commonly arise are those in whichf(A,φ ) depends
+only on the state of items in A, and in which there is a uniform maximum amount of reward that
+can be obtained across realizations. Formally, we have the following observation.
+441
+
+GOLOVIN & KRAUSE
+Proposition 5.6. Fix an instance (f,p (φ)). If there exists Q such thatf(E,φ ) = Q for allφ and
+there exists some g : 2E×O→ R≥0 such that f(A,φ ) = g ({(e,φ (e)) :e∈A}) for all A andφ,
+then (f,p (φ)) is self–certifying.
+Proof. Fixφ,φ′, andψ such thatφ∼ψ andφ′∼ψ. Assuming the existence ofg and treatingψ as a
+relation, we havef(dom(ψ),φ ) = g(ψ) = f(dom(ψ),φ′). Hence f(dom(ψ),φ ) = Q =f(E,φ )
+if and only iff(dom(ψ),φ′) =Q =f(E,φ′).
+For our results on minimum cost coverage, we also need a stronger monotonicity condition:
+Deﬁnition 5.7 (Strong Adaptive Monotonicity). A functionf : 2E×OE→ R is strongly adaptive
+monotone with respect top (φ) if, informally “selecting more items never hurts” with respect to the
+expected reward. Formally, for allψ, alle /∈ dom(ψ), and all possible outcomes o∈ O such that
+P [Φ(e) =o | Φ∼ψ]> 0, we require
+E [f(dom(ψ), Φ) | Φ∼ψ]≤ E [f(dom(ψ)∪{e}, Φ) | Φ∼ψ, Φ(e) =o] . (5.3)
+Strong adaptive monotonicity implies adaptive monotonicity, as the latter means that “selecting
+more items never hurts in expectation,” i.e.,
+E [f(dom(ψ), Φ) | Φ∼ψ]≤ E [f(dom(ψ)∪{e}, Φ) | Φ∼ψ].
+We now state our main result for the average case costcavg(π):
+Theorem 5.8. Supposef : 2E×OE→ R≥0 is adaptive submodular and strongly adaptive mono-
+tone with respect to p (φ) and there existsQ such thatf(E,φ ) = Q for all φ. Let η be any value
+such thatf(S,φ )> Q−η impliesf(S,φ ) = Q for allS andφ. Let δ = minφp (φ) be the mini-
+mum probability of any realization. Letπ∗
+avg be an optimal policy minimizing the expected number of
+items selected to guarantee every realization is covered. Let π be anα-approximate greedy policy.
+Then in general
+cavg(π)≤αc avg(π∗
+avg)
+(
+ln
+(Q
+δη
+)
++ 1
+)
+and for self–certifying instances
+cavg(π)≤αc avg(π∗
+avg)
+(
+ln
+(Q
+η
+)
++ 1
+)
+.
+Note that if range(f)⊂ Z, then η = 1 is a valid choice, and then for general and self–certifying
+instances we have cavg(π)≤ αc avg(π∗
+avg) (ln(Q/δ) + 1) andcavg(π)≤ αc avg(π∗
+avg) (ln(Q) + 1),
+respectively.
+5.2.2 M INIMIZING THE WORST-CASE COST
+For the worst-case cost cwc(π) := max φ|E(π,φ )|, strong adaptive monotonicity is not required;
+adaptive monotonicity sufﬁces. We obtain the following result.
+Theorem 5.9. Supposef : 2E×OE→ R≥0 is adaptive monotone and adaptive submodular with
+respect top (φ), and letη be any value such thatf(S,φ )>f (E,φ )−η impliesf(S,φ ) =f(E,φ )
+for all S and φ. Let δ = minφp (φ) be the minimum probability of any realization. Let π∗
+wc be
+442
+
+ADAPTIVE SUBMODULARITY : T HEORY AND APPLICATIONS
+the optimal policy minimizing the worst-case number of queries to guarantee every realization is
+covered. Let π be anα-approximate greedy policy. Finally, letQ := E [f(E,φ )] be the maximum
+possible expected reward. Then
+cwc(π)≤αc wc(π∗
+wc)
+(
+ln
+(Q
+δη
+)
++ 1
+)
+.
+The proofs of Theorems 5.8 and 5.9 are given in Appendix A.4.
+Thus, even though adaptive submodularity is deﬁned w.r.t. a particular distribution, perhaps
+surprisingly, the adaptive greedy algorithm is competitive even in the case of adversarially chosen
+realizations, against a policy optimized to minimize the worst-case cost. Theorem 5.9 therefore
+suggests that if we do not have a strong prior, we can obtain the strongest guarantees if we choose
+a distribution that is “as uniform as possible” (i.e., maximizes δ) while still guaranteeing adaptive
+submodularity.
+5.2.3 D ISCUSSION
+Note that the approximation factor for self–certifying instances in Theorem 5.8 reduces to the
+(ln(Q) + 1)-approximation guarantee for the greedy algorithm for Set Cover instances with Q
+elements, in the case of a deterministic distribution p (φ). Moreover, with a deterministic dis-
+tribution p (φ) there is no distinction between average-case and worst-case cost. Hence, an im-
+mediate corollary of the result of Feige (1998) mentioned in §3 is that for every constant ϵ > 0
+there is no polynomial time (1−ϵ) ln (Q/η) approximation algorithm for self–certifying instances
+of Adaptive Stochastic Min Cost Cover, under either the cavg(·) or the cwc(·) objective, unless
+NP ⊆ DTIME(nO(log logn)). It remains open to determine whether or not Adaptive Stochastic
+Min Cost Cover with the worst-case cost objective admits a ln (Q/η) + 1 approximation for self–
+certifying instances via a polynomial time algorithm, and in particular whether the greedy pol-
+icy has such an approximation guarantee. However, in Lemma A.14 we show that Feige’s result
+also implies there is no (1−ϵ) ln (Q/δη) polynomial time approximation algorithm for general
+(non self-certifying) instances of Adaptive Stochastic Min Cost Cover under either objective, unless
+NP⊆ DTIME(nO(log logn)). In that sense, each of the three results comprising Theorem 5.8 and
+Theorem 5.9 are best-possible under reasonable complexity-theoretic assumptions. As we show
+in Section 9, our result for the average-case cost of greedy policies for self–certifying instances
+also matches (up to constant factors) results on hardness of approximating the optimal policy in the
+special case of active learning, also known as the Optimal Decision Tree problem.
+5.3 The Min-Sum Cover Objective
+Yet another natural objective is the min-sum objective, in which an unrealized reward ofx incurs a
+cost ofx in each time step, and the goal is to minimize the total cost incurred.
+5.3.1 B ACKGROUND ON THE NON-ADAPTIVE MIN-SUM COVER PROBLEM
+In the non-adaptive setting, perhaps the simplest form of a coverage problem with this objective is
+the Min-Sum Set Cover problem (Feige, Lov´asz, & Tetali, 2004) in which the input is a set system
+(U,S), the output is a permutation of the sets⟨S1,S 2,...,S m⟩, and the goal is to minimize the sum
+of element coverage times, where the coverage time of u is the index of the ﬁrst set that contains
+it (e.g., it is j if u∈ Sj and u /∈ Si for all i < j). In this problem and its generalizations the
+443
+
+GOLOVIN & KRAUSE
+min-sum objective is useful in modeling processing costs in certain applications, for example in
+ordering diagnostic tests to identify a disease cheaply (Kaplan, Kushilevitz, & Mansour, 2005),
+in ordering multiple ﬁlters to be applied to database records while processing a query (Munagala,
+Babu, Motwani, Widom, & Thomas, 2005), or in ordering multiple heuristics to run on boolean
+satisﬁability instances as a means to solve them faster in practice (Streeter & Golovin, 2008). A
+particularly expressive generalization of min-sum set cover has been studied under the names Min-
+Sum Submodular Cover(Streeter & Golovin, 2008) andL1-Submodular Set Cover(Golovin, Gupta,
+Kumar, & Tangwongsan, 2008). The former paper extends the greedy algorithm to a natural online
+variant of the problem, while the latter studies a parameterized family ofLp-Submodular Set Cover
+problems in which the objective is analogous to minimizing the Lp norm of the coverage times for
+Min-Sum Set Cover instances. In the Min-Sum Submodular Cover problem, there is a monotone
+submodular function f : 2E→ R≥0 deﬁning the reward obtained from a collection of elements 5.
+There is an integral cost c(e) for each element, and the output is a sequence of all of the elements
+σ =⟨e1,e 2,...,e n⟩. For each t∈ R≥0, we deﬁne the set of elements in the sequence σ within a
+budget oft:
+σ[t] :=
+
+
+ei :
+∑
+j≤i
+c(ej)≤t
+
+
+.
+The cost we wish to minimize is then
+cΣ(σ) :=
+∞∑
+t=0
+(
+f(E)−f(σ[t])
+)
+. (5.4)
+Feige et al. (2004) proved that for Min-Sum Set cover, the greedy algorithm achieves a4-approximation
+to the minimum cost, and also that this is optimal in the sense that no polynomial time algorithm
+can achieve a (4−ϵ)-approximation, for anyϵ> 0, unless P = NP. Interestingly, the greedy algo-
+rithm also achieves a 4-approximation for the more general Min-Sum Submodular Cover problem
+as well (Streeter & Golovin, 2008; Golovin et al., 2008).
+5.3.2 T HE ADAPTIVE STOCHASTIC MIN-SUM COVER PROBLEM
+In this article, we extend the result of Streeter and Golovin (2008) and Golovin et al. (2008) to an
+adaptive version of Min-Sum Submodular Cover. For clarity’s sake we will consider the unit-cost
+case here (i.e.,c(e) = 1 for alle); we show how to extend adaptive submodularity to handle general
+costs in the Appendix. In the adaptive version of the problem, π[t] plays the role of σ[t], and favg
+plays the role off. The goal is to ﬁnd a policy π minimizing
+cΣ(π) :=
+∞∑
+t=0
+(
+E [f(E, Φ)]−favg(π[t])
+)
+=
+∑
+φ
+p (φ)
+∞∑
+t=0
+(
+f(E,φ )−f(E(π[t],φ ),φ )
+)
+. (5.5)
+We call this problem theAdaptive Stochastic Min-Sum Cover problem. The key difference between
+this objective and the minimum cost cover objective is that here, the cost at each step is only the
+fractional extent that we have not covered the true realization, whereas in the minimum cost cover
+objective we are charged in full in each step until we have completely covered the true realization
+5. To encode Min-Sum Set Cover instance (U,S), letE :=S andf (A) :=|∪ e∈Ae|, where eache∈E is a subset of
+elements inU.
+444
+
+ADAPTIVE SUBMODULARITY : T HEORY AND APPLICATIONS
+(according to Deﬁnition 5.4). We prove the following result for the Adaptive Stochastic Min-Sum
+Cover problem with arbitrary item costs in Appendix A.5.
+Theorem 5.10. Fix anyα≥ 1. Iff is adaptive monotone and adaptive submodular with respect to
+the distributionp (φ),π is anα-approximate greedy policy with respect to the item costs, andπ∗ is
+any policy, thencΣ(π)≤ 4αc Σ(π∗).
+6. Application: Stochastic Submodular Maximization
+As our ﬁrst application, consider the sensor placement problem introduced in §1. Suppose we
+would like to monitor a spatial phenomenon such as temperature in a building. We discretize the
+environment into a setE of locations. We would like to pick a subset A⊆E ofk locations that is
+most “informative”, where we use a set function ˆf(A) to quantify the informativeness of placement
+A. Krause and Guestrin (2007) show that many natural objective functions (such as reduction
+in predictive uncertainty measured in terms of Shannon entropy with conditionally independent
+observations) are monotone submodular.
+Now consider the problem, where the informativeness of a sensor is unknown before deploy-
+ment (e.g., when deploying cameras for surveillance, the location of objects and their associated
+occlusions may not be known in advance, or varying amounts of noise may reduce the sensing
+range). We can model this extension by assigning a state φ(e)∈ O to each possible location, in-
+dicating the extent to which a sensor placed at location e is working. To quantify the value of a
+set of sensor deployments under a realization φ indicating to what extent the various sensors are
+working, we ﬁrst deﬁne (e,o ) for each e∈ E and o∈ O, which represents the placement of a
+sensor at location e which is in state o. We then suppose there is a function ˆf : 2E×O → R≥0
+which quantiﬁes the informativeness of a set of sensor deployments in arbitrary states. (Note ˆf is a
+set function taking a set of (sensor deployment, state) pairs as input.) The utilityf(A,φ ) of placing
+sensors at the locations inA under realizationφ is then
+f(A,φ ) := ˆf({(e,φ (e)) :e∈A}).
+We aim to adaptively place k sensors to maximize our expected utility. We assume that sensor
+failures at each location are independent of each other, i.e., P [Φ =φ] = ∏
+e∈E P [Φ(e) =φ(e)],
+where P [φ(e) =o] is the probability that a sensor placed at location e will be in stateo. Asadpour
+et al. (2008) studied a special case of our problem, in which sensors either fail completely (in which
+case they contribute no value at all) or work perfectly, under the nameStochastic Submodular Max-
+imization. They proved that the adaptive greedy algorithm obtains a (1− 1/e) approximation to
+the optimal adaptive policy, provided ˆf is monotone submodular. We extend their result to multiple
+types of failures by showing that f(A,φ ) is adaptive submodular with respect to distribution p (φ)
+and then invoking Theorem 5.2. Fig. 2 illustrates an instance of Stochastic Submodular Maximiza-
+tion wheref(A,φ ) is the cardinality of union of sets index byA and parameterized byφ.
+Theorem 6.1. Fix a prior such that P [Φ =φ] = ∏
+e∈E P [Φ(e) =φ(e)] and an integerk, and let
+the objective function ˆf : 2E×O→ R≥0 be monotone submodular. Let π be any α-approximate
+greedy policy attempting to maximizef, and letπ∗ be any policy. Then for all positive integers𝓁,
+favg(π[𝓁])≥
+(
+1−e−𝓁/αk
+)
+favg(π∗
+[k]).
+In particular, ifπ is the greedy policy (i.e.,α = 1) and𝓁 =k, thenfavg(π[k])≥
+(
+1− 1
+e
+)
+favg(π∗
+[k]).
+445
+
+GOLOVIN & KRAUSE
+Proof. We prove Theorem 6.1 by ﬁrst provingf is adaptive monotone and adaptive submodular in
+this model, and then applying Theorem 5.2. Adaptive monotonicity is readily proved after observing
+thatf(·,φ ) is monotone for each φ. Moving on to adaptive submodularity, ﬁx any ψ,ψ′ such that
+ψ⊆ ψ′ and any e /∈ dom(ψ′). We aim to show ∆(e|ψ′)≤ ∆(e|ψ). Intuitively, this is clear,
+as ∆(e|ψ′) is the expected marginal beneﬁt of adding e to a larger base set than is the case with
+∆(e|ψ), namely dom(ψ′) as compared to dom(ψ), and the realizations are independent. To prove
+it rigorously, we deﬁne a coupled distribution µ over pairs of realizationsφ∼ψ andφ′∼ψ′ such
+thatφ(e′) = φ′(e′) for all e′ /∈ dom(ψ′). Formally, µ(φ,φ′) = ∏
+e∈E\dom(ψ) P [Φ(e) =φ(e)] if
+φ∼ ψ, φ′∼ ψ′, and φ(e′) = φ′(e′) for all e′ /∈ dom(ψ′); otherwise µ(φ,φ′) = 0 . (Note that
+µ(φ,φ′) > 0 implies φ(e′) = φ′(e′) for all e′ ∈ dom(ψ) as well, since φ∼ ψ, φ′ ∼ ψ′, and
+ψ⊆ ψ′.) Also note that p (φ|ψ) = ∑
+φ′µ(φ,φ′) and p (φ′|ψ′) = ∑
+φµ(φ,φ′). Calculating
+∆(e|ψ′) and ∆(e|ψ) usingµ, we see that for any (φ,φ′) in the support ofµ,
+f(dom(ψ′)∪{e},φ′)−f(dom(ψ′),φ′) = ˆf(ψ′∪
+{
+(e,φ′(e))
+}
+)− ˆf(ψ′))
+≤ ˆf(ψ∪{ (e,φ (e))})− ˆf(ψ))
+= f(dom(ψ)∪{e},φ )−f(dom(ψ),φ )
+from the submodularity of ˆf. Hence
+∆(e|ψ′) = ∑
+(φ,φ′)µ(φ,φ′) (f(dom(ψ′)∪{e},φ′)−f(dom(ψ′),φ′))
+≤ ∑
+(φ,φ′)µ(φ,φ′) (f(dom(ψ)∪{e},φ )−f(dom(ψ),φ )) = ∆( e|ψ)
+which completes the proof.
+7. Application: Stochastic Submodular Coverage
+Suppose that instead of wishing to adaptively place k unreliable sensors to maximize the utility of
+the information obtained, as discussed in§6, we have a quota on utility and wish to adaptively place
+the minimum number of unreliable sensors to achieve this quota. This amounts to a minimum-cost
+coverage version of the Stochastic Submodular Maximization problem introduced in§6, which we
+call Stochastic Submodular Coverage.
+As in §6, in the Stochastic Submodular Coverage problem we suppose there is a function
+ˆf : 2E×O → R≥0 which quantiﬁes the utility of a set of sensors in arbitrary states. Also, the
+states of each sensor are independent, so that P [Φ =φ] = ∏
+e∈E P [Φ(e) =φ(e)]. The goal is
+to obtain a quota Q of utility at minimum cost. Thus, we deﬁne our objective as f(A,φ ) :=
+min
+{
+Q, ˆf({(e,φ (e)) :e∈A})
+}
+, and want to ﬁnd a policy π covering every realization and min-
+imizingcavg(π) := E [|E(π, Φ)|]. We additionally assume that this quota can always be obtained
+using sufﬁciently many sensor placements; formally, this amounts to f(E,φ ) = Q for all φ. We
+obtain the following result, whose proof we defer until the end of this section.
+Theorem 7.1. Fix a prior with independent sensor states so thatP [Φ =φ] =∏
+e∈E P [Φ(e) =φ(e)],
+and let ˆf : 2E×O→ R≥0 be a monotone submodular function. Fix Q∈ R≥0 such thatf(A,φ ) :=
+min
+(
+Q, ˆf({(e,φ (e)) :e∈A})
+)
+satisﬁes f(E,φ ) = Q for all φ. Let η be any value such that
+f(S,φ )> Q−η impliesf(S,φ ) = Q for allS andφ. Finally, let π be anα-approximate greedy
+446
+
+ADAPTIVE SUBMODULARITY : T HEORY AND APPLICATIONS
+Figure 2: Illustration of part of a Stochastic Set Cover instance. Shown are the supports of two
+distributions over sets, indexed by itemse (marked in blue) ande′ (yellow).
+policy for maximizingf, and letπ∗ be any policy. Then
+cavg(π)≤αc avg(π∗)
+(
+ln
+(Q
+η
+)
++ 1
+)
+.
+7.1 A Special Case: The Stochastic Set Coverage Problem
+The Stochastic Submodular Coverage problem is a generalization of the Stochastic Set Coverage
+problem (Goemans & V ondr´ak, 2006). In Stochastic Set Coverage the underlying submodular ob-
+jective ˆf is the number of elements covered in some input set system. In other words, there is a
+ground set U ofn elements to be covered, and items E such that each item e is associated with a
+distribution over subsets of U. When an item is selected, a set is sampled from its distribution, as
+illustrated in Fig. 2. The problem is to adaptively select items until all elements of U are covered
+by sampled sets, while minimizing the expected number of items selected. Like us, Goemans and
+V ondr´ak also assume that the subsets are sampled independently for each item, and every element
+ofU can be covered in every realization, so thatf(E,φ ) =|U| for allφ.
+Goemans and V ondr´ak primarily investigated the adaptivity gap (quantifying how much adaptive
+policies can outperform non-adaptive policies) of Stochastic Set Coverage, for variants in which
+items can be repeatedly selected or not, and prove adaptivity gaps of Θ(logn) in the former case,
+and between Ω(n) andO(n2) in the latter. They also provide ann-approximation algorithm. More
+recently, Liu et al. (2008) considered a special case of Stochastic Set Coverage in which each item
+may be in one of two states. They were motivated by a streaming database problem, in which
+a collection of queries sharing common ﬁlters must all be evaluated on a stream element. They
+transform the problem to a Stochastic Set Coverage instance in which (ﬁlter, query) pairs are to be
+covered by ﬁlter evaluations; which pairs are covered by a ﬁlter depends on the (binary) outcome
+of evaluating it on the stream element. The resulting instances satisfy the assumption that every
+element ofU can be covered in every realization. They study, among other algorithms, the adaptive
+greedy algorithm specialized to this setting, and show that if the subsets are sampled independently
+for each item, so thatP [Φ =φ] =∏
+e P [Φ(e) =φ(e)], then it is anHn :=∑n
+x=1
+1
+x approximation.
+(Recall ln(n)≤H n≤ ln(n) + 1 for all n≥ 1.) Moreover, Liu et al. report that it empirically
+outperforms a number of other algorithms in their experiments.
+447
+
+GOLOVIN & KRAUSE
+The adaptive submodularity framework allows us to recover Liu et al.’s result, and generalize
+it to richer item distributions over subsets of U, all as a corollary of Theorem 7.1. Speciﬁcally, we
+obtain a (ln(n)+1)-approximation for the Stochastic Set Coverage problem, wheren :=|U|, which
+matches the approximation ratio for the greedy algorithm for classical Set Cover that Stochastic Set
+Coverage generalizes. Like Liu et al.’s result, our result is tight if NP ⊈ DTIME(nO(log logn)),
+since it matches Feige’s lower bound of(1−ε) lnn for the approximability of Set Cover under that
+assumption (Feige, 1998).
+We model the Stochastic Set Coverage problem by letting φ(e) ⊆ U indicate the random
+set sampled from e’s distribution. Since the sampled sets are independent we have P [Φ =φ] =∏
+e P [Φ(e) =φ(e)]. For any A⊆ E letf(A,φ ) :=|∪e∈Aφ(e)| be the number of elements of U
+covered by the sets sampled from items inA. As in the previous work mentioned above, we assume
+f(E,φ ) = n for allφ. Therefore we may set Q = n. Since the range of f includes only integers,
+we may setη = 1. Applying Theorem 7.1 then yields the following result.
+Corollary 7.2. The adaptive greedy algorithm achieves a(ln(n) + 1)-approximation for Stochastic
+Set Coverage, wheren :=|U| is the size of the ground set.
+We now provide the proof of Theorem 7.1.
+Proof of Theorem 7.1: We will ultimately prove Theorem 7.1 by applying the bound from The-
+orem 5.8 for self–certifying instances. The proof mostly consists of justifying this ﬁnal step.
+Without loss of generality we may assume ˆf is truncated at Q, otherwise we may use ˆg(S) =
+min
+{
+Q, ˆf(S)
+}
+in lieu of ˆf. This removes the need to truncatef. Since we established the adaptive
+submodularity off in the proof of Theorem 6.1, and by assumptionf(E,φ ) =Q for allφ, to apply
+Theorem 5.8 we need only show thatf is strongly adaptive monotone, and that the instances under
+consideration are self–certifying.
+We begin by showing the strong adaptive monotonicity off. Fix a partial realizationψ, an item
+e /∈ dom(ψ) and a stateo. Letψ′ =ψ∪{ (e,o )}. Then treatingψ andψ′ as subsets ofE×O, and
+using the monotonicity of ˆf, we obtain
+E [f(dom(ψ), Φ)| Φ∼ψ] = ˆf(ψ)≤ ˆf(ψ′)≤ E
+[
+f(dom(ψ′), Φ)| Φ∼ψ′]
+,
+which is equivalent to the strong adaptive monotonicity condition.
+Next we prove that these instances are self–certifying. Consider anyψ andφ,φ′ consistent with
+ψ. Then
+f(dom(ψ),φ ) = ˆf(ψ) =f(dom(ψ),φ′).
+Since f(E,φ ) = f(E,φ′) = Q by assumption, it follows that f(dom(ψ),φ ) = f(E,φ ) iff
+f(dom(ψ),φ′) =f(E,φ′), so the instance is self–certifying.
+We have shown thatf andp (φ) satisfy the assumptions of Theorem 5.8 on this self–certifying
+instance. Hence we may apply it to obtain the claimed approximation guarantee.
+8. Application: Adaptive Viral Marketing
+For our next application, consider the following scenario. Suppose we would like to generate de-
+mand for a genuinely novel product. Potential customers do not realize how valuable the new
+product will be to them, and conventional advertisements are failing to convince them to try it. In
+448
+
+ADAPTIVE SUBMODULARITY : T HEORY AND APPLICATIONS
+Figure 3: Illustration of the Adaptive Viral Marketing problem. Left: the underlying social network.
+Middle: the people inﬂuenced and the observations obtained after one person is selected.
+this case, we may try to spur demand by offering a special promotional deal to a select few people,
+and hope that demand builds virally, propagating through the social network as people recommend
+the product to their friends and associates. Supposing we know something about the structure of
+the social networks people inhabit, and how ideas, innovation, and new product adoption diffuse
+through them, this begs the question: to which initial set of people should we offer the promotional
+deal, in order to spur maximum demand for our product?
+This, broadly, is the viral marketing problem. The same problem arises in the context of spread-
+ing technological, cultural, and intellectual innovations, broadly construed. In the interest of uniﬁed
+terminology we follow Kempe et al. (2003) and talk of spreading inﬂuence through the social net-
+work, where we say people are active if they have adopted the idea or innovation in question, and
+inactive otherwise, and thata inﬂuencesb ifa convincesb to adopt the idea or innovation in question.
+There are many ways to model the diffusion dynamics governing the spread of inﬂuence in
+a social network. We consider a basic and well-studied model, the independent cascade model ,
+described in detail below. For this model Kempe et al. (2003) obtain a very interesting result; they
+show that the eventual spread of the inﬂuencef (i.e., the ultimate number of customers that demand
+the product) is a monotone submodular function of the seed setS of people initially selected. This,
+in conjunction with the results of Nemhauser et al. (1978) implies that the greedy algorithm obtains
+at least
+(
+1− 1
+e
+)
+of the value of the best feasible seed set of size at mostk, i.e., arg maxS:|S|≤kf(S),
+where we interpret k as the budget for the promotional campaign. Though Kempe et al. consider
+only the maximum coverage version of the viral marketing problem, their result in conjunction with
+that of Wolsey (1982) also implies that the greedy algorithm will obtain a quotaQ of value at a cost
+of at most ln(Q) + 1 times the cost of the optimal set arg minS{c(S) :f(S)≥Q} iff takes on
+only integral values.
+8.1 Adaptive Viral Marketing
+The viral marketing problem has a very natural adaptive analog. Instead of selecting a ﬁxed set of
+people in advance, we may select a person to offer the promotion to, make some observations about
+449
+
+GOLOVIN & KRAUSE
+the resulting spread of demand for our product, and repeat. See Fig. 3 for an illustration. In§8.2, we
+use the idea of adaptive submodularity to obtain results analogous to those of Kempe et al. (2003)
+in the adaptive setting. Speciﬁcally, we show that the greedy policy obtains at least
+(
+1− 1
+e
+)
+of the
+value of the best policy. Moreover, we extend this result by achieving that guarantee not only for
+the case where our reward is simply the number of inﬂuenced people, but also for any (nonnegative)
+monotone submodular function of the set of people inﬂuenced. In §8.3 we consider the minimum
+cost cover objective, and show that the greedy policy obtains a logarithmic approximation for it. To
+our knowledge, no approximation results for this adaptive variant of the viral marketing problem
+have been known.
+8.1.1 I NDEPENDENT CASCADE MODEL
+In this model, the social network is a directed graph G = (V,A ) where each vertex in V is a
+person, and each edge (u,v )∈ A has an associated binary random variable Xuv indicating if u
+will inﬂuence v. That is, Xuv = 1 ifu will inﬂuence v once it has been inﬂuenced, and Xuv = 0
+otherwise. The random variablesXuv are independent, and have known meanspuv := E [Xuv]. We
+will call an edge (u,v ) withXuv = 1 a live edge and an edge with Xuv = 0 a dead edge. When a
+nodeu is activated, the edgesXuv to each neighborv ofu are sampled, andv is activated if (u,v )
+is live. Inﬂuence can then spread from u’s neighbors to their neighbors, and so on, according to
+the same process. Once active, nodes remain active throughout the process, however Kempe et al.
+(2003) show that this assumption is without loss of generality, and can be removed.
+8.1.2 T HE FEEDBACK MODEL
+In the Adaptive Viral Marketing problem under the independent cascades model, the items corre-
+spond to people we can activate by offering them the promotional deal. How we deﬁne the states
+φ(u) depends on what information we obtain as a result of activating u. Given the nature of the
+diffusion process, activating u can have wide-ranging effects, so the state φ(u) has more to do
+with the state of the social network on the whole than with u in particular. Speciﬁcally, we model
+φ(u) as a function φu : A→ {0, 1, ?}, where φu((u,v )) = 0 means that activating u has re-
+vealed that (u,v ) is dead, φu((u,v )) = 1 means that activating u has revealed that (u,v ) is live,
+andφu((u,v )) = ? means that activating u has not revealed the status of (u,v ) (i.e., the value of
+Xuv). We require each realization to be consistent and complete. Consistency means that no edge
+should be declared both live and dead by any two states. That is, for all u,v ∈ V and a∈ A,
+(φu(a),φv(a)) /∈{ (0, 1), (1, 0)}. Completeness means that the status of each edge is revealed by
+some activation. That is, for all a∈ A there existsu∈ V such thatφu(a)∈{ 0, 1}. A consistent
+and complete realization thus encodesXuv for each edge (u,v ). Let A(φ) denote the live edges as
+encoded by φ. There are several candidates for which edge sets we are allowed to observe when
+activating a nodeu. Here we consider what we call the Full-Adoption Feedback Model: After acti-
+vatingu we get to see the status (live or dead) of all edges exitingv, for all nodesv reachable from
+u via live edges (i.e., reachable from u in (V,A (φ)), where φ is the true realization. We illustrate
+the full-adoption feedback model in Fig. 3.
+8.1.3 T HE OBJECTIVE FUNCTION
+In the simplest case, the reward for inﬂuencing a setU⊆V of nodes is ˆf(U) :=|U|. Kempe et al.
+(2003) obtain an
+(
+1− 1
+e
+)
+-approximation for the slightly more general case in which each node u
+450
+
+ADAPTIVE SUBMODULARITY : T HEORY AND APPLICATIONS
+has a weight wu indicating its importance, and the reward is ˆf(U) := ∑
+u∈Uwu. We generalize
+this result further, to include arbitrary nonnegative monotone submodular reward functions ˆf. This
+allows us, for example, to encode a value associated with the diversity of the set of nodes inﬂu-
+enced, such as the notion that it is better to achieve20% market penetration in ﬁve different (equally
+important) demographic segments than 100% market penetration in one and 0% in the others.
+8.2 Guarantees for the Maximum Coverage Objective
+We are now ready to formally state our result for the maximum coverage objective.
+Theorem 8.1. The greedy policy πgreedy obtains at least
+(
+1− 1
+e
+)
+of the value of the best policy
+for the Adaptive Viral Marketing problem with arbitrary monotone submodular reward functions,
+in the independent cascade and full-adoption feedback models discussed above. That is, if σ(S,φ )
+is the set of all activated nodes when S is the seed set of activated nodes and φ is the realization,
+ˆf : 2V→ R≥0 is an arbitrary monotone submodular function indicating the reward for inﬂuencing
+a set, and the objective function is f(S,φ ) := ˆf(σ(S,φ )), then for all policiesπ and allk∈ N we
+have
+favg(πgreedy
+[k] )≥
+(
+1− 1
+e
+)
+favg(π[k]).
+More generally, ifπ is anα-approximate greedy policy then∀𝓁∈ N,favg(π[𝓁])≥
+(
+1−e−𝓁/αk)
+favg(π∗
+[k]).
+Proof. Adaptive monotonicity follows immediately from the fact thatf(·,φ ) is monotonic for each
+φ. It thus sufﬁces to prove thatf is adaptive submodular with respect to the probability distribution
+on realizationsp (φ), because then we can invoke Theorem 5.2 to complete the proof.
+We will say we have observed an edge (u,v ) if we know its status, i.e., if it is live or dead.
+Fix any ψ,ψ′ such that ψ ⊆ ψ′ and any v /∈ dom(ψ′). We must show ∆(v|ψ′)≤ ∆(v|ψ).
+To prove this rigorously, we deﬁne a coupled distribution µ over pairs of realizations φ∼ ψ and
+φ′∼ ψ′. Note that given the feedback model, the realization φ is a function of the random vari-
+ables{Xuw : (u,w )∈A} indicating the status of each edge. For conciseness we use the notation
+X ={Xuw : (u,w )∈A}. We deﬁne µ implicitly in terms of a joint distribution ˆµ on X× X′,
+whereφ = φ(X) andφ′ = φ′(X′) are the realizations induced by the two distinct sets of random
+edge statuses, respectively. Hence µ(φ(X),φ (X′)) = ˆµ(X, X′). Next, let us say a partial realiza-
+tionψ observes an edge e if some w∈ dom(ψ) has revealed its status as being live or dead. For
+edges (u,w ) observed byψ, the random variableXuw is deterministically set to the status observed
+byψ. Similarly, for edges (u,w ) observed byψ′, the random variableX′
+uw is deterministically set
+to the status observed by ψ′. Note that since ψ⊆ ψ′, the state of all edges which are observed by
+ψ are the same inφ andφ′. All (X, X′)∈ support(ˆµ) have these properties. Additionally, we will
+construct ˆµ so that the status of all edges which are unobserved by bothψ′ andψ are the same in X
+and X′, meaningXuw =X′
+uw for all such edges (u,w ), or else ˆµ(X, X′) = 0.
+The above constraints leave us with the following degrees of freedom: we may select Xuw for
+all (u,w )∈A which are unobserved byψ. We select them independently, such thatE [Xuw] =puw
+as with the priorp (φ). Hence for all (X, X′) satisfying the above constraints,
+ˆµ(X, X′) =
+∏
+(u,w) unobserved byψ
+pXuw
+uw (1−puw)1−Xuw,
+451
+
+GOLOVIN & KRAUSE
+and otherwise ˆµ(X, X′) = 0 . Note that p (φ|ψ) = ∑
+φ′µ(φ,φ′) andp (φ′|ψ′) = ∑
+φµ(φ,φ′).
+We next claim that for all (φ,φ′)∈ support(µ)
+f(dom(ψ′)∪{v},φ′)−f(dom(ψ′),φ′) ≤ f(dom(ψ)∪{v},φ )−f(dom(ψ),φ ). (8.1)
+Recallf(S,φ ) := ˆf(σ(S,φ )), whereσ(S,φ ) is the set of all activated nodes whenS is the seed set
+of activated nodes andφ is the realization. Let B =σ(dom(ψ),φ ) andC =σ(dom(ψ)∪{v},φ )
+denote the active nodes before and after selectingv after dom(ψ) under realizationsφ, and similarly
+deﬁne B′ andC′ with respect to ψ′ andφ′. Let D := C\B, D′ := C′\B′. Then Eq. (8.1) is
+equivalent to ˆf(B′∪D′)− ˆf(B′)≤ ˆf(B∪D)− ˆf(B). By the submodularity of ˆf, it sufﬁces to
+show thatB⊆B′ andD′⊆D to prove the above inequality, which we will now do.
+We start by proving B⊆ B′. Fix w∈ B. Then there exists a path from some u∈ dom(ψ)
+tow in (V,A (φ)). Moreover, every edge in this path is not only live but also observed to be live,
+by deﬁnition of the feedback model. Since (φ,φ′)∈ support(µ), this implies that every edge in
+this path is also live under φ′, as edges observed by ψ must have the same status under both φ and
+φ′. It follows that there is a path from u tow in (V,A (φ′)). Since u is clearly also in dom(ψ′), we
+concludew∈B′, henceB⊆B′.
+Next we show D′⊆ D. Fix some w∈ D′ and suppose by way of contradiction that w /∈ D.
+Hence there exists a path P fromv tow in (V,A (φ′)) but no such path exists in (V,A (φ)). The
+edges ofP are all live underφ′, and at least one must be dead underφ. Let (u,u′) be such an edge
+in P . Because the status of this edge differs in φ and φ′, and (φ,φ′)∈ support(µ), it must be
+that (u,u′) is observed byψ′ but not observed byψ. Because it is observed by ψ′, in our feedback
+model it must be that u is active after dom(ψ′) is selected, i.e.,u∈B′. However, this implies that
+all nodes reachable from u via edges in P are also active after dom(ψ′) is selected, since all the
+edges inP are live. Hence all such nodes, includingw, are inB′. SinceD′ andB′ are disjoint, this
+impliesw /∈D′, a contradiction.
+Having proved Eq. (8.1), we now proceed to use it to show ∆(v|ψ′)≤ ∆(v|ψ) as in§6.
+∆(v|ψ′) = ∑
+(φ,φ′)µ(φ,φ′) (f(dom(ψ′)∪{v},φ′)−f(dom(ψ′),φ′))
+≤ ∑
+(φ,φ′)µ(φ,φ′) (f(dom(ψ)∪{v},φ )−f(dom(ψ),φ )) = ∆( v|ψ)
+which completes the proof.
+8.2.1 C OMPARISON WITH STOCHASTIC SUBMODULAR MAXIMIZATION
+It is worth contrasting the Adaptive Viral Marketing problem with the Stochastic Submodular Max-
+imization problem of §6. In the latter problem, we can think of the items as being random in-
+dependently distributed sets. In Adaptive Viral Marketing by contrast, the random sets (of nodes
+inﬂuenced when a ﬁxed node is selected) depend on the random status of the edges, and hence may
+be correlated through them. Nevertheless, we can obtain the same
+(
+1− 1
+e
+)
+approximation factor for
+both problems.
+8.3 The Minimum Cost Cover Objective
+We may also wish to adaptively run our campaign until a certain level of market penetration has
+been achieved, e.g., a certain number of people have adopted the product. We can formalize this
+452
+
+ADAPTIVE SUBMODULARITY : T HEORY AND APPLICATIONS
+goal using the minimum cost cover objective. For this objective, we have an instance of Adaptive
+Stochastic Minimum Cost Cover, in which we are given a quotaQ≤ ˆf(V ) (quantifying the desired
+level of market penetration) and we must adaptively select nodes to activate until the set of all active
+nodesS satisﬁes ˆf(S)≥Q. We obtain the following result.
+Theorem 8.2. Fix a monotone submodular function ˆf : 2V→ R≥0 indicating the reward for inﬂu-
+encing a set, and a quota Q≤ ˆf(V ). Suppose the objective is f(S,φ ) := min
+{
+Q, ˆf(σ(S,φ ))
+}
+,
+where σ(S,φ ) is the set of all activated nodes when S is the seed set of activated nodes and
+φ is the realization. Let η be any value such that ˆf(S) > Q− η implies ˆf(S) ≥ Q for all
+S. Then any α-approximate greedy policy π on average costs at most α
+(
+ln
+(
+Q
+η
+)
++ 1
+)
+times
+the average cost of the best policy obtaining Q reward for the Adaptive Viral Marketing prob-
+lem in the independent cascade model with full-adoption feedback as described above. That is,
+cavg(π)≤α
+(
+ln
+(
+Q
+η
+)
++ 1
+)
+cavg(π∗) for anyπ∗ that covers every realization.
+Proof. We prove Theorem 8.2 by recourse to Theorem 5.8. We have already established that f is
+adaptive submodular, in the proof of Theorem 8.1. It remains to show that f is strongly adaptive
+monotone, that these instances are self–certifying, and that Q andη equal the corresponding terms
+in the statement of Theorem 5.8.
+We start with strong adaptive monotonicity. Fixψ,e /∈ dom(ψ), ando∈O. We must show
+E [f(dom(ψ), Φ) | Φ∼ψ]≤ E [f(dom(ψ)∪{e}, Φ) | Φ∼ψ, Φ(e) =o]. (8.2)
+Let V +(ψ) denote the active nodes after selecting dom(ψ) and observing ψ. By deﬁnition of
+the full adoption feedback model, V +(ψ) consists of precisely those nodes v for which there ex-
+ists a path Puv from some u∈ dom(ψ) to v via exclusively live edges. The edges whose sta-
+tus we observe consist of all edges exiting nodes in V +(ψ). It follows that every path from any
+u ∈ V +(ψ) to any v ∈ V \V +(ψ) contains at least one edge which is observed by ψ to be
+dead. Hence, in every φ∼ ψ, the set of nodes activated by selecting dom(ψ) is the same. There-
+fore E [f(dom(ψ), Φ) | Φ∼ψ] = ˆf(V +(ψ)). Similarly, if we deﬁne ψ′ := ψ∪{ (e,o )}, then
+E [f(dom(ψ)∪{e}, Φ) | Φ∼ψ, Φ(e) =o] = ˆf(V +(ψ′)). Note that once activated, nodes never
+become inactive. Hence, ψ⊆ψ′ impliesV +(ψ)⊆V +(ψ′). Since ˆf is monotone by assumption,
+this means ˆf(V +(ψ))≤ ˆf(V +(ψ′)) which implies Eq. (8.2) and strong adaptive monotonicity.
+Next we establish that these instances are self–certifying. Note that for every φ we have
+f(V,φ ) = min
+{
+Q, ˆf(V )
+}
+= Q. From our earlier remarks, we know that f(dom(ψ),φ ) =
+ˆf(V +(ψ)) for everyφ∼ψ. Hence for allψ andφ,φ′ consistent withψ, we havef(dom(ψ),φ ) =
+f(dom(ψ),φ′) and sof(dom(ψ),φ ) =Q if and only iff(dom(ψ),φ′) =Q, which proves that the
+instance is self–certifying.
+Finally we show that Q andη equal the corresponding terms in the statement of Theorem 5.8.
+As noted earlier,f(V,φ ) =Q for allφ. We deﬁnedη as some value such that ˆf(S)>Q−η implies
+ˆf(S)≥Q for allS. Since range(f) =
+{
+min
+{
+Q, ˆf(S)
+}
+:S⊆V
+}
+, it follows that we cannot have
+f(S,φ )∈ (Q−η,Q ) for anyS andφ, so thatη satisﬁes the requirements of the corresponding term
+in Theorem 5.8. Hence we may apply Theorem 5.8 on this self–certifying instance withQ andη to
+obtain the claimed result.
+453
+
+GOLOVIN & KRAUSE
+9. Application: Automated Diagnosis and Active Learning
+An important problem in AI is automated diagnosis. For example, suppose we have different hy-
+potheses about the state of a patient, and can run medical tests to rule out inconsistent hypotheses.
+The goal is to adaptively choose tests to infer the state of the patient as quickly as possible.
+A similar problem arises in active learning. Obtaining labeled data to train a classiﬁer is typically
+expensive, as it often involves asking an expert. In active learning (c.f., Cohn, Gharamani, & Jordan,
+1996; McCallum & Nigam, 1998), the key idea is that some labels are more informative than others:
+labeling a few unlabeled examples can imply the labels of many other unlabeled examples, and thus
+the cost of obtaining the labels from an expert can be avoided. As is standard, we assume that
+we are given a set of hypotheses H, and a set of unlabeled data points X where each x ∈ X
+is independently drawn from some distribution D. Let L be the set of possible labels. Classical
+learning theory yields probably approximately correct (PAC) bounds, bounding the number n of
+examples drawn i.i.d. fromD needed to output a hypothesish that will have expected error at most
+ε with probability at least 1−δ, for some ﬁxedε,δ >0. That is, ifh∗ is the target hypothesis (with
+zero error), and error(h) := Px∼D [h(x)⁄=h∗(x)] is the error ofh, we require P [error(h)≤ε]≥
+1−δ. The latter probability is taken with respect to D(X); the learned hypothesis h and thus
+error(h) depend on it. A key challenge in active learning is to avoid bias: actively selected examples
+are no longer i.i.d., and thus sample complexity bounds for passive learning no longer apply. If one
+is not careful, active learning may require more samples than passive learning to achieve the same
+generalization error. One natural approach to active learning that is guaranteed to perform at least
+as well as passive learning is pool-based active learning (McCallum & Nigam, 1998): The idea is
+to drawn unlabeled examples i.i.d. However, instead of obtaining all labels, labels are adaptively
+requested until the labels of all unlabeled examples are implied by the obtained labels. Now we have
+obtainedn labeled examples drawn i.i.d., and classical PAC bounds still apply. The key question is
+how to request the labels for the pool to infer the remaining labels as quickly as possible.
+In the case of binary labels (or test outcomes) L ={−1, 1}, various authors have considered
+greedy policies which generalize binary search (Garey & Graham, 1974; Loveland, 1985; Arkin,
+Meijer, Mitchell, Rappaport, & Skiena, 1993; Kosaraju et al., 1999; Dasgupta, 2004; Guillory &
+Bilmes, 2009; Nowak, 2009). The simplest of these, called generalized binary search (GBS) or the
+splitting algorithm, works as follows. Deﬁne the version spaceV to be the set of hypotheses consis-
+tent with the observed labels (here we assume that there is no label noise). In the worst-case setting,
+GBS selects a query x∈ X that minimizes
+⏐⏐∑
+h∈V h(x)
+⏐⏐. In the Bayesian setting we assume we
+are given a prior pH over hypotheses; in this case GBS selects a query x ∈ X that minimizes⏐⏐∑
+h∈V pH(h)·h(x)
+⏐⏐. Intuitively these policies myopically attempt to shrink a measure of the ver-
+sion space (i.e., the cardinality or the probability mass) as quickly as possible. The former provides
+anO(log|H|)-approximation for the worst-case number of queries (Arkin et al., 1993), and the
+latter provides anO(log 1
+minhpH(h))-approximation for the expected number of queries (Kosaraju
+et al., 1999; Dasgupta, 2004) and a natural generalization of GBS obtains the same guarantees
+with a larger set of labels (Guillory & Bilmes, 2009). Kosaraju et al. also prove that running GBS
+on a modiﬁed prior p′
+H(h)∝ max
+{
+pH(h), 1/|H|2 log|H|
+}
+is sufﬁcient to obtain anO(log|H|)-
+approximation.
+Viewed from this perspective of the previous sections, shrinking the version space amounts to
+“covering” all false hypotheses with stochastic sets (i.e., queries), where queryx covers all hypothe-
+ses that disagree with the target hypothesish∗ atx. That is,x covers{h :h(x)⁄=h∗(x)}. As in§8,
+454
+
+ADAPTIVE SUBMODULARITY : T HEORY AND APPLICATIONS
+Figure 4: Illustration of the Active Learning problem, in the simple special case of one-dimensional
+data and binary threshold hypothesesH ={hτ :τ∈ R}, wherehτ(x) = 1 ifx≥τ and
+0 otherwise.
+these sets may be correlated in complex ways determined by the set of possible hypotheses. As we
+will show, the reduction in version space mass is adaptive submodular, and this allows us to obtain a
+new analysis of GBS using adaptive submodularity, which is arguably more amenable to extensions
+and generalizations than previous analyses. Our new analysis further allows us to improve on the
+previous best bound on the approximation factor of GBS (Dasgupta, 2004) from 4 ln
+(
+1
+minhpH(h)
+)
+to ln
+(
+1
+minhpH(h)
+)
++ 1. We also show that when we apply GBS to a modiﬁed prior distribution, the
+approximation factor is improved toO(ln|H|). This result matches a lower bound of Ω(ln|H|) of
+Chakaravarthy, Pandit, Roy, Awasthi, and Mohania (2007) up to constant factors.
+Theorem 9.1. In the Bayesian setting in which there is a prior pH on a ﬁnite set of hypotheses H,
+the generalized binary search algorithm makesOPT·
+(
+ln
+(
+1
+minhpH(h)
+)
++ 1
+)
+queries in expectation
+to identify a hypothesis drawn from pH, where OPT is the minimum expected number of queries
+made by any policy. If minhpH(h) is sufﬁciently small, running the algorithm on a modiﬁed prior
+p′
+H(h)∝ max
+{
+pH(h), 1/|H|2}
+improves the approximation factor toO(ln|H|).
+We devote the better part of the remainder of this section to the proof of Theorem 9.1, which has
+several components. We ﬁrst address the important special case of a uniform prior over hypotheses,
+i.e.,pH(h) = 1/|H| for allh∈ H, and then we reduce the case with a general prior to a uniform
+prior. We wish to appeal to Theorem 5.8, so we convert the problem into an Adaptive Stochastic
+Min Cost Cover problem.
+9.1 The Reduction to Adaptive Stochastic Min Cost Cover
+Deﬁne a realizationφh for each hypothesish∈H. The ground set isE =X, and the outcomes are
+binary; we deﬁne O ={−1, 1} instead of using{0, 1} to be consistent with our earlier exposition.
+For all h∈ H we set φh≡ h, meaning φh(x) = h(x) for all x∈ X. To deﬁne the objective
+function, we ﬁrst need some notation. Given observed labels ψ⊂ X×O, let V (ψ) denote the
+version space, i.e., the set of hypotheses for which h(x) = ψ(x) for all x∈ dom(ψ). See Fig. 4
+for an illustration of an active learning problem in the case of indicator hypotheses. For a set of
+hypothesesV , letpH(V ) :=∑
+h∈V pH(h) denote their total prior probability. Finally, letψ(S,h ) =
+{(x,h (x)) : x∈S} be the function with domainS that agrees withh onS. We deﬁne the objective
+455
+
+GOLOVIN & KRAUSE
+function by
+f(S,φh) := 1 −pH(V (ψ(S,h ))) = pH
+({
+h′ : ∃x∈S,h′(x)⁄=h(x)
+})
+and usep (φh) =pH(h) = 1/|H| for allh. Letπ∗ be an optimal policy for this Adaptive Stochastic
+Min Cost Cover instance. Note that there is an exact correspondence between policies for the
+original problem of ﬁnding the target hypothesis and our problem of covering the true realization;
+h∗ is identiﬁed as the target hypothesis if and only if the version space is reduced to {h∗} which
+occurs if and only ifφh∗ is covered. Hencecavg(π∗) = OPT. Note that because we have assumed a
+uniform prior over hypotheses, we havef(X,φh) = 1−1/|H| for allh. Furthermore, the instances
+are self–certifying.
+Lemma 9.2. The instances described above are self–certifying for arbitrary priorspH.
+Proof. Intuitively, theses instances are self–certifying because to cover φh∗ a policy must identify
+φh∗. More formally, these instances are self–certifying because for anyφh andψ such thatφh∼ψ,
+we have that f(dom(ψ),φh) = f(X,φh) implies V (ψ) = {h}. This in turn means that φh is
+the only realization consistent with ψ, which trivially implies that any realization φ′∼ ψ also has
+f(dom(ψ),φ′) =f(X,φ′); hence the instance is self–certifying.
+9.2 The Uniform Prior
+We next prove that the instances generated are adaptive submodular and strongly adaptive monotone
+under a uniform prior.
+Lemma 9.3. In the instances described above, f is strongly adaptive monotone and adaptive sub-
+modular and with respect to a uniform priorpH.
+Proof. Demonstrating strong adaptive monotonicity under a uniform prior amounts to proving that
+adding labels cannot grow the version space, which is clear in our model. That is, each query x
+eliminates some subset of hypotheses, and as more queries are performed, the subset of hypotheses
+eliminated byx cannot grow. Moving on to adaptive submodularity, consider the expected marginal
+contribution of x under two partial realizations ψ,ψ′ whereψ is a subrealization of ψ′ (i.e., ψ⊂
+ψ′), and x /∈ dom(ψ′). Let ψ[x/o] be the partial realization with domain dom(ψ)∪{x} that
+agrees with ψ on its domain, and maps x too. For each o∈ O, let ao := pH(V (ψ[x/o])),bo :=
+pH(V (ψ′[x/o])). Since a hypothesis eliminated from the version space cannot later appear in the
+version space, we have ao≥ bo for allo. Next, note the expected reduction in version space mass
+(and hence the expected marginal contribution) due to selectingx given partial realizationψ is
+∆(x|ψ) =
+∑
+o∈O
+ao· P [Φ(x)⁄=o | Φ∼ψ] =
+∑
+o
+ao
+(∑
+o′⁄=oao′
+∑
+o′ao′
+)
+=
+∑
+o⁄=o′aoao′
+∑
+o′ao′
+. (9.1)
+The corresponding quantity for ψ′ hasbo substituted forao in Eq. (9.1), for each o∈ O. To prove
+adaptive submodularity we must show ∆(x|ψ)≥ ∆(x|ψ′) and to do so it sufﬁces to show that
+∂φ/∂zo≥ 0 for eacho and⃗ z∈
+{
+⃗ c∈ [0, 1]O :∑
+oco> 0
+}
+, whereφ(⃗ z) :=
+(∑
+o⁄=o′zozo′
+)
+/ (∑
+o′zo′)
+has the same functional form as the expression for∆(x|ψ) in Eq. (9.1). This is because∂φ/∂zo≥ 0
+for each o implies that growing the version space in any manner cannot decrease the expected
+456
+
+ADAPTIVE SUBMODULARITY : T HEORY AND APPLICATIONS
+marginal beneﬁt of query x, and hence shrinking it in any manner cannot increase the expected
+marginal beneﬁt of x. It is indeed the case that ∂φ/∂zo≥ 0 for eacho. More speciﬁcally, it holds
+that
+∂φ
+∂za
+=
+∑
+b⁄=az2
+b +∑
+(b,c):b⁄=c,b⁄=a,c⁄=azbzc
+(∑
+bzb)2 ≥ 0,
+which can be derived through elementary calculus.
+Hence we can apply Theorem 5.8 to this self–certifying instance with maximum reward thresh-
+oldQ = 1−1/|H|, and minimum gapη = 1/|H|, to obtain an upper bound ofOPT (ln (|H|− 1) + 1)
+on the number of queries made by the generalized binary search algorithm (which corresponds ex-
+actly to the greedy policy for Adaptive Stochastic Min Cost Cover) under the assumption of a
+uniform prior overH.
+9.3 Arbitrary Priors
+Now consider general priors overH. We construct the Adaptive Stochastic Min Cost Cover instance
+as before, only we change the objective function to
+f(S,φh) := 1 −pH(V (ψ(S,h ))) +pH(h). (9.2)
+First note that the instances remain self–certifying. The proof of Lemma 9.2 goes through com-
+pletely unchanged by the modiﬁcation off. We proceed to show adaptive submodularity and strong
+adaptive monotonicity.
+Lemma 9.4. The objective functionf as described in Eq. (9.2) is strongly adaptive monotone and
+adaptive submodular and with respect to arbitrary priorspH.
+Proof. The modiﬁed objective is still adaptive submodular, because(S,φh)↦→pH(h) is clearly so,
+and because adaptive submodularity is deﬁned via linear inequalities it is preserved under taking
+nonnegative linear combinations. Note thatf(X,φh) = 1 for allφh.
+Showingf is strongly adaptive monotone requires slightly more work than before. Fix ψ,x /∈
+dom(ψ), ando∈O. We must show
+E [f(dom(ψ), Φ) | Φ∼ψ]≤ E [f(dom(ψ)∪{x}, Φ) | Φ∼ψ, Φ(x) =o]. (9.3)
+Plugging in the deﬁnition off, the inequality we wish to prove may be simpliﬁed to
+E [pH(Φ) | Φ∼ψ]− E [pH(Φ) | Φ∼ψ[x/o]] ≤ pH(V (ψ))−pH(V (ψ[x/o])). (9.4)
+where Φ is the random realization of the hypothesis, and pH(φh) = pH(h) for allh. Let Velim :=
+V (ψ)−V (ψ[x/o]) be the set of hypotheses eliminated from the version space by the observation
+h(x) =o. Rewriting Eq. (9.4), we get
+∑
+h∈V (ψ)
+pH(h)2
+pH(V (ψ)) −
+∑
+h∈V (ψ[x/o])
+pH(h)2
+pH(V (ψ[x/o])) ≤ pH(Velim). (9.5)
+457
+
+GOLOVIN & KRAUSE
+Let LHS9.5 denote the left hand side of Eq. (9.5). We prove Eq. (9.5) as follows.
+LHS9.5 ≤ ∑
+h∈VelimpH(h)2/pH(V (ψ)) [ sincepH(V (ψ[x/o]))≤pH(V (ψ))]
+≤ ∑
+h∈VelimpH(h)·pH(V (ψ))/pH(V (ψ)) [ sinceh∈V (ψ)⇒pH(h)≤pH(V (ψ))]
+= pH(Velim)
+We conclude thatf is adaptive submodular and strongly adaptive monotone.
+Hence we can apply Theorem 5.8 to this self–certifying instance with maximum reward thresh-
+old Q = 1 , and minimum gap η = 1/ minhpH(h). As a result we obtain an upper bound of
+OPT (ln (1/ minhpH(h)) + 1) on the number of queries made by generalized binary search for
+arbitrary priors, completing the proof of Theorem 9.1.
+9.4 Improving the Approximation Factor for Highly Nonuniform Priors
+To improve this to anO(log|H|)-approximation in the event that minhpH(h) is extremely small
+using the observation of Kosaraju et al. (1999), call a policy π progressive if it eliminates at least
+one hypothesis from its version space in each query. Let p′
+H(h) = max
+{
+pH(h), 1/|H|2}
+/Z
+be the modiﬁed prior, where Z := ∑
+h′ max
+{
+pH(h′), 1/|H|2}
+is the normalizing constant. Let
+c(π,h ) be the cost (i.e., # of queries) of π under target h. Then cavg(π,p ) := ∑
+hc(π,h )p(h)
+is the expected cost of π under prior p. We will show that cavg(π,p′
+H) is a good approxima-
+tion to cavg(π,pH). Call h rare if pH(h) < 1/|H|2, and common otherwise. First, note that∑
+h′ max
+{
+pH(h′), 1/|H|2}
+≤ 1 + 1/|H|, and sop′
+H(h)≥ |H|
+|H|+1pH(h), for allh. Hence for allπ,
+we havecavg(π,p′
+H)≥ |H|
+|H|+1cavg(π,pH). Next, we showcavg(π,p′
+H)≤cavg(π,pH) + 1. Consider
+the quantitycavg(π,p′
+H)−cavg(π,pH) =∑
+hc(π,h ) (p′
+H(h)−pH(h)). The positive contributions
+must come from rare hypotheses. However, the total probability mass of these under p′
+H is at most
+1/|H|, and since π is progressivec(π,h )≤| H| for all h, hence the difference in costs is at most
+one. Letα := ln
+(
+1
+minhp′
+H(h)
+)
++ 1≤ ln
+(
+|H|2 +|H|
+)
++ 1 be the approximation factor for general-
+ized binary search when run onp′
+H. Let π be the policy of generalized binary search, and letπ∗ be
+an optimal policy under priorpH. Then
+cavg(π,pH)≤|H| + 1
+|H| cavg(π,p′
+H)≤|H| + 1
+|H| αc avg(π∗,p′
+H)≤|H| + 1
+|H| α
+(
+cavg(π∗,pH) + 1
+)
+.
+With some further algebra, we can derive cavg(π,pH)≤
+(
+cavg(π∗,pH) + 1
+)(
+ln
+(
+2e|H|2))
+. Thus
+for a general prior a simple modiﬁcation of GBS yields anO(log|H|)-approximation.
+9.5 Extensions to Arbitrary Costs, Multiple Classes, and Approximate Greedy Policies
+This result easily generalizes to handle the setting of multiple classes / test outcomes (i.e.,|O|≥ 2),
+andα-approximate greedy policies, where we lose a factor ofα in the approximation factor. As we
+describe in the Appendix, we can generalize adaptive submodularity to incorporate costs on items,
+which allows us to extend this result to handle query costs as well. We can therefore recover these
+extensions of Guillory and Bilmes (2009), while improving the approximation factor for GBS with
+item costs to ln
+(
+1
+minhpH(h)
+)
++ 1. Guillory and Bilmes also showed how to extend the technique
+458
+
+ADAPTIVE SUBMODULARITY : T HEORY AND APPLICATIONS
+of Kosaraju et al. (1999) to obtain an O
+(
+log
+(
+|H| maxxc(x)
+minxc(x)
+))
+-approximation with costs using a
+greedy policy, which may be combined with our tighter analysis as well to give a similar result
+with an improved leading constant. Recently, Gupta, Krishnaswamy, Nagarajan, and Ravi (2010)
+showed how to simultaneously remove the dependence on both costs and probabilities from the
+approximation ratio. Speciﬁcally, within the context of studying an adaptive travelling salesman
+problem they investigated the Optimal Decision Tree problem, which is equivalent to the active
+learning problem we consider here. Using a clever, more complex algorithm than adaptive greedy,
+they achieve anO (log|H|)-approximation in the case of non-uniform costs and general priors.
+9.6 Extensions to Active Learning with Noisy Observations
+Theorem 9.1 and the extensions mentioned so far are in the noise free case, i.e., the result of queryx
+and observesh∗(x), whereh∗ is the target hypothesis. Many practical problems may havenoisy ob-
+servations. Nowak (2009) considered the case in which the outcomes are binary, i.e.,O ={−1, 1},
+the same query may be asked multiple times, and for each instance of each query the noise is in-
+dependent. In this case he gives performance guarantees for generalized binary search. While this
+setting may be appropriate if the noise is due to measurement error, in some applications the noise
+is persistent, i.e., if query x is asked several times, the observation is always the same. Recently,
+Golovin et al. (2010) and Bellala and Scott (2010) have used the adaptive submodularity frame-
+work to obtain the ﬁrst algorithms with provable (logarithmic) approximation guarantees for active
+learning with persistent noise.
+10. Experiments
+Greedy algorithms are often straightforward to develop and implement, which explains their pop-
+ular use in practical applications, such as Bayesian experimental design and Active Learning, as
+discussed in§9 (also see the excellent introduction of Nowak, 2009) and Adaptive Stochastic Set
+Cover, e.g., for ﬁlter design in streaming databases as discussed in§7. Besides allowing us to prove
+approximation guarantees for such algorithms, adaptive submodularity provides the following im-
+mediate practical beneﬁts:
+1. The ability to use lazy evaluations to speed up its execution.
+2. The ability to generate data-dependent bounds on the optimal value.
+In this section, we empirically evaluate their beneﬁts within a sensor selection application, in a
+setting similar to the one described by Deshpande, Guestrin, Madden, Hellerstein, and Hong (2004).
+In this application, we have deployed a networkV of wireless sensors, e.g., to monitor temperature
+in a building or trafﬁc in a road network. Since sensors are battery constrained, we must adaptively
+selectk sensors, and then, given those sensor readings, predict, e.g., the temperature at all remaining
+locations. This prediction is possible since temperature measurements will typically be correlated
+across space. Here, we will consider the case where sensors can fail to report measurements due to
+hardware failures, environmental conditions or interference.
+10.1 The Sensor Selection Problem with Unreliable Sensors
+More formally, we imagine every locationv∈V is associated with a random variableXv describing
+the temperature at that location, and there is a joint probability distributionp (xV ) := P [XV = xV ]
+that models the correlation between temperature values. Here, XV = [X1,..., Xn] is the random
+459
+
+GOLOVIN & KRAUSE
+vector over all temperature values. We follow Deshpande et al. (2004) and assume that the joint
+distribution of the sensors is multivariate Gaussian. A sensorv can make a noisy observationYv =
+Xv +εv, where εv is zero mean Gaussian noise with known variance σ2. If some measurements
+YA = yA are obtained at a subset of locations, then the conditional distribution p (xV| yA) :=
+P [XV = xV|Y A = yA] allows predictions at the unobserved locations, e.g., by predicting E[XV|
+YA = yA] (which minimizes the mean squared error). Furthermore, this conditional distribution
+quantiﬁes the uncertainty in the prediction: Intuitively, we would like to select sensors that minimize
+the predictive uncertainty. One way to quantify the predictive uncertainty is to use the remaining
+Shannon entropy
+H (XV|Y A = yA) := E [− log2 (p (XV| yA))].
+We would like to adaptively select k sensors, to maximize the expected reduction in Shannon en-
+tropy (c.f., Sebastiani & Wynn, 2000; Krause & Guestrin, 2009b). However, in practice, sensors are
+often unreliable, and might fail to report their measurements. We assume that after selecting a sen-
+sor, we ﬁnd out whether it has failed or not before deciding which sensor to select next. We suppose
+that each sensor has an associated probabilitypfail(v) of failure, in which case no reading is reported,
+and that sensor failures are independent of each other and of the ambient temperature atv. Thus we
+have an instance of the Stochastic Maximization problem with E := V ,O :={working, failed},
+and
+f(A,φ ) := H (XV )− H
+(
+XV | y{v :φ(v)=working}
+)
+. (10.1)
+For multivariate normal distributions, the entropy is given as
+H (XV|Y A = yA) = 1
+2 ln(2πe)n
+⏐⏐⏐ΣVA
+(
+ΣAA +σ2I
+)−1
+ΣAV
+⏐⏐⏐,
+where for setsA andB, ΣAB denotes the covariance (matrix) between random vectorsXA andXB.
+Note that the predictive covariance does not depend on the actual observations yA, only on the set
+A of chosen locations. Thus,
+H (XV|Y A = yA) = H (XV|Y A),
+where as usual, H (XV | YA) = E [H (XV | YA = yA)]. As Krause and Guestrin (2005) show,
+the function
+g(A) := I (XV ;YA) = H (XV )− H (XV|Y A) (10.2)
+is monotone submodular, whenever the observationsYV are conditionally independent givenXV .
+This insight allows us to apply the result of§6 to show that the objectivef deﬁned in Eq. (10.1)
+is adaptive monotone submodular, using ˆf(S) :=g({v : (v, working)∈S}) for anyS⊆E×O.
+10.1.1 D ATA AND EXPERIMENTAL SETUP
+Our ﬁrst data set consists of temperature measurements from the network of 46 sensors deployed at
+Intel Research Berkeley, which were sampled at30 second intervals for 5 consecutive days (starting
+Feb. 28th, 2004). We deﬁne our objective function with respect to the empirical covariance estimated
+from the data.
+We also use data from trafﬁc sensors deployed along the highway I- 880 South in California.
+We use trafﬁc speed data for all working days from 6 AM to 11 AM for one month, from 357
+sensors. The goal is to predict the speed on all 357 road segments. We again estimate the empirical
+covariance matrix.
+460
+
+ADAPTIVE SUBMODULARITY : T HEORY AND APPLICATIONS
+10.1.2 T HE BENEFITS OF LAZY EVALUATION
+For both data sets, we run the adaptive greedy algorithm, using both the naive implementation (Al-
+gorithm 1) and the accelerated version using lazy evaluations (Algorithm 2). We vary the probability
+of sensor failure, and evaluate the execution time and the number of evaluations of the function g
+(deﬁned in Eq. (10.2)) each algorithm makes. Figures 5(a) and 5(b) plot execution time given a
+50% sensor failure rate, on a computer with a 2.26 GHz dual core processor and 4 GB RAM. In
+these applications, function evaluations are the bottleneck in the computation, so the number of
+them serves as a machine-independent proxy for the running time. Figures 5(c) and 5(d) show the
+performance ratio in terms of this proxy. On the temperature data set, lazy evaluations speed up the
+computation by a factor of between roughly 3.5 and 7, depending on the failure probability. On the
+larger trafﬁc data set, we obtain speedup factors between 30 and 38. We ﬁnd that the beneﬁt of the
+lazy evaluations increases with the problem size and with the failure probability. The dependence on
+problem size must ultimately be explained in terms of structural properties of the instances, which
+also beneﬁt the nonadaptive accelerated greedy algorithm. The dependence on failure probability
+has a simpler explanation. Note that in these applications, if the accelerated greedy algorithm se-
+lectsv, which then fails, then it does not need to make any additional function evaluations to select
+the next sensor. Contrast this with the naive greedy algorithm, which makes a function evaluation
+for each sensor that has not been selected so far.
+10.1.3 T HE BENEFITS OF THE DATA DEPENDENT BOUND
+While adaptive submodularity allows us to prove worst-case performance guarantees for the adap-
+tive greedy algorithm, in many practical applications it can be expected that these bounds are quite
+loose. For our sensor selection application, we use the data dependent bounds of Lemma 5.3 to
+compute an upper bound βavg on maxπfavg(π[k]) as described below, and compare it with the per-
+formance guarantee of Theorem 5.2. For the accelerated greedy algorithm, we use the upper bounds
+on the marginal beneﬁts stored in the priority queue instead of recomputing the marginal beneﬁts,
+and thus expect somewhat looser bounds. We ﬁnd that for our application, the bounds are tighter
+than the worst case bounds. We also ﬁnd that the “lazy” data dependent bounds are almost as tight as
+the “eager” bounds using the eagerly recomputed marginal beneﬁts∆(e|ψ) for the latest and great-
+estψ, though the former have slightly higher variance. Figures 5(e) and 5(f) show the performance
+of the greedy algorithm as well as the three bounds on the optimal value.
+Two subtleties arise when using the data-dependent bounds to bound maxπfavg(π[k]). The
+ﬁrst is that Lemma 5.3 tells us that ∆
+(
+π∗
+[k]|ψ
+)
+≤ maxA⊆E,|A|≤k
+∑
+e∈A ∆(e|ψ), whereas we
+would like to bound the difference between the optimal reward and the algorithm’s current expected
+reward, conditioned on seeing ψ, i.e., E
+[
+f(E(π∗
+[k], Φ), Φ)−f(dom(ψ), Φ) | Φ∼ψ
+]
+. However,
+in our applicationsf is strongly adaptive monotone, and strong adaptive monotonicity implies that
+for anyπ∗ we have
+E
+[
+f(E(π∗
+[k], Φ), Φ)−f(dom(ψ), Φ) | Φ∼ψ
+]
+≤ ∆
+(
+π∗
+[k]|ψ
+)
+. (10.3)
+Hence, if we let OPT(ψ) := maxπ E
+[
+f(E(π[k], Φ), Φ) | Φ∼ψ
+]
+, Lemma 5.3 implies that
+OPT(ψ)≤ E [f(dom(ψ), Φ) | Φ∼ψ] + max
+A⊆E,|A|≤k
+∑
+e∈A
+∆(e|ψ). (10.4)
+461
+
+GOLOVIN & KRAUSE
+The second subtlety is that we obtain a sequence of bounds from Eq. (10.4). If we consider the
+(random) sequence of partial realizations observed by the adaptive greedy algorithm, ∅ = ψ0⊂
+ψ1⊂···⊂ ψk, we obtaink + 1 boundsβ0,...,β k, whereβi := E [f(dom(ψi), Φ) | Φ∼ψi] +
+maxA⊆E,|A|≤k
+∑
+e∈A ∆(e|ψi). Taking the expectation over Φ, note that for anyπ, and anyi,
+favg(π[k])≤ E [OPT(ψi)]≤ E [βi].
+Therefore for any 0≤ i≤ k , βi is a random variable whose expectation is an upper bound on
+the optimal expected reward of any policy. At this point we may be tempted to use the minimum
+of these, i.e.,βmin := mini{βi} as our ultimate bound. However, a collection of random variables
+X0,...,X k with E [Xi]≥ τ for all i does not, in general, satisfy mini{Xi}≥ τ. While it is
+possible in our case, with its independent sensor failures, to use concentration inequalities to bound
+mini{βi}− mini{E [βi]} with high probability, and thus add an appropriate term to obtain a true
+upper bound from βmin, we take a different approach; we simply use the average bound βavg :=
+1
+k+1
+∑k
+i=0βi. Of course, depending on the application, a particular boundβi (chosen independently
+of the sequence ψ0,ψ 1,...,ψ k) may be superior. For example, if g is modular, then β0 is best,
+whereas if g exhibits strong diminishing returns, then bounds βi with larger values of i may be
+signiﬁcantly tighter.
+11. Adaptivity Gap
+An important question in adaptive optimization is how much better adaptive policies can perform
+when compared to non-adaptive policies. This is quantiﬁed by the adaptivity gap, which is the
+worst-case ratio, over problem instances, of the performance of the optimal adaptive policy to the
+optimal non-adaptive solution. Asadpour et al. (2008) show that in the Stochastic Submodular
+Maximization problem with independent failures (as considered in §6), the expected value of the
+optimal non-adaptive policy is at most a constant factor 1− 1/e worse than the expected value
+of the optimal adaptive policy. While we currently do not have lower bounds for the adaptivity
+gap of the general Adaptive Stochastic Maximization problem (2.1), we can show that even in the
+case of adaptive submodular functions, the min-cost cover and min-sum cover versions have large
+adaptivity gaps, and thus there is a large beneﬁt of using adaptive algorithms. In these cases, the
+adaptivity gap is deﬁned as the worst-case ratio of the expected cost of the optimal non-adaptive
+policy divided by the expected cost of the optimal adaptive policy. For the Adaptive Stochastic
+Minimum Cost Coverage problem (2.2), Goemans and V ondr ´ak (2006) show the special case of
+Stochastic Set Coverage without multiplicities has an adaptivity gap of Ω(|E|). Below we exhibit
+an adaptive stochastic optimization instance with adaptivity gap ofΩ(|E|/ log|E|) for the Adaptive
+Stochastic Min-Sum Cover problem (2.3), which also happens to have the same adaptivity gap for
+Adaptive Stochastic Minimum Cost Coverage.
+Theorem 11.1. Even for adaptive submodular functions, the adaptivity gap of Adaptive Stochastic
+Min-Sum Cover is Ω(n/ logn), wheren =|E|.
+Proof. Suppose E = {1,...,n }. Consider the active learning problem where our hypotheses
+h : E → {−1, 1} are threshold functions, i.e., h(e) = 1 if e ≥ 𝓁 and h(e) = −1 if e < 𝓁
+for some threshold 𝓁. There is a uniform distribution over thresholds 𝓁 ∈ {1,...,n + 1}. In
+order to identify the correct hypothesis with threshold 𝓁, our policy must observe at least one of
+𝓁− 1 or 𝓁 (and both of them if 1 < 𝓁≤ n). Let ˆπ be an optimal non-adaptive policy for this
+462
+
+ADAPTIVE SUBMODULARITY : T HEORY AND APPLICATIONS
+0 5 10 15 20 25 30 35 40 45 500
+0.05
+0.1
+0.15
+0.2
+0.25
+0.3
+0.35
+0.4
+0.45
+Time for Standard and Accelerated Adaptive Greedy
+Accelerated Adaptive Greedy
+Adaptive Greedy
+(a) Temperature Data: Execution time (sec) for
+the naive vs accelerated implementations of adap-
+tive greedy vs. the budgetk on number of sensors
+selected, when pfail(v) = 0 .5 for all v, plotted
+with standard errors.
+0 50 100 150 200 250 300 3500
+5
+10
+15
+20
+25
+30
+35
+40
+Time for Standard and Accelerated Adaptive Greedy
+Adaptive Greedy
+Accelerated Adaptive Greedy
+(b) Trafﬁc Data: Execution time (sec) for the
+naive vs accelerated implementations of adap-
+tive greedy vs. the budget k on number of sen-
+sors selected, when pfail(v) = 0 .5 for all v,
+plotted with standard errors.
+0 10 20 30 40 50
+1
+2
+3
+4
+5
+6
+7
+8
+Redu ction in Function Evaluations vs. Pr[failure]
+90%
+80%
+70%
+60%
+50%
+40%
+30%
+20%
+10%
+(c) Temperature Data: The ratio of function eval-
+uations made by the naive vs accelerated imple-
+mentations of adaptive greedy vs. the budget k
+on number of sensors selected, for various failure
+rates. Averaged over 100 runs.
+0 100 200 300 4000
+5
+10
+15
+20
+25
+30
+35
+40
+45
+50%
+25%
+75%
+Reduction in Function Evaluations vs . Pr [failur e]
+(d) Trafﬁc Data: The ratio of function evaluations
+made by the naive vs accelerated implementations
+of adaptive greedy vs. the budget k on number of
+sensors selected, for various failure rates. Aver-
+aged over 10 runs.
+0 5 10 15 20 25 30 35 40 45 500
+10
+20
+30
+40
+50
+60
+70
+80
+90
+100
+Reward for Adaptive Greedy, with Data−Dependent Bounds
+Adaptive Greedy
+Standard Bound
+Lazy Adaptive Bound
+Adaptive Bound
+(e) Temperature Data: Rewards & bounds on the
+optimal value whenpfail(v) = 0.5 for allv vs. the
+budgetk on number of sensors selected, plotted
+with standard errors.
+0 50 100 150 200 250 300 350 4000
+50
+100
+150
+Reward for Adaptive Greedy, with Data−Dependent Bounds
+Adaptive Greedy
+Standard Bound
+Lazy Adaptive Bound
+Adaptive Bound
+(f) Trafﬁc Data: Rewards & bounds on the op-
+timal value when pfail(v) = 0 .5 for all v vs. the
+budgetk on number of sensors selected, plotted
+with standard errors.
+Figure 5: Experimental results.
+463
+
+GOLOVIN & KRAUSE
+problem. Note that ˆπ can be represented as a permutation of E, because observing an element
+multiple times can only increase the cost while providing no beneﬁt over observing it once, and
+each element must eventually be selected to guarantee coverage. For the min-sum cover objective,
+consider playing ˆπ forn/4 time steps. Then P [𝓁 observed inn/4 steps] = n/4(n + 1). Likewise
+P [𝓁− 1 observed inn/4 steps] = n/4(n + 1). Since at least one of these events must occur to
+identify the correct hypothesis, by a union bound
+P [ˆπ identiﬁes the correct hypothesis inn/4 steps] ≤ n
+2(n + 1) ≤ 1/2.
+Thus a lower bound on the expected cost of ˆπ is n/8, since for n/4 time steps a cost of at least
+1/2 is incurred. Thus, for both the min-cost and min-sum cover objectives the cost of the optimal
+non-adaptive policy is Ω(n).
+As an example adaptive policy, we can implement a natural binary search strategy, which is
+guaranteed to identify the correct hypothesis after O(logn) steps, thus incurring cost O(logn),
+proving an adaptivity gap of Ω(n/ logn).
+12. Hardness of Approximation
+In this paper, we have developed the notion of adaptive submodularity, which characterizes when
+certain adaptive stochastic optimization problems are well-behaved in the sense that a simple greedy
+policy obtains a constant factor or logarithmic factor approximation to the best policy.
+In contrast, we can also show that without adaptive submodularity, the adaptive stochastic op-
+timization problems (2.1), (2.2), and (2.3) are extremely inapproximable, even with (pointwise)
+modular objective functions (i.e., those where for each φ,f : 2E×OE→ R is modular/linear in
+the ﬁrst argument): We cannot hope to achieve an O(|E|1−ε) approximation ratio for these prob-
+lems, unless the polynomial hierarchy collapses down to ΣP
+2 .
+Theorem 12.1. For all (possibly non-constant)β≥ 1, no polynomial time algorithm for Adaptive
+Stochastic Maximization with a budget ofβk items can approximate the reward of an optimal policy
+with a budget of onlyk items to within a multiplicative factor ofO(|E|1−ε/β) for anyε> 0, unless
+PH = ΣP
+2 . This holds even for pointwise modularf.
+We provide the proof of Theorem 12.1 in Appendix A.7. Note that by setting β = 1 , we
+obtainO(|E|1−ε) hardness for Adaptive Stochastic Maximization. It turns out that in the instance
+distribution we construct in the proof of Theorem 12.1 the optimal policy covers every realization
+(i.e., always ﬁnds the treasure) using a budget of k = O(|E|ε/2) items. Hence if PH ⁄= Σ P
+2
+then any randomized polynomial time algorithm wishing to cover this instance must have a budget
+β = Ω(|E|1−ε) times larger than the optimal policy, in order to ensure the ratio of rewards, which
+is Ω(|E|1−ε/β), equals one. This yields the following corollary.
+Corollary 12.2. No polynomial time algorithm for Adaptive Stochastic Min Cost Coverage can
+approximate the cost of an optimal policy to within a multiplicative factor of O(|E|1−ε) for any
+ε> 0, unless PH = ΣP
+2 . This holds even for pointwise modularf.
+Furthermore, since in the instance distribution we construct the optimal policy π∗ covers every
+realization using a budget of k, it has cΣ(π∗)≤ k. Moreover, since we have shown that under
+our complexity theoretic assumptions, any polynomial time randomized policy π with budget βk
+464
+
+ADAPTIVE SUBMODULARITY : T HEORY AND APPLICATIONS
+achieves at most o(β/|E|1−ε) of the (unit) value obtained by the optimal policy with budget k, it
+follows that cΣ(π) = Ω( βk). Since we require β = Ω(|E|1−ε) to cover any set of realizations
+constituting, e.g., half of the probability mass, we obtain the following corollary.
+Corollary 12.3. No polynomial time algorithm for Adaptive Stochastic Min-Sum Cover can ap-
+proximate the cost of an optimal policy to within a multiplicative factor ofO(|E|1−ε) for anyε> 0,
+unless PH = ΣP
+2 . This holds even for pointwise modularf.
+13. Related Work
+There is a large literature on adaptive optimization under partial observability which relates to adap-
+tive submodularity, which can be broadly organized into several different categories. Here, we only
+review relevant related work that is not already discussed elsewhere in the manuscript.
+13.1 Adaptive Versions of Classic Non-adaptive Optimization Problems
+Many approaches consider stochastic generalizations of speciﬁc classic non-adaptive optimization
+problems, such as Set Cover (Goemans & V ondr´ak, 2006; Liu et al., 2008), Knapsack (Dean, Goe-
+mans, & V ondr´ak, 2008, 2005) and Traveling Salesman (Gupta et al., 2010). In contrast, in this
+paper our goal is to introduce a general problem structure – adaptive submodularity – that uniﬁes
+a number of adaptive optimization problems. This is similar to how the classic notion of submod-
+ularity uniﬁes various optimization problems such as Set Cover, Facility Location, nonadaptive
+Bayesian Experimental Design, etc.
+13.2 Competitive Online Optimization
+Another active area of research in sequential optimization is the study of competitive online algo-
+rithms. A particularly relevant example is Online Set Cover (Alon, Awerbuch, Azar, Buchbinder,
+& Naor, 2009), where there is a known set system, an arbitrary sequence of elements is presented
+to the algorithm, and the algorithm must irrevocably select sets to purchase such that at all times
+the purchased sets cover all elements which have appeared so far. Alon et al. (2009) obtain a
+polylogarithmic approximation to this problem, via an online primal–dual framework which has
+been proﬁtably applied to many other problems. Buchbinder and Naor (2009) provide a detailed
+treatment of this framework. Note that competitive analysis focuses on worst–case scenarios. In
+contrast, we assume probabilistic information about the world and optimize for the average case.
+13.3 (Noisy) Interactive Submodular Set Cover
+Recent work by Guillory and Bilmes (2010, 2011) considers a class of adaptive optimization prob-
+lems over a family of monotone submodular objectives{fh :h∈H}. In their problem, one must
+cover a monotone submodular objective fh∗ which depends on the (initially unknown) target hy-
+pothesish∗∈H, by adaptively issuing queries and getting responses. Unlike traditional pool-based
+active learning, each query may generate a response from a set of valid responses depending on the
+target hypothesis. The reward is calculated by evaluating fh∗ on the set of (query, response) pairs
+observed, and the goal is to obtain some thresholdQ of objective value at minimum total query cost,
+where queries may have nonuniform costs. In the noisy variant of the problem (Guillory & Bilmes,
+2011), the set of (query, response) pairs observed need not be consistent with any hypothesis inH,
+465
+
+GOLOVIN & KRAUSE
+and the goal is to obtain Q of value for all hypotheses that are “close” to being consistent with the
+observations. For both variants, Guillory and Bilmes consider the worst-case policy cost, and pro-
+vide greedy algorithms optimizing clever hybrid objective functions. They prove an approximation
+guarantee of ln(Q|H|) + 1 for integer valued objective functions{fh}h∈H in the noise–free case,
+and similar logarithmic approximation guarantees for the noisy case.
+While similar in spirit to this work, there are several signiﬁcant differences between the two.
+Guillory and Bilmes focus on worst-case policy cost, while we focus mainly on average-case policy
+cost. The structure of adaptive submodularity depends on the prior p (φ), whereas there is no such
+dependence in Interactive Submodular Set Cover. This dependence in turn allows us to obtain
+results, such as Theorem 5.8 for self–certifying instances, whose approximation guarantee does not
+depend on the number of realizations in the way that the guarantees for Interactive Submodular Set
+Cover depend on|H|. As Guillory and Bilmes prove, the latter dependence is fundamental under
+reasonable complexity-theoretic assumptions 6. An interesting open problem within the adaptive
+submodularity framework that is highlighted by the work on Interactive Submodular Set Cover is
+to identify useful instance-speciﬁc properties that are sufﬁcient to improve upon the worst-case
+approximation guarantee of Theorem 5.9.
+13.4 Greedy Frameworks for Adaptive Optimization
+The paper that is perhaps closest in spirit to this work is the one on Stochastic Depletion problems
+by Chan and Farias (2009), who also identify a general class of adaptive optimization problems
+than can be near-optimally solved using greedy algorithms (which in their setting give a factor
+2 approximation). However, the similarity is mainly on a conceptual level: The problems and
+approaches, as well as example applications considered, are quite different.
+13.5 Stochastic Optimization with Recourse
+A class of adaptive optimization problems studied extensively in operations research (since Dantzig,
+1955) is the area of stochastic optimization with recourse. Here, an optimization problem, such as
+Set Cover, Steiner Tree or Facility Location, is presented in multiple stages. At each stage, more
+information is revealed, but costs of actions increase. A key difference to the problems studied in
+this paper is that in these problems, information gets revealed independently of the actions taken by
+the algorithm. There are general efﬁcient, sampling based (approximate) reductions of multi-stage
+optimization to the deterministic setting (see, e.g., Gupta, P´al, Ravi, & Sinha, 2005).
+13.6 Bayesian Global Optimization
+Adaptive Stochastic Optimization is also related to the problem of Bayesian Global Optimization
+(c.f., Brochu, Cora, & de Freitas, 2009, for a recent survey of the area). In Bayesian Global Opti-
+mization, the goal is to adaptively select inputs in order to maximize an unknown function that is
+expensive to evaluate (and can possibly only be evaluated using noisy observations). A common ap-
+proach that has been successful in many applications (c.f., Lizotte, Wang, Bowling, & Schuurmans,
+2007, for a recent application in machine learning), is to assume a prior distribution, such as a Gaus-
+6. They reduce to Set Cover and use the result of Feige (1998), which requires the assumption NP ⊈
+DTIME(nO(log log n)), but it sufﬁces to assume only P ⁄= NP using the Set Cover approximation hardness result
+of Raz and Safra (1997) instead.
+466
+
+ADAPTIVE SUBMODULARITY : T HEORY AND APPLICATIONS
+sian process, over the unknown objective function. Several criteria for selecting inputs have been
+developed, such as the Expected Improvement (Jones, Schonlau, & Welch, 1998) criterion. How-
+ever, while recently performance guarantees where obtained in the no-regret setting (Gr ¨unew¨alder,
+Audibert, Opper, & Shawe-Taylor, 2010; Srinivas, Krause, Kakade, & Seeger, 2010), we are not
+aware of any approximation guarantees for Bayesian Global Optimization.
+13.7 Probabilistic Planning
+The problem of decision making under partial observability has also been extensively studied in
+stochastic optimal control. In particular, Partially Observable Markov Decision Processes (POMDPs,
+Smallwood & Sondik, 1973) are a general framework that captures many adaptive optimization
+problems under partial observability. Unfortunately, solving POMDPs is PSPACE hard (Papadim-
+itriou & Tsitsiklis, 1987), thus typically heuristic algorithms with no approximation guarantees are
+applied (Pineau, Gordon, & Thrun, 2006; Ross, Pineau, Paquet, & Chaib-draa, 2008). For some
+special instances of POMDPs related to Multi-armed Bandit problems, (near-)optimal policies can
+be found. These include the (optimal) Gittins-index policy for the classic Multi-armed Bandit prob-
+lem (Gittins & Jones, 1979) and approximate policies for the Multi-armed Bandit problem with
+metric switching costs (Guha & Munagala, 2009) and special cases of the Restless Bandit prob-
+lem (Guha, Munagala, & Shi, 2009). The problems considered in this paper can be formalized as
+POMDPs, albeit with exponentially large state space (where the world state represents the selected
+items and state/outcome of each item). Thus our results can be interpreted as widening the class of
+partially observable planning problems that can be efﬁciently approximately solved.
+13.8 Previous Work by the Authors & Subsequent Developments
+This manuscript is an extended version of a paper that appeared in the Conference on Learning
+Theory (COLT; Golovin & Krause, 2010). More recently, Golovin and Krause (2011) proved per-
+formance guarantees for the greedy policy for the problem of maximizing the expected value of a
+policy under constraints more complex than simply selecting at most k items. These include ma-
+troid constraints, where a policy can only select independent sets of items and the greedy policy
+obtains a 1/2–approximation for adaptive monotone submodular objectives, and more generally
+p-independence system constraints, where the greedy policy obtains a 1/(p + 1)–approximation.
+Golovin et al. (2010) and, shortly thereafter, Bellala and Scott (2010), used the adaptive submodu-
+larity framework to obtain the ﬁrst algorithms with provable (logarithmic) approximation guarantees
+for the difﬁcult and fundamental problem of active learning with persistent noise. Finally, Golovin,
+Krause, Gardner, Converse, and Morey (2011) used adaptive submodularity in the context of a
+dynamic conservation planning, and obtain competitiveness guarantees for an ecological reserve
+design problem.
+14. Conclusions
+Planning under partial observability is a central but notoriously difﬁcult problem in artiﬁcial intel-
+ligence. In this paper, we identiﬁed a novel, general class of adaptive optimization problems under
+uncertainty that are amenable to efﬁcient, greedy (approximate) solution. In particular, we intro-
+duced the concept of adaptive submodularity, generalizing submodular set functions to adaptive
+policies. Our generalization is based on a natural adaptive analog of the diminishing returns prop-
+467
+
+GOLOVIN & KRAUSE
+erty well understood for set functions. In the special case of deterministic distributions, adaptive
+submodularity reduces to the classical notion of submodular set functions. We proved that several
+guarantees carried by the non-adaptive greedy algorithm for submodular set functions generalize to
+a natural adaptive greedy algorithm in the case of adaptive submodular functions, for constrained
+maximization and certain natural coverage problems with both minimum cost and minimum sum
+objectives. We also showed how the adaptive greedy algorithm can be accelerated using lazy eval-
+uations, and how one can compute data-dependent bounds on the optimal solution. We illustrated
+the usefulness of the concept by giving several examples of adaptive submodular objectives arising
+in diverse AI applications including sensor placement, viral marketing, automated diagnosis and
+pool-based active learning. Proving adaptive submodularity for these problems allowed us to re-
+cover existing results in these applications as special cases and lead to natural generalizations. Our
+experiments on real data indicate that adaptive submodularity can provide practical beneﬁts, such
+as signiﬁcant speed ups and tighter data-dependent bounds. We believe that our results provide an
+interesting step in the direction of exploiting structure to solve complex stochastic optimization and
+planning problems under partial observability.
+Acknowledgments
+An extended abstract of this work appeared in COLT 2010 (Golovin & Krause, 2010). We wish to
+thank the anonymous referees for their helpful suggestions. This research was partially supported by
+ONR grant N00014-09-1-1044, NSF grant CNS-0932392, NSF grant IIS-0953413, DARPA MSEE
+grant FA8650-11-1-7156, a gift by Microsoft Corporation, an Okawa Foundation Research Grant,
+and by the Caltech Center for the Mathematics of Information.
+Appendix A. Additional Proofs and Incorporating Item Costs
+In this appendix we provide all of the proofs omitted from the main text. For the results of §5, we
+do so by ﬁrst explaining how our results generalize to the case where items have costs, and then
+proving generalizations which incorporate item costs.
+A.1 Incorporating Costs: Preliminaries
+In this section we provide the preliminaries required to deﬁne and analyze the versions of our prob-
+lems with non-uniform item costs. We suppose each item e∈ E has a cost c(e), and the cost of a
+setS⊆ E is given by the modular function c(S) = ∑
+e∈Sc(e). We deﬁne the generalizations of
+problems (2.1), (2.2), and (2.3) in§A.3,§A.4, and§A.5, respectively.
+Our results are with respect to the greedy policy πgreedy and α-approximate greedy policies.
+With costs, the greedy policy selects an item maximizing ∆(e|ψ)/c(e), where ψ is the current
+partial realization.
+Deﬁnition A.1 (Approximate Greedy Policy with Costs) . A policy π is an α-approximate greedy
+policy if for allψ such that there existse∈E with ∆(e|ψ)> 0,
+π(ψ)∈
+{
+e : ∆(e|ψ)
+c(e) ≥ 1
+α max
+e′
+(∆(e′|ψ)
+c(e′)
+)}
+,
+and π terminates upon observing any ψ such that ∆(e|ψ)≤ 0 for all e∈ E. That is, an α-
+approximate greedy policy always obtains at least (1/α) of the maximum possible ratio of condi-
+468
+
+ADAPTIVE SUBMODULARITY : T HEORY AND APPLICATIONS
+tional expected marginal beneﬁt to cost, and terminates when no more beneﬁt can be obtained in
+expectation. A greedy policy is any 1-approximate greedy policy.
+It will be convenient to imagine the policy executing over time, such that when a policyπ selects
+an item e, it starts to run e, and ﬁnishes running e after c(e) units of time. We next generalize
+the deﬁnition of policy truncation. Actually we require three such generalizations, which are all
+equivalent in the unit cost case.
+Deﬁnition A.2 (Strict Policy Truncation) . The strict level t truncation of a policy π, denoted by
+π[←t], is obtained by running π for t time units, and unselecting items whose runs have not ﬁn-
+ished by time t. Formally, π[←t] has domain
+{
+ψ∈ dom(π) : c(π(ψ)) +∑
+e∈dom(ψ)c(e)≤t
+}
+,
+and agrees withπ everywhere in its domain.
+Deﬁnition A.3 (Lax Policy Truncation). The lax levelt truncation of a policyπ, denoted byπ[t→],
+is obtained by runningπ fort time units, and selecting the items running at timet. Formally,π[t→]
+has domain
+{
+ψ∈ dom(π) : ∑
+e∈dom(ψ)c(e)<t
+}
+, and agrees withπ everywhere in its domain.
+Deﬁnition A.4 (Policy Truncation with Costs) . The level-t-truncation of a policy π, denoted by
+π[t], is a randomized policy obtained by running π for t time units, and if some item e has been
+running for 0≤ τ < c(e) time at time t, selecting e independently with probability τ/c(e). For-
+mally,π[t] is a randomized policy that agrees with π everywhere in its domain, has dom(π[←t])⊆
+dom(π[t])⊆ dom(π[t→]) with certainty, and includes each ψ∈ dom(π[t→])\ dom(π[←t]) in its
+domain independently with probability
+(
+t−∑
+e∈dom(ψ)c(e)
+)
+/c(π(ψ)).
+In the proofs that follow, we will need a notion of the conditional expected cost of a policy, as
+well as an alternate characterization of adaptive monotonicity, based on a notion of policy concate-
+nation. We prove the equivalence of our two adaptive monotonicity conditions in Lemma A.8.
+Deﬁnition A.5 (Conditional Policy Cost). The conditional policy cost ofπ conditioned on ψ, de-
+noted c (π|ψ), is the expected cost of the items π selects under p (φ|ψ). That is, c (π|ψ) :=
+E [c(E(π, Φ)) | Φ∼ψ].
+Deﬁnition A.6 (Policy Concatenation). Given two policies π1 andπ2 deﬁneπ1@π2 as the policy
+obtained by runningπ1 to completion, and then running policyπ2 as if from a fresh start, ignoring
+the information gathered7 during the running ofπ1.
+Deﬁnition A.7 (Adaptive Monotonicity (Alternate Version)) . A function f : 2E×OE → R≥0
+is adaptive monotone with respect to distribution p (φ) if for all policies π and π′, it holds that
+favg(π)≤favg(π′@π), wherefavg(π) := E [f(E(π, Φ), Φ)] is deﬁned w.r.t.p (φ).
+Lemma A.8 (Adaptive Monotonicity Equivalence). Fix a function f : 2E×OE → R≥0. Then
+∆(e|ψ)≥ 0 for all ψ with P [Φ∼ψ] > 0 and all e∈ E if and only if for all policies π andπ′,
+favg(π)≤favg(π′@π).
+7. Technically, if under any realization φ policyπ2 selects an item that π1 previously selected, then π1@π2 cannot be
+written as a function from a set of partial realizations to E, i.e., it is not a policy. This can be amended by allowing
+partial realizations to be multisets over elements of E×O, so that, e.g., if e is played twice then (e,ψ (e)) appears
+twice inψ. However, in the interest of readability we will avoid this more cumbersome multiset formalism, and abuse
+notation slightly by calling π1@π2 a policy. This issue arises whenever we run some policy and then run another
+from a fresh start.
+469
+
+GOLOVIN & KRAUSE
+Proof. Fix policiesπ andπ′. We begin by proving favg(π′@π) = favg(π@π′). Fix any φ and note
+thatE(π′@π,φ ) =E(π′,φ )∪E(π,φ ) =E(π@π′,φ ). Hence
+favg(π′@π) = E
+[
+f(E(π′@π, Φ), Φ)
+]
+= E
+[
+f(E(π@π′, Φ), Φ)
+]
+=favg(π@π′).
+Thereforefavg(π)≤favg(π′@π) holds if and only iffavg(π)≤favg(π@π′).
+We ﬁrst prove the forward direction. Suppose ∆(e|ψ)≥ 0 for all ψ and all e∈ E. Note the
+expressionfavg(π@π′)−favg(π) can be written as a conical combination of (nonnegative)∆(e|ψ)
+terms, i.e., for some α≥ 0,favg(π@π′)−favg(π) = ∑
+ψ,eα(ψ,e) ∆(e|ψ). Hence favg(π@π′)−
+favg(π)≥ 0 and sofavg(π)≤favg(π@π′) =favg(π′@π).
+We next prove the backward direction, in contrapositive form. Suppose ∆(e|ψ)< 0 for some
+ψ with P [Φ∼ψ] > 0 ande∈ E. Let e1,...,e r be the items in dom(ψ) and deﬁne policies π
+andπ′ as follows. For i = 1, 2,...,r , both π andπ′ selectei and observe Φ(ei). If either policy
+observes Φ(ei)⁄=ψ(ei) it immediately terminates, otherwise it continues. Ifπ succeeds in selecting
+all of dom(ψ) then it terminates. Ifπ′ succeeds in selecting all of dom(ψ) then it selectse and then
+terminates. We claimfavg(π@π′)−favg(π)< 0. Note that E(π@π′,φ ) = E(π,φ ) unlessφ∼ψ,
+and ifφ∼ψ thenE(π@π′,φ ) =E(π,φ )∪{e} and alsoE(π,φ ) = dom(ψ). Hence
+favg(π@π′)−favg(π) = E
+[
+f(E(π@π′, Φ), Φ)−f(E(π, Φ), Φ)
+]
+= E
+[
+f(E(π@π′, Φ), Φ)−f(E(π, Φ), Φ)| Φ∼ψ
+]
+· P [Φ∼ψ]
+= E [f(dom(ψ)∪{e}, Φ)−f(dom(ψ), Φ)| Φ∼ψ]· P [Φ∼ψ]
+= ∆( e|ψ)· P [Φ∼ψ]
+The last term is negative, as P [Φ∼ψ]> 0 and ∆(e|ψ)< 0 by assumption. Therefore favg(π)>
+favg(π@π′) =favg(π′@π), which completes the proof.
+A.2 Adaptive Data Dependent Bounds with Costs
+The adaptive data dependent bound has the following generalization with costs.
+Lemma A.9 (The Adaptive Data Dependent Bound with Costs) . Suppose we have made observa-
+tions ψ after selecting dom(ψ). Let π∗ be any policy. Then for adaptive monotone submodular
+f : 2E×OE→ R≥0
+∆(π∗|ψ) ≤ Z ≤ c (π∗|ψ) max
+e
+(∆(e|ψ)
+c(e)
+)
+(A.1)
+whereZ = maxw
+{∑
+e∈Ewe ∆(e|ψ) : ∑
+ec(e)we≤c (π∗|ψ) and∀e∈E, 0≤we≤ 1
+}
+.
+Proof. Order the items in dom(ψ) arbitrarily, and consider the policyπ that for eache∈ dom(ψ)
+in order selects e, terminating if Φ(e)⁄= ψ(e) and proceeding otherwise, and, should it succeed
+in selecting all of dom(ψ) without terminating (which occurs iff Φ∼ ψ), then proceeds to run π∗
+as if from a fresh start, forgetting the observations in ψ. By construction the expected marginal
+beneﬁt of running the π∗ portion of π conditioned on Φ∼ ψ equals ∆(π∗|ψ). For all e∈ E, let
+w(e) = P [e∈E(π, Φ) | Φ∼ψ] be the probability thate is selected when runningπ, conditioned
+on Φ ∼ ψ. Whenever some e ∈ E\ dom(ψ) is selected by π, the current partial realization
+ψ′ containsψ as a subrealization; hence adaptive submodularity implies ∆(e|ψ′)≤ ∆(e|ψ). It
+470
+
+ADAPTIVE SUBMODULARITY : T HEORY AND APPLICATIONS
+follows that the total contribution ofe to ∆(π∗|ψ) is upper bounded byw(e)· ∆(e|ψ). Summing
+overe∈ E\ dom(ψ), we get a bound of ∆(π∗|ψ)≤ ∑
+e∈E\dom(ψ)w(e)∆(e|ψ). Next, note
+that each e∈ E\ dom(ψ) contributesw(e)c(e) cost to c (π∗|ψ). Hence it must be the case that∑
+e∈E\dom(ψ)w(e)c(e)≤c (π∗|ψ). Obviously,w(e)∈ [0, 1] for alle, sincew(e) is a probability.
+Hence ∆(π∗|ψ)≤∑
+e∈E\dom(ψ)w(e)∆(e|ψ)≤Z because settingwe =w(e) is feasible for the
+the linear program for whichZ is the optimal value.
+To showZ ≤ c (π∗|ψ) maxe (∆(e|ψ)/c(e)), consider any feasible solution w to the linear
+program deﬁningZ. It attains objective value
+∑
+e∈E
+we ∆(e|ψ)≤
+∑
+e∈E
+wec(e)∆(e|ψ)
+c(e) ≤
+∑
+e∈E
+wec(e) max
+e∈E
+(∆(e|ψ)
+c(e)
+)
+≤c (π∗|ψ) max
+e∈E
+(∆(e|ψ)
+c(e)
+)
+since∑
+e∈Ewec(e)≤c (π∗|ψ) by the feasibility ofw.
+A simple greedy algorithm can be used to compute Z; we provide pseudocode for it in Al-
+gorithm 3. The correctness of this algorithm is more readily discerned upon rewriting the linear
+program using variablesxe =c(e)we to obtain
+Z = max
+x
+{∑
+e∈E
+xe (∆(e|ψ)/c(e)) :
+∑
+e
+xe≤c (π∗|ψ) and∀e∈E, 0≤xe≤c(e)
+}
+.
+Intuitively, it is clear that to optimize x we should shift mass towards variables with the highest
+∆(e|ψ)/c(e) ratio. Clearly, any optimal solution has ∑
+exe = c (π∗|ψ). Moreover, in any op-
+timal solution, ∆(e|ψ)/c(e) > ∆(e′|ψ)/c(e′) implies xe = c(e) or xe′ = 0 , since otherwise
+it would be possible to shift mass from xe′ toxe and obtain an increase in objective value. If the
+∆(e|ψ)/c(e) values are distinct for distinct items, there will be a unique solution satisfying these
+constraints, which Algorithm 3 will compute. Otherwise, we imagine perturbing each ∆(e|ψ) by
+independent random quantitiesϵe drawn uniformly from [0,ϵ ] to make them distinct. This changes
+the optimum value by at most |E|ϵ, which vanishes as we let ϵ tend towards zero. Hence any so-
+lution satisfying ∑
+exe = c (π∗|ψ) and ∆(e|ψ)/c(e) > ∆(e′|ψ)/c(e′) implies xe = c(e) or
+xe′ = 0 is optimal. Since Algorithm 3 outputs the value of such a solution, it is correct.
+A.3 The Max-Cover Objective
+With item costs, the Adaptive Stochastic Maximization problem becomes one of ﬁnding some
+π∗∈ arg max
+π
+favg(π[k]) (A.2)
+wherek is a budget on the cost of selected items, and we deﬁnefavg(π) for a randomized policyπ to
+befavg(π) := E [f(E(π, Φ), Φ)] as before, where the expectation is now over both Φ and the inter-
+nal randomness ofπ which determinesE(π,φ ) for eachφ. We prove the following generalization
+of Theorem 5.2.
+Theorem A.10. Fix anyα≥ 1 and item costsc :E→ N. If f is adaptive monotone and adaptive
+submodular with respect to the distributionp (φ), andπ is anα-approximate greedy policy, then for
+all policiesπ∗ and positive integers𝓁 andk
+favg(π[𝓁])>
+(
+1−e−𝓁/αk
+)
+favg(π∗
+[k]).
+471
+
+GOLOVIN & KRAUSE
+Input: GroundsetE; Partial realizationψ; Costsc :E→ N; BudgetC =c (π∗|ψ);
+Conditional expected marginal beneﬁts ∆(e|ψ) for alle∈E.
+Output: Z =
+maxw
+{∑
+e∈Ewe ∆(e|ψ) : ∑
+ec(e)we≤c (π∗|ψ) and∀e∈E, 0≤we≤ 1
+}
+begin
+SortE by ∆(e|ψ)/c(e), so that ∆(e1|ψ)
+c(e1) ≥ ∆(e2|ψ)
+c(e2) ≥... ≥ ∆(en|ψ)
+c(en) ;
+Setw← 0;i← 0;a← 0;z← 0;e← NULL ;
+whilea<C do
+i←i + 1; e←ei;
+we← min{1,C−a};
+a←a +c(e)we; z←z +we∆(e|ψ);
+Outputz;
+end
+Algorithm 3: Algorithm to compute the data dependent boundZ of Lemma A.9.
+Proof. The proof goes along the lines of the performance analysis of the greedy algorithm for
+maximizing a submodular function subject to a cardinality constraint of Nemhauser et al. (1978).
+An extension of that analysis to α-approximate greedy algorithms, which is analogous to ours but
+for the nonadaptive case, is shown by Goundan and Schulz (2007). For brevity, we will assume
+without loss of generality thatπ =π[𝓁] andπ∗ =π∗
+[k]. Then for alli, 0≤i<𝓁
+favg(π∗) ≤ favg(π[i]@π∗) ≤ favg(π[i]) +αk
+(
+favg(π[i+1])−favg(π[i])
+)
+. (A.3)
+The ﬁrst inequality is due to the adaptive monotonicity of f and Lemma A.8, from which we may
+inferfavg(π2)≤favg(π1@π2) for anyπ1 andπ2. The second inequality may be obtained as a corol-
+lary of Lemma A.9 as follows. Fix any partial realizationψ of the form
+{
+(e,φ (e)) :e∈E(π[i],φ )
+}
+for some φ. Consider ∆(π∗|ψ), which equals the expected marginal beneﬁt of the π∗ portion of
+π[i]@π∗ conditioned on Φ∼ψ. Lemma A.9 allows us to bound it as
+E [∆(π∗|ψ)] ≤ E [c (π∗|ψ)]· max
+e
+(∆(e|ψ)/c(e)),
+where the expectations are taken over the internal randomness ofπ∗, if there is any. Note that since
+π∗ has the formπ′
+[k] for someπ′ we know that for allφ, E [c(E(π∗,φ ))]≤k, where the expectation
+is again taken over the internal randomness of π∗. Hence E [c (π∗|ψ)]≤ k for all ψ. It follows
+that E [∆(π∗|ψ)]≤ k· maxe (∆(e|ψ)/c(e)). By deﬁnition of an α-approximate greedy policy,
+π obtains at least (1/α) maxe (∆(e|ψ)/c(e))≥ E [∆(π∗|ψ)]/αk expected marginal beneﬁt per
+unit cost in a step immediately following its observation of ψ. Next we take an appropriate con-
+vex combination of the previous inequality with different values of ψ. Let Ψ be a random partial
+realization distributed aspΨ(ψ) := P
+[
+Ψ =ψ|∃φ.ψ =
+{
+(e,φ (e)) :e∈E(π[i],φ )
+}]
+Then
+favg(π[i+1])−favg(π[i]) ≥ E
+[ 1
+α max
+e
+(∆(e|Ψ)
+c(e)
+)]
+≥ E
+[ E [∆(π∗|Ψ)]
+αk
+]
+= favg(π[i]@π∗)−favg(π[i])
+αk
+472
+
+ADAPTIVE SUBMODULARITY : T HEORY AND APPLICATIONS
+A simple rearrangement of terms then yields the second inequality in (A.3).
+Now deﬁne ∆i := favg(π∗)−favg(π[i]), so that (A.3) implies ∆i≤ αk(∆i− ∆i+1), from
+which we infer ∆i+1≤
+(
+1− 1
+αk
+)
+∆i and hence ∆𝓁≤
+(
+1− 1
+αk
+)𝓁 ∆0 < e−𝓁/αk∆0, where for this
+last inequality we have used the fact that 1−x<e −x for allx> 0. Thus favg(π∗)−favg(π[𝓁])<
+e−𝓁/αk(
+favg(π∗)−favg(π[0])
+)
+≤e−𝓁/αkfavg(π∗) sofavg(π)> (1−e−𝓁/αk)favg(π∗).
+A.4 The Min-Cost-Cover Objective
+In this section, we provide arbitrary item cost generalizations of Theorem 5.8 and Theorem 5.9.
+With item costs the Adaptive Stochastic Minimum Cost Cover problem becomes one of ﬁnding, for
+some quota on utilityQ,
+π∗∈ arg min
+π
+cavg(π) such thatf(E(π,φ ),φ )≥Q for allφ, (A.4)
+wherecavg(π) := E [c(E(π, Φ))]. Without loss of generality, we may take a truncated version off,
+namely (A,φ )↦→ min{Q,f (A,φ )}, and rephrase Problem (A.4) as ﬁnding
+π∗∈ arg min
+π
+cavg(π) such thatπ coversφ for allφ. (A.5)
+Hereby, recall that π coversφ if E [f(E(π,φ ),φ )] = f(E,φ ), where the expectation is over any
+internal randomness ofπ. We will consider only Problem (A.5) for the remainder. We also consider
+the worst-case variant of this problem, where we replace the expected cost cavg(π) objective with
+the worst-case costcwc(π) := maxφc(E(π,φ )).
+The deﬁnition of coverage (Deﬁnition 5.4 in§5.2 on page 441) requires no modiﬁcation to han-
+dle item costs. Note, however, that coverage is all-or-nothing in the sense that covering a realization
+φ with probability less than one does not count as covering it. A corollary of this is that only items
+whose runs have ﬁnished help with coverage, whereas currently running items do not. For a simple
+example, consider the case where E ={e}, c(e) = 2 , f(A,φ ) = |A|, and policy π that selects
+e and then terminates. Then π[1] is a randomized policy which is π with probability 1
+2, and is the
+empty policy with probability 1
+2, so E [f(E(π,φ ),φ )] = 1
+2 < 1 =f(E,φ ) for eachφ. Hence, even
+though half the timeπ[1] covers all realizations, it is counted as not covering any.
+We begin with the approximation guarantee for the average-case policy cost with arbitrary item
+costs.
+Theorem A.11. Suppose f : 2E×OE → R≥0 is adaptive submodular and strongly adaptive
+monotone with respect to p (φ) and there exists Q such that f(E,φ ) = Q for all φ. Let η be any
+value such that f(S,φ ) > Q−η implies f(S,φ ) = Q for all S and φ. Let δ = minφp (φ) be
+the minimum probability of any realization. Let π∗
+avg be an optimal policy minimizing the expected
+number of items selected to guarantee every realization is covered. Let π be an α-approximate
+greedy policy with respect to the item costs. Then in general
+cavg(π)≤αc avg(π∗
+avg)
+(
+ln
+(Q
+δη
+)
++ 1
+)
+473
+
+GOLOVIN & KRAUSE
+and for self–certifying instances
+cavg(π)≤αc avg(π∗
+avg)
+(
+ln
+(Q
+η
+)
++ 1
+)
+.
+Note that if range(f)⊂ Z, then η = 1 is a valid choice, so for general and self–certifying in-
+stances we have cavg(π)≤ αc avg(π∗
+avg) (ln(Q/δ) + 1) and cavg(π)≤ αc avg(π∗
+avg) (ln(Q) + 1),
+respectively.
+Proof. Consider runningα-approximate greedy policyπ to completion, i.e., until it covers the true
+realization. It starts off with v0 := E [f(∅, Φ)]≥ 0 reward in expectation, and terminates with Q
+reward. Along the way it will go through some sequence of partial realizations specifying its current
+observations,ψ0⊂ ψ1⊂···⊂ ψ𝓁, such that dom(ψi)\ dom(ψi−1) consists precisely of the ith
+item selected byπ. We call this sequence thetraceτ =τ(φ) ofπ. For a realizationφ andx∈ R≥0,
+we deﬁneψ (φ,x ) as the partial realization seen byπ just before it achievedx reward in expectation
+underφ. Formally,
+ψ (φ,x )∈ arg max{| dom(ψ)| : ψ∈τ(φ), E [f(dom(ψ), Φ)| Φ∼ψ]<x}. (A.6)
+Note thatψ (φ,x ) exists for allx∈ (v0,Q ], and when it exists it is unique since no two elements of
+the trace have equally large domains. Also note that by the strong adaptive monotonicity of f, the
+functioni↦→ E [f(dom(ψi), Φ)| Φ∼ψi] must be nondecreasing for any traceψ0,ψ 1,...,ψ 𝓁.
+Our overall strategy will be to bound the expected costcavg(π) ofπ by bounding the price it pays
+per unit ofexpected rewardgained as it runs, and then integrating over the run. Note that Lemma A.9
+tells us that maxe (∆(e|ψ)/c(e))≥ ∆
+(
+π∗
+avg|ψ
+)
+/c
+(
+π∗
+avg|ψ
+)
+for allψ. An α-approximate greedy
+policy obtains at least 1/α of this rate. Hence we may bound its price, which we denote byθ, as
+θ(ψ)≤αc
+(
+π∗
+avg|ψ
+)
+/∆
+(
+π∗
+avg|ψ
+)
+. (A.7)
+Rather than try to bound the expected price asπ progresses in time, we will bound the expected
+price as it progresses in the expected reward it obtains, measured as E [f(dom(ψ), Φ)| Φ∼ψ]
+where ψ is the current partial realization. We next claim that ∆
+(
+π∗
+avg|ψ (φ,x )
+)
+≥ Q−x for
+allφ andx. Note that E [f(dom(ψ (φ,x )), Φ)| Φ∼ψ (φ,x )] < xby deﬁnition of ψ (φ,x ), and
+f(E(π∗
+avg,φ ),φ ) =Q for allφ sinceπ∗
+avg covers every realization. SinceQ is the maximum possible
+reward, if ∆
+(
+π∗
+avg|ψ (φ,x )
+)
+< Q−x then we can generate a violation of strong adaptive mono-
+tonicity by ﬁxing some φ′∼ ψ (φ,x ), selecting E(π∗
+avg,φ′), and then selecting dom(ψ (φ,x )) to
+reduce the expected reward. Thus ∆
+(
+π∗
+avg|ψ (φ,x )
+)
+≥Q−x, and we infer
+θ(ψ (φ,x )) ≤ αc
+(
+π∗
+avg|ψ (φ,x )
+)
+∆
+(
+π∗avg|ψ (φ,x )
+) ≤ αc
+(
+π∗
+avg|ψ (φ,x )
+)
+Q−x . (A.8)
+Next, we take an expectation over φ. Let θ(x) := E [θ(ψ (Φ,x ))]. Let ψx
+1,...,ψ x
+r be the possible
+values ofψ (Φ,x ). Then because{{φ :φ∼ψx
+i} :i = 1, 2,...,r } partitions the set of realizations,
+E
+[
+c
+(
+π∗
+avg|ψ (Φ,x )
+)]
+=
+r∑
+i=1
+P [Φ∼ψx
+i ]
+∑
+φ
+p (φ|ψx
+i )·c
+(
+π∗
+avg|φ
+)
+(A.9)
+=
+∑
+φ
+p (φ)·c
+(
+π∗
+avg|φ
+)
+(A.10)
+= cavg(π∗
+avg) (A.11)
+474
+
+ADAPTIVE SUBMODULARITY : T HEORY AND APPLICATIONS
+It follows that
+θ(x)≤ αc avg(π∗
+avg)
+Q−x . (A.12)
+Letcavg(π,Q′) denote the expected cost to obtain expected rewardQ′. Then we can boundcavg(π,Q′)
+as
+cavg(π,Q′) =
+∫ Q′
+x=0
+θ(x)dx ≤
+∫ Q′
+x=0
+αc avg(π∗)
+Q−x dx = αc avg(π∗) ln
+( Q
+Q−Q′
+)
+. (A.13)
+We now use slightly different analyses for general instances and for self–certifying instances.
+We begin with general instances. For these, we set Q′ =Q−δη and use a more reﬁned argument
+to bound the cost of getting the remaining expected reward. Fix ψ∈ dom(π) and anyφ′∼ψ. We
+sayψ coversφ′ ifπ coversφ′ by the time it observesψ. By deﬁnition of δ andη, if someφ′ is not
+covered by ψ thenQ− E [f(dom(ψ), Φ)| Φ∼ψ]≥ δη. Hence the last item that π selects, say
+upon observingψ, must increase its conditional expected value from E [f(dom(ψ), Φ)| Φ∼ψ]≤
+Q−δη toQ. By Eq. (A.8), it follows that forx∈ [Q−δη,Q ],
+θ(ψ (φ,x )) ≤ αc
+(
+π∗
+avg|ψ (φ,x )
+)
+∆
+(
+π∗avg|ψ (φ,x )
+) ≤ αc
+(
+π∗
+avg|ψ (φ,x )
+)
+δη .
+As before, we may take the expectation over φ to obtainθ(x)≤ αc avg(π∗
+avg)/δη for allx∈ [Q−
+δη,Q ]. This fact together with Eq. (A.13) yield
+cavg(π) ≡ cavg(π,Q ) = cavg(π,Q−δη) +
+∫Q
+x=Q−δη E [θ(x)]dx
+≤ αc avg(π∗) ln (Q/δη) +
+∫Q
+x=Q−δη
+αcavg(π∗)
+δη dx
+= αc avg(π∗) (ln (Q/δη) + 1)
+which completes the proof for general instances.
+For self–certifying instances we use a similar argument. For these instances we setQ′ =Q−η,
+and argue that the last item that π selects must increase its conditional expected value from at
+mostQ−η toQ. For suppose π currently observesψ, and has not achieved conditional value Q,
+i.e., E [f(dom(ψ), Φ)| Φ∼ψ] < Q. Then some φ∼ ψ is uncovered. Since the instance is self–
+certifying, everyφ withφ∼ψ then hasf(dom(ψ),φ )<f (E,φ ) =Q. By deﬁnition ofη, for each
+φ withφ∼ψ we then havef(dom(ψ),φ )≤Q−η, which implies E [f(dom(ψ), Φ)| Φ∼ψ]≤
+Q−η. Reasoning analogously as with general instances, we may derive from this that θ(x)≤
+αc avg(π∗
+avg)/η for all x∈ [Q−η,Q ]. Computing cavg(π) = cavg(π,Q′) +
+∫Q
+x=Q′ E [θ(x)]dx as
+before gives us the claimed approximation ratio for self–certifying instances, and completes the
+proof.
+Next we consider the worst-case cost. We generalize Theorem 5.9 by incorporating arbitrary item
+costs.
+Theorem A.12. Supposef : 2E×OE→ R≥0 is adaptive monotone and adaptive submodular with
+respect top (φ), and letη be any value such thatf(S,φ )>f (E,φ )−η impliesf(S,φ ) =f(E,φ )
+for all S and φ. Let δ = minφp (φ) be the minimum probability of any realization. Let π∗
+wc be
+the optimal policy minimizing the worst-case cost cwc(·) while guaranteeing that every realization
+475
+
+GOLOVIN & KRAUSE
+is covered. Let π be an α-approximate greedy policy with respect to the item costs. Finally, let
+Q := E [f(E, Φ)] be the maximum possible expected reward. Then
+cwc(π)≤αc wc(π∗
+wc)
+(
+ln
+(Q
+δη
+)
++ 1
+)
+.
+Proof. Let π be an α-approximate greedy policy. Let k = cwc(π∗
+wc), let 𝓁 = αk ln (Q/δη), and
+apply Theorem A.10 with these parameters to yield
+favg(π[𝓁]) >
+(
+1−e−𝓁/αk
+)
+favg(π∗
+wc) =
+(
+1− δη
+Q
+)
+favg(π∗
+wc). (A.14)
+Sinceπ∗
+wc covers every realization by assumption, favg(π∗
+wc) = E [f(E, Φ)] = Q, so rearranging
+terms of Eq. (A.14) yields Q−favg(π[𝓁]) < δη. Since favg(π[𝓁])≤ favg(π[𝓁→]) by the adaptive
+monotonicity off, it follows thatQ−favg(π[𝓁→])<δη . By deﬁnition of δ andη, if someφ is not
+covered byπ[𝓁→] thenQ−favg(π[𝓁→])≥δη. ThusQ−favg(π[𝓁→])<δη impliesQ−favg(π[𝓁→]) =
+0, meaningπ[𝓁→] covers every realization.
+We next claim that π[𝓁→] has worst-case cost at most 𝓁 +αk. It is sufﬁcient to show that the
+ﬁnal item executed byπ[𝓁→] has cost at mostαk for any realization. As we will prove, this follows
+from the facts that π is anα-approximate greedy policy and π∗
+wc covers every realization at cost at
+mostk. The data dependent bound, Lemma A.9 on page 470, guarantees that
+max
+e
+(∆(e|ψ)
+c(e)
+)
+≥ ∆(π∗
+wc|ψ)
+c (π∗wc|ψ) ≥ ∆(π∗
+wc|ψ)
+k . (A.15)
+Suppose ψ∈ dom(π). We would like to say that maxe ∆(e|ψ)≤ ∆(π∗
+wc|ψ). Supposing this
+is true, any item e with cost c(e) > αk must have ∆(e|ψ)/c(e) < ∆(π∗
+wc|ψ)/αk, and hence
+cannot be selected by any α-approximate greedy policy upon observing ψ by Eq. (A.15), and thus
+the ﬁnal item executed by π[𝓁→] has cost at most αk for any realization. So we next show that
+maxe ∆(e|ψ)≤ ∆(π∗
+wc|ψ). Towards this end, note that Lemma A.13 implies
+max
+e
+∆(e|ψ)≤ E [f(E, Φ)| Φ∼ψ]− E [f(dom(ψ), Φ)| Φ∼ψ]. (A.16)
+and to prove maxe ∆(e|ψ)≤ ∆(π∗
+wc|ψ) it sufﬁces to show
+E [f(E, Φ)| Φ∼ψ]≤ E [f(E(π∗
+wc, Φ)∪ dom(ψ), Φ)| Φ∼ψ]. (A.17)
+Proving Eq. (A.17) is quite straightforward if f is strongly adaptive monotone. Given that f
+is only adaptive monotone, it requires some additional effort. So ﬁx A⊂ E and let πA be a non-
+adaptive policy that selects all items in A in some arbitrary order. Let P :={ψ : dom(ψ) =A}.
+Apply Lemma A.13 withπ′ =πA@π∗
+wc and anyψ∈P to obtain
+E [f(E(π∗
+wc, Φ)∪A, Φ)| Φ∼ψ]≤ E [f(E, Φ)| Φ∼ψ]. (A.18)
+Note that∑
+ψ∈P P [Φ∼ψ]· E [f(E(π∗
+wc, Φ)∪A, Φ)| Φ∼ψ] = favg(πA@π∗
+wc)≥ favg(π∗
+wc) =
+E [f(E, Φ)]. Since we know E [f(E, Φ)] =∑
+ψ∈P P [Φ∼ψ]· E [f(E, Φ)| Φ∼ψ], an averaging
+argument together with Eq. (A.18) then implies that for allψ∈P
+E [f(E(π∗
+wc, Φ)∪A, Φ)| Φ∼ψ] = E [f(E, Φ)| Φ∼ψ]. (A.19)
+476
+
+ADAPTIVE SUBMODULARITY : T HEORY AND APPLICATIONS
+Since ψ was an arbitrary partial realization with dom(ψ) = A, and A ⊆ E was arbitrary,
+ﬁx ψ∈ dom(π) and let A = dom(ψ). With these settings, Eq. (A.19) implies Eq. (A.17), and
+thus maxe ∆(e|ψ)≤ ∆(π∗
+wc|ψ), and thus an α-approximate greedy policy can never select an
+item with cost exceeding αk, where k = cwc(π∗
+wc). Hence cwc(π[𝓁→])−cwc(π[𝓁])≤ αk, and so
+cwc(π[𝓁→])≤𝓁 +αk. This completes the proof.
+Lemma A.13. Fix adaptive monotone submodular objective f. For any policy π and any ψ ∈
+dom(π) we have
+E [f(E(π, Φ), Φ) | Φ∼ψ]≤ E [f(E, Φ) | Φ∼ψ].
+Proof. Augment π to a new policy π′ as follows. Run π to completion, and let ψ′ be the partial
+realization consisting of all of the states it has observed. If ψ⊆ ψ′, then proceed to select all the
+remaining items inE in any order. Otherwise, ifψ ⊈ψ′ then terminate. Then
+E [f(E(π, Φ), Φ) | Φ∼ψ]≤ E
+[
+f(E(π′, Φ), Φ) | Φ∼ψ
+]
+= E [f(E, Φ) | Φ∼ψ] (A.20)
+where the inequality is by repeated application of the adaptive monotonicity of f, and the equality
+is by construction.
+In§5.2 we described how the result of Feige (1998) implies that there is no polynomial time
+(1−ϵ) ln (Q/η) approximation algorithm for self–certifying instances of Adaptive Stochastic Min
+Cost Cover, unless NP⊆ DTIME(nO(log logn)). Here we show a related result for general instances.
+Lemma A.14. For every constantϵ> 0, there is no (1−ϵ) ln (Q/δη) polynomial time approxima-
+tion algorithm for general instances of Adaptive Stochastic Min Cost Cover, for either the average
+case objectivecavg(·) or the worst-case objectivecwc(·), unless NP⊆ DTIME(nO(log logn)).
+Proof. We offer a reduction from the Set Cover problem. Fix a Set Cover instance with ground
+set U and sets {S1,S 2,...,S m} ⊆2U with unit-cost sets. Fix Q,η and δ such that 1/δ and
+Q/η are positive integers, and Q
+δη =|U|. Let E :={S1,S 2,...,S m}, and set the cost of each
+item to one. Partition U into 1/δ disjoint, equally sized subsets U1,U 2,...,U 1/δ. Construct a
+realization φi for each Ui. Let the set of states be O ={NULL}. Hence φi(e) = NULL for all
+i and e, so that no knowledge of the true realization is revealed by selecting items. We use a
+uniform distribution over realizations, i.e.,p (φi) =δ for alli. Finally, our objective isf(C,φi) :=
+|∪ S∈C (S∩Ui)|, i.e., the number of elements in Ui that we cover with sets in C. Since |O| = 1,
+every realization is consistent with every possible partial realization ψ. Hence for any ψ, we have
+E [f(dom(ψ), Φ)| Φ∼ψ] = δ ˆf(dom(ψ)), where ˆf(C) =|∪ S∈C S| is the objective function of
+the original set cover instance. Since ˆf is submodular,f is adaptive submodular. Likewise, since
+ˆf is monotone, and|O| = 1,f is strongly adaptive monotone. Now, to cover any realization, we
+must obtain the maximum possible value for all realizations, which means selecting a collection
+of sets C such that ∪S∈CS = U. Conversely, any C such that ∪S∈CS = U clearly covers f.
+Hence this instance of Adaptive Stochastic Min Cost Cover, with either the average case objective
+cavg(·) or the worst-case objectivecwc(·), is equivalent to the original Set Cover instance. Therefore,
+the result from Feige (1998) implies that there is no polynomial time algorithm for obtaining a
+(1−ϵ) ln|U| = (1−ϵ) ln (Q/δη) approximation for Adaptive Stochastic Min Cost Cover unless
+NP⊆ DTIME(nO(log logn)).
+477
+
+GOLOVIN & KRAUSE
+A.5 The Min-Sum Objective
+In this section we prove Theorem 5.10, which appears on page 445, in the case where the items have
+arbitrary costs. Our proof resembles the analogous proof of Streeter and Golovin (2007) for the
+non-adaptive min-sum submodular cover problem, and, like that proof, ultimately derives from an
+extremely elegant performance analysis of the greedy algorithm for min-sum set cover due to Feige
+et al. (2004).
+The objective function cΣ(·) generalized to arbitrary cost items uses the strict truncation 8 π[←t] in
+place ofπ[t] in the unit-cost deﬁnition:
+cΣ(π) :=
+∞∑
+t=0
+(
+E [f(E, Φ)]−favg(π[←t])
+)
+=
+∑
+φ
+p (φ)
+∞∑
+t=0
+(
+f(E,φ )−f(E(π[←t],φ ),φ )
+)
+.
+(A.21)
+We will prove that any α-approximate greedy policy π achieves a 4α-approximation for the min-
+sum objective, i.e., cΣ(π)≤ 4αc Σ(π∗) for all policies π∗. To do so, we require the following
+lemma.
+Lemma A.15. Fix an α-approximate greedy policy π for some adaptive monotone submodular
+functionf and letsi :=α
+(
+favg(π[i+1])−favg(π[i])
+)
+. For any policyπ∗ and nonnegative integersi
+andk, we havefavg(π∗
+[k])≤favg(π[←i]) +k·si.
+Proof. Fixπ,π∗,i , and k. By adaptive monotonicity favg(π∗
+[k])≤ favg(π[←i]@π∗
+[k]). We next aim
+to prove
+favg(π[←i]@π∗
+[k])≤favg(π[←i]) +k·si (A.22)
+which is sufﬁcient to complete the proof. Towards this end, ﬁx a partial realization ψ of the
+form
+{
+(e,φ (e)) :e∈E(π[←i],φ )
+}
+for some φ. Consider ∆
+(
+π∗
+[k]|ψ
+)
+, which equals the expected
+marginal beneﬁt of the π∗
+[k] portion ofπ[←i]@π∗
+[k] conditioned on Φ∼ψ. Lemma A.9 allows us to
+bound it as
+E
+[
+∆
+(
+π∗
+[k]|ψ
+)]
+≤ E
+[
+c
+(
+π∗
+[k]|ψ
+)]
+· max
+e
+(∆(e|ψ)
+c(e)
+)
+,
+where the expectations are taken over the internal randomness of π∗, if there is any. Note that
+for all φ, we have E
+[
+c(E(π∗
+[k],φ ))
+]
+≤ k, where the expectation is again taken over the internal
+randomness of π∗
+[k]. Hence E
+[
+c
+(
+π∗
+[k]|ψ
+)]
+≤ k for all ψ. It follows that E
+[
+∆
+(
+π∗
+[k]|ψ
+)]
+≤
+k· maxe (∆(e|ψ)/c(e)). By deﬁnition of an α-approximate greedy policy,π obtains at least
+(1/α) max
+e
+(∆(e|ψ)/c(e))≥ E
+[
+∆
+(
+π∗
+[k]|ψ
+)]
+/αk (A.23)
+expected marginal beneﬁt per unit cost in a step immediately following its observation of ψ. Next
+we take an appropriate convex combination of the previous inequality with different values of ψ.
+Let Ψ be a random partial realization distributed as
+{
+(e, Φ(e)) :e∈E(π[←i], Φ)
+}
+. Then taking the
+8. See Deﬁnition A.2 on page 469.
+478
+
+ADAPTIVE SUBMODULARITY : T HEORY AND APPLICATIONS
+Figure 6: An illustration of the inequality
+∫∞
+x=0h(x)dx≥∑
+i≥0xi (yi−yi+1).
+expectation of Eq. (A.23) over Ψ yields
+favg(π[i+1])−favg(π[i])≥ Eψ
+
+
+E
+[
+∆
+(
+π∗
+[k]|Ψ
+)]
+αk
+
+ =
+favg(π[←i]@π∗
+[k])−favg(π[←i])
+αk . (A.24)
+Multiplying Eq. (A.24) by αk, and substituting in si = α
+(
+favg(π[i+1])−favg(π[i])
+)
+, we conclude
+ksi≥favg(π[←i]@π∗
+[k])−favg(π[←i]) which immediately yields Eq. (A.22) and concludes the proof.
+Using Lemma A.15, together with a geometric argument developed by Feige et al. (2004), we now
+prove Theorem 5.10.
+Proof of Theorem 5.10: LetQ := E [f(E, Φ)] be the maximum possible expected reward, where
+the expectation is taken w.r.t. p (φ). Let π be an α-approximate greedy policy. Deﬁne Ri :=
+Q−favg
+(
+π[i]
+)
+and deﬁne Pi := Q−favg
+(
+π[←i]
+)
+. Let xi := Pi
+2si
+, let yi := Ri
+2 , and let h(x) :=
+Q−favg(π∗
+[x]). We claim favg
+(
+π[←i]
+)
+≤ favg
+(
+π[i]
+)
+and soPi≥ Ri. This clearly holds if π[←i] is
+the empty policy, and otherwiseπ can always select an item that contributes zero marginal beneﬁt,
+namely an item it has already played previously. Hence an α-approximate greedy policy π can
+never select items with negative expected marginal beneﬁt, and so favg
+(
+π[←i]
+)
+≤ favg
+(
+π[i]
+)
+. By
+Lemma A.15,favg
+(
+π∗
+[xi]
+)
+≤favg
+(
+π[←i]
+)
++xisi. Therefore
+h(xi)≥Q−favg(π[←i])−xi·si =Pi− Pi
+2 ≥ Ri
+2 =yi (A.25)
+For similar reasons that favg
+(
+π[←i]
+)
+≤ favg
+(
+π[i]
+)
+, we have favg
+(
+π[i−1]
+)
+≤ favg
+(
+π[i]
+)
+, and so
+the sequence⟨y1,y 2,... ⟩ is non-increasing. The adaptive monotonicity and adaptive submodular-
+ity of f imply that h(x) is non-increasing. Informally, this is because otherwise, if favg(π∗
+[x]) >
+favg(π∗
+[x+1]) for some x, then the optimal policy must be sacriﬁcing immediate rewards at time x
+in exchange for greater returns later, and it can be shown that if such a strategy is optimal, then
+adaptive submodularity cannot hold. Eq. (A.25) and the monotonicity of h andi↦→ yi imply that∫∞
+x=0h(x)dx≥∑
+i≥0xi (yi−yi+1) (see Figure 6). The left hand side is a lower bound forcΣ(π∗),
+and becausesi =α (Ri−Ri+1) the right hand side simpliﬁes to 1
+4α
+∑
+i≥0Pi = 1
+4αcΣ(π), proving
+cΣ(π)≤ 4α·cΣ(π∗).
+479
+
+GOLOVIN & KRAUSE
+A.6 A Symbol Table
+E,e∈E Ground set of items, and an individual item.
+O,o∈O States an item may be in, or outcomes of selecting an item, and an individual
+state/outcome.
+φ A realization, i.e., a function from items to states.
+ψ A partial realization, typically encoding the current set of observations;
+eachψ⊂E×O is a partial mapping from items to states.
+Φ, Ψ A random realization and a random partial realization, respectively.
+∼ The consistency relation:φ∼ψ meansψ(e) =φ(e) for alle∈ dom(ψ).
+p The probability distribution on realizations.
+p(φ|ψ) The conditional distribution on realizations:p(φ|ψ) := P [Φ =φ| Φ∼ψ].
+π A policy, which maps partial realizations to items.
+E(π,φ ) The set of all items selected byπ when run under realizationφ.
+∆(e|ψ) The conditional expected marginal beneﬁt ofe conditioned onψ:
+∆(e|ψ) := E [f(dom(ψ)∪{e}, Φ)−f(dom(ψ), Φ)| Φ∼ψ].
+∆(π|ψ) The conditional expected marginal beneﬁt of policyπ conditioned onψ:
+∆(π|ψ) := E [f(dom(ψ)∪E(π, Φ), Φ)−f(dom(ψ), Φ)| Φ∼ψ].
+ψ[e/o] Shorthand forψ∪{ (e,o )}.
+k Budget on the cost of selected item sets.
+π[k] A truncated policy. See Deﬁnition 5.1 on page 439 (unit costs) and Deﬁnition A.4
+on page 469.
+π[←k] A strictly truncated policy. See Deﬁnition A.2 on page 469.
+π[k→] A laxly truncated policy. See Deﬁnition A.3 on page 469.
+π@π′ Policiesπ andπ′ concatenated together. See Deﬁnition A.6 on page 469.
+f An objective function, of typef : 2E×OE→ R≥0 unless stated otherwise.
+favg Average beneﬁt:favg(π) := E [f(E(π, Φ), Φ)].
+c Item costsc :E→ N. Extended to sets viac(S) :=∑
+e∈Sc(e).
+cavg Average cost of a policy:cavg(π) := E [c(E(π, Φ))].
+cwc Worst-case cost of a policy:cwc(π) := maxφc(E(π,φ )).
+cΣ Min-sum cost of a policy:cΣ(π) :=∑∞
+t=0
+(
+E [f(E, Φ)]−favg(π[←t])
+)
+.
+c (π|ψ) Conditional average policy cost:c (π|ψ) := E [c(E(π, Φ))| Φ∼ψ].
+α Approximation factor for greedy optimization in anα-approximate greedy policy.
+Q Beneﬁt quota. Often Q = E [f(E, Φ)].
+η Coverage gap:η = sup{η′ :f(S,φ )>Q −η′ impliesf(S,φ )≥Q for allS,φ}.
+1P The indicator for propositionP , which equals one ifP is true and zero ifP is false.
+Table 2: Important symbols and notations used in this article
+480
+
+ADAPTIVE SUBMODULARITY : T HEORY AND APPLICATIONS
+A.7 Proof of Approximation Hardness in the Absence of Adaptive Submodularity
+We now provide the proof of Theorem 12.1 whose statement appears on page 464 in§12.
+Proof of Theorem 12.1:We construct a hard instance based on the following intuition. We make the
+algorithm go “treasure hunting”. There is a set of t locations{0, 1,,...,t − 1}, there is a treasure
+at one of these locations, and the algorithm gets unit reward if it ﬁnds it, and zero reward otherwise.
+There are m “maps,” each consisting of a cluster of s bits, and each purporting to indicate where
+the treasure is, and each map is stored in a (weak) secret-sharing way, so that querying few bits of
+a map reveals nothing about where it says the treasure is. Moreover, all but one of the maps are
+fake, and there is a puzzle indicating which map is the correct one indicating the treasure’s location.
+Formally, a fake map is one which is probabilistically independent of the location of the treasure,
+conditioned on the puzzle.
+Our instance will have three types of items, E = ET⨄EM⨄EP , where|ET| = t encodes
+where the treasure is, |EM| = ms encodes the maps, and |EP| = n3 encodes the puzzle, where
+m,t,s and n are speciﬁed below. All outcomes are binary, so that O ={0, 1}, and we identify
+items with bit indices. Accordingly we say that φ(e) is the value of bit e. For all e∈ EM∪EP ,
+P [Φ(e) = 1] = .5 independently. The conditional distribution of Φ(ET ) given Φ(EM∪EP ) will
+be deterministic as speciﬁed below. Our objective functionf is linear, and deﬁned as follows:
+f(A,φ ) =|{e∈A∩ET :φ(e) = 1}|.
+We now describe the puzzle, which is to computei(P ) := (perm(P ) mod p) mod 2 𝓁 for a suit-
+able random matrix P , and suitable prime p and integer𝓁, where perm(P ) =∑
+σ∈Sn
+∏n
+i=1Piσ(i)
+is the permanent ofP . We exploit Theorem 1.9 of Feige and Lund (1997) in which they show that
+if there exist constants η,δ > 0 such that a randomized polynomial time algorithm can compute
+(perm(P ) mod p) mod 2 𝓁 correctly with probability2−𝓁(1+1/nη), whereP is drawn uniformly
+at random from{0, 1, 2,...,p − 1}n×n,p is any prime superpolynomial in n, and 𝓁≤ p
+( 1
+2−δ
+)
+,
+then PH = AM = ΣP
+2 . To encode the puzzle, we ﬁx a primep∈ [2n−2, 2n−1] and use then3 bits of
+φ(EP ) to sampleP =P (φ) (nearly) uniformly at random from{0, 1, 2,...,p − 1}n×n as follows.
+For a matrix P ∈ Zn×n, we let rep(P ) := ∑
+ijPij·p(i−1)n+(j−1) deﬁne a base p representation
+ofP . Note rep(·) is one-to-one for n×n matrices with entries in Zp, so we can deﬁne its inverse
+rep−1(·). The encodingP (φ) interprets the bitsφ(EP ) as an integerx in [2n3
+], and computesy =x
+mod (pn2
+). If x≤
+⌊
+2n3
+/pn2
+⌋
+pn2
+, thenP = rep−1(y). Otherwise, P is the all zero matrix. This
+latter event occurs with probability at most pn2
+/2n3
+≤ 2−n2
+, and in this case we simply suppose
+the algorithm under consideration ﬁnds the treasure and so gets unit reward. This adds 2−n2
+to its
+expected reward. So let us assume from now on thatP is drawn uniformly at random.
+Next we consider the maps. Partition EM =⨄m
+i=1Mi intom mapsMi, each consisting of s
+items. For each map Mi, partition its items into s/ log2t groups of log2t bits each, so that the bits
+of each group encode a log2t bit binary string. Let vi∈{ 0, 1,...,t − 1} be the XOR of these
+s/ log2t binary strings, interpreted as an integer (using any ﬁxed encoding). We say Mi points to
+vi as the location of the treasure. A priori, each vi is uniformly distributed in {0,...,t − 1}. For
+a particular realization of φ(EP∪EM), deﬁne v(φ) := vi(P (φ)). We set v(φ) to be the location
+of the treasure under realization φ, i.e., we label ET ={e0,e 1,...,e t−1} and ensureφ(ej) = 1 if
+j =vi(P (φ)), andφ(e) = 0 for all othere∈ET . Note the random variable v =v(φ) is distributed
+uniformly at random in{0, 1,...,t −1}. Note that this still holds if we condition on the realizations
+481
+
+GOLOVIN & KRAUSE
+of any set ofs/ log2t− 1 items in a map, because in this case there is still at least one group whose
+bits remain completely unobserved.
+Now consider the optimal policy with a budget of k = n3 +s + 1 items to pick. Clearly, its
+reward can be at most 1. However, given a budget ofk, a computationally unconstrained policy can
+exhaustively sampleEP , solve the puzzle (i.e., compute i(P )), read the correct map (i.e., exhaus-
+tively sampleMi(P )), decode the map (i.e., compute v =vi(P )), and get the treasure (i.e., pick ev)
+thereby obtaining a reward of one.
+Now we give an upper bound on the expected reward R of any randomized polynomial time
+algorithmA with a budget of βk items, assuming ΣP
+2 ⁄= PH. Fix a small constant γ >0, and set
+s =n3 andm =t =n1/γ. We suppose we giveA the realizationsφ(EM) for free. We also replace
+its budget of βk items with a budget of βk speciﬁcally for map items in EM and an additional
+budget of βk speciﬁcally for the treasure locations in ET . Obviously, this can only help it. As
+noted, if it selects less than s/ log2t bits from the map Mi(P ) indicated byP , the distribution over
+vi(P ) conditioned on those realizations is still uniform. Of course, knowledge of vi fori⁄= i(P )
+is useless for getting reward. Hence A can try at most βk log2(t)/s = o(βk) maps in an attempt
+to ﬁnd Mi(P ). Note that if we have a randomized algorithm which given a random P drawn from
+{0, 1, 2,...,p − 1}n×n always outputs a set S of integers of size α such that P [i(P )∈S]≥ q,
+then we can use it to construct a randomized algorithm that, givenP , outputs an integerx such that
+P [i(P ) =x]≥ q/α, simply by running the ﬁrst algorithm and then selecting a random item of S.
+IfA does not ﬁndMi(P ), the distribution on the treasure’s location is uniform given its knowledge.
+Hence it’s budget ofβk treasure locations can only earn it expected reward at most βk/t. Armed
+with these observations and Theorem 1.9 in the work of Feige and Lund (1997) and our complexity
+theoretic assumptions, we infer E [R]≤o(βk)· 2−𝓁(1 + 1/nη) +βk/t + 2−n2
+. Since s =n3 and
+m =t =n1/γ andγ = Θ(1) andη = 1 and𝓁 = log2m andk =n3 +s + 1 = 2n3 + 1, we have
+E [R]≤ βk
+t (1 +o(1)) = 2βn3−1/γ(1 +o(1)).
+Next note that|E| = t +ms +n3 = n3+1/γ(1 +o(1)). Straightforward algebra shows that in
+order to ensure E [R] = o(β/|E|1−ε), it sufﬁces to choose γ≤ ε/6. Thus, under our complexity
+theoretic assumptions, any polynomial time randomized algorithm A with budget βk achieves at
+mosto(β/|E|1−ε) of the value obtained by the optimal policy with budgetk, so the approximation
+ratio isω(|E|1−ε/β).
+References
+Alon, N., Awerbuch, B., Azar, Y ., Buchbinder, N., & Naor, J. S. (2009). The online set cover
+problem. SIAM Journal on Computing, 39, 361–370.
+Arkin, E. M., Meijer, H., Mitchell, J. S. B., Rappaport, D., & Skiena, S. S. (1993). Decision trees for
+geometric models. In Proceedings of Symposium on Computational Geometry, pp. 369–378,
+New York, NY , USA. ACM.
+Asadpour, A., Nazerzadeh, H., & Saberi, A. (2008). Stochastic submodular maximization. InWINE
+’08: Proceedings of the 4th International Workshop on Internet and Network Economics, pp.
+477–489, Berlin, Heidelberg. Springer-Verlag.
+Bellala, G., & Scott, C. (2010). Modiﬁed group generalized binary search with near-optimal per-
+formance guarantees. Tech. rep., University of Michigan.
+482
+
+ADAPTIVE SUBMODULARITY : T HEORY AND APPLICATIONS
+Brochu, E., Cora, M., & de Freitas, N. (2009). A tutorial on Bayesian optimization of expensive cost
+functions, with application to active user modeling and hierarchical reinforcement learning.
+Tech. rep. TR-2009-23, Department of Computer Science, University of British Columbia.
+Buchbinder, N., & Naor, J. S. (2009). The design of competitive online algorithms via a primal–dual
+approach. Foundations and Trends in Theoretical Computer Science, 3, 93–263.
+Chakaravarthy, V . T., Pandit, V ., Roy, S., Awasthi, P., & Mohania, M. (2007). Decision trees for
+entity identiﬁcation: Approximation algorithms and hardness results. In Proceedings of the
+ACM-SIGMOD Symposium on Principles of Database Systems.
+Chan, C. W., & Farias, V . F. (2009). Stochastic depletion problems: Effective myopic policies for a
+class of dynamic optimization problems. Mathematics of Operations Research, 34(2), 333–
+350.
+Cohn, D. A., Gharamani, Z., & Jordan, M. I. (1996). Active learning with statistical models.Journal
+of Artiﬁcial Intelligence Research (JAIR), 4, 129–145.
+Dantzig, G. B. (1955). Linear programming under uncertainty. Management Science, 1, 197–206.
+Dasgupta, S. (2004). Analysis of a greedy active learning strategy. In NIPS: Advances in Neural
+Information Processing Systems 17, pp. 337–344. MIT Press.
+Dean, B., Goemans, M., & V ondr´ak, J. (2005). Adaptivity and approximation for stochastic packing
+problems. In Proceedings of the 16th ACM-SIAM Symposium on Discrete Algorithms, , pp.
+395–404.
+Dean, B., Goemans, M., & V ondr´ak, J. (2008). Approximating the stochastic knapsack problem:
+The beneﬁt of adaptivity. Mathematics of Operations Research, 33, 945–964.
+Deshpande, A., Guestrin, C., Madden, S., Hellerstein, J., & Hong, W. (2004). Model-driven data
+acquisition in sensor networks. In Proceedings of the International Conference on Very Large
+Data Bases (VLDB), pp. 588–599.
+Feige, U. (1998). A threshold of ln n for approximating set cover. Journal of the ACM, 45(4), 634
+– 652.
+Feige, U., Lov´asz, L., & Tetali, P. (2004). Approximating min sum set cover. Algorithmica, 40(4),
+219–234.
+Feige, U., & Lund, C. (1997). On the hardness of computing the permanent of random matrices.
+Computational Complexity, 6(2), 101–132.
+Fujishige, S. (2005). Submodular functions and optimization (2nd edition)., V ol. 58. Annals of
+Discrete Mathematics, North Holland, Amsterdam.
+Garey, M. R., & Graham, R. L. (1974). Performance bounds on the splitting algorithm for binary
+testing. Acta Informatica, 3, 347–355.
+Gittins, J. C., & Jones, D. M. (1979). A dynamic allocation index for the discounted multiarmed
+bandit problem. Biometrika, 66(3), 561–565.
+Goemans, M. X., & V ondr´ak, J. (2006). Stochastic covering and adaptivity. In Proceedings of 7th
+International Latin American Symposium on Theoretical Informatics, pp. 532–543.
+483
+
+GOLOVIN & KRAUSE
+Golovin, D., Gupta, A., Kumar, A., & Tangwongsan, K. (2008). All-norms and all- Lp-norms
+approximation algorithms. In Hariharan, R., Mukund, M., & Vinay, V . (Eds.), IARCS An-
+nual Conference on Foundations of Software Technology and Theoretical Computer Science
+(FSTTCS 2008), Dagstuhl, Germany. Schloss Dagstuhl - Leibniz-Zentrum fuer Informatik,
+Germany.
+Golovin, D., & Krause, A. (2010). Adaptive submodularity: A new approach to active learning and
+stochastic optimization. In 23rd Annual Conference on Learning Theory, pp. 333–345.
+Golovin, D., & Krause, A. (2011). Adaptive submodular optimization under matroid constraints.
+CoRR, abs/1101.4450.
+Golovin, D., Krause, A., Gardner, B., Converse, S. J., & Morey, S. (2011). Dynamic resource
+allocation in conservation planning. In AAAI ’11: Proceedings of the Twenty–Fifth AAAI
+Conference on Artiﬁcial Intelligence, pp. 1331–1336. AAAI Press.
+Golovin, D., Krause, A., & Ray, D. (2010). Near-optimal Bayesian active learning with noisy
+observations. In NIPS: Advances in Neural Information Processing Systems 23, pp. 766–774.
+Goundan, P. R., & Schulz, A. S. (2007). Revisiting the greedy approach to submodular set function
+maximization. Tech. rep., Massachusetts Institute of Technology.
+Gr¨unew¨alder, S., Audibert, J.-Y ., Opper, M., & Shawe-Taylor, J. (2010). Regret bounds for Gaussian
+process bandit problems. In Proceedings of the 13th International Conference on Artiﬁcial
+Intelligence and Statistics.
+Guha, S., & Munagala, K. (2009). Multi-armed bandits with metric switching costs. InProceedings
+of the International Colloquium on Automata, Languages and Programming (ICALP).
+Guha, S., Munagala, K., & Shi, P. (2009). Approximation algorithms for restless bandit problems.
+Tech. rep. 0711.3861v5, arXiv.
+Guillory, A., & Bilmes, J. (2009). Average-case active learning with costs. InThe 20th International
+Conference on Algorithmic Learning Theory, University of Porto, Portugal.
+Guillory, A., & Bilmes, J. (2010). Interactive submodular set cover. In Proceedings of the Interna-
+tional Conference on Machine Learning (ICML), No. UWEETR-2010-0001, Haifa, Israel.
+Guillory, A., & Bilmes, J. A. (2011). Simultaneous learning and covering with adversarial noise. In
+International Conference on Machine Learning (ICML), Bellevue, Washington.
+Gupta, A., Krishnaswamy, R., Nagarajan, V ., & Ravi, R. (2010). Approximation algorithms for
+optimal decision trees and adaptive TSP problems. In Proceedings of the International Col-
+loquium on Automata, Languages and Programming (ICALP), V ol. 6198 ofLecture Notes in
+Computer Science, pp. 690–701. Springer.
+Gupta, A., P ´al, M., Ravi, R., & Sinha, A. (2005). What about Wednesday? Approximation algo-
+rithms for multistage stochastic optimization. In Proceedings of the 8th International Work-
+shop on Approximation Algorithms for Combinatorial Optimization Problems (APPROX).
+Jones, D. R., Schonlau, M., & Welch, W. J. (1998). Efﬁcient global optimization of expensive
+black-box functions. Journal of Global Optimization, 13, 455–492.
+Kaplan, H., Kushilevitz, E., & Mansour, Y . (2005). Learning with attribute costs. InProceedings of
+the 37th ACM Symposium on Theory of Computing, pp. 356–365.
+484
+
+ADAPTIVE SUBMODULARITY : T HEORY AND APPLICATIONS
+Kempe, D., Kleinberg, J., & Tardos, E. (2003). Maximizing the spread of inﬂuence through a social
+network. In KDD ’03: Proceedings of the ninth ACM SIGKDD international conference on
+Knowledge discovery and data mining, pp. 137–146, New York, NY , USA. ACM.
+Kosaraju, S. R., Przytycka, T. M., & Borgstrom, R. S. (1999). On an optimal split tree problem.
+In Proceedings of the 6th International Workshop on Algorithms and Data Structures , pp.
+157–168, London, UK. Springer-Verlag.
+Krause, A., & Guestrin, C. (2005). Near-optimal nonmyopic value of information in graphical
+models. In Proceedings of Uncertainty in Artiﬁcial Intelligence (UAI).
+Krause, A., & Guestrin, C. (2007). Near-optimal observation selection using submodular functions.
+In Conference on Artiﬁcial Intelligence (AAAI) Nectar track, pp. 1650–1654.
+Krause, A., & Guestrin, C. (2009a). Intelligent information gathering and submodular function
+optimization. Tutorial at the International Joint Conference in Artiﬁcial Intelligence.
+Krause, A., & Guestrin, C. (2009b). Optimal value of information in graphical models. Journal of
+Artiﬁcial Intelligence Research (JAIR), 35, 557–591.
+Leskovec, J., Krause, A., Guestrin, C., Faloutsos, C., VanBriesen, J., & Glance, N. (2007). Cost-
+effective outbreak detection in networks. InKDD ’07: Proceedings of the 13th ACM SIGKDD
+international conference on Knowledge discovery and data mining, pp. 420–429, New York,
+NY , USA. ACM.
+Littman, M., Goldsmith, J., & Mundhenk, M. (1998). The computational complexity of probabilistic
+planning. Journal of Artiﬁcial Intelligence Research, 9, 1–36.
+Liu, Z., Parthasarathy, S., Ranganathan, A., & Yang, H. (2008). Near-optimal algorithms for shared
+ﬁlter evaluation in data stream systems. In SIGMOD ’08: Proceedings of the 2008 ACM
+SIGMOD international conference on Management of data , pp. 133–146, New York, NY ,
+USA. ACM.
+Lizotte, D., Wang, T., Bowling, M., & Schuurmans, D. (2007). Automatic gait optimization with
+Gaussian process regression. In Proceedings of the Twentieth International Joint Conference
+on Artiﬁcial Intelligence (IJCAI), pp. 944–949.
+Loveland, D. W. (1985). Performance bounds for binary testing with arbitrary weights. Acta Infor-
+matica, 22(1), 101–114.
+McCallum, A., & Nigam, K. (1998). Employing EM and pool-based active learning for text clas-
+siﬁcation. In Proceedings of the International Conference on Machine Learning (ICML), pp.
+350–358.
+Minoux, M. (1978). Accelerated greedy algorithms for maximizing submodular set functions. In
+Proceedings of the 8th IFIP Conference on Optimization Techniques, pp. 234–243. Springer.
+Munagala, K., Babu, S., Motwani, R., Widom, J., & Thomas, E. (2005). The pipelined set cover
+problem. In Proceedings of the Intl. Conf. on Database Theory, pp. 83–98.
+Nemhauser, G. L., Wolsey, L. A., & Fisher, M. L. (1978). An analysis of approximations for maxi-
+mizing submodular set functions - I. Mathematical Programming, 14(1), 265–294.
+Nowak, R. (2009). Noisy generalized binary search. In NIPS: Advances in Neural Information
+Processing Systems 22, pp. 1366–1374.
+485
+
+GOLOVIN & KRAUSE
+Papadimitriou, C. H., & Tsitsiklis, J. N. (1987). The complexity of Markov decision processses.
+Mathematics of Operations Research, 12(3), 441–450.
+Pineau, J., Gordon, G., & Thrun, S. (2006). Anytime point-based approximations for large
+POMDPs. Journal of Artiﬁcial Intelligence Research (JAIR), 27, 335–380.
+Raz, R., & Safra, S. (1997). A sub-constant error–probability low–degree test, and a sub–constant
+error-probability PCP characterization of NP. In STOC ’97: Proceedings of the twenty-ninth
+annual ACM Symposium on Theory of Computing, pp. 475–484, New York, NY , USA. ACM.
+Ross, S., Pineau, J., Paquet, S., & Chaib-draa, B. (2008). Online planning algorithms for POMDPs.
+Journal of Artiﬁcial Intelligence Research, 32, 663–704.
+Schrijver, A. (2003). Combinatorial optimization : polyhedra and efﬁciency . Volume B, Part IV,
+Chapters 39-49. Springer.
+Sebastiani, P., & Wynn, H. P. (2000). Maximum entropy sampling and optimal Bayesian experi-
+mental design. Journal of the Royal Statistical Society, Series B, 62(1), 145–157.
+Smallwood, R., & Sondik, E. (1973). The optimal control of partially observable Markov decision
+processes over a ﬁnite horizon. Operations Research, 21, 1071–1088.
+Srinivas, N., Krause, A., Kakade, S., & Seeger, M. (2010). Gaussian process optimization in the
+bandit setting: No regret and experimental design. In Proceedings of the International Con-
+ference on Machine Learning (ICML).
+Streeter, M., & Golovin, D. (2007). An online algorithm for maximizing submodular functions.
+Tech. rep. CMU-CS-07-171, Carnegie Mellon University.
+Streeter, M., & Golovin, D. (2008). An online algorithm for maximizing submodular functions. In
+NIPS: Advances in Neural Information Processing Systems 21, pp. 1577–1584.
+Wolsey, L. A. (1982). An analysis of the greedy algorithm for the submodular set covering problem.
+Combinatorica, 2(4), 385–393.
+486

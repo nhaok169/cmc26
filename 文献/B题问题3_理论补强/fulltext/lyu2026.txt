@@ -1,0 +1,1646 @@
+SOURCE: https://arxiv.org/html/2601.12701
+
+RPT*: Global Planning with Probabilistic Terminals for Target Search in Complex Environments 
+
+ Report GitHub Issue
+
+ × 
+
+ Title: 
+
+ Content selection saved. Describe the issue below:
+
+ Description: 
+
+ Submit without GitHub 
+ Submit in GitHub 
+
+ arXiv is now an independent nonprofit! 
+ Learn more 
+ × 
+
+ Back to arXiv 
+
+ Why HTML? 
+
+ Report Issue 
+
+ Back to Abstract 
+
+ Download PDF 
+
+ Abstract 
+
+ I Introduction 
+
+ II Related Work 
+
+ II-A Hamiltonian Path Problem and its Variants 
+
+ II-B Target Search 
+
+ II-C Exploration of Unknown Environments 
+
+ III Problem Statement of HPP-PT 
+
+ IV RPT* Algorithm 
+
+ IV-A Concepts and Notations 
+
+ IV-A 1 New State Definition 
+
+ IV-A 2 State Expansion 
+
+ IV-A 3 State Comparison and Pruning 
+
+ IV-B Planning Algorithm 
+
+ IV-C Heuristic Computation 
+
+ IV-D Bounded Sub-optimal Variant 
+
+ IV-E Analysis 
+
+ V Integer Programming 
+
+ V-A Naive Formulation 
+
+ V-B Transformed Formulation 
+
+ VI Systems and Applications 
+
+ VI-A HATS System Overview 
+
+ VI-A 1 Perception 
+
+ VI-A 2 Mapping 
+
+ VI-A 3 Global Planning 
+
+ VI-A 4 Local Planning 
+
+ VI-B Lifelong Target Search with Bayesian Update 
+
+ VI-B 1 Prediction Step 
+
+ VI-B 2 Update Step 
+
+ VI-C Target Search in Unknown Environments 
+
+ VI-C 1 Frontier Identification 
+
+ VI-C 2 Probability Assignment 
+
+ VI-C 3 Goal Clustering 
+
+ VII Experimental Results 
+
+ VII-A RPT* vs Integer Program (IP) 
+
+ VII-A 1 Test Settings 
+
+ VII-A 2 Runtime 
+
+ VII-A 3 Solution Quality 
+
+ VII-B Ablation Study of RPT* and F-RPT* 
+
+ VII-B 1 Impact of Heuristic 
+
+ VII-B 2 Runtime of F-RPT* 
+
+ VII-B 3 Varying $\epsilon$ of F-RPT* 
+
+ VII-C Comparison Against Baselines 
+
+ VII-C 1 Baselines 
+
+ VII-C 2 Runtime and Solution Cost 
+
+ VII-D Lifelong Target Search with Bayesian Update 
+
+ VII-E Simulation of Target Search in Unknown Environments 
+
+ VII-F Real-Robot Target Search in Unknown Environments 
+
+ VIII Conclusion and Future Work 
+
+ References 
+
+ License: arXiv.org perpetual non-exclusive license
+
+arXiv:2601.12701v1 [cs.RO] 19 Jan 2026
+
+ RPT*: Global Planning with Probabilistic Terminals for Target Search in Complex Environments
+
+ Yunpeng Lyu
+
+ Chao Cao
+
+ Ji Zhang
+
+ Affiliation:  Robotics Institute, Carnegie Mellon University.
+
+ Howie Choset
+
+ Affiliation:  Robotics Institute, Carnegie Mellon University.
+
+ Zhongqiang Ren
+ † † thanks: $*$ Co-first Authors. † † thanks: $†$ Corresponding author. zhongqiang.ren@sjtu.edu.cn . 
+
+ Affiliation:  Global College, Shanghai Jiao Tong University.
+
+ Abstract
+
+ Routing problems such as Hamiltonian Path Problem (HPP), seeks a path to visit all the vertices in a graph while minimizing the path cost.
+This paper studies a variant, HPP with Probabilistic Terminals (HPP-PT), where each vertex has a probability representing the likelihood that the robot’s path terminates there, and the objective is to minimize the expected path cost.
+HPP-PT arises in target object search, where a mobile robot must visit all candidate locations to find an object, and prior knowledge of the object’s location is expressed as vertex probabilities.
+While routing problems have been studied for decades, few of them consider uncertainty as required in this work.
+The challenge lies not only in optimally ordering the vertices, as in standard HPP, but also in handling history dependency: the expected path cost depends on the order in which vertices were previously visited.
+This makes many existing methods inefficient or inapplicable.
+To address the challenge, we propose a search-based approach RPT* with solution optimality guarantees, which leverages dynamic programming in a new state space to bypass the history dependency and novel heuristics to speed up the computation.
+Building on RPT*, we design a Hierarchical Autonomous Target Search (HATS) system that combines RPT* with either Bayesian filtering for lifelong target search with noisy sensors, or autonomous exploration to find targets in unknown environments.
+Experiments in both simulation and real robot show that our approach can naturally balance between exploitation and exploration, thereby finding targets more quickly on average than baseline methods.
+
+ I Introduction 
+
+ The well-known Hamiltonian Path Problem (HPP) seeks the shortest path that starts at a depot (start vertex) and visits every vertex in a graph exactly once.
+This paper introduces a new variant of HPP called HPP with Probabilistic Terminals (HPP-PT), where each vertex is assigned a probability representing the likelihood that the robot’s path will terminate there. The objective is to minimize the expected path length.
+Our motivation for HPP-PT comes from target search with a mobile robot.
+Imagine one or more target objects, such as a key, left somewhere in a building, with the owner only vaguely recalling which rooms he had visited. In this setting, each possible location (e.g., a room or a table) is represented as a vertex in the HPP graph, with an associated probability indicating the likelihood of finding the target there.
+The robot then plans its route by optimizing the visiting order of the vertices to minimize the expected path length. If the target is found at a vertex, the robot can terminate its search early; otherwise, it continues until all vertices have been visited.
+
+ Fig. 1: Target search in unknown environments using HPP-PT. (a) shows the scenario of a real robot experiment, including (i) the point cloud map of the environment after finding the target object, where the colored line shows the trajectory of the robot; (ii) a photo of the test space; and (iii) the wheeled robot used in this experiment. (b) shows the top-down view of the environment, where purple dots represent candidate target locations, with marker sizes proportional to their corresponding probabilities of finding the target object there. (c) is the visualization of the generated solution path.
+
+ HPP-PT generalizes HPP in the sense that if the probability at each vertex is set to zero, HPP-PT reduces to the standard HPP.
+HPP is NP-hard  [ 1 ] and so is HPP-PT.
+Although routing problems, such as HPP and Traveling Salesman Problem (TSP), have been studied for decades with many variants, none of them considers uncertainty similar to HPP-PT formulated in this paper.
+The difficulty of HPP-PT arises from two sources. First, it inherits the fundamental challenge of HPP: determining the optimal visiting order of the vertices. Second, unlike HPP, the objective in HPP-PT (i.e., the expected path length) depends on the path history.
+Different visiting orders of the same set of vertices can yield different expected costs, which greatly enlarges the planning state space.
+As a result, popular techniques for HPP and TSP such as integer linear programming via branch-and-cut cannot be readily applied to handle HPP-PT.
+Specifically, we attempted to formulate HPP-PT as an integer program and find that, due to this dependency on historical visit order of vertices, the resulting program is integer nonlinear and computationally expensive.
+
+ To address these challenges, the first contribution of this paper is proposing algorithms for HPP-PT with solution optimality or bounded sub-optimality guarantees.
+Naively applying search or dynamic programming to HPP-PT can lead to a state space that includes all permutations of the vertices in the graph, which grows combinatorially with the number of vertices.
+To bypass such a curse of dimensionality, we
+develop a new approach called Routing with Probabilistic Terminals Star (RPT*) which leverages heuristic search to iteratively plan paths from the depot towards other vertices.
+RPT* considers a new state space to bypass the path history dependency, with designed heuristic functions to guide the planning process, and leverages new pruning rules to speed up the computation.
+Besides, we observe that, as the number of visited vertices increases, the expected path cost grows slowly, which inspires us to develop a bounded sub-optimal variant of RPT* by fusing focal search  [ 2 ] to handle large graphs at the cost of finding solutions with small sub-optimality bounds.
+
+ We compare our RPT* against several baseline methods including greedy, integer programming and regular TSP algorithms ignoring the probability, using both a public dataset on TSPLIB  [ 3 ] and a synthetic dataset with randomly generated graphs in Euclidean spaces.
+Our test results show that, within the same runtime limit, RPT* can find optimal solutions in graphs with up to $40$ vertices, and find $10\%$ sub-optimal solutions in graphs with up to $200$ vertices.
+For the solution quality, the expected path length found by the baselines is up to three times that of our RPT*.
+
+ Based on the proposed algorithms, the second major contribution is a Hierarchical planning system for Autonomous Target Search (HATS).
+HATS has three major components: (i) the high-level planning using RPT* to determine the visiting order of targets, with each target indicating a region in the workspace, (ii) the low-level planning for local trajectories satisfying kinodynamic constraints of the robot, and (iii) a module that generates graphs and the probability of finding targets at each vertex for HPP-PT based on sensor reading.
+
+ We implement HATS for two types of missions: lifelong target search in a known environment with noisy sensors (HATS-L, L for lifelong), and exploratory target search in an unknown environment (HATS-U, U for unknown).
+We compare HATS-L against baselines in Gazebo simulations and find that HATS-L tends to narrow down the likelihood about where target objects are in the presence of noisy sensors more quickly than the baselines.
+Besides, we compare HATS-U against baselines in both simulation and real robots with YOLO software  [ 4 ] for real-time object detection.
+We tested different ways to set probability values in order to represent both accurate and misleading prior knowledge about where the target object is, and find that our HATS-U is more robust to misleading prior knowledge and can better balance between exploitation (move greedily towards high probability region) and exploration (uniformly search all possible areas), and thus find target objects with about $50\%$ less time than the baselines on average.
+
+ The rest of the paper is organized as follows.
+Sec.  II reviews the related work, and Sec.  III formulates the HPP-PT problem.
+Sec.  IV presents our RPT* algorithm for HPP-PT while Sec.  V presents an integer program.
+Then, Sec.  VI describes the HATS system for lifelong target search and target search in unknown environments.
+Finally, Sec.  VII presents the experimental results and Sec.  VIII discusses the conclusion and future work.
+
+ II Related Work 
+
+ II-A Hamiltonian Path Problem and its Variants 
+
+ The Hamiltonian Path Problem (HPP) and Traveling Salesman Problem (TSP) are both well-known routing problems that are NP-hard to solve to optimality  [ 1 ] .
+While TSP seeks a tour that visits all vertices in a graph and returns to the depot (start vertex), HPP does not require the robot to return to the depot.
+There are several variants of HPP based on whether the terminal vertex is fixed or not  [ 5 , 6 ] , and this paper does not require a fixed terminal vertex.
+
+ To solve HPP and TSP, a variety of routing approaches have been developed, trading off solution quality against runtime.
+Among them, exact methods usually formulate the problem as an integer linear program and then solve by branch and cut techniques  [ 7 , 8 , 9 ] .
+While being able to guarantee solution optimality, these approaches typically scale poorly to large graphs.
+Bounded sub-optimal methods typically first solve a simpler problem and then convert the result to a desired solution path or tour for TSP and HPP  [ 10 , 11 ] .
+Besides, heuristic techniques  [ 12 , 13 , 14 ] , such as the well-known LKH  [ 15 ] , solve HPP and TSP quickly but usually have no solution quality guarantees.
+This paper is interested in exact algorithms.
+
+ Although HPP, TSP and their variants have been studied a lot, few of them consider uncertainty as required in this work for target object search scenarios.
+Many of them consider uncertain edge costs.
+For example, the Canadian Traveler Problem  [ 16 , 17 ] consider edges with stochastic traversability, which is only revealed upon arrival.
+Uncertainty has also been considered in stochastic variants of the TSP with randomness in travel costs  [ 18 , 19 ] , which focuses on uncertainty of cost rather than the vertex presence.
+Other literature considers vertex uncertainty, which is still different from ours.
+For example, Probabilistic Traveling Salesman Problem [ 20 , 21 ] assigns each vertex a probability indicating the likelihood for the robot to skip that vertex during execution and seeks to minimize the expected path length, which is different from our target search problem as we require all vertices to be visited.
+Overall, despite some routing problems with uncertainty have been studied from different perspectives, the challenge of ensuring guaranteed coverage with uncertainty of target object existence remains unaddressed by the literature.
+
+ II-B Target Search 
+
+ Target search is an important problem in robotics that arises in applications such as search and rescue  [ 22 ] , environmental monitoring  [ 23 ] , and hazardous operations  [ 24 ] .
+Target search has been studied in different ways, including search for static or dynamic targets  [ 25 , 26 ] , and search in a global or local fashion.
+
+ Seemingly related yet fundamentally different problems include target tracking  [ 27 , 28 ] and ergodic search [ 29 , 30 ] .
+In target tracking, the target’s location is assumed to be known or partially observed at all times, and the objective is to maintain persistent estimates of its state as it moves  [ 31 ] . Similarly, ergodic search assumes access to a predefined spatial distribution encoding information density, and aims to generate trajectories whose visitation frequency matches this known distribution  [ 32 ] .
+In both cases, the agent operates with explicit prior knowledge, and the challenge is to track targets rather than discovery of targets as in this work.
+
+ Target search has been investigated in a “local” planning fashion.
+Existing work mostly focuses on how to extract information from human  [ 33 ] or the environment  [ 34 ] to guide the search of the target, and employs simple planning strategy such as greedy search  [ 35 ] to iteratively navigate the robot to the most informative region.
+Besides, recent work has incorporated semantics  [ 36 ] and contextual priors  [ 37 ] to guide target search. Active Visual Search  [ 38 ] approaches use probabilistic models relating objects, rooms, and scene context to compute a belief distribution over the target’s location and select views accordingly.
+However, these approaches are usually limited to a relatively small region and the focus is to navigate in semantically complex environments  [ 34 ] or interaction with human during object search  [ 33 ] .
+In contrast, our work complement these existing work by addressing the problem from a global perspective, and achieving efficient target search during the exploration of unknown environments or lifelong search.
+
+ II-C Exploration of Unknown Environments 
+
+ Another related topic to this work is the exploration of unknown environments, where the objective is to efficiently build a map or maximize coverage of unexplored space.
+These methods seek to explore the environment as quick as possible, by selecting frontier points  [ 39 , 40 ] , maximizing information theoretic metrics  [ 41 , 42 ] , or optimizing exploration paths via TSP  [ 43 , 44 ] and receding horizon strategies  [ 45 ] to ensure complete coverage of the environment.
+
+ Our HATS-U is inspired by recent hierarchical approaches  [ 44 , 46 ] that decomposes exploration into high-level region selection and low-level motion planning, enabling efficient navigation and coverage in unknown spaces.
+Target search differs fundamentally from exploration as the goal is to locate a specific target as quickly as possible rather than the coverage of an unknown environment.
+For target search, exploring every region is neither necessary nor desirable.
+
+ III Problem Statement of HPP-PT 
+
+ Let $G=(V,E)$ denote a finite directed complete graph with $N$ vertices, where the vertex set $V$ represents possible locations, and edge set $E\subseteq V\times V$ represents possible transitions between locations.
+Each edge is associated with a finite transition cost $c(e)\in\mathbb{R^{+}}$ , which is the cost for the robot to go through the edge.
+The edge costs satisfy the triangle inequality.
+Each vertex $v\in V$ is associated with a real number $p(v)\in[0,1)$ , denoting the probability that $v$ is used as the terminal, i.e., the robot ends its path at $v$ .
+In other words, $p(v)$ is the probability that the robot finds a target object at $v$ , and the robot stops at $v$ thereafter.
+
+ Definition 1 (Expected Path Cost) . 
+
+ Let $\pi=\pi(v_{1},v_{N})=(v_{1},v_{{2}},\dots,v_{N})$ denote a path from vertex $v_{1}$ to $v_{N}$ in $G$ .
+The expected cost $\xi(\pi)$ of $\pi$ is a random variable related to the probability of finding the target at each vertex $v_{i}\in\pi$ , and the expectation of this path cost can be defined as follows: 
+
+ $\displaystyle\xi(\pi):=(1-p_{1})p_{2}c_{1,2}+$ 
+
+ (1) 
+
+ $\displaystyle(1-p_{1})(1-p_{2})p_{3}(c_{1,2}+c_{2,3})+\dots+$ 
+
+ $\displaystyle(1-p_{1})(1-p_{2})\cdots(1-p_{N-1})(c_{1,2}+c_{2,3}+\dots+c_{N-1,N})$ 
+
+ where $c_{k,k+1}$ denotes the edge cost $c(e),e=(v_{k},v_{k+1})$ in $\pi$ . 
+
+ Here, the $k$ -th ( $1\leq k\leq N-1$ ) term corresponds to the expected path cost of finding the target at the $(k+1)$ -th vertex.
+Note that, the last term in $\xi(\pi)$ does not have a $p_{N}$ in the middle of that term, since if the robot fails to find a target at the previous $N-1$ vertices, the robot has to go to the last vertex $v_{N}$ anyway, regardless of the probability of finding a target at $v_{N}$ .
+
+ Definition 2 (HPP-PT) . 
+
+ Let $v_{s}$ denote the start vertex, and the goal of the Hamiltonian Path Problem with Probabilistic Terminals is to find a path $\pi$ in $G$ starting from $v_{s}$ such that, (i) $\pi$ visits all vertices in $G$ exactly once, and (ii) the expected cost $\xi(\pi)$ reaches the minimum. 
+
+ Remark 1 . 
+
+ When applying HPP-PT to autonomous target search, there are different cases which may impose additional constraints to the problem formulation.
+If there is only one target object (such as an ID card) in $G$ and it is known that the object must exist in $G$ , then an additional constraint $\sum_{v\in V}p(v)=1$ should be imposed.
+If there are multiple target objects (such as trash bins) in $G$ and the robot needs to find any one of them, then there is no additional constraint on $p(v),v\in V$ .
+Our approaches that will be presented next do not rely on those constraints and is applicable to all these problem variants. 
+
+ IV RPT* Algorithm 
+
+ A*-like algorithms  [ 47 ] are widely used to solve a variety of path planning problems, and our presentation assumes readers are familiar with A*  [ 47 ] .
+However, A* cannot be directly applied to solve HPP-PT since the expected path cost in Def.  1 to be minimized depends on the visiting order of vertices.
+A naive extension of A* for HPP-PT would have to search in a state space that includes all permutations of vertices in $G$ , which grows combinatorially with respect to the size of the graph, and will soon become computationally intractable.
+To address this difficulty, we identify a transformation of the expected path cost in Def.  1 by introducing an additional variable, which helps bypass this dependency on the visiting order of vertices and allows the planner to search a new state space efficiently.
+
+ IV-A Concepts and Notations 
+
+ IV-A 1 New State Definition
+
+ Along a path $\pi=(v_{1},v_{2},\cdots,v_{N})$ , let $q_{k}=(1-p(v_{1}))(1-p(v_{2}))\cdots(1-p(v_{k}))$ denote the probability of not finding a target at any vertex among the first $k$ vertices in $\pi$ .
+With $q_{k}$ , $\xi(\pi)$ can be reformulated.
+
+ Lemma 1 . 
+
+ The expected path cost in Eq. ( 1 ) is the same as the following expression: 
+
+ $\displaystyle\xi(\pi)$ 
+ $\displaystyle=q_{1}c_{1,2}+q_{2}c_{2,3}+\dots+q_{N-1}c_{N-1,N}=\sum_{i=1}^{N-1}q_{i}c_{i,i+1}$ 
+
+ Proof.
+
+ Note that $q_{k-1}p_{k}+q_{k}=q_{k-1}(p_{k}+(1-p_{k}))=q_{k-1}$ .
+Hence for any $k=1,2,\cdots,N-1$ in Eq. ( 1 ), all terms related to $c_{k,k+1}$ can be written as 
+
+ $\displaystyle(q_{k}p_{k+1}+q_{k+1}p_{k+2}+\cdots+q_{N-2}p_{N-1}+q_{N-1})c_{k,k+1}$ 
+
+ $\displaystyle=(q_{k}p_{k+1}+q_{k+1}p_{k+2}+\cdots+q_{N-2})c_{k,k+1}$ 
+
+ $\displaystyle=\cdots=q_{k}c_{k,k+1}.$ 
+
+ This can be applied to all terms $c_{k,k+1},k=1,2,\cdots,N-1$ , thereby proving this lemma.
+∎ 
+
+ We now define search states based on $q$ and show that the new state definition is Markovian, i.e., the future path is independent from the path history given the state.
+Let $s=(v,g,q,A)$ denote a state, which consists of a vertex $v\in V$ , a $g$ -cost as commonly used in A* $g\in\mathbb{R}^{+}$ , a probability value $q\in[0,1]$ , and a set of vertices $A\subseteq V$ .
+We use $v(s),g(s),q(s),A(s)$ to denote the respective component of state $s$ .
+Later, we will use this state definition to search for paths in $G$ and use parent pointers to record the path.
+Intuitively, each state $s$ identifies a path from the start vertex $v_{s}$ that has visited the vertices in $A$ , and reaches the vertex $v(s)$ with the cost-to-come $g(s)$ and the probability $q(s)$ of not finding a target along that path yet.
+
+ Remark 2 . 
+
+ Here, for a state $s$ and the corresponding path $\pi$ from the start vertex to $v(s)$ as recorded by the parent pointers, the $g$ -cost $g(s)$ is same as $\xi(\pi)$ as defined in Lemma  1 .
+We use two different notations to highlight that, $\xi$ is the expected cost of a solution path that visits all vertices as introduced in this new HPP-PT, while $g(s)$ is the $g$ -cost as commonly used in A* and is the expected cost of a (partial) path from the start vertex to some other vertex in $G$ before visiting all vertices. 
+
+ IV-A 2 State Expansion
+
+ When expanding a state $s$ , the path identified by $s$ is extended to all successor vertices in $G$ that have not yet been visited.
+Let $s^{\prime}$ denote a new successor state that is generated when expanding $s$ .
+Then, the components of $s^{\prime}$ can be computed as follows: $v(s^{\prime})$ is a successor vertex of $v(s)$ , $v(s^{\prime})\notin A(s)$ and
+
+ $\displaystyle g(s^{\prime})$ 
+ $\displaystyle=g(s)+q(s)\cdot c(v(s),v(s^{\prime}))$ 
+
+ (2) 
+
+ $\displaystyle q(s^{\prime})$ 
+ $\displaystyle=q(s)(1-p(v(s^{\prime})))$ 
+
+ (3) 
+
+ $\displaystyle A(s^{\prime})$ 
+ $\displaystyle=A(s)\cup\{v(s^{\prime})\}$ 
+
+ (4) 
+
+ Eq. ( 2 ) holds because of Lemma  1 .
+Eq. ( 3 ) follows the definition of $q$ , and
+
+ Lemma 2 . 
+
+ A state $s$ is Markovian when generating successor states by expanding $s$ . 
+
+ Proof.
+
+ When expanding $s$ to any successor $s^{\prime}$ with $v(s^{\prime})\notin A(s)$ , Eq. ( 2 )( 3 )( 4 ) shows that the successor state $s^{\prime}$ depends on $s$ only and there is no dependency on the history, i.e., the parents or ancestor states of $s$ .
+∎ 
+
+ Due to Lemma  2 , we can iteratively extend paths in $G$ by expanding states based solely on their current $A,g,q$ variables, without considering their history. This eliminates the need to consider all possible permutations (i.e., visiting orders) of vertices during planning.
+
+ IV-A 3 State Comparison and Pruning
+
+ With the new state definition, each state $s$ identifies a path from $v_{s}$ to $v(s)$ while visiting the vertices in $A(s)$ along the path.
+For two paths represented by states $s_{1},s_{2}$ that reaches the same vertex $v$ , (i.e., $v(s_{1})=v(s_{2})=v$ ), we need to compare them and potentially prune one of them to reduce the planning effort.
+To compare these two states, we introduce the following dominance rule.
+
+ Definition 3 ( State Dominance). 
+
+ Given two states $s_{1}$ , $s_{2}$ with the same vertex (i.e., $v(s_{1})=v(s_{2})=v$ ), we say $s_{1}$ dominates $s_{2}$ , if all of the following conditions hold: (i) $g(s_{1})\leq g(s_{2})$ 
+and (ii) $A(s_{1})\supseteq A(s_{2})$ . 
+
+ Lemma 3 . 
+
+ In Def.  3 , the condition $A(s_{1})\supseteq A(s_{2})$ implies that $q(s_{1})\leq q(s_{2})$ . 
+
+ Proof.
+
+ For any state $s$ , the value $q(s)$ is the product of $(1-p(v)),\forall v\in A(s)$ and $(1-p(v))\in(0,1]$ .
+Given that $A(s_{1})$ is a superset of $A(s_{2})$ , then $q(s_{1})$ is equal to $q(s_{2})$ multiplied by possibly more terms $(1-p(v)),v\in A(s_{1}),v\notin A(s_{2})$ , which makes $q(s_{1})\leq q(s_{2})$ .
+∎ 
+
+ If $s_{1}$ dominates $s_{2}$ , then $s_{2}$ cannot lead to a better solution than $s_{1}$ and can thus be discarded.
+We prove the correctness of this dominance rule later in Lemma  6 , which involves some technical details.
+
+ If $s_{1}$ does not dominate $s_{2}$ and $s_{2}$ does not dominate $s_{1}$ , then $s_{1}$ and $s_{2}$ are non-dominated by each other, and both of them need to be kept for planning.
+Let $\mathcal{F}(v),\forall v\in V$ denote a frontier set defined at each vertex, which is a set of non-dominated states at the same vertex (Fig.  2 ).
+
+ Finally, let $h(s)$ denote the heuristic value of state $s$ , which estimates the expected cost-to-go.
+We provide a heuristic function in Sec.  IV-C .
+Let $f(s):=g(s)+h(s)$ denote the $f$ -value of state $s$ , which estimates the total expected cost of any solution that uses state $s$ .
+
+ Fig. 2: Visualization of related concepts.
+
+ IV-B Planning Algorithm 
+
+ Algorithm 1 Pseudocode for RPT* 
+
+ 1: 
+
+ $s_{o}\leftarrow(v=v_{s},g=0,q=1-p(v_{s}),A=\emptyset)$ 
+
+ 2: 
+
+ $h(s_{o})\leftarrow$ GetHeuValue ( $s_{o}$ ), $f(s_{o})\leftarrow g(s_{o})+h(s_{o})$ 
+
+ 3: 
+
+ Add $s_{o}$ to OPEN (and FOCAL) 
+
+ 4: 
+
+ $parent(s_{o})\leftarrow null$ 
+
+ 5: 
+
+ $\mathcal{F}(v)\leftarrow\emptyset,\forall v\in V$ 
+
+ 6: 
+
+ while OPEN $\neq\emptyset$ do 
+
+ 7: 
+
+   extract $s$ from OPEN (or FOCAL) 
+
+ 8: 
+
+    if IsPruned ( $s$ ) then 
+
+ 9: 
+
+     continue 
+
+ 10: 
+
+    FilterAndAddFront ( $s$ )
+
+ 11: 
+
+    if $A(s)=V$ then 
+
+ 12: 
+
+     return Reconstruct ( $s$ )
+
+ 13: 
+
+    $U\leftarrow$ GetSuccessors $(s)$ 
+
+ 14: 
+
+    for $v^{\prime}\in U$ do 
+
+ 15: 
+
+     $g^{\prime}\leftarrow g(s)+q(s)\cdot c(v(s),v^{\prime})$ 
+
+ 16: 
+
+     $q^{\prime}\leftarrow q(s)(1-p(v^{\prime}))$ 
+
+ 17: 
+
+     $A^{\prime}\leftarrow A\cup\{v^{\prime}\}$ 
+
+ 18: 
+
+     $s^{\prime}\leftarrow(v^{\prime},g^{\prime},q^{\prime},A^{\prime})$ 
+
+ 19: 
+
+     if IsPruned ( $s^{\prime}$ ) then 
+
+ 20: 
+
+        continue 
+
+ 21: 
+
+     $h(s^{\prime})\leftarrow$ GetHeuValue ( $s^{\prime}$ ), $f(s^{\prime})\leftarrow g(s^{\prime})+h(s^{\prime})$ 
+
+ 22: 
+
+     $parent(s^{\prime})\leftarrow s$ 
+
+ 23: 
+
+    add $s^{\prime}$ to OPEN (and FOCAL) 
+
+ 24: 
+
+ return failure
+
+ 1: 
+
+ IsPruned( $s$ ) 
+
+ 2: 
+
+ for $s^{\prime}\in\mathcal{F}(v(s))$ do 
+
+ 3: 
+
+    if $s^{\prime}$ dominates $s$ then 
+
+ 4: 
+
+     return true
+
+ 5: 
+
+ return false
+
+ 1: 
+
+ FilterAndAddFront( $s$ ) 
+
+ 2: 
+
+ for $s^{\prime}\in\mathcal{F}(v(s))$ do 
+
+ 3: 
+
+    if $s$ dominates $s^{\prime}$ then 
+
+ 4: 
+
+    remove $s^{\prime}$ from $\mathcal{F}(v(s))$ 
+
+ 5: 
+
+ add $s$ to $\mathcal{F}(v(s))$ 
+
+ To initialize, RPT* (Alg.  1 ) first creates an initial state $s_{o}\leftarrow(v=v_{s},g=0,q=1-p(v_{s}),A=\emptyset)$ , which is added to OPEN, a priority queue where states are prioritized based on their $f$ -values from the minimum to the maximum.
+RPT* maintains parent pointers of the states during planning to easily reconstruct a path when a solution is found, and initializes the parent point of the initial state to be $null$ .
+The frontier sets $\mathcal{F}(v),\forall v\in V$ are initialized as empty sets.
+
+ In each search iteration (Line 6 - 23 ), a state with the smallest $f$ -value is extracted from OPEN for processing.
+Then, a procedure IsPruned is called to check if $s$ should be discarded based on dominance. Specifically, IsPruned iterates all existing states $s^{\prime}\in\mathcal{F}(v(s))$ and check if $s^{\prime}$ dominates $s$ .
+If so, $s$ cannot lead to a better solution than $s^{\prime}$ and is thus discarded.
+The current search iteration ends.
+
+ If $s$ is not pruned, $s$ is then added to $\mathcal{F}(v)$ in procedure FilterAndAddFront , where any existing states in $s^{\prime}\in\mathcal{F}(v(s))$ is removed if it is dominated by $s$ .
+Notably, FilterAndAddFront differs from IsPruned as FilterAndAddFront seeks to remove the existing states in $\mathcal{F}(v(s))$ while IsPruned seeks to remove $s$ .
+Subsequently, the algorithm checks if $s$ visits all vertices in $G$ .
+If $A(s)=V$ , all vertices are visited, and a solution is found. The path is then reconstructed by tracking the parent pointers of $s$ iteratively until reaching the initial state $s_{o}$ .
+
+ If $s$ does not visit all vertices $(A(s)\neq V)$ , $s$ is expanded.
+The set $U$ of all unvisited successor vertices of $s$ are obtained.
+For each of these successor vertex $v^{\prime}\in U$ , a corresponding new state $s^{\prime}$ is generated as described in Eq. ( 2 )( 3 )( 4 ).
+Then, IsPruned is called to check if the new state $s^{\prime}$ should be pruned.
+Finally, if $s^{\prime}$ is not pruned, the $f$ -value of $s^{\prime}$ is computed, and $s^{\prime}$ is added to OPEN for future expansion.
+
+ Remark 3 . 
+
+ The proposed RPT* is related to some recent multi-objective search algorithms  [ 48 , 49 , 50 ] and some recent search methods for TSP variants  [ 51 , 52 ] .
+However, the expected cost function is fundamentally different from the cost definitions in those papers.
+As a result, the heuristic design and pruning rules, which will be presented next, are very different from those existing work. 
+
+ IV-C Heuristic Computation 
+
+ Fig. 3: Heuristic function of our RPT* algorithm: for the remaining $k$ unvisited vertices, the heuristic models the process as $k$ steps, explicitly allowing for repeated visits to vertices. 
+
+ Heuristic functions $h$ can help guide the A* search and improve computational efficiency, and we thus introduce a heuristic function for HPP-PT (Fig.  IV-C ).
+The proposed heuristic requires the pre-computation of a table $\gamma$ as follows.
+For any $v\in V$ , let $\gamma(v,k)$ denote an estimated cost-to-go from $v$ while visiting other remaining $k$ vertices where $k$ is an integer ranging from $0$ to $|V|-1$ .
+For the base case $k=0$ , let $\gamma(v,0)=0$ , which means there is no additional vertices to be visited from $v$ .
+Then, for integers $i\in[0,k-1]$ ,
+
+ $\displaystyle\gamma(v,i+1)=\min_{u,u\neq v}(1-p(v))\cdot(c(v,u)+\gamma(u,i)),$ 
+
+ (5) 
+
+ which is minimum incremental cost to visit any other vertex $u$ that is different from $v$ multiplied by the probability $(1-p(v))$ of not finding the target at $v$ .
+
+ Lemma 4 . 
+
+ The pre-computation of table $\gamma$ has the worst case runtime complexity $O(|V|^{2})$ . 
+
+ Proof.
+
+ The table $\gamma$ involves both $v\in V$ and $i\in[0,|V|-1]$ , and has $|V|^{2}$ items in total.
+Eq.  5 allows the use of dynamic programming to compute the entire table from $i=0$ to $|V|-1$ , and for each $i$ , the computation needs to loop over all $v\in V$ , which results in the worse case runtime complexity $O(|V|^{2})$ .
+∎ 
+
+ Then, the heuristic function $h(s)$ of any state $s$ can be computed during the search with the help of this pre-computed table $\gamma$ as follows.
+
+ $\displaystyle h(s)$ 
+ $\displaystyle=q(s)/\left(1-p(v(s))\right)\cdot\gamma(v(s),k(s)),$ 
+
+ $\displaystyle k(s)$ 
+ $\displaystyle=|V|-|A(s)|$ 
+
+ (6) 
+
+ Here, the term $q(s)/\{1-p(v(s))\}$ is basically the $q$ -value of the parent state of $s$ if $s$ is not the initial state ( $s\neq s_{o}$ ).
+When $s=s_{o}$ , $q(s_{o})=1$ and the term is still well-defined. The term $k(s)$ is the number of unvisited vertices of state $s$ .
+
+ We will prove that the heuristic $h(s)$ is admissible (Lemma  5 ).
+Intuitively, this heuristic allows a vertex with the cheapest visiting cost to be used many times in the future, i.e., we only require that $v$ is not the same as its immediate successor $u$ , and we ignore the constraints that $u$ should not be the same as any other vertices that will be visited in the future.
+This heuristic function is not an accurate estimate of cost-to-go since it neglects the path history about previously visited nodes. However, this heuristic is relatively fast to compute.
+
+ IV-D Bounded Sub-optimal Variant 
+
+ Finding an optimal solution for HPP-PT is computationally burdensome for large graphs.
+In large graphs, as the path length grows during planning, the $q$ -values of states (Eq. ( 3 )) keep descreasing, which makes the $g$ -values of states plateau (Eq. ( 2 )).
+As a result, an optimal solution path may have negligibly smaller expected path cost than many other sub-optimal solutions, especially in large graphs.
+We therefore develop a bounded sub-optimal variant of RPT* using focal search  [ 53 ] technique, and call this variant Focal Routing with Probabilistic Terminals Star (F-RPT*).
+
+ Focal search is a bounded sub-optimal variant [ 53 ] of A*, which further introduces a FOCAL list in addition to the OPEN list to store candidate states.
+Let $f_{min}$ denote the minimum $f$ -value of states in OPEN, and let $\epsilon\in[0,\infty)$ denote a sub-optimality bound.
+FOCAL list is a priority queue containing states in OPEN whose $f$ -value are within range $[f_{min},(1+\epsilon)f_{min}]$ , and those states are prioritized based on a secondary heuristic function $h_{F}$ .
+In each search iteration, instead of selecting the first state from OPEN, focal search selects the first state from FOCAL for processing.
+
+ In F-RPT*, we define $h_{F}(s):=|V|-|A(s)|$ as the number of remaining unvisited vertices of a state, and FOCAL sorts the states based on $h_{F}$ from the minimum to the maximum.
+In each search iteration, a state with the minimum $h_{F}$ value in FOCAL is selected for expansion.
+By doing so, F-RPT* prefers states that have visited more vertices, and tends to find a solution earlier.
+Since FOCAL is always a fraction of OPEN with $f$ -value ranging between $[f_{min},(1+\epsilon)f_{min}]$ , the resulting solution is guaranteed to be bounded sub-optimal (Theorem  3 ), with the expected path cost $g$ no greater than $(1+\epsilon)g^{*}$ with $g^{*}$ being the true optimum of HPP-PT.
+
+ IV-E Analysis 
+
+ This section proves the solution optimality and bounded sub-optimality of RPT* and F-RPT*.
+To this end, we first prove the admissibility of the heuristic function in Lemma  5 , and then the correctness of dominance pruning in Lemma  6 .
+Putting these together within the A* search framework, we show that completeness and solution optimality of RPT*.
+
+ Lemma 5 . 
+
+ (Admissible Heuristic). The heuristic in Eq. ( 6 ) is admissible. 
+
+ Proof.
+
+ Let $h^{*}(s)$ denote the true minimum cost of any path from a given state $s$ to a goal state.
+then, for any state $s$ , the condition for admissibility is $h(s)\leqslant h^{*}(s)$ .
+For $k\geq 1$ , 
+
+ $\displaystyle\gamma(v(s),k)$ 
+ $\displaystyle=(1-p(v))\cdot\min_{u,u\neq v}(c(v,u)+\gamma(u,k-1))$ 
+
+ $\displaystyle\leq(1-p(v))\cdot\min_{u,u\notin A(s)}(c(v,u)+\gamma(u,k-1)).$ 
+
+ Along path $\pi$ , let $q_{m}$ and $q_{m-1}$ denote the probability of not finding a target at the first $m$ and $(m-1)$ vertices in $\pi$ respectively. Then, 
+
+ $\displaystyle h(s)$ 
+ $\displaystyle=q_{m-1}\cdot\gamma(v(s),k)$ 
+
+ $\displaystyle\leq q_{m}\cdot\min_{u,u\notin A(s)}(c(v,u)+\gamma(u,k-1))$ 
+
+ $\displaystyle\leq q_{m}\cdot\min_{u,u\notin A(s)}\{c(v,u)+(1-p(u^{\prime}))\cdot$ 
+
+ $\displaystyle\;\;\;\;\;\;\;\;\min_{u^{\prime},u^{\prime}\notin A(s)\cup\{u\}}(c(u,u^{\prime})+...)\}=h^{*}(s)$ 
+
+ Since the condition $h(s)\leqslant h^{*}(s)$ holds for all states s, the heuristic function is admissible.
+∎ 
+
+ To prove the correctness of the dominance rule in Def.  3 , we need the following assumption.
+This assumption is only needed to complete the proof and does not affect the problem statement and the proposed algorithm, which is re-discussed in Remark 4 .
+
+ Assumption 1 . 
+
+ For a path $\pi$ that visits a vertex $v\in V$ more than once, when computing the $g$ -cost, the probability of finding a target for the first visit $p_{\text{first}}(v)$ is same as the probability value $p(v)$ as defined in the problem statement, and the probability of finding a target at $v$ after the first visit $p_{\text{after}}(v)$ is always zero. 
+
+ Lemma 6 . 
+
+ For two states $s_{1},s_{2}$ with $v(s_{1})=v(s_{2})$ , if $s_{1}$ dominates $s_{2}$ , $s_{2}$ cannot lead to a better solution than $s_{1}$ . 
+
+ Proof.
+
+ As illustrated in Fig.  4 , let $\pi_{a}(s_{1}),\pi_{a}(s_{2})$ denote the path from $v_{s}$ to $v(s_{1})$ and $v(s_{2})$ respectively, and let $\pi_{b}(s_{1})$ denote an arbitrary path from $v(s_{1})$ that visits all unvisited vertices not in $A(s_{1})$ .
+In other words, $\pi_{b}(s_{1})$ completes the path $\pi_{a}(s_{1})$ .
+Similarly, let $\pi_{b}(s_{2})$ denote an arbitrary path from $v(s_{2})$ as an arbitrary path beginning at $s_{2}$ that traverses all unvisited vertices not in the set $A(s_{2})$ , and the concatenated path $\pi=\pi_{a}(s_{2})+\pi_{b}(s_{2})$ is a solution.
+Let $\pi^{\prime}=\pi_{a}(s_{1})+\pi_{b}(s_{2})$ denote a path that concatenates $\pi_{a}(s_{1})$ and $\pi_{b}(s_{2})$ together.
+Since $s_{1}$ dominates $s_{2}$ , we know $g_{1}\leq g_{2}$ and $\xi(\pi^{\prime})\leq\xi(\pi)$ .
+We need to show that for any possible $\pi^{\prime}$ , there exists a no-worse path $\pi^{\prime\prime}=\pi_{a}(s_{1})+\pi_{b}(s_{1})$ than $\pi^{\prime}$ (i.e., $\xi(\pi^{\prime\prime})\leq\xi(\pi^{\prime})$ ), and as a result, there is no need to search $\pi$ since $\xi(\pi^{\prime\prime})\leq\xi(\pi^{\prime})\leq\xi(\pi)$ . 
+
+ To show that, since $A(s_{1})\supseteq A(s_{2})$ , there can be vertices that are visited more than once in $\pi^{\prime}$ .
+For each of those vertices $u_{k}$ that are visited more than once in $\pi^{\prime}$ , if $u_{k}$ is the last vertex in $\pi$ , then $u_{k}$ can be simply removed from $\pi^{\prime}$ with a strictly lower expected cost than $\xi(\pi^{\prime})$ . Consequently, the new expected cost is less than $\xi(\pi)$ .
+Otherwise ( $u_{k}$ is not the last vertex in $\pi^{\prime}$ ), let $u_{k-1}$ and $u_{k+1}$ denote the previous and the next vertex of $u_{k}$ in $\pi$ .
+Then, a new path $\pi^{\prime\prime}$ can be obtained by shortcutting $u_{k}$ , i.e., in $\pi^{\prime\prime}$ , the vertices $u_{k-1}$ and $u_{k+1}$ are directly connected and $u_{k}$ is skipped.
+The resulting shortcut path $\pi^{\prime\prime}$ must have no-larger expected path cost than $\xi(\pi^{\prime})$ because of Assumption 1 and that the graph edge costs satisfy the triangle inequality.
+Specifically, using the expression in Def.  1 , 
+
+ $\displaystyle\xi(\pi^{\prime})$ 
+ $\displaystyle=q_{1}c_{1,2}+q_{2}c_{2,3}+\cdots+q_{k-1}c_{k-1,k}+q_{k}c_{k,k+1}+$ 
+
+ $\displaystyle\;\;\;\;\;\;\;\;\cdots+q_{N-1}c_{N-1,N}$ 
+
+ (7) 
+
+ $\displaystyle=q_{1}c_{1,2}+q_{2}c_{2,3}+\cdots+q_{k-1}(c_{k-1,k}+c_{k,k+1})+$ 
+
+ $\displaystyle\;\;\;\;\;\;\;\;\cdots+q_{N-1}c_{N-1,N}$ 
+
+ (8) 
+
+ $\displaystyle\geq q_{1}c_{1,2}+q_{2}c_{2,3}+\cdots+q_{k-1}(c_{k,k+1})+$ 
+
+ $\displaystyle\;\;\;\;\;\;\;\;\cdots+q_{N-1}c_{N-1,N}=\xi(\pi^{\prime\prime})$ 
+
+ (9) 
+
+ Here, Eq.  7 is equal to Eq.  8 since $u_{k}$ is visited more than once and $p_{k}=p_{\text{after}}=0$ .
+As a result, $q_{k}=q_{k-1}(1-p_{k})=q_{k-1}$ .
+Then, Eq.  8 is equal to Eq.  9 because of the triangle inequality of the edge costs $c_{k-1,k}+c_{k,k+1}\geq c_{k-1,k+1}$ .
+We can keep doing so until all the vertices that are visited more than once in $\pi$ are shortcut.
+As a result, the resulting path $\pi^{\prime\prime}$ after shortcut has $\xi(\pi^{\prime\prime})\leq\xi(\pi^{\prime})$ , which means $\pi^{\prime}$ can be discarded.
+∎ 
+
+ Fig. 4: Cutshort process
+
+ Remark 4 . 
+
+ In the problem definition of HPP-PT, each vertex can only be visited once and there is no definition of a repeated visit.
+To prove Lemma  6 , however, we need to introduce the concept of repeated visits as a conceptual tool to complete the proof.
+We thus use Assumption  1 to define the probability value if a vertex is visited more than once.
+Assumption  1 will never take effect in the actual search process of RPT*. 
+
+ The following three theorems summarize the main properties of RPT* and F-RPT*, whose correctness relies heavily on the general best-first search framework (such as A* and its variants  [ 53 ] ).
+We show the main ideas in the following proofs.
+
+ Theorem 1 . 
+
+ RPT* is complete in a sense that, (i) for an unsolvable HPP-PT instance, RPT* terminates in finite time and reports failure; (ii) for a solvable HPP-PT instance, RPT* returns a feasible solution in finite time. 
+
+ Proof.
+
+ RPT* conducts systematic best-first search as A*  [ 53 ] , where in each search iteration a state with the minimum $f$ -value in OPEN is selected for expansion, and when expanding a state, all possible successor states are considered.
+During the search, a state $s$ is pruned only when there is another state $s^{\prime}$ that dominates $s$ in either IsPrune or FilterAndAddFront .
+By the definition of dominance (Def.  3 ) and Lemma  6 , such pruning only removes sub-optimal solutions since for any future solution from $s$ , there must exists a corresponding (better) solution from $s^{\prime}$ .
+As a result, for a solvable problem instance, RPT* never eliminates the only path to any vertex $v\in G$ if a better path has not been found yet, and terminates the search with a feasible solution.
+For an unsolvable problem instance, since the graph $G$ is finite, there is a finite number of possible paths.
+RPT* terminates after enumerating all paths and reports failure.
+∎ 
+
+ Theorem 2 . 
+
+ RPT* finds an optimal solution for HPP-PT. 
+
+ Proof.
+
+ RPT* systematically enumerates all paths in the graph $G$ , and by Def.  3 and Lemma  6 , dominance pruning never eliminates a path along an optimal solution.
+With an admissible heuristic (Lemma  5 ), the $f$ -value of any state $s$ popped from OPEN is a lower bound of the true optimal solution cost  [ 53 ] , i.e., $f(s)\leq\xi_{*}$ with $\xi_{*}$ being the true optimal cost of an optimal solution.
+At termination, a state $s$ that has visited all vertices is popped.
+Since all vertices are visited and there is no additional vertex to be visited, $h(s)=0$ and $g(s)=f(s)\leq\xi_{*}$ .
+As $\xi_{*}$ is the true optimum, it must be the case $g(s)=\xi_{*}$ and RPT* finds an optimal solution.
+∎ 
+
+ Theorem 3 . 
+
+ Let $\xi_{*}$ denote the true optimal cost value for any solvable HPP-PT problem instance, F-RPT* finds a $(1+\epsilon)$ bounded sub-optimal solution $\pi$ for HPP-PT, i.e., $\xi(\pi)\leq(1+\epsilon)\xi^{*}$ . 
+
+ Proof.
+
+ The use of focal search  [ 53 ] allows F-RPT* to select a state $s$ with $f$ -value within range $[f_{min},(1+\epsilon)f_{min}]$ with $f_{min}$ being the minimum $f$ -value of any state in OPEN.
+At termination, the popped state $s$ is guaranteed to have $g$ -cost $g(s)=f(s)\leq(1+\epsilon)f_{min}\leq(1+\epsilon)\xi_{*}$ , which ensures the $(1+\epsilon)$ bounded sub-optimality of the returned solution.
+∎ 
+
+ V Integer Programming 
+
+ Integer linear programming is one of the most popular exact approaches for conventional HPP and TSP.
+This section presents our attempt to formulate the HPP-PT as an integer program, which turns out to be nonlinear.
+We begin with a naive formulation that is relatively straightforward and then introduce an improvement with auxiliary variables, which are both compared against RPT* in the experiments.
+
+ V-A Naive Formulation 
+
+ Let the vertices in $V$ be organized in a fixed order.
+Let $x_{k,i}\in\{0,1\}$ denote a binary variable, where $k=1,\cdots,N$ stands for the visiting order of vertex $v_{i}\in V$ in the solution.
+There are in total $N^{2}$ binary variables, and let $X\in\{0,1\}^{N\times N}$ denote a square binary matrix consists of $x_{k,i}$ , with the $k$ -th column being $x_{k}=[x_{k,1},x_{k,2},\cdots,x_{k,N}]$ .
+Each $x_{k}$ has only one element taking value $1$ with all other elements taking value $0$ , indicating which vertex is visited as the $k$ -th step in the robot’s path.
+We now define a few vectors, and all vectors are column vectors unless otherwise clarified.
+Let $p=[p(v_{1}),p(v_{2}),\cdots,p(v_{N})]$ denote the probability vector.
+Let $e$ denote a vector of length $N$ with all elements being one.
+Let $C\in\mathbb{R}^{N\times N}$ denote a cost matrix with the entry in the $i$ -th row and the $j$ -th column being the edge cost $c(v_{i},v_{j})$ .
+
+ To formulate the expected path cost, we introduce the following variable $l_{k}$ to describe the path length when the robot visits the $(k+1)$ -th vertex in its path.
+
+ $\displaystyle l_{k}=\sum_{i=1}^{k}x_{i}^{T}Cx_{i+1},k=1,2,\cdots,N-1$ 
+
+ (10) 
+
+ Note that $x_{i}^{T}Cx_{i+1}$ selects the edge that is traversed by the robot when moving from the $i$ -th vertex to the $(i+1)$ -th vertex in its path.
+
+ Then, the objective function, i.e., the expected path cost, to be minimized is:
+
+ $\displaystyle\xi(x)=(1-p^{T}x_{1})p^{T}x_{2}l_{1}+(1-p^{T}x_{1})(1-p^{T}x_{2})p^{T}x_{3}l_{2}$ 
+
+ $\displaystyle+\cdots+\prod_{j=1}^{N-1}(1-p^{T}x_{j})l_{N-1}$ 
+
+ $\displaystyle=\sum_{k=1}^{N-2}\left(\prod_{j=1}^{k}(1-p^{T}x_{j})p^{T}x_{k+1}l_{k}\right)+\prod_{j=1}^{N-1}(1-p^{T}x_{j})l_{N-1}$ 
+
+ (11) 
+
+ The constraints are:
+
+ $\displaystyle e^{T}X$ 
+ $\displaystyle=e^{T},k=1,2,\cdots,N$ 
+
+ (12) 
+
+ $\displaystyle Xe$ 
+ $\displaystyle=e,k=1,2,\cdots,N$ 
+
+ (13) 
+
+ $\displaystyle x_{1}$ 
+ $\displaystyle=x_{s}$ 
+
+ (14) 
+
+ where Constraint ( 12 ) ensures that only one vertex is visited as the $k$ -th step $k=1,2,\cdots,N$ , and Constraint ( 13 ) ensures all selected vertices are unique and there is no repeated visit of any vertex.
+Finally, $x_{s}$ is a binary vector of length $N$ with only one component being $1$ corresponding to the start vertex $v_{s}$ , and Constraint ( 14 ) requires the first selected vertex must be the start vertex.
+The entire integer program is:
+
+ $\displaystyle\min_{x}$ 
+ $\displaystyle\;\;\xi(x)$ 
+
+ subject to 
+ $\displaystyle(\ref{cstr:layer})(\ref{cstr:unique})(\ref{cstr:init}),$ 
+
+ which is a nonlinear program due to the product terms.
+
+ V-B Transformed Formulation 
+
+ This naive formulation has a complicated objective function $\xi(x)$ with long product terms.
+We propose the following transformed method to simplify these terms using an idea similar to the one in Sec.  IV .
+We introduce a variable $q_{k}$ to denote the probability of not finding a target at any vertex among the first $k$ vertices along the path.
+
+ $\displaystyle q_{k}=\prod_{j=1}^{k}(1-p^{T}x_{j})$ 
+
+ (15) 
+
+ With $q_{k}$ , the expected path cost can be transformed into:
+
+ $\displaystyle\xi(x)=q_{1}x_{1}^{T}Cx_{2}+q_{2}x_{2}^{T}Cx_{3}+\dots+q_{N-1}x_{N-1}^{T}Cx_{N}$ 
+
+ $\displaystyle=\sum_{i=1}^{N-1}q_{i}x_{i}^{T}Cx_{i+1}$ 
+
+ (16) 
+
+ The constraints for this new formulation remain the same as those defined for the naive formulation (i.e., Constraints( 12 ), ( 13 ), and ( 14 )).
+The program is still nonlinear.
+
+ VI Systems and Applications 
+
+ To apply our RPT* and F-RPT* in real-world target search applications, we propose the Hierarchical planning system for Autonomous Target Search (HATS), which uses HPP-PT to iteratively plan paths for the robot and integrates perception, mapping and other modules for real robot deployment.
+We showcase the use of HATS framework in two distinct application scenarios.
+
+ Section VI-B details HATS-L for lifelong target search with unrealiable sensors in known environments, which combines the Bayesian estimation approach  [ 54 ] to iteratively improve the belief about where the target object is during navigation.
+Specifically, a prior map about the environment is known and an initial target probability distribution is available. 1 1 
+ 1 
+
+ A uniform distribution is used when no clue where the target might be. 
+The robot is equipped with a noisy sensor that is subject to false positive and false negative detection and is described by a probabilistic sensor model.
+As a result, HATS needs to iteratively generate new HPP-PT instances with the updated probability every time after a sensor detection, and calls RPT* to re-plan the path.
+
+ Section VI-C describes HATS-U for integrated exploration and target search in unknown environments, where the robot needs to simultaneously explore an unknown environment and search for a target, terminating when the target is found.
+Specifically, when no prior map is available, the robot has to autonomously explore the environment to incrementally build a map using SLAM algorithms while searching for the target.
+
+ VI-A HATS System Overview 
+
+ HATS is a hierarchical and cascaded system (Fig. 5 ) consists of four modules: (i) Perception, (ii) Mapping, (iii) Global Planning, and (iv) Local Planning.
+
+ Fig. 5: The architecture and workflow of the Hierarchical planning system for Autonomous Target Search (HATS).
+HATS iteratively runs the workflow that begins by collecting sensory data and eventually outputs waypoints for execution.
+The two variants HATS-L and HATS-U differ in their global planning. 
+
+ VI-A 1 Perception
+
+ The Perception module provides sensory data for target detection and for the subsequent Mapping module.
+We use a LiDAR and a camera as the primary sensors on the robot.
+The LiDAR provides real-time point cloud data for mapping, localization, and navigation, while the camera captures images within a fixed Field Of View (FOV) for target detection. For the robustness of SLAM, the system may integrate attitude data from an Inertial Measurement Unit (IMU), which is optional for the perception module.
+
+ The Perception module continuously executes onboard target detection and verification using real-time image data from the camera.
+In HATS-L, the perception module constantly updates the likelihood of finding a target at each location after each detection.
+In HATS-U, this constant monitoring has an interruption mechanism: when the confidence score of the detected target exceeds a predefined detection threshold, the robot immediately stops its motion and claims success for the target search task.
+Conversely, if the threshold is not met, the robot proceeds with the planned path segment, continuing its detection and movement towards the next waypoint.
+
+ VI-A 2 Mapping
+
+ This module processes LiDAR point cloud data to generate both state estimations and map representations for downstream planning modules.
+It runs a SLAM algorithm which produces both a point cloud map of the surrounding environment and an SE(2) pose estimate by using LiDAR (and IMU) data.
+We adopt LIO-mapping  [ 55 ] as the underlying SLAM algorithm, and other SLAM methods can also be applied within HATS.
+
+ We employ SLAM to construct an occupancy grid map from point clouds where each cell is marked as one of the following three labels: “unknown”, “occupied” or “free”, and “occupied” and “free” both belong to the category of “known”, indicating whether the cell is occupied by an obstacle or not.
+With the help of SLAM, we update the occupancy grid by projecting sensor measurements into the map’s coordinate frame and updating each cell’s label through ray tracing.
+To handle point cloud noise, the occupancy status of each cell is determined by evaluating the density or ratio of points contained within its volume in a similar way as in  [ 56 ] .
+
+ This occupancy grid is the input to the subsequent Global Planning module.
+As the robot explores, the occupancy grid grows incrementally until a target is found or the environment is fully explored without finding any target.
+
+ VI-A 3 Global Planning
+
+ This module generates a graph based on the occupancy grid map
+and computes the probability of each vertex in the graph to formulate a HPP-PT problem, which is then solved to plan a global path $\pi$ for the robot.
+Each vertex in this path $\pi$ corresponds to a SE(2) pose in the environment, which will be a goal pose for the subsequent local planning.
+In other words, this global path determines the visiting order of goal poses in the environment.
+
+ The Global Planning module in HATS-L and HATS-U differs (Fig.  5 ).
+
+ • 
+
+ In HATS-L, an environment occupancy grid is built in advance.
+A fixed graph $G$ embedded in the grid is provided, as well as the probability distribution of the vertices, which are used to formulate the HPP-PT problem.
+Every time the robot reaches a vertex, based on the sensor reading, the probability of that vertex is updated using the Bayesian rule (Sec.  VI-B ) and a new HPP-PT is generated and solved to determine the next goal pose of the robot.
+
+ • 
+
+ In HATS-U, the environment is unknown, and the robot has to incrementally build a point cloud map using a SLAM algorithm, and generate the corresponding occupancy grid during navigation.
+Based on the grid, the frontier points from the boundary between known and unknown spaces are extracted.
+Then, as elaborated in Sec.  VI-C , these frontiers are used to compute the probability distribution and then clustered to generate a graph $G$ , which then leads to an HPP-PT problem. Solving this problem yields the goal pose for the subsequent module.
+
+ VI-A 4 Local Planning
+
+ While the Global Planning determines the sequence of goal poses $(x,y,\theta)$ to be visited, the Local Planning is responsible for both (i) planning the detailed geometric path to connect those goal poses and (ii) generating control command to follow the geometric path.
+Here, we use A*-based search in the occupancy grid to plan the geometric path to connect the goal poses from the global planning, and we use the Dynamic Window Approach  [ 57 ] for local path following, which allows avoiding unexpected dynamic obstacles (such as pedestrians) in a local and reactive fashion.
+
+ VI-B Lifelong Target Search with Bayesian Update 
+
+ For lifelong search with noisy sensors, as Fig. 5 shows, HATS-L employs a Bayesian filter [ 54 ] for probabilistic map update.
+We first introduce the general form of the Bayesian filter and demonstrate its specific application within our experiment.
+Let $b_{t}(v)\in[0,1)$ denote the estimated probability values of vertex $v\in V$ in the graph $G$ at time step $t$ , which is the probability of the target object being at $v$ (i.e., $b_{t}(v)=b_{t}(\text{object is at }v)$ ).
+Let $\overline{b}_{t}(v)$ denote the corresponding prior belief at time $t$ before incorporating the sensor measurement. Furthermore, let $u_{t}$ and $z_{t}$ denote the control input and measurement at time $t$ , respectively. In our experiment, $u_{t}$ represents the robot’s transition between vertices, which is an edge in the graph traversed by the robot.
+The belief refinement process involves two steps:
+
+ VI-B 1 Prediction Step
+
+ As formulated in Eq. ( 17 ), the prior belief $\bar{b}_{t}(v)$ is computed by incorporating the control input $u_{t}$ using the discrete Chapman-Kolmogorov equation [ 54 ] :
+
+ $\bar{b}_{t}(v)=\sum_{v^{\prime}\in V}p(v\mid u_{t},v^{\prime})\cdot b_{t-1}(v^{\prime}),\forall v\in G.$ 
+
+ (17) 
+
+ Here, $p(v\mid u_{t},v^{\prime})$ denotes the transition probability for the target object to move from $v^{\prime}$ to $v$ when the robot takes control $u_{t}$ .
+Since the target object is static in our setting, the transition probability has a simple form:
+
+ $\displaystyle p(v\mid u_{t},v^{\prime})=1,\text{if }v=v^{\prime}$ 
+
+ $\displaystyle p(v\mid u_{t},v^{\prime})=0,\text{otherwise, i.e., }v\neq v^{\prime},$ 
+
+ (18) 
+
+ regardless of the control $u_{t}$ taken by the robot. 2 2 
+ 2 
+
+ A possible future work is to consider more complicated transition probability and extend our HATS to find dynamic target objects. 
+Consequently, the prediction step has no effect on the belief, and the prior belief at time $t$ is the same as the posterior belief from the previous time step $t-1$ :
+
+ $\overline{b}_{t}(v)={b}_{t-1}(v),\forall v\in G.$ 
+
+ (19) 
+
+ VI-B 2 Update Step
+
+ The posterior belief $b_{t}(v)$ corrects the prior $\overline{b}_{t}(v)$ with the current measurement $z_{t}$ via Bayes rule, when the robot reaches vertex $v$ after taking the control $u_{t}$ :
+
+ $b_{t}(v)=\eta p(z_{t}\mid v)\cdot\bar{b}_{t}(v).$ 
+
+ (20) 
+
+ Here, $p(z_{t}\mid v)$ denotes the observation model, and $\eta$ is the normalization factor so that the posterior belief sums to one.
+Specifically, the sensor measurement $z_{t}\in\{0,1\}$ is binary and tells whether the target object is found ( $z_{t}=1$ ) or not ( $z_{t}=0$ ).
+Let $\neg v$ denote that the target object is not at $v$ , then the observation model is
+
+ $\displaystyle p(z_{t}=1\mid v)=\alpha_{1},$ 
+ $\displaystyle\forall v\in G$ 
+
+ (21) 
+
+ $\displaystyle p(z_{t}=0\mid v)=1-\alpha_{1},$ 
+ $\displaystyle\forall v\in G$ 
+
+ (22) 
+
+ $\displaystyle p(z_{t}=1\mid\neg v)=\alpha_{2},$ 
+ $\displaystyle\forall v\in G$ 
+
+ (23) 
+
+ $\displaystyle p(z_{t}=0\mid\neg v)=1-\alpha_{2},$ 
+ $\displaystyle\forall v\in G,$ 
+
+ (24) 
+
+ where $\alpha_{1},\alpha_{2}\in[0,1]$ are real numbers indicating the true positive rate and false positive rate of the sensor, and the normalization factor is:
+
+ $\eta=\frac{1}{P(z_{t}\mid v)\bar{b}_{t}(v)+P(z_{t}\mid\neg v)(1-\bar{b}_{t}(v))}.$ 
+
+ (25) 
+
+ This observation model indicates the likelihood for the sensor to return $0$ (or $1$ ) at any vertex $v\in G$ given that the object is at $v$ (or not at $v$ ).
+After the update step, $b_{t}(v)$ denotes the probability of the target object being at $v$ , i.e., $b_{t}(v)=b_{t}(\text{object is at }v)$ .
+
+ Remark 5 . 
+
+ If there is only one target, the update step (Eq.  20 ) needs to update the probability of all vertices. Intuitively, detecting the target object at one vertex $v$ will increase the probability value at $v$ while lowering the probability value at other vertices $u\neq v,u\in G$ .
+In our setting, we do not consider the case with only one target.
+As a result, the update step (Eq.  20 ) only needs to be applied to the vertex $v$ that is reached by the robot after taking control $u_{t}$ . 
+
+ VI-C Target Search in Unknown Environments 
+
+ As shown in Fig.  5 , HATS-U dynamically constructs the graph $G$ and updates probability distributions via the following three steps:
+
+ VI-C 1 Frontier Identification
+
+ Based on the occupancy grid built by the Mapping module (Sec.  VI-A2 ), HATS-U extracts frontiers, i.e., the boundary cells between unknown and free cells.
+Note that the boundary cells between unknown and occupied cells are ignored since occupied space are obstacles and cannot be accessed by the robot.
+
+ VI-C 2 Probability Assignment
+
+ Fig. 6: An example of probability assignment. (a) Occupancy grid. (b)-(d) Three factors of information gain: $\phi_{u}(x),\phi_{g}(x),\phi_{o}(x)$ 
+
+ HATS-U then prioritizes these frontier cells by computing the “information gain” for each of them using a weighted average of three factors.
+As depicted in Fig. 6 , these three factors are: the density of unknown space $\phi_{u}$ , the geometric visibility $\phi_{g}$ , and prior knowledge of object locations $\phi_{o}$ (o for object), and the final probability is:
+
+ $\displaystyle p(x)=w_{u}\phi_{u}(x)+w_{g}\phi_{g}(x)+w_{o}\phi_{o}(x),$ 
+
+ (26) 
+
+ where $w_{u},w_{g},w_{o}$ are non-negative weighting factors so that $p(x)$ is within range $[0,1]$ .
+Specifically:
+
+ • 
+
+ The density of unknown space $\phi_{u}(x)$ quantifies the ratio of unknown cells to the total number of cells in a neighborhood around a frontier cell $x$ . For example, we use a square neighborhood of fixed size centered on $x$ in our experiments (Fig.  6 (b)).
+
+ • 
+
+ For any cell $x$ in the occupancy grid, the geometric visibility $\phi_{g}(x)$ describes the amount of unknown cells that are visible from $x$ after considering the occlusion by static obstacles.
+As Fig.  6 (c) shows, let $\theta_{FOV}$ denote the sensor’s Field Of View (FOV), and let $\theta_{V}$ denote the total angle of the visible unknown space from $x$ (that are not blocked by obstacles), which can be computed by ray casting. Then, $\phi_{g}(x)$ is the ratio of $\theta_{V}$ over $\theta_{FOV}$ , within a range between 0 and 1.
+As the robot moves, we compute the $\theta_{V}$ based on the robot’s current pose.
+
+ • 
+
+ The prior knowledge $\phi_{o}$ is a potential field over the entire workspace, and the value $\phi_{o}(x)$ for any cell $x$ in the occupancy grid describes the likelihood for the object to be at $x$ .
+As shown in Fig.  6 (d), we use a mixture of Gaussians to describe the prior knowledge of object locations.
+Let $X_{o}$ denote a set of possible object locations. In other words, for each location $x_{k}\in X_{o}$ , $p_{k}(x)\sim\mathcal{N}(\mu_{k},\sigma_{k})$ denotes a Gaussian with mean value $\mu_{k}=x_{k}$ and a covariance matrix $\sigma_{k}$ describing the uncertainty, where $p_{k}(x)$ is the probability value of any cell $x$ in the workspace based on that Gaussian.
+Then, $\phi_{o}(x)=\max_{x_{k}\in X_{o}}p_{k}(x)$ is equal to the maximum probability value among these Gaussians.
+
+ VI-C 3 Goal Clustering
+
+ It is possible to have a lot of frontier cells near each other during the target search.
+We use a weighted Mean Shift  [ 58 ] algorithm to cluster these frontiers.
+In our work, the standard algorithm is modified to prioritize regions of high target probability.
+Specifically, let $\hat{c}(x)$ denote the cluster center for each frontier cell $x$ , with its initial value set to the coordinates of $x$ itself. Then, for a given neighborhood $N$ of $\hat{c}(x)$ , a new cluster center $\hat{c}_{new}(x)$ is calculated as the weighted mean of the neighboring coordinates $x_{i}\in N$ :
+
+ $\displaystyle\hat{c}_{new}(x)=\frac{\sum_{i\in N}x_{i}\cdot\omega_{i}}{\sum_{i\in N}\omega_{i}},$ 
+
+ (27) 
+
+ where the weighting coefficient, $\omega_{i}$ , accounts for both the probability value and spatial proximity of the frontier cell:
+
+ $\displaystyle\omega_{i}=p(x)\cdot\exp\left(-\frac{\left|\hat{c}-x_{i}\right|^{2}}{2\delta^{2}}\right).$ 
+
+ (28) 
+
+ The clustering process continues iteratively until convergence, which is determined by a stopping condition. Specifically, the update of the cluster center $\hat{c}_{new}(x)$ is considered complete when the change between successive cluster centers is below a predefined threshold $\delta_{c}$ :
+
+ $\displaystyle|\hat{c}_{new}(x)-\hat{c}(x)| 
+
+ (29) 
+
+ After convergence, a post-processing merging step is applied. It merges cluster centers that are the same or within a defined distance threshold $\delta_{dist}$ , which reduces the final dimension of the graph $G$ .
+
+ VII Experimental Results 
+
+ Our experiments include evaluation of both algorithms for HPP-PT and systems for target search.
+
+ • 
+
+ To evaluate our algorithms (Sec.  IV ), we tested the proposed RPT* algorithm against the Integer Program from Sec.  V and conducted an ablation study of RPT* to understand the impact of heuristic and focal search. Finally, we compared our approach with several baseline methods in terms of the runtime and solution quality.
+
+ • 
+
+ To evaluate our HATS systems (Sec.  VI ), we compared both HATS-L and HATS-U against several baselines in both simulations in Gazebo and real robot experiments.
+
+ As shown in Fig.  7 , we used two types of datasets including (i) a public dataset of city-like networks from TSPLIB [ 3 ] , a popular library for TSP-related problems, and (ii) a synthetic dataset.
+The synthetic dataset consists of graphs with varying number of vertices that are randomly sampled from a 2D plane. The sampling area is set to a $500\times 500$ region for small graphs ( $|V|\leq 40$ ) and expanded to $5000\times 5000$ for larger instances ( $|V|>40$ ). In all cases, the distance between any two vertices must exceed 5.
+All methods were implemented in C++ and run on a laptop with an Intel Core i7-10875H 2.30 GHz CPU and 16 GB of RAM.
+
+ Fig. 7: Two types of datasets for experiment. (a) is the att48 instance from public TSPLIB dataset: 48 U.S. capital cities. (b) is a an example of the synthetic dataset: a randomly generated graph with 10 vertices.
+
+ VII-A RPT* vs Integer Program (IP) 
+
+ VII-A 1 Test Settings
+
+ In Sec.  V , we presented two IP formulations for the HPP-PT: the naive formulation (IP) and the transformed formulation( $\text{IP}_{tf}$ ).
+Here, we tested five instances from the public TSPLIB dataset  [ 3 ] of varying graph sizes: gr17, gr21, gr24, fri26 and bayes29, where the number of vertices $N$ are 17, 21, 24, 26 and 29 respectively.
+We used Gurobi  [ 59 ] as the solver for IP.
+
+ Fig. 8: Average runtime comparison of IP and PRT* over five runs
+
+ VII-A 2 Runtime
+
+ As shown in Fig.  8 , the naive IP formulation requires hundreds of seconds, while the transformed IP formulation requires a few seconds, which is obviously smaller.
+Furthermore, our RPT* requires several milliseconds, about three orders of magnitude faster than the transformed IP formulation.
+
+ VII-A 3 Solution Quality
+
+ Besides, we observe that both IP formulations often suffer from numerical errors of floating numbers and result in errors in the returned optimal solutions.
+As shown in Table  I , the IP formulations often find slightly more expensive solutions than RPT* although the solver claims to solve the problem to optimality (when we configured the optimality gap to be zero).
+Recall that, in HPP-PT, due to the accumulated probability and products of floating numbers, such small errors can lead to big differences in the resulting solution paths.
+
+ For the rest of the experiments, we only compare our RPT* against other approaches while omitting IP methods due to their large runtime and numerical errors.
+
+ TABLE I: IP vs. RPT* solution cost comparison
+
+ Instance 
+ IP Cost 
+ RPT* Cost 
+ RPT* Savings (vs. IP) 
+
+ gr17 
+ 16.1545 
+ 16.1473 
+ 0.045% 
+
+ gr21 
+ 13.9029 
+ 13.9024 
+ 0.004% 
+
+ gr24 
+ 9.4408 
+ 9.4400 
+ 0.008% 
+
+ fri26 
+ 13.2027 
+ 13.1946 
+ 0.061% 
+
+ bays29 
+ 12.9606 
+ 12.9526 
+ 0.062% 
+
+ VII-B Ablation Study of RPT* and F-RPT* 
+
+ This section presents the impact of the heuristic and focal search on RPT*.
+We ran tests on our randomly generated dataset. For each fixed number of vertices $N$ , 20 instances were generated.
+
+ VII-B 1 Impact of Heuristic
+
+ We first set the $h$ -value to $0$ (denoted as $\text{RPT* }_{noh}$ ) which is used as an uninformed baseline, and then compared its performance against the full algorithm (RPT*) with the heuristic as described in Sec.  IV-C .
+We compared their runtime and success rates within a time limit of 60 seconds per instance.
+Fig.  9 (a) illustrates the runtime efficiency.
+Specifically, it is observed that the heuristic saves approximately 50% to 70% runtime compared to the uninformed baseline.
+Besides, as shown in Fig.  9 (b), the heuristic function slightly improved the search success rate (when the number of vertices is 40) within the runtime limit.
+
+ Fig. 9: Impact of heuristic functions. (a) Runtime comparison. (b) Success rates comparison. For graphs with up to 40 vertices, both methods have almost the same success rates, while heuristic helps save 50%-70% runtime than the uninformed RPT*.
+
+ VII-B 2 Runtime of F-RPT*
+
+ RPT* solves the problem to optimality, but can only handle graphs with around 40 vertices as we observed in the results.
+In contrast, F-RPT* can handle much larger graphs.
+As shown in Fig.  10 (a), we assessed F-RPT* with graphs of 10 to 200 vertices with a step size of 10, with 5 instances generated for each size.
+The runtime of F-RPT* slightly increases as the number of vertices increases.
+To summarize, F-RPT* can handle graphs with up to about 200 vertices within a runtime limit of 60 seconds.
+
+ VII-B 3 Varying $\epsilon$ of F-RPT*
+
+ Fig. 10: Impact of focal search. (a) Runtime and success rates of F-RPT* ( $\epsilon=0.01$ ). (b) Comparison of different $\epsilon$ . Focal search helps RPT* to solve problems with up to 200 vertices. A small $\epsilon$ can speed up the search and further increasing $\epsilon$ does not provide much additional reduction in the runtime.
+
+ We then tested F-RPT* with varying $\epsilon\in\{0.001,0.01,0.1,0.2\}$ .
+As shown in Fig.  10 (b), varying $\epsilon$ does not affect the runtime very much.
+The reason is that even if using a small epsilon (such as $\epsilon=0.01$ ), there can be many states that enter the focal list, which can speed up the search.
+
+ VII-C Comparison Against Baselines 
+
+ Here, we tested our RPT* against two baselines in the synthetic dataset with up to 40 vertices.
+For each graph size, 20 instances were generated.
+
+ VII-C 1 Baselines
+
+ The first baseline uses a greedy strategy to solve HPP-PT by letting the robot always move to a vertex $v$ in the graph with the largest probability value $p(v)$ among the unvisited vertices.
+We refer to this baseline as Greedy.
+
+ The second baseline ignores the probability by treating the probability of all vertices simply as one.
+As a result, HPP-PT becomes a regular HPP and we use a popular solver LKH  [ 15 ] to solve the resulting HPP. 3 3 
+ 3 
+
+ LKH solves a TSP problem. An HPP can be converted to a TSP by making a copy $v_{s}^{\prime}$ of the start vertex $v_{s}$ and adding a zero-cost edge between $v_{s}^{\prime}$ and all other vertices. After obtaining the solution tour from LKH, one can remove $v_{s}^{\prime}$ to obtain a solution to HPP. 
+We refer to this baseline as LKH.
+
+ VII-C 2 Runtime and Solution Cost
+
+ As depicted in Fig.  11 , while Greedy runs orders of magnitude faster than our RPT*, its solution cost often doubles or triples the optimal cost returned by RPT* (Fig.  11 (a)).
+Similarly, LKH is faster than RPT* but finds solutions that are 50-80% more expensive than the optimal solution found by RPT*.
+The next subsection evaluates how such a gain in solution quality affects the robot’s performance in target search.
+
+ Fig. 11: Comparison against baselines. (a) Solution cost comparison. (b) Runtime comparison. In both (a) and (b), dashed lines correspond to the baselines while solid lines are our approaches. Our RPT* and F-RPT* runs slower than the baseline but find better quality solutions.
+
+ VII-D Lifelong Target Search with Bayesian Update 
+
+ Fig. 12: Experimental setup for lifelong target search. (a) The $80\times 80$  m simulation environment and robot model in Gazebo. (b) Pre-constructed map with possible target locations, where the three orange locations contain targets and the blue locations contain no target. The size of the blue or orange circle indicate the sampled probability values at each location. Larger probability corresponds to larger circle.
+
+ We tested HATS-L in a $80\times 80$ meter simulated environment in Gazebo with 13 possible target locations (vertices) while 3 of them indeed contain a target (Fig.  12 ).
+We pre-constructed a graph where edge weights are set as the path length returned by A* search between each pair of target locations in an occupancy grid.
+The initial probability distribution of all vertices is randomly sampled and the same for all planners to be compared.
+
+ We used the parameters $\alpha_{1}=0.8,\alpha_{2}=0.4$ for the sensor observation model as described in Sec.  VI-B .
+We used the following termination condition for this “lifelong” test: a location is confirmed as “target-present” if its probability exceeds $p_{H}=0.98$ , or “target-absent” if it falls below $p_{L}=0.15$ .
+Upon reaching either threshold, the vertex is removed from the search graph, and the search process terminates when the graph is reduced to a single vertex.
+We use “mission duration” to denote the total runtime until the robot stops.
+
+ We compared our RPT* against the aforementioned Greedy and LKH baselines.
+The mission durations for RPT*, Greedy and LKH are 1h29min, 2h7min, and 1h15min, respectively.
+LKH achieves the smallest mission duration for the following reasons.
+Note that, in this test, for any planner, it takes the same (and fixed) amount of visit to remove a vertex by claiming it as either target-present or target-absent.
+LKH tends to minimize the traveled distance which therefore leads to shorter mission duration.
+
+ Besides, we observe that, for the same amount of time, our RPT* can narrow down the possible locations of targets faster.
+Fig.  13 shows the probability distribution (i.e., the likelihood for a target locating at each vertex) after 30 minutes for all three planners, and the probability distribution computed by RPT* clearly indicates that vertices $2,5$ contain a target which matches the truth, and two of those three targets are already claimed as target-present.
+In contrast, the probability distribution computed by the LKH and Greedy baselines has no clear indication.
+For example, LKH still has many vertices with high probabilities while Greedy has many vertices with low probabilities.
+
+ Fig. 13: Snapshots of graph with probability distribution for different algorithms after running $t=30$ minutes. Vertices $2,5,9$ indeed contain a target which are marked orange in the bar plot. After 30 minutes, the probability distribution computed by RPT* clearly indicates that vertices $2,5$ contain a target which matches the truth, and two of those three targets are already claimed as target-present. The other two baseline methods still have no clear indication, where the greedy only claims one target, while LKH still has high probability at many other target-absent vertices.
+
+ VII-E Simulation of Target Search in Unknown Environments 
+
+ Fig. 14: Experimental setup for target search in unknown environments. (a) The $101\times 101$  m unknown forest environment in Gazebo. (b) Visualization of the search process.
+
+ As shown in Fig.  14 (a), we first evaluated the HATS-U system within a simulated unknown forest environment of size $101\times 101$  m, where the robot autonomously explores and searches for the target following the procedures detailed in Sec.  VI-C .
+In this experiment, we consider only one target, and prior knowledge of its location is provided as a Gaussian distribution via $\phi_{o}$ as mentioned in Sec.  VI-C .
+We designed two different settings: (i) a scenario with accurate prior knowledge, where the peak of $\phi_{o}$ coincides with the true target location; and (ii) a scenario with misleading prior knowledge, where the prior knowledge is a mixture of two Gaussians, with one peak matching the target location and the other being far away from the true target location.
+The exploration process terminates when the distance between the robot and the target is less than a threshold of $5$  m.
+We tested our RPT*, Greedy and LKH for comparison.
+
+ TABLE II: Runtime comparison (with accurate prior)
+
+ Method 
+ Trials ( $s$ ) 
+ Mean ( $s$ ) 
+ Var ( $s^{2}$ ) 
+
+ 1 
+ 2 
+ 3 
+
+ RPT* 
+ 108 
+ 108 
+ 109 
+ 108.33 
+ 0.33 
+
+ Greedy 
+ 87 
+ 86 
+ 85 
+ 86.00 
+ 1.00 
+
+ LKH 
+ 179 
+ 229 
+ 356 
+ 254.67 
+ 8326.33 
+
+ TABLE III: Runtime comparison (with misleading prior)
+
+ Method 
+ Trials ( $s$ ) 
+ Mean ( $s$ ) 
+ Var ( $s^{2}$ ) 
+
+ 1 
+ 2 
+ 3 
+
+ RPT* 
+ 114 
+ 114 
+ 113 
+ 113.67 
+ 0.33 
+
+ Greedy 
+ 333 
+ 254 
+ 264 
+ 283.67 
+ 1850.33 
+
+ LKH 
+ $>$ 500 
+ $>$ 500 
+ / 
+
+ As shown in Table  II , in the scenario with accurate prior knowledge, Greedy achieves the shortest completion time, which is expected since the greedy approach will directly drive the robot to the target location that is known by the prior knowledge.
+Greedy performs better than RPT*, and both methods are obviously faster than LKH.
+This shows the value of the prior knowledge in guiding the search process.
+However, when facing misleading priors (Table  III ), Greedy is easily misled by the incorrect information, resulting in substantially increased completion time. RPT*, on the other hand, yields the best performance in the presence of misleading prior knowledge.
+This experiment shows that, our RPT* can better balance between exploitation (move greedily towards high probability region like the Greedy baseline) and exploration (uniformly search all possible areas like the LKH baseline), and thus find target objects more quickly even in the presence of misleading prior knowledge.
+
+ VII-F Real-Robot Target Search in Unknown Environments 
+
+ We further validated the HATS-U system through deployment in real-world scenarios. To demonstrate the system’s robustness across different platforms, experiments were conducted in two distinct environments:
+
+ • 
+
+ Corridor Setting: A spacious corridor area of size $40\times 30$  m, whose point cloud map was shown in Fig.  15 . The target was a bag, and the mission was executed by a quadrupedal robot.
+
+ • 
+
+ Laboratory Setting: A $30\times 20$  m confined, cluttered laboratory environment, whose point cloud map is shown in Fig.  1 .
+The designated target was a trash bin, and the search task was executed by a wheeled mobile robot.
+
+ For perception, we employed the YOLO  [ 4 ] object detector. The model was trained on a custom dataset that was manually collected and annotated.
+
+ In both scenarios, the robot successfully completed the search tasks with completion times of 152 and 104 seconds, respectively. The search processes are visualized in Fig.  15 and Fig.  16 .
+These snapshots illustrate the real-time evolution of the occupancy grid and the corresponding camera views during the target search in the Corridor and Laboratory settings, respectively.
+Different from exploration which often uses a $360^{\circ}$ Field Of View (FOV) Lidar for mapping, our target search uses a camera with limited FOV.
+As a result, the robot has to swing left and right to find the target during its motion using the camera.
+
+ Additionally, the YOLO software we use can return a confidence score between $[0,1]$ for each object detection.
+We set the following termination condition during the real robot tests.
+The robot stops if, within a sliding time window of $2$ seconds, more than $60\%$ of the detections have confidence scores exceeding $0.6$ .
+By doing so, the robot can reliably detect the object in practice.
+Too small a threshold or too short a period may lead to false detection and terminate the robot motion earlier.
+On the flip side, YOLO may never detect the object and the robot may never terminate if we set too high a threshold or too long a period.
+More details can be found in our video attachment.
+
+ Fig. 15: Experiment of HATS-U in a corridor setting using a quadruped robot. (a) Panoramic view of the environment and the robot. (b) Snapshots of the occupancy grid and camera image during the search process.
+
+ Fig. 16: Snapshots of the occupancy grid and camera image during the target search process using the wheeled robot in a lab setting.
+
+ VIII Conclusion and Future Work 
+
+ In this paper, we introduced the Hamiltonian Path Problem with Probabilistic Terminals (HPP-PT), a new variant of the HPP motivated by autonomous robot target search task.
+To address the problem, we proposed several algorithms including Integer Programming, and heuristic search Routing with Probabilistic Terminals Star (RPT*) and its bounded sub-optimal version.
+Extensive tests on TSPLIB and synthetic datasets demonstrated that RPT* outperforms baseline methods.
+Furthermore, we integrated these algorithms into a system, Hierarchical Autonomous Target Search (HATS), capable of handling both lifelong search in known environments (HATS-L) and exploratory search in unknown environments (HATS-U).
+The system was validated through simulations and physical deployment on both wheeled and quadrupedal robots.
+Our RPT* planner is able to balance between exploitation and exploration during the target object search.
+
+ For future work, we plan to extend this research from single-robot to multi-robot.
+Besides, we can leverage semantic mapping techniques  [ 60 , 36 ] to extract probability of vertices based on semantic information.
+Finally, our RPT* has the potential to be extended to track moving targets by incorporating a probability transition model in the Bayesian filter framework when targets can move.
+
+ References
+
+ [1] 
+
+R. M. Karp, “Reducibility among combinatorial problems,” in 50 Years of Integer Programming 1958-2008: from the Early Years to the State-of-the-Art . Springer, 2009, pp. 219–241.
+
+ [2] 
+
+J. Pearl and J. H. Kim, “Studies in semi-admissible heuristics,” IEEE Transactions on Pattern Analysis and Machine Intelligence , vol. PAMI-4, no. 4, pp. 392–399, 1982.
+
+ [3] 
+
+G. Reinelt, “Tsplib—a traveling salesman problem library,” ORSA journal on computing , vol. 3, no. 4, pp. 376–384, 1991.
+
+ [4] 
+
+G. Jocher and J. Qiu, “Ultralytics yolo11,” 2024.
+
+ [5] 
+
+J. Monnot, “Approximation algorithms for the maximum hamiltonian path problem with specified endpoint (s),” European Journal of Operational Research , vol. 161, no. 3, pp. 721–735, 2005.
+
+ [6] 
+
+S. Yadlapalli, J. Bae, S. Rathinam, and S. Darbha, “Approximation algorithms for a heterogeneous multiple depot hamiltonian path problem,” in Proceedings of the 2011 American Control Conference , 2011, pp. 2789–2794.
+
+ [7] 
+
+V. Cacchiani, C. Contreras-Bolton, and P. Toth, “Models and algorithms for the traveling salesman problem with time-dependent service times,” European Journal of Operational Research , vol. 283, no. 3, pp. 825–843, 2020.
+
+ [8] 
+
+P. Hungerländer and C. Truden, “Efficient and easy-to-implement mixed-integer linear programs for the traveling salesperson problem with time windows,” Transportation research procedia , vol. 30, pp. 157–166, 2018.
+
+ [9] 
+
+B. Behdani and J. C. Smith, “An integer-programming-based approach to the close-enough traveling salesman problem,” INFORMS J. Comput. , vol. 26, pp. 415–432, 2014.
+
+ [10] 
+
+N. Christofides, “Worst-case analysis of a new heuristic for the travelling salesman problem,” in Operations Research Forum , vol. 3, no. 1. Springer, 2022, p. 20.
+
+ [11] 
+
+S. Yadlapalli, J. Bae, S. Rathinam, and S. Darbha, “Approximation algorithms for a heterogeneous multiple depot hamiltonian path problem,” in Proceedings of the 2011 American control conference . IEEE, 2011, pp. 2789–2794.
+
+ [12] 
+
+Y. Min, Y. Bai, and C. P. Gomes, “Unsupervised learning for solving the travelling salesman problem,” 2024.
+
+ [13] 
+
+Y. Wang, “The hybrid genetic algorithm with two local optimization strategies for traveling salesman problem,” Computers & Industrial Engineering , vol. 70, pp. 124–133, 2014.
+
+ [14] 
+
+A. Hussain, Y. S. Muhammad, M. Nauman Sajid, I. Hussain, A. Mohamd Shoukry, and S. Gani, “Genetic algorithm for traveling salesman problem with modified cycle crossover operator,” Computational intelligence and neuroscience , vol. 2017, no. 1, p. 7430125, 2017.
+
+ [15] 
+
+K. Helsgaun, “An effective implementation of the lin–kernighan traveling salesman heuristic,” European journal of operational research , vol. 126, no. 1, pp. 106–130, 2000.
+
+ [16] 
+
+A. Bar-Noy and B. Schieber, “The canadian traveller problem.” in SODA , vol. 91, 1991, pp. 261–270.
+
+ [17] 
+
+V. Aksakalli, O. F. Sahin, and I. Ari, “An ao* based exact algorithm for the canadian traveler problem,” INFORMS Journal on Computing , vol. 28, no. 1, pp. 96–111, 2016.
+
+ [18] 
+
+D. Bertsimas, “Probabilistic combinatorial optimization problems,” Ph.D. dissertation, Massachusetts Institute of Technology, 1988.
+
+ [19] 
+
+A. Toriello, W. B. Haskell, and M. Poremba, “A dynamic traveling salesman problem with stochastic arc costs,” Operations Research , vol. 62, no. 5, pp. 1107–1125, 2014.
+
+ [20] 
+
+P. Jaillet, “Probabilistic traveling salesman problems,” Ph.D. dissertation, Massachusetts Institute of Technology, 1985.
+
+ [21] 
+
+A. Santini, A. Viana, X. Klimentova, and J. P. Pedroso, “The probabilistic travelling salesman problem with crowdsourcing,” Computers & Operations Research , vol. 142, p. 105722, 2022.
+
+ [22] 
+
+M. Lyu, Y. Zhao, C. Huang, and H. Huang, “Unmanned aerial vehicles for search and rescue: A survey,” Remote Sensing , vol. 15, no. 13, p. 3266, 2023.
+
+ [23] 
+
+B. Bayat, N. Crasta, A. Crespi, A. M. Pascoal, and A. Ijspeert, “Environmental monitoring using autonomous vehicles: a survey of recent searching techniques,” Current Opinion in Biotechnology , vol. 45, pp. 76–84, 2017.
+
+ [24] 
+
+X. Lin, F. Gao, and W. Bian, “A high-effective swarm intelligence-based multi-robot cooperation method for target searching in unknown hazardous environments,” Expert Systems with Applications , vol. 262, p. 125609, 2025.
+
+ [25] 
+
+M. Dadgar, S. Jafari, and A. Hamzeh, “A pso-based multi-robot cooperation method for target searching in unknown environments,” Neurocomputing , vol. 177, pp. 62–74, 2016.
+
+ [26] 
+
+T. Ishida and R. E. Korf, “Moving target search.” in IJCAI , vol. 91, 1991, pp. 204–210.
+
+ [27] 
+
+M. Kumar and S. Mondal, “Recent developments on target tracking problems: A review,” Ocean Engineering , vol. 236, p. 109558, 2021.
+
+ [28] 
+
+J. K. Uhlmann, “Algorithms for multiple-target tracking,” American Scientist , vol. 80, no. 2, pp. 128–141, 1992.
+
+ [29] 
+
+L. M. Miller, Y. Silverman, M. A. MacIver, and T. D. Murphey, “Ergodic exploration of distributed information,” IEEE Transactions on Robotics , vol. 32, no. 1, pp. 36–52, 2015.
+
+ [30] 
+
+Z. Ren, A. K. Srinivasan, B. Vundurthy, I. Abraham, and H. Choset, “A pareto-optimal local optimization framework for multiobjective ergodic search,” IEEE Transactions on Robotics , vol. 39, no. 5, pp. 3452–3463, 2023.
+
+ [31] 
+
+S. S. Blackman, “Multiple hypothesis tracking for multiple target tracking,” IEEE Aerospace and Electronic Systems Magazine , vol. 19, no. 1, pp. 5–18, 2004.
+
+ [32] 
+
+G. Mathew and I. Mezić, “Metrics for ergodicity and design of ergodic dynamics for multi-agent systems,” Physica D: Nonlinear Phenomena , vol. 240, no. 4-5, pp. 432–442, 2011.
+
+ [33] 
+
+R. Ramrakhya, E. Undersander, D. Batra, and A. Das, “Habitat-web: Learning embodied object-search strategies from human demonstrations at scale,” in Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , 2022, pp. 5173–5183.
+
+ [34] 
+
+A. Aydemir, A. Pronobis, M. Göbelbecker, and P. Jensfelt, “Active visual object search in unknown environments using uncertain semantics,” IEEE Transactions on Robotics , vol. 29, no. 4, pp. 986–1002, 2013.
+
+ [35] 
+
+Q. Jia, H. Xu, X. Feng, H. Gu, and L. Gao, “Research on cooperative area search of multiple underwater robots based on the prediction of initial target information,” Ocean Engineering , vol. 172, pp. 660–670, 2019.
+
+ [36] 
+
+J. Crespo, J. C. Castillo, O. M. Mozos, and R. Barber, “Semantic information for robot navigation: A survey,” Applied Sciences , vol. 10, no. 2, 2020.
+
+ [37] 
+
+A. Chikhalikar, A. A. Ravankar, J. V. S. Luces, and Y. Hirata, “Semantic-based multi-object search optimization in service robots using probabilistic and contextual priors,” IEEE Access , 2024.
+
+ [38] 
+
+A. Pronobis and P. Jensfelt, “Large-scale semantic mapping and reasoning with heterogeneous modalities,” in 2012 IEEE international conference on robotics and automation . IEEE, 2012, pp. 3515–3522.
+
+ [39] 
+
+B. Yamauchi, “Frontier-based exploration using multiple robots,” in Proceedings of the second international conference on Autonomous agents , 1998, pp. 47–53.
+
+ [40] 
+
+T. Cieslewski, E. Kaufmann, and D. Scaramuzza, “Rapid exploration with multi-rotors: A frontier selection method for high speed flight,” in 2017 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS) . IEEE, 2017, pp. 2135–2142.
+
+ [41] 
+
+W. Tabib, M. Corah, N. Michael, and R. Whittaker, “Computationally efficient information-theoretic exploration of pits and caves,” in 2016 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS) . IEEE, 2016, pp. 3722–3727.
+
+ [42] 
+
+S. Bai, J. Wang, F. Chen, and B. Englot, “Information-theoretic exploration with bayesian optimization,” in 2016 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS) . IEEE, 2016, pp. 1816–1822.
+
+ [43] 
+
+C. Cao, H. Zhu, H. Choset, and J. Zhang, “Tare: A hierarchical framework for efficiently exploring complex 3d environments.” in Robotics: Science and Systems , vol. 5, 2021, p. 2.
+
+ [44] 
+
+C. Cao, H. Zhu, Z. Ren, H. Choset, and J. Zhang, “Representation granularity enables time-efficient autonomous exploration in large, complex worlds,” Science Robotics , vol. 8, no. 80, p. eadf0970, 2023.
+
+ [45] 
+
+A. Bircher, M. Kamel, K. Alexis, H. Oleynikova, and R. Siegwart, “Receding horizon” next-best-view” planner for 3d exploration,” in 2016 IEEE international conference on robotics and automation (ICRA) . IEEE, 2016, pp. 1462–1468.
+
+ [46] 
+
+B. Zhou, H. Xu, and S. Shen, “Racer: Rapid collaborative exploration with a decentralized multi-uav system,” IEEE Transactions on Robotics , vol. 39, no. 3, pp. 1816–1835, 2023.
+
+ [47] 
+
+P. E. Hart, N. J. Nilsson, and B. Raphael, “A formal basis for the heuristic determination of minimum cost paths,” IEEE Transactions on Systems Science and Cybernetics , vol. 4, no. 2, pp. 100–107, 1968.
+
+ [48] 
+
+C. Hernández, W. Yeoh, J. A. Baier, H. Zhang, L. Suazo, S. Koenig, and O. Salzman, “Simple and efficient bi-objective search algorithms via fast dominance checks,” Artificial Intelligence , vol. 314, p. 103807, 2023.
+
+ [49] 
+
+Z. Ren, C. Hernández, M. Likhachev, A. Felner, S. Koenig, O. Salzman, S. Rathinam, and H. Choset, “Emoa*: A framework for search-based multi-objective path planning,” Artificial Intelligence , vol. 339, p. 104260, 2025.
+
+ [50] 
+
+Z. Ren, R. Zhan, S. Rathinam, M. Likhachev, and H. Choset, “Enhanced multi-objective A* using balanced binary search trees,” in Proceedings of the International Symposium on Combinatorial Search , vol. 15, no. 1, 2022, pp. 162–170.
+
+ [51] 
+
+C. Cao, J. Xu, J. Zhang, H. Choset, and Z. Ren, “Heuristic search for the orienteering problem with time-varying reward,” in Proceedings of the International Symposium on Combinatorial Search , vol. 17, 2024, pp. 11–19.
+
+ [52] 
+
+S. Zhao, Y. Wu, and Z. Ren, “Bi-objective search for the traveling salesman problem with time windows and vacant penalties,” in Proceedings of the International Symposium on Combinatorial Search , vol. 18, no. 1, Jul. 2025, pp. 171–179.
+
+ [53] 
+
+J. Pearl and J. H. Kim, “Studies in semi-admissible heuristics,” IEEE transactions on pattern analysis and machine intelligence , no. 4, pp. 392–399, 1982.
+
+ [54] 
+
+S. Thrun, W. Burgard, and D. Fox, Probabilistic robotics , ser. Intelligent robotics and autonomous agents. Cambridge, Mass: MIT Press, 2005, oCLC: ocm58451645.
+
+ [55] 
+
+H. Ye, Y. Chen, and M. Liu, “Tightly coupled 3d lidar inertial odometry and mapping,” in 2019 IEEE International Conference on Robotics and Automation (ICRA) . IEEE, 2019.
+
+ [56] 
+
+A. Hornung, K. M. Wurm, M. Bennewitz, C. Stachniss, and W. Burgard, “Octomap: An efficient probabilistic 3d mapping framework based on octrees,” Autonomous robots , vol. 34, no. 3, pp. 189–206, 2013.
+
+ [57] 
+
+D. Fox, W. Burgard, and S. Thrun, “The dynamic window approach to collision avoidance,” IEEE robotics & automation magazine , vol. 4, no. 1, pp. 23–33, 2002.
+
+ [58] 
+
+D. Comaniciu and P. Meer, “Mean shift: A robust approach toward feature space analysis,” IEEE Transactions on Pattern Analysis and Machine Intelligence , vol. 24, no. 5, pp. 603–619, 2002.
+
+ [59] 
+
+Gurobi Optimization, LLC, “Gurobi Optimizer Reference Manual,” 2024.
+
+ [60] 
+
+M. F. Ginting, S.-K. Kim, D. D. Fan, M. Palieri, M. J. Kochenderfer, and A.-a. Agha-Mohammadi, “Seek: Semantic reasoning for object goal navigation in real world inspection tasks,” arXiv preprint arXiv:2405.09822 , 2024.
+
+ Experimental support, please
+ view the build logs 
+ for errors. Generated by
+
+ L
+ A 
+ T
+ E 
+
+ xml 
+
+ .
+
+ Instructions for reporting errors
+
+ We are continuing to improve HTML versions of papers, and your feedback helps enhance accessibility and mobile
+ support. To report errors in the HTML that will help us improve conversion and rendering, choose any of the
+ methods listed below:
+
+ Click the "Report Issue" ( ) button, located in the page header.
+
+ Tip: You can select the relevant text first, to include it in your report.
+
+ Our team has already identified the following issues . We appreciate your time reviewing and reporting rendering errors we
+ may not have found yet. Your efforts will help us improve the HTML versions for all readers, because disability
+ should not be a barrier to accessing research. Thank you for your continued support in championing open access for
+ all.
+
+ Have a free development cycle? Help support accessibility at arXiv! Our collaborators at LaTeXML maintain a list of packages that need conversion , and welcome developer contributions .
+
+ We gratefully acknowledge support from
+ our major funders ,
+ member institutions , ,
+ and all contributors.
+
+ About 
+ · 
+ Help 
+ · 
+ Contact 
+ · 
+ Subscribe 
+ · 
+ Copyright 
+ · 
+ Privacy 
+ · 
+ Accessibility 
+ · 
+ Operational Status (opens in new tab) 
+
+ Major funding support from

@@ -1,0 +1,926 @@
+SOURCE: https://arxiv.org/pdf/cs/0406045
+
+arXiv:cs/0406045v3  [cs.DS]  4 Mar 2005
+Online Searching with Turn Cost
+Erik D. Demaine
+Computer Science and Artiﬁcial Intelligence Laboratory
+MIT
+Cambridge MA, USA
+edemaine@mit.edu
+S´ andor P. Fekete
+Department of Mathematical Optimization
+Braunschweig University of Technology
+Braunschweig, Germany
+sandor.fekete@tu-bs.de
+Shmuel Gal
+Department of Statistics
+University of Haifa
+Haifa, Israel
+sgal@univ.haifa.ac.il
+Abstract
+We consider the problem of searching for an object on a line at an unknown distance OPT from
+the original position of the searcher, in the presence of a co st of d for each time the searcher changes
+direction. This is a generalization of the well-studied lin ear-search problem. We describe a strategy that
+is guaranteed to ﬁnd the object at a cost of at most 9 · OPT + 2 d, which has the optimal competitive
+ratio 9 with respect to OPT plus the minimum corresponding ad ditive term. Our argument for upper
+and lower bound uses an inﬁnite linear program, which we solv e by experimental solution of an inﬁnite
+series of approximating ﬁnite linear programs, estimating the limits, and solving the resulting recurrences
+for an explicit proof of optimality. We feel that this techni que is interesting in its own right and should
+help solve other searching problems. In particular, we cons ider the star search or cow-path problem with
+turn cost, where the hidden object is placed on one of m rays emanating from the original position of
+the searcher. For this problem we give a tight bound of
+(
+1 + 2 mm
+(m− 1)m− 1
+)
+OPT +m
+( (
+m
+m− 1
+) m− 1
+− 1
+)
+d.
+We also discuss tradeoﬀ between the corresponding coeﬃcien ts and we consider randomized strategies
+on the line.
+ACM Classiﬁcation: F.2.2 Nonnumerical Algorithms and Prob lems: Sorting and searching
+MSC Classiﬁcation: 91A05, 90C05
+Keywords: online problems, search games, linear-search problem, star searc h, cow-path problem, turn
+cost, competitive ratio, inﬁnite linear programs, randomized strat egies.
+1 Introduction
+1.1 Search games
+Searching for an object is one of the fundamental issues of every day life, and also one of the basic algorithmic
+problems that need to be mastered in the context of computing [26]. If the object is located in a bounded
+domain (say, in one of n discrete locations), then the worst-case complexity is obvious: In accordance with
+our everyday experience, an imaginary “hider” may have placed the object in the very last place where we
+look for it.
+More challenging is the scenario of searching in an unbounded domain. The classic prototype is the linear-
+search problem, which was ﬁrst proposed by Bellman [8] and, independently, by Beck [6]: An (immobile)
+object is located on the real line according to a known probability dist ribution. A searcher, whose maximum
+1
+velocity is one, starts from the origin O and wishes to discover the object in minimum expected time. It
+is assumed that the searcher can change the direction of her motio n without any loss of time. It is also
+assumed that the searcher cannot see the object until she actu ally reaches the point at which the object is
+located; the time elapsed until this moment is the cost function. Orig inally, the problem was presented in
+a Bayesian context, assuming that the location of the object is give n by a known probability distribution
+F , but what can we do if we do not know F ? This situation is quite common and a natural approach for
+dealing with it is to try to ﬁnd search trajectories that will be eﬀectiv e against all possible distributions.
+Can such “universal” trajectories be found?
+For this purpose, it is useful to consider a game between a “search er” S and a “hider” H. As the time
+necessary for the searcher to locate the object may be arbitrar ily high (as the object may be hidden far
+from the origin), a useful measure for the performance of a sear ch strategy is the competitive ratio: This
+is the supremum of the ratio between the time the searcher actually travels and the time she would have
+taken if she had known the hiding place. The competitive ratio is a stan dard notion in the context of online
+algorithms; see [14, 19] for recent overviews. As the supremum ha s to be taken over all possible events of a
+game (or all possible sequences of events in the case of an online pro blem), it is quite useful to imagine these
+events chosen by a powerful adversary, who knows the strateg y of the searcher. We will focus on a resulting
+primal-dual modeling further down.
+For the linear-search problem, the optimal competitive ratio is 9, as was ﬁrst shown by Beck and Newman
+[7]: The searcher should alternate between going to the right and to the left, at each iteration doubling her
+step size. By placing the object at one of the points just beyond a t urning point of the searcher, the hider
+can actually assure that this ratio of 9 is best possible.
+The linear-search problem has been rediscovered, re-solved, and generalized independently by a number
+of researchers. One such generalization is the star search (ﬁrst solved by Gal [16]), where the searcher has to
+locate the object on one of m rays emanating from the origin; thus, the linear-search problem is a special case
+for m = 2. See [4, 5] for a rediscovery and some extensions, as well as [25]. More recent results and references
+can be found in [29], which computes the optimal solution including lower -order terms as a function of the
+distance OPT to the object, which need not be known to the robot t o obtain optimal behavior including
+these terms.
+1.2 Geometric trajectories and turn cost
+One common feature of optimal trajectories for the linear-searc h problem and variants is that the step size
+is a geometric sequence. For the star search, the step size increa ses by a constant factor of m
+m−1 at each
+iteration, and the overall competitive factor works out to be
+(
+1 + 2 mm
+(m−1)m− 1
+)
+. Furthermore, it can be shown
+that under certain assumptions, any unbounded optimal search trajectory has to be a geometric sequ ence
+[15, 18]; see [2] for details and citations.
+While these geometric trajectories are quite elegant from a mathem atical point of view, there is a serious
+downside: As they “start” with an inﬁnite sequence of inﬁnitesimal s teps, they are neither practical, nor is
+the necessary time realistic. (See Figure 1.) So far, the issue of the inﬁnitesimal startup has been avoided,
+either implicitly or explicitly; e.g. [29] says “In order to avoid this proble m we assume that a lower bound of
+one for the distance to the target t is known.” It should be noted that [29, 23] have dealt with the “uppe r”
+part of the inﬁnite sequence by assuming that an upper bound on th e distance to the object is known in
+advance.
+In this paper, we study a clean and simple way to avoid the problems of geometric sequences without
+a ﬁrst step, by assuming a constant turn cost d for changing direction. This assumption is natural and
+realistic, as any reasonable scenario incurs some such cost for tur ning. We describe optimal trajectories for
+this scenario; as it turns out, they are generalizations of the optim al trajectories for the linear-search problem
+without turn cost, and have the same asymptotic behavior as d → 0. The only previous work we are aware
+of that mentions turn cost in the context of the linear-search pro blem is [27], which considers (Section 2.5,
+p.25f.) a kinetic model, where turning takes a certain amount of time f or braking and accelerating. It is
+shown that assuming a lower bound on OPT, a competitive ratio of 9 is s till best possible for large OPT.
+2
+line to be searched
+step number
+Figure 1: An optimal search trajectory for the linear-search pro blem: A geometric sequence without a ﬁrst
+step.
+(“Thus, as the braking time is of no relevance for large n, we know that the competitive ratio must be at
+least 9 as well.”) We go beyond this observation by cleanly quantifying t he impact of turn cost on the overall
+search cost, and doing away with the assumption of a lower bound on OPT.
+1.3 Other Related Work
+Linear search problems occur in various contexts. See [1] for a stu dy of rendezvous search on a line, where the
+objective of two players is to meet as fast as possible; this turns ou t to be a double linear-search problem. [24]
+studies randomized strategies for the star search (which is also kn own as the “cow-path problem”, motivated
+by a cow searching for the nearest pasture.) See [25] for more on t he star search, and [20] for parallel
+searching.
+Various types of search problems have been considered in a geomet ric (mostly two-dimensional) context.
+Here we only mention [9, 21, 28, 30], and the remarkable paper [22] th at shows that online searching in a
+simple polygon can be performed with a competitive ratio of not more t han 26.5. A very recent application
+in the context of robotics is described in [12, 13], where a robot has t o stop every time it takes a scan of its
+environment; just like in this paper, the overall objective is to minimiz e total time until the discovery of an
+object hidden behind a corner, and this time is the sum of travel time and a cost for special points. However,
+the resulting trajectories and mathematical tools turns out to be quite diﬀerent from what is presented here.
+A good overview on search games can be found in the book [17], and t he more recent book [2].
+Relatively little work has been done on geometric optimization problems with turn cost. The interested
+reader may ﬁnd some discussion in the paper [3].
+1.4 Duality for Linear Programming
+A standard tool for computing the values of two-player games is line ar programming. In fact, studying such
+games was one of the origins of linear programming: An optimal strat egy for one player can be interpreted
+as an optimal primal solution, while an optimal strategy for the seco nd player corresponds to an optimal
+dual solution. (The reader unfamiliar with the basics of linear progra mming may turn to [10] for a good
+introduction.)
+For ﬁnite games, the following results are well known (as weak duality and complementary slackness)
+and elementary to prove:
+3
+Proposition 1 (Weak duality , strong duality , complementar y slackness)
+Let A be a ﬁnite real matrix and let b, c be vectors of appropriate dimensions. Let max ctx, Ax ≤ b, x ≥ 0 be
+a primal linear program (P ), and let min bty, ytA ≥ c, y ≥ 0 be the corresponding dual linear program (D).
+Then weak duality holds: For any pair of feasible solutions, x′ for (P ) and y′ for (D), we have ctx′ ≤ bty′;
+if ctx′ = bty′ for any pair of feasible solutions, then x′ is optimal for (P ) and y′ is optimal for (D).
+Furthermore, strong duality holds: If (P ) is feasible and ﬁnitely solvable by x∗, then there exists a dual
+feasible solution y∗ with ctx∗ = bty∗.
+For any such pair of optimal solutions, complementary slackness holds: If a dual variable yj is positive,
+then the corresponding primal constraint must hold with equality; if a primal constraint does not hold with
+equality, then the corresponding dual variable must be zero. Conv ersely, any pair of solutions satisfying
+complementary slackness is optimal.
+The paper [23] also uses linear programs for the analysis of the cow- path problem; in particular, it uses
+these tools for analyzing the scenario where there is a known limit on t he distance to the object. Considering
+turn cost makes our problem diﬀerent; moreover, we use a diﬀeren t perspective of dealing with the issue of
+inﬁnitely many constraints by considering dual variables for establis hing a lower bound.
+1.5 Our Results
+Motivated by the linear-search problem with turn cost, we achieve a number of results.
+• We establish duality results for certain types of inﬁnite linear progra ms. As it turns out, this implies
+a veriﬁcation method for the optimality of strategies.
+• We show that the linear-search problem in the presence of turn cos t can be characterized by an inﬁnite
+linear program.
+• Using CPLEX, we perform a computational study on the sequence o f linear programs obtained by
+relaxing the inﬁnite linear program to a linear subproblem with a ﬁnite nu mber of constraints.
+• From the computational results, we derive an analytic proof of the optimal strategies of searcher and
+hider. As a consequence of duality, the resulting bounds are tight: an optimal strategy requires 9OPT+2 d,
+and the optimal search strategy has step size xi = d
+(
+2i − 1
+)
+/2.
+• We also consider how the results vary if we allow the competitive ratio t o increase at the beneﬁt of
+decreasing the additive term.
+• We generalize the above results to the scenario of star search by s howing that the searcher can guarantee
+ﬁnding a solution within time
+(
+1 + 2 mm
+(m − 1)m−1
+)
+OPT + m
+( ( m
+m − 1
+) m−1
+− 1
+)
+d
+by choosing the strategy
+xi = d
+( ( m
+m − 1
+) i+1
+− 1
+)
+/2.
+• We show that for randomized strategies for searching on the line in t he presence of turn cost, the same
+optimal competitive ratio q = 4.591121 . . . can be achieved as in the scenario without turn cost.
+The rest of this paper is organized as follows. In Section 2, we descr ibe basic results on inﬁnite linear
+programs. In Subsection 3.1 we discuss the start of the search an d show that the presence of turn cost always
+forces the existence of a ﬁrst step with step length bounded from below. In Subsection 3.2 we derive an inﬁnite
+linear program for the value of the game. Subsection 3.3 describes t he results of a computational study;
+a clean analysis, with a mathematical proof of optimality of the derive d strategies, is given in Section 3.4.
+Subsection 3.5 discusses the tradeoﬀ between the coeﬃcients of O PT and d. Section 4 describes the extension
+to star search. Section 5 gives a brief discussion on randomized str ategies on the line. Some concluding
+thoughts are presented in Section 6.
+4
+2 Inﬁnite Linear Programs
+At ﬁrst glance, linear programming and duality are not easily applicable to the search games described
+above, as the games are unbounded. However, we demonstrate t hat it makes sense to consider inﬁnite
+linear programs. As it turns out, we can still construct primal and dual solutions, a nd prove optimality by
+applying weak duality. For this purpose, we construct inﬁnite linear p rograms as the limit of increasingly
+large ﬁnite linear programs, obtained by successively adding variable s and constraints. In the limit, a solution
+is an inﬁnite sequence, instead of a ﬁnite vector; the scalar produc t of two vectors turns into the series of
+component products. When studying convergence, it helps to thin k of each solution vector of a ﬁnite linear
+program as a sequence that has zeroes for all unused variables.
+Deﬁnition 2 (Inﬁnite linear programs)
+Let c = (ci)i∈ /C6
+and b = (bj)j∈ /C6
+be sequences of real numbers, and let A = (aij)i,j∈ /C6
+be a doubly indexed se-
+quence of real numbers. Analogously, let x = (xi)i∈ /C6
+and y = (yj)j∈ /C6
+be sequences of real variables. Denote
+by c(k), b(k), x(k), y(k) the vectors (c1 . . . , ck), (b1 . . . , ck), (x1 . . . , xk), and (y1 . . . , yk), respectively, and by
+A(k) the matrix (aij)i,j∈{1,...,k}. Furthermore, we use the symbolic notation ctx :=∑ ∞
+i=1 cixi for the scalar
+product of two sequences. Let (P (k)) be the kth subprogram, given by max c(k)t
+x(k), A(k)x(k) ≤ b(k), x(k) ≥
+0, and denote by (D(k)) the corresponding kth dual linear program, given by min b(k)t
+y(k), y(k)t
+A(k) ≥
+c(k), y(k) ≥ 0. We say a sequence x = ( xi)i∈ /C6
+of nonnegative real numbers is a feasible solution for the
+inﬁnite linear program given by A, b, c, if, for all j ∈ /C6 , the constraint ∑ ∞
+i=1 aijxi ≤ bj holds; i.e., for all
+k ∈ /C6 , x(k) is feasible for (Pk). An inﬁnite linear program ( P ), denoted by max ctx, Ax ≤ b, x ≥ 0, is
+the problem of ﬁnding a feasible solution that maximizes ctx. A sequence y = ( yj)j∈ /C6
+of nonnegative real
+numbers is an inﬁnite dual solution , if for all i, ci ≤∑ ∞
+j=1 Aijyj < ∞.
+The following provides a way of establishing bounds for and optimality o f feasible solutions for inﬁnite
+linear programs.
+Theorem 3 (Weak duality for inﬁnite LPs)
+Let max ctx, Ax ≤ b, x ≥ 0 be a an inﬁnite linear program. Assume that the set I := {i ∈ /C6 | ci ⁄= 0 } is
+ﬁnite, and that for any i ∈ /C6 , all but ﬁnitely many aij have the same sign. Let x be a feasible solution for
+(P ), and let y be an inﬁnite dual solution. Then weak duality applies: ctx ≤ bty. Moreover, if ctx = bty,
+then x is optimal.
+Proof. By the above assumptions, we have
+ctx =
+∞∑
+i=1
+cixi =
+∑
+i∈I
+cixi.
+By assumption on y it follows from xi ≥ 0 that
+ctx ≤
+∑
+i∈I
+xi
+∞∑
+j=1
+aijyj =
+∑
+i∈I
+∞∑
+j=1
+xiaijyj ≤
+∞∑
+i=1
+∞∑
+j=1
+xiaijyj.
+For any i, only ﬁnitely many of the aij have a sign diﬀerent from the others, so the converging series∑ ∞
+j=1 xiaijyj is absolutely convergent. Furthermore, only ﬁnitely many ci can be negative, implying that all
+all but ﬁnitely many ∑ ∞
+j=1 aijyj are nonnegative. Thus, we may swap summations, getting
+ctx ≤ yt(Ax) =
+∞∑
+j=1
+∞∑
+i=1
+xiaijyj =
+∞∑
+i=1
+∞∑
+j=1
+xiaijyj = (ytA)x ≤
+∞∑
+j=1
+bjyj = bty,
+as claimed. ✷
+5
+The following motivates our approach to solving inﬁnite linear program s by considering the sequence
+of ﬁnite subproblems. Assuming convergence of the sequences of primal and dual solutions, we get strong
+duality:
+Theorem 4 (Strong duality for inﬁnite LPs)
+Let max ctx, Ax ≤ b, x ≥ 0 be a an inﬁnite linear program. Assume that the set I+ := {i ∈ /C6 | ci > 0 is
+ﬁnite. Let for all k ∈ /C6 , (P (k)) be feasible and bounded, and the sequence of primal optimal solutio ns be
+bounded; let x∗(k) be a sequence of corresponding primal optimal solutions. For the c orresponding sequence
+min bty(k), y(k)t
+A(k) ≥ c, y(k) ≥ 0 of dual linear programs (Dk), let y∗(k) be a sequence of dual optimal
+solutions. Suppose that as k tends to inﬁnity, x∗(k) converges componentwise to x∗ and y∗(k) converges
+componentwise to y∗. Then x∗ is an optimal solution for the inﬁnite linear program (P ). Moreover, strong
+duality holds, i.e., c∗tx∗ = b∗ty∗.
+Proof. We start by establishing primal feasibility of x∗: Suppose that inequality ( j) was violated by x∗,
+i.e.,∑ ∞
+i=1 aijxi > b j. As aiℓ = 0 for ℓ > j , the ﬁrst j components of x∗ involved in ( j) form a point that has
+a positive distance from the set {z ∈ /CA
+j |∑ j
+i=1 aijzi ≤ bj}. As for all k ≥ j, inequality ( j) is part of ( P (k)),
+it must be satisﬁed by x∗(k). This contradicts the fact that x∗(k) converges towards x∗.
+For k > max{i ∈ I+}, the sequence of objective values c(k)t
+x∗(k) is monotonically decreasing, as for
+k ≤ ℓ, the feasible set for ( P (ℓ)) is a subset of the feasible set for ( P (k)). As the sequence of objective values
+is bounded, lim k→∞ c(k)t
+x∗(k) exists. For any k, we have c(k)t
+x∗(k) = b(k)t
+y(k) by strong duality. Thus, we
+have
+ctx∗ = lim
+k→∞
+c(k)t
+x∗(k) = lim
+k→∞
+b(k)t
+y∗(k) = bty∗.
+By Theorem 3, this implies optimality of x∗. ✷
+Finally, complementary slackness holds; this will turn out to be a usef ul tool for determining dual
+variables, and thus for proving optimality.
+Theorem 5 (Complementary slackness for inﬁnite LPs)
+Let max ctx, Ax ≤ b, x ≥ 0 be a an inﬁnite linear program. Assume that the set I := {i ∈ /C6 | ci ⁄= 0 } is
+ﬁnite, and that for any i ∈ /C6 , all but ﬁnitely many aij have the same sign. Let x be a feasible solution for
+(P ), and y be an inﬁnite dual solution. Then x and y are optimal if and only if the following complementary
+slackness conditions hold:
+(a) For any i ∈ /C6 with∑ ∞
+j=1 yjaij > c i, xi = 0 holds.
+(b) For any i ∈ /C6 with xi > 0,∑ ∞
+j=1 yjaij = ci holds.
+(c) For any j ∈ /C6 with∑ ∞
+i=1 aijxi < b i, yj = 0 holds.
+(d) For any j ∈ /C6 with yj > 0,∑ ∞
+i=1 aijxi = bi holds.
+Proof. By assumptions, all involved series are absolutely convergent. Thu s we get ( ytA)x ≥ ctx ⇔
+(ytA − c)x ≥ 0, and ytb ≥ yt(Ax) ⇔ yt(b − Ax) ≥ 0. Now it is easy to check that ytb = ctx, iﬀ the stated
+conditions hold. ✷
+We believe that the above tools are useful and applicable in various ga me-theoretic scenarios, even when
+there is no clear idea of a possible optimal strategy. We demonstrat e the practical applicability by giving
+the results of a computational study performed with CPLEX [11], a c ommercially available software package
+for solving linear programs, and showing how these results enable us to give a tight (theoretical) analysis of
+the cost of an optimal search strategy in the presence of turn co st. It should be noted that in this paper, the
+numerical experiments are only a stepping stone towards ﬁnding op timal strategies: The idea is to identify
+closed-form limiting solutions; once those are found and veriﬁed by u sing duality, numerical accuracy is not
+6
+an issue. That means that the numerical results could be omitted wit hout impeding the proof of optimality
+of the resulting strategies. However, our approach should also pr ove useful for other problems, even if no
+optimal closed-form strategy can be deduced from solving ﬁnite su bsystems: In those cases, we can still give
+bounds on the possible performance of strategies. Only in those ca ses, issues of numerical stability come
+into play.
+3 Searching on the Line with Turn Cost
+3.1 The First Move and an Additive Term
+In the presence of a positive turn cost d, the hider can make it impossible for the searcher to achieve a
+competitive ratio, by simply placing the object arbitrarily close to the origin, on the side that is not picked
+ﬁrst by the searcher. Clearly, this requires a minimum cost of d, regardless of OPT. Moreover, the searcher
+will be forced to make a second turn if she starts with a too small (or inﬁnitesimal) ﬁrst step. This increases
+the minimum cost.
+We show that the optimal competitive ratio, c, remains the same even if we add turn cost. Thus, the
+worst-case time to reach the target is c·OPT plus some additive term, denoted B, that we wish to minimize.
+Determining the minimum value of B is one of the main objectives of this paper.
+It is clear that even in the presence of a ﬁxed additive term, the sea rcher will not be able to achieve
+any competitive ratio at all if she uses a large number of steps befor e ﬁrst reaching a distance of d from the
+origin. In particular, it can easily be seen that she is forced to make a ﬁrst step of length x1 = Ω( d). We
+will use this observation in the following subsections for a more caref ul analysis.
+3.2 An Inﬁnite Linear Program
+Suppose that the searcher carries out a sequence of step length s x1, x2, . . . from the origin, where x1, x3, . . .
+are increasing distances to the right, while x2, x4, . . . are increasing distances to the left. In the following,
+we denote these turn positions by pi = (−1)i+1xi.
+For a given sequence of step lengths xi, the hider can choose the possible set of locations yi = (−1)i+1(xi +
+ε) for an arbitrarily small ε. If the object is placed at yn, the searcher will only encounter it after traveling a
+distance of (∑ n+1
+i=1 2xi) + xn + ε, and making n + 1 turns. Note that for arbitrarily small d, this approaches
+the linear-search problem, with a competitive ratio of 9. In order to guarantee this competitive ratio, and
+an additive cost of B, the corresponding search trajectories satisfy
+2x1 + . . . + 2xi−2 + 3xi−1 + 2xi + id + ε ≤ 9(xi−1 + ε) + B.
+As all xi are bounded away from zero, and the above condition must hold for any ε > 0, we conclude that
+2x1 + 2x2 + . . . + 2xi−2 + 3xi−1 + 2xi + id ≤ 9xi−1 + B.
+or
+2x1 + 2x2 + . . . + 2xi−2 − 6xi−1 + 2xi + id ≤ B.
+7
+n λn x(n)
+1 x(n)
+2 x(n)
+3 x(n)
+4 x(n)
+5 y(n)
+1 y(n)
+2 y(n)
+3 y(n)
+4 y(n)
+5
+1 1.0000 0.0000
+2 1.2500 0.1250 0.0000 0.7500 0.2500
+3 1.4166 0.2083 0.3333 0.0000 0.6666 0.2500 0.0833
+4 1.5312 0.2656 0.5625 0.6875 0.0000 0.0625 0.2500 0.0937 0.0312
+5 1.6125 0.3062 0.7250 1.1750 1.3000 0.0000 0.6000 0.2500 0.1000 0.0375 0.0125
+6 1.6718 0.3359 0.8437 1.5312 2.2500 2.3750 0.5833 0.2500 0.1041 0.0416 0.0156
+7 1.7165 0.3582 0.9330 1.7991 2.9642 4.1607 0.5714 0.2500 0.1071 0.0446 0.0178
+8 1.7509 0.3754 1.0019 2.0058 3.5156 5.5930 0.5625 0.2500 0.1093 0.0468 0.0195
+9 1.7782 0.3891 1.0563 2.1692 3.9130 6.6284 0.5555 0.2500 0.1111 0.0486 0.0208
+10 1.8001 0.4000 1.1003 2.3011 4.3031 7.5078 0.5500 0.2500 0.1125 0.0500 0.0218
+20 1.9000 0.4500 1.3000 2.9000 5.9000 11.5000 0.5250 0.2500 0.1187 0.0562 0.0265
+30 1.9333 0.4666 1.3666 3.1000 6.4333 12.8333 0.5166 0.2500 0.1208 0.0583 0.0281
+40 1.9500 0.4750 1.4000 3.2000 6.7000 13.5000 0.5125 0.2500 0.1218 0.0593 0.0289
+50 1.9600 0.4800 1.4200 3.2600 6.8600 13.9000 0.5100 0.2500 0.1225 0.0600 0.0293
+100 1.9800 0.4900 1.4600 3.3800 7.1800 14.7000 0.5050 0.2500 0.1237 0.0612 0.0303
+200 1.9900 0.4950 1.4800 3.4400 7.3400 15.1000 0.5025 0.2500 0.1243 0.0618 0.0307
+400 1.9950 0.4975 1.4900 3.4700 7.4200 15.3000 0.5012 0.2500 0.1245 0.0621 0.0310
+Table 1: Solutions for a number of linear subsystems.
+We thus get the following inﬁnite linear program:
+min B
+2x1 + d ≤ B
+−6x1 + 2 x2 + 2 d ≤ B
+2x1 − 6x2 + 2 x3 + 3 d ≤ B
+2x1 + 2 x2 − 6x3 + 2 x4 + 4 d ≤ B
+... +
+... −
+... +
+... +
+... ≤ B
+2x1 + 2 x2 + · · · + 2 xi−2 − 6xi−1 + 2 xi + id ≤ B
+... ... ... ... ... ... ... ≤ B
+xi ≥ 0.
+(1)
+3.3 Solving the Sequence of Linear Programs
+Even with sophisticated software, it is impossible to solve an inﬁnite line ar program to optimality. However,
+for each n, the ﬁrst n linear inequalities describe a relaxation of the overall program. Deno te λ = B/d, and
+let λn be the optimal value when only considering the ﬁrst n constraints. Then any λn is a lower bound on
+the overall λ. Furthermore, the sequence of primal optimal values x(n)
+i and dual optimal values y(n)
+i should
+converge, if there is any hope for an overall solution.
+We have solved a number of these relaxations by using CPLEX 7.1. The computational results are shown
+in Table 1. Shown are the number of constraints that we used, the o ptimal value λn, the ﬁrst ﬁve primal
+variables, and the ﬁrst ﬁve dual variables. To allow numerical compu tation, d was normalized to 1. As each
+λn is a valid lower bound, numbers were truncated, not rounded.
+The table illustrates several points:
+1. Even small subsystems may have “ugly” solutions, indicating a rela tively fast increasing eﬀort for
+trying to establish lower bounds by analyzing subsystems manually.
+2. Convergence is rather slow; in fact, it seems to be logarithmic, as doubling the size of the system
+appears to cut the remaining error in half. This and the tediousness of the solutions make it rather
+diﬃcult to give an explicit closed formula for the objective values, whic h could be used for analyzing
+the limit. This justiﬁes the use of powerful tools like CPLEX in order to get good estimates quickly.
+3. Actually closing the remaining gap in order to prove that the lower b ound of 9OPT+2 d is tight requires
+considering the whole inﬁnite linear program.
+8
+We will demonstrate in the following subsection how the latter point ca n be carried out analytically.
+3.4 Provably Optimal Strategies
+To establish optimal strategies for the inﬁnite linear program, and t hus a pair of optimal strategies, we start
+by describing a feasible dual solution that yields a lower bound of 2 for the objective value λ.
+Consider yj = 1
+2j . We will show that with these dual multipliers, the linear combination of the ﬁrst n
+coeﬃcients for any variable xj tends to 0, as n approaches inﬁnity. More precisely, taking a linear combination
+of all inequalities in (1), with coeﬃcient yj used for inequality j, yields
+2
+
+
+∞∑
+j=1
+yj − 8y2
+
+ x1 + 2
+
+
+∞∑
+j=2
+yj − 8y3
+
+ x2 + · · · + 2
+
+
+∞∑
+j=i
+yi − 8yi+2
+
+ xi + · · · +
+
+
+∞∑
+j=1
+jyj
+
+ d
+≤
+
+
+∞∑
+j=1
+yj
+
+ B
+Using yj = 1
+2j , the involved series and coeﬃcients do converge: The coeﬃcient of xi becomes
+− 8
+2i+1 +
+∞∑
+j=i
+2
+2j = 1
+2i
+(
+−4 + 2
+∞∑
+i=0
+1
+2j
+)
+.
+Thus, this turns out to be 0.
+Similarly, the coeﬃcient of d becomes∑ n
+i=j
+j
+2j , which tends to 2 as n grows.
+Finally, the coeﬃcient of B on the right hand side of the inequality is the geometric series ∑ n
+i=1
+1
+2j , which
+tends to 1.
+Therefore, the derived inequality simpliﬁes to the lower bound
+2d ≤ B.
+To see that 2 d is also an upper bound, and thus an optimal solution for B, consider xi = (2 i − 1
+2 )d. For
+this particular set, the jth inequality becomes
+( i∑
+h=1
+2xh
+)
+− 8xj−1 + jd ≤ B,
+which simpliﬁes to
+2d ≤ B.
+Thus, the linear program becomes
+min λ
+2 ≤ λ. (2)
+Trivially, this is solved by λ = 2, implying that the given xi and λ = 2 do indeed provide a feasible
+solution with objective value 2. By duality of linear programming, this is optimal.
+It should be noted that the primal and dual solutions satisfy comple mentary slackness, as all constraints
+hold with equality. Note that our solution to the linear-search proble m with turn cost achieves a competitive
+ratio of 9, which must be the optimal value because the time to ﬁnd th e target increases with d > 0.
+We summarize:
+9
+Theorem 6
+In the presence of turn cost d for the linear-search problem, the searcher can guarantee a solu tion within
+time 9OPT +2d by choosing the search strategy xi = d(2i − 1)/2. The additive term 2d is minimal subject
+to the optimal competitive ratio, 9.
+Note that the overall total cost spent on turning is about log 2 OPT.
+3.5 Tradeoﬀ between Coeﬃcients
+The term 2 d is best possible if we want to maintain the best possible competitive fac tor of 9. It may be
+desirable to improve the former term, while allowing an increase in the la tter. For any bound c ≥ 9 on the
+competitive ratio, the best possible B can be computed by using our above approach: In the system (1),
+replace all coeﬃcients −6 by 3 − c. Conversely, we can compute the best possible c for any B/d ∈ (1, 2]. The
+resulting tradeoﬀ curve is shown in Figure 2. This curve was obtained experimentally using CPLEX. We
+have not yet characterized it analytically, though we expect that t o be possible. It is not hard to see that 1
+is a lower bound for any B/d, and that the best possible B/d tends to 1 for c approaching inﬁnity.
+1.1
+1.2
+1.3
+1.4
+1.5
+1.6
+1.7
+1.8
+1.9
+2
+9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+Additive term over turn cost ( B/d)
+Competitive ratio ( c)
+Figure 2: Tradeoﬀ between competitive factor and turn cost.
+4 Star Search
+For the problem with no turn cost, Gal [17] proved that the sequen ce of turning points corresponding to an
+optimal search trajectory has to be cyclic. In the following, we sho w how to generalize the above results to
+the problem of star search in the presence of turn cost.
+As before, we consider a sequence x1, x2, . . . of steps that cycle through the m rays. Suppose we have
+a turn cost of d1 on a ray, and d2 at the origin; set d = d1 + d2. By picking a hiding spot just beyond
+one of the turning points, the hider can force the searcher to ﬁnd the object only after making moves
+xn, . . . , xn+m−1 and returning to the ray of xn, making a total of ( n + m − 1) turns. This takes a time of(
+2∑ n+m−1
+i=1 xi
+)
++ (n + m − 1)d + xn instead of the optimal xn. Without the presence of turn cost, it is well
+known that the optimal competitive ratio is
+(
+1 + 2 mm
+(m−1)m− 1
+)
+=: 1 + 2M . When the hiding point is close to
+10
+the start, the searcher may only get to it when entering the last ra y, so we get the condition
+(
+2
+m−1∑
+i=1
+xi
+)
++ (m − 1)d ≤ B. (m − 1)
+If the hiding point is just beyond the nth turning point, we get the condition
+(
+2
+n+m−1∑
+i=1
+xi
+)
++ (n + m − 1)d + xn ≤ B + (1 + 2M )xn,
+or
+(
+2
+n+m−1∑
+i=1
+xi
+)
++ (n + m − 1)d ≤ B + 2M xn. (n)
+for the additive term λ, if it exists. For convenience, we refer to the dual variables corre sponding to constraints
+(m − 1), . . . ,(n), . . . as ym−1, . . . , yn, . . ..
+Again, ﬁnding a strategy x1, x2, . . . that minimizes B subject to the above constraints can be described
+as an inﬁnite linear program. For m = 3 , 4, 5, 6 and various n up to 1000, we solved the ﬁnite subprograms
+by using CPLEX. Despite some numerical diﬃculties, we were able to ex trapolate the limits of the series by
+making use of the logarithmic convergence. We obtained the following solutions:
+xi = d
+( ( m
+m − 1
+) i
+− 1
+)
+/2
+and
+B = m
+( ( m
+m − 1
+) m−1
+− 1
+)
+d = (M − m)d.
+Note that ﬁnding xi is also possible without deriving a closed-form solution directly from CP LEX ex-
+periments: If yj > 0 for all j ∈ /C6 , complementary slackness (Theorem 5) requires that all constra ints
+hold with equality. Then subtracting constraint ( n + m − 1) from constraint ( n + m) yields the recursion
+2xm−1+n + d = 2M xn, which is satisﬁed by the above solution.
+Theorem 7
+In the presence of turn cost d for the star search problem on m rays, the searcher can guarantee a solution
+within time
+(
+1 + 2 mm
+(m − 1)m−1
+)
+OPT + m
+( ( m
+m − 1
+) m−1
+− 1
+)
+d
+by choosing the search strategy
+xi = d/2
+( ( m
+m − 1
+) i+1
+− 1
+)
+.
+This strategy is optimal.
+Proof. We show that this primal strategy and B satisfy all constraints of the linear program with
+equality: The left-hand side of inequality ( n) is
+2
+( n+m−1∑
+i=1
+xi
+)
++ (n + m − 1)d.
+11
+Using q := m
+m−1 and substituting the values xi = d(qi − 1)/2, this simpliﬁes to
+qn+m − q
+q − 1 d.
+On the other hand, by substituting the above values, the right-ha nd side
+B +
+(
+2 mm
+(m − 1)m−1
+)
+xn
+becomes
+m
+(
+qm−1 − 1
+)
+d + mqm−1 (qn − 1) d
+or (using m = q
+q−1 )
+qn+m − q
+q − 1 d.
+Therefore, with B = m
+( (
+m
+m−1
+) m−1
+− 1
+)
+d, all constraints are satisﬁed with equality, regardless of n.
+It remains to be shown that the above solution is best possible. In pr inciple, this can be done by
+ﬁguring out explicit closed-form expressions for the dual variables , and using them to verify optimality.
+(The interested reader may try this for m = 3, where the dual variables turn out to be yj = 4(2j− 1+(−1)j )
+3j+1 for
+j ≥ m− 1 = 2, i.e., the sequence 4/9, 4/27, 4/27, 20/243, 44/729,...) Howeve r, this explicit approach appears
+to be extremely tedious for any m > 3, and hopeless for general m. As we will see in the following, ﬁnding an
+explicit closed-form expression for dual variables is not necessary for a proof of optimality. Instead, we use
+complementary slackness to derive a recursive characterization o f y, and verify that it satisﬁes all required
+conditions.
+As any solution x1, . . . describing a valid strategy must satisfy xi > 0 for all i ≥ 1, we conclude by
+Theorem 5 that all corresponding dual constraints must hold with e quality; as ci = 0 for all xi, this means
+that
+
+2
+∞∑
+j=i
+yj
+
+ = 2M yi+m−1 (i)
+must hold for all i ∈ /C6 , with y1 = . . . = ym−2 = 0 for ease of notation. Noting that we are trying
+for a nonnegative y (and thus an absolutely convergent series ∑ ∞
+j=i yj), subtracting this condition ( i) for
+i = n ≥ m − 1 from the condition for i = n + 1 yields
+yn+1 = M (yn+m − yn+m−1),
+i.e., the recursion
+yn+m = yn+m−1 − 1
+M yn.
+Because the cost coeﬃcient cB of B is −1, we get the requirement ∑ ∞
+j=m−1 yj = 1, which implies ym =
+. . . = y2m−2 = 1/M by conditions (1) , . . . ,(m − 1). Choosing ym−1 = m/M, we get a well-deﬁned sequence
+y. Using the initial condition y2m−2 = 1 /M, the recursive condition implies yn+m = 1
+M (1 −∑ n
+j=m−1 yj).
+Because of m
+M = (m−1)m− 1
+mm− 1 =
+(
+1 − 1
+m
+) m
+∈ [1/3, 1/2], the series ∑ ∞
+j=m−1 yj = lim n→∞
+∑ n
+j=m−1 yj does
+indeed tend to 1. (In fact, not only does yj+m/yj tend to m/M for large j, but the ratio yj/yj−1 tends
+to
+( m−1
+m
+)
+.) For the given starting values, the sequence ∑ n
+j=m−1 yj remains below 1, so the sequence yn+m
+remains nonnegative.
+12
+It remains to be shown that ytb = ctx, i.e., ∑ ∞
+j=m−1 jyj = M − m. This follows from
+∞∑
+j=m−1
+jyj =
+2m−2∑
+j=m−1
+jyj +
+∞∑
+j=2m−1
+jyj
+=
+2m−2∑
+j=m−1
+jyj +
+∞∑
+j=m−1
+(j + m)yj+m
+=
+2m−2∑
+j=m−1
+jyj +
+∞∑
+j=m−1
+(j + m)(yj+m−1 − 1
+M yj)
+= (2 m − 2)y2m−2 +
+2m−3∑
+j=m−1
+jyj +
+∞∑
+j=m−1
+(j + m − 1)yj+m−1 +
+∞∑
+j=m−1
+yj+m−1
+−
+∞∑
+j=m−1
+1
+M jyj −
+∞∑
+j=m−1
+m
+M yj
+= 2m − 2
+M +
+∞∑
+j=m−1
+jyj +
+
+1 −
+2m−3∑
+j=m−1
+yj
+
+ −
+∞∑
+j=m−1
+1
+M jyj − m
+M ,
+hence
+∞∑
+j=m−1
+jyj = 2m − 2 + (M − m − (m − 2)) − m = M − m,
+as claimed. ✷
+5 Randomized Strategies
+Consider the search on the line with turn cost. It is natural to cons ider randomized strategies for both
+players: The particular choice of search strategy or hiding position depends on the outcome of a random
+event that is not known in advance. It is known that the optimal com petitive ratio q = 1 + a for online
+searching on the line without turn cost is given by the solution of the equation satisfying a+1
+ln a = a, or
+q = 4.591121 . . .; see [2], pp. 129/130. Clearly, the optimal coeﬃcient qt of OPT in the presence of turn cost
+must satisfy qt ≥ q. To see that there is indeed a strategy that achieves qt = q, consider a modiﬁed scenario
+without turn cost as follows:
+1. The searcher only locates the hider after passing the hider by a le ngth of at least d/2.
+2. When discovering the hider, the cost is the distance traveled, min us d/2.
+Then the resulting calculations from [2] translate precisely to the sc enario with turn cost. Using the
+same turning points xi ≥ d/2, we get a mixed strategy that assures a cost of q(OP T + d/2) − d/2 =
+qOP T + d(q − 1)/2. The additive constant can be improved, as the terms below d/2 are not used. We
+conclude:
+Theorem 8
+For randomized strategies in the presence of turn cost, the optim al coeﬃcient of OPT is the same as without
+turn cost.
+Again it is possible to consider the optimal coeﬃcient of the turn-cos t factor, and also consider the tradeoﬀ
+between both coeﬃcients. We leave this to future research.
+13
+6 Conclusions
+In this paper we have considered the linear-search problem in the pr esence of turn cost. We have shown that
+this extends the well-studied case without turn cost, and establish ed a performance guarantee of 9OPT+2 d.
+We also extended or results to the general star search on m rays (also known as the cow-path problem), and
+showed that this problem can also be resolved by using an inﬁnite sequ ence of linear programs.
+We believe that our methods and results can be easily extended to va rious other problems that have been
+studied; in particular, it should not be too hard to give explicit estimat es for the lower-order terms, which
+show up if the distance OPT to the hidden object is known to be bound ed by some D: This only requires
+giving an explicit estimate for the solutions of subsystems of size n = Θ(log D).
+Just like the cow-path problem extends to various geometric scena rios, we expect that there are also
+many other problems for which the cost of changing the search dire ction plays an important role.
+Acknowledgments
+We thank two anonymous referees for helpful suggestions that h elped to extend the scope of this paper and
+improve overall presentation. Parts of this research were suppo rted by NATO Grants PST.CLG976391 and
+CRG 972991. Other parts were done while S´ andor Fekete was visitin g MIT, with partial funding by DFG
+travel grant FE 407/7-1.
+References
+[1] S. Alpern and A. Beck. Pure strategy asymmetric rendezvous o n the line with an unknown initial
+distance. Operations Research, 48 (2000), 498–501.
+[2] S. Alpern and S. Gal. The Theory of Search Games and Rendezvous . Kluwer Academic Publishers.
+[3] E. Arkin, M. Bender, E. Demaine, S. P. Fekete, J. S. B. Mitchell, S . Sethia. Optimal covering tours with
+turn costs. Proceedings SODA 01, ACM-SIAM Symposium on Discrete Algorithms, 2001, 138–147.
+[4] R. A. Baeza-Yates, J. C. Culberson, and G. J. E. Rawlins. Searc hing with uncertainty. Proceedings
+SWAT 88, First Scandinavian Workshop on Algorithm Theory. Springer Lectu re Notes in Computer
+Science #318, 1988, 176–189.
+[5] R. A. Baeza-Yates, J. C. Culberson, and G. J. E. Rawlins. Searc hing in the plane. Information and
+Computation, 106 (1993), 234–252.
+[6] A. Beck. On the linear search problem. Naval Research Logistics, 2 (1964), 221–228.
+[7] A. Beck and D. J. Newman. Yet more on the linear search problem. Israel Journal of Mathematics , 8
+(1970), 419–429.
+[8] R. Bellman. An optimal search problem. SIAM Reviews, 5 (1963), 274.
+[9] C. A. Brocker and S. Schuierer. Searching rectilinear streets c ompletely. Proceedings WADS 99, Work-
+shop on Algorithms and Data Structures, Springer Lecture Notes in Computer Science, # 1663, 1999,
+98–109.
+[10] V. Chv´ atal. Linear Programming. Freeman, New York, 1983.
+[11] CPLEX. http://www.ilog/com/products/cplex.
+[12] S. P. Fekete, R. Klein, and A. N¨ uchter. Online searching with an autonomous robot, 2004. Proceedings
+of the Workshop on Algorithmic Foundations of Robotics , to appear in Algorithmic Foundations of
+Robotics VI, Springer-Verlag.
+14
+[13] S. P. Fekete, R. Klein, A. N¨ uchter. Searching with an autonom ous robot. (Video + abstract). In 20th
+ACM Symposium on Computational Geometry , 2004, 449–450.
+[14] A. Fiat and G. J. Woeginger. Online optimization, the state of the art . Springer Lecture Notes in
+Computer Science, # 1442, 1998.
+[15] S. Gal. A general search game. Israel Journal of Mathematics , 12 (1972), 32–45.
+[16] S. Gal. Minimax solutions for linear search problems. SIAM Journal on Applied Mathematics , 27 (1974),
+17–30.
+[17] S. Gal. Search Games. Academic Press, New York, 1980.
+[18] S. Gal and D. Chazan. On the optimality of the exponential func tions for some minimax problems.
+SIAM Journal on Applied Mathematics , 30 (1976), 324–348.
+[19] M. Gr¨ otschel, S. Krumke, and J. Rambau. Online optimization of large scale systems: the state of the
+art. Springer-Verlag 2001.
+[20] M. Hammar, B. J. Nilsson, and S. Schuierer. Parallel searching o n m rays. Proceedings STACS 99 ,
+Symposium on Theoretical Aspects of Computer Science, Springer Lecture Notes in Computer Science,
+# 1563, 1999, 132–142.
+[21] C. Hipke, C. Icking, R. Klein, and E. Langetepe. How to ﬁnd a poin t on a line within a ﬁxed distance.
+Discrete Applied Mathematics , 93 (1999), 67–73.
+[22] F. Hoﬀmann, C. Icking, R. Klein, and K. Kriegel. The polygon explo ration problem. SIAM Journal on
+Computing, 31 (1999), 577–600.
+[23] P. Jaillet and M. Staﬀord. Online searching. Operations Research 49 (2001), 501–515.
+[24] M. Y. Kao, J. H. Reif, and S. R. Tate. Searching in an unknown en vironment: an optimal randomized
+algorithm for the cow-path problem. Information and Computation , 131 (1996), 63–79.
+[25] O. Kella. Star search—a diﬀerent show. Israel Journal of Mathematics , 81 (1993), 145–159.
+[26] D. E. Knuth. Searching and Sorting . Addison Wesley, 1973.
+[27] A. Lopez-Ortiz. Searching in bounded and unbounded domains . PhD Thesis, Department of Computer
+Science, University of Waterloo, 1996. Also available as technical re port CS-96-25.
+[28] A. Lopez-Ortiz and S. Schuierer. Position-independent near o ptimal searching and on-line recognition in
+a star polygon. Proceedings WADS 97, Workshop on Algorithms and Data Structures, Springer Lecture
+Notes in Computer Science, # 1272, 1997, 284–296.
+[29] A. Lopez-Ortiz and S. Schuierer. The ultimate strategy to sea rch on m rays?, Theoretical Computer
+Science, 261 (2001), 267–295.
+[30] S. Schuierer. Lower bounds in on-line geometric searching. Com putational Geometry—Theory & Ap-
+plications, 18 (2001), 37–53.
+15

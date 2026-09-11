@@ -1,0 +1,1245 @@
+SOURCE: https://arxiv.org/html/1810.08109
+
+Best-of-two-worlds analysis of online search 
+
+ Report GitHub Issue
+
+ × 
+
+ Title: 
+
+ Content selection saved. Describe the issue below:
+
+ Description: 
+
+ Submit without GitHub 
+ Submit in GitHub 
+
+ arXiv is now an independent nonprofit! 
+ Learn more 
+ × 
+
+ Back to arXiv 
+
+ Why HTML? 
+
+ Report Issue 
+
+ Back to Abstract 
+
+ Download PDF 
+
+ Abstract 
+
+ 1 Introduction 
+
+ 2 Connections between the discovery and the bijective ratios 
+
+ 3 Strategies of optimal discovery ratio in $\Sigma$ 
+
+ 4 The discovery ratio of competitively optimal strategies 
+
+ References 
+
+ License: arXiv.org perpetual non-exclusive license
+
+arXiv:1810.08109v1 [cs.DS] 18 Oct 2018
+
+ Best-of-two-worlds analysis of online search
+
+ Spyros Angelopoulos
+ † † thanks: Sorbonne Université, CNRS, Laboratoire d’informatique de Paris 6, LIP6, F-75252 Paris, France. Supported by ANR OATA, DIM RFSI DACM, and the Fondation Mathématique Jacques Hadamard Programme Gaspard Monge PGMO. 
+
+ Christoph Dürr 1 1 footnotemark: 
+ 1 
+
+ Shendan Jin 1 1 footnotemark: 
+ 1 
+
+ Abstract
+
+ In search problems, a mobile searcher seeks to locate a target that hides in some unknown position of the environment. Such problems are typically considered to be of an on-line nature, in that the input is unknown to the searcher, and the performance of a search strategy is usually analyzed by means of the standard framework of the competitive ratio, which compares the cost incurred by the searcher to an optimal strategy that knows the location of the target. However, one can argue that even for simple search problems, competitive analysis fails to distinguish between strategies which, intuitively, should have different performance in practice.
+
+ Motivated by the above, in this work we introduce and study measures supplementary to competitive analysis in the context of search problems. In particular, we focus on the well-known problem of linear search , informally known as the cow-path problem , for which there is an infinite number of strategies that achieve an optimal competitive ratio equal to 9. We propose a measure that reflects the rate at which the line is being explored by the searcher, and which can be seen as an extension of the bijective ratio over an uncountable set of requests. Using this measure we show that a natural strategy that explores the line aggressively is optimal among all 9-competitive strategies. This provides, in particular, a strict separation from the competitively optimal doubling strategy, which is much more conservative in terms of exploration. We also provide evidence that this aggressiveness is requisite for optimality, by showing that any optimal strategy must mimic the aggressive strategy in its first few explorations.
+
+ 1 Introduction
+
+ Searching for a hidden target is an important paradigm in computer science and operations research, with numerous applications. A typical search problem involves an environment, a mobile searcher (who may, or may not, have knowledge of the environment) and a hider (sometimes also called target ) who hides at some position within the environment that is oblivious to the searcher. The objective is to define a search strategy , i.e., a traversal of the environment, that optimizes a certain efficiency criterion. A standard approach to the latter is by means of competitive analysis , in which we seek to minimize the worst-case cost for locating the target, divided by some concept of “optimal” solution; e.g., the minimum cost to locate the target once its position is known. Even prior to the advent of online computation and competitive analysis, search games had already been studied under such normalized measures within operations research  [ 8 ] . Explicit studies of the competitive ratio and the closely related search ratio were given in  [ 6 ] and  [ 26 ] , respectively, and led to the development of online searching   [ 22 , 10 ] as a subfield of online computation. See also  [ 1 ] for an in-depth treatment of search games, including the role of payoff functions that capture the competitive ratio.
+
+ In this work we revisit one of the simplest, yet fundamental search problems, namely the linear search , or, informally, cow-path problem. The setting involves an infinite (i.e., unbounded) line, with a point $O$ designated as its origin, a searcher which is initially placed at the origin, and an immobile target which is at some position on the line that is unknown to the searcher. More specifically, the searcher does not know whether the hider is at the left branch or at the right branch of the line. The searcher’s strategy $S$ defines its exploration of the line, whereas the hider’s strategy $H$ is determined by its placement on the line. Given strategies $S,H$ , the cost of locating the hider, denoted by $c(S,H)$ is the total distance traversed by the searcher at the first time it passes over $H$ . Let $|H|$ denote the distance of the hider from the origin. The competitive ratio of $S$ , denoted by $\textrm{cr}(S)$ , is the worst-case normalized cost of $S$ , among all possible hider strategies. Formally,
+
+ $\textrm{cr}(S)=\sup_{H}\frac{c(S,H)}{|H|}.$ 
+
+ (1) 
+
+ It has long been known  [ 7 , 18 ] that the competitive ratio of linear search is 9, and is achieved by a simple doubling strategy: in iteration $i$ , the searcher starts from $O$ , explores branch $i\bmod 2$ at a length equal to $2^{i}$ , and then returns to $O$ . However, this strategy is not uniquely optimal; in fact, it is known that there is an infinite number of competitively optimal strategies for linear search (see Lemma  2 in Section  4 ). In particular, consider an “aggressive” strategy, which in each iteration searches a branch to the maximum possible extent, while maintaining a competitive ratio equal to 9. This can be achieved by searching, in iteration $i$ , branch $i\bmod 2$ to a length equal to $(i+2)2^{i+1}$ (see Corollary  4 ).
+
+ While both doubling and aggressive are optimal in terms of competitive ratio, there exist realistic situations in which the latter may be preferable to the former. Consider, for example, a search-and-rescue mission for a missing backpacker who has disappeared in one of two (very long) concurrent, hiking paths. Assuming that we select our search strategy from the space of 9-competitive strategies, it makes sense to choose one that is tuned to discovering new territory, rather than a conservative strategy that tends to often revisit already explored areas.
+
+ With the above observation in mind, we first need to quantify what constitutes efficiency in exploration. To this end, given a strategy $S$ and $l\in{\mathbb{R}}^{+}$ , we define $D(S,l)$ as the cost incurred by $S$ the first time the searcher has explored an aggregate length equal to $l$ , combined in both branches. An efficient strategy should be such that $D(S,l)$ is small, for all $l$ . Unfortunately, this criterion by itself is insufficient: Consider a strategy that first searches one branch to a length equal to $L$ , where $L$ is very large. Then $D(S,l)$ is as small as possible for all $l 
+ To remedy this situation, we will instead use the above definition in a way that will allow us a pairwise comparison of strategies, which also considers all possible explored lengths. More formally, we define the following:
+
+ Definition 1 . 
+
+ Let $S_{1},S_{2}$ denote two search strategies, we define the discovery ratio of $S_{1}$ against $S_{2}$ , denoted by $\textrm{dr}(S_{1},S_{2})$ , as 
+
+ $\textrm{dr}(S_{1},S_{2})=\sup_{l\in{\mathbb{R}}^{+}}\frac{D(S_{1},l)}{D(S_{2},l)}.$ 
+
+ Moreover, given a class ${\cal S}$ of search strategies, the discovery ratio of $S$ against the class ${\cal S}$ is defined as 
+
+ $\textrm{dr}(S,{\cal S})=\sup_{S^{\prime}\in{\cal S}}\textrm{dr}(S,S^{\prime}).$ 
+
+ In the case ${\cal S}$ is the set $\Sigma$ of all possible strategies, we simply call $\textrm{dr}(S,{\cal S})$ the discovery ratio of $S$ ,
+and we denote it by $\textrm{dr}(S)$ . 
+
+ Intuitively, the discovery ratio preserves the worst-case nature of competitive analysis, and at the same time bypasses the need for
+an “offline optimum” solution. Note that if a strategy $S$ has competitive ratio $c$ then it also has discovery ratio
+ $c$ ; this follows easily from the fact that for every hider position $H$ , $c(S,H)\geq D(S,|H|)$ .
+However, the opposite is not necessarily true.
+
+ It is worth pointing out that the discovery ratio can be interpreted, roughly speaking, as the bijective ratio over a continuous space
+of request sequences, or, more precisely, as its analogue in the setting in which this space consists of an infinite, uncountable set of requests.
+The bijective ratio was introduced in  [ 4 ] as an extension of (exact) bijective analysis of online algorithms  [ 3 ] ,
+and which in turn is based on the pairwise comparison of the costs induced by two online algorithms over all request sequences of a certain size.
+Bijective analysis has been applied in fundamental online problems (with a discrete, finite set of requests) such as paging and list update  [ 5 ] , $k$ -server  [ 14 , 4 ] , and online search 1 1 
+ 1 
+
+ In  [ 13 ] , online search refers to the problem of selling a specific item at the highest possible price, and is not related to the problem of searching for a target.   [ 13 ] . Our interpretation of the bijective ratio can be useful for other online problems which are defined over a continuous setting of requests (e.g., $k$ -server problems defined over a metric space rather than over a finite graph).
+
+ The above observation implies that the discovery ratio inherits the appealing properties of bijective analysis, which further motivate its choice.
+In particular, note that bijective analysis has helped to identify theoretically efficiently algorithms which also tend to perform well in practice (such as Least-Recently-Used for paging  [ 5 ] , and greedy-like $k$ -server policies for certain types of metrics  [ 4 ] ). Furthermore, if an algorithm has bijective ratio $c$ , then its average cost, assuming a uniform distribution over all request sequences of the same length, is within a factor $c$ of the average cost of any other algorithm. Thus, bijective analysis can be used to establish “best of both worlds” types of performance comparisons. In fact, assuming again uniform distributions, much stronger conclusions can be obtained, in that bijective analysis implies a stochastic dominance relation between the costs of the two algorithms  [ 4 ] .
+
+ It should be noted that the central question we study in this work is related to a phenomenon that is not unusual in the realm of online computation.
+Namely, for certain online problems, competitive analysis results in very coarse performance classification of algorithms. This is due to the pessimistic, worst-case nature of the competitive ratio. The definitive example of an online problem in which this undesired situation occurs is the (standard) paging problem in a virtual memory system, which motivated the introduction of several analysis techniques alternative to the competitive ratio (see  [ 29 ] for a survey). In our paper we demonstrate that a similar situation arises in the context of online search, and we propose a remedy by means of the discovery ratio. We emphasize, however, that in our main results, we apply the discovery ratio as supplementary to the competitive ratio, instead of using it antagonistically as a measure that replaces the competitive ratio altogether.
+
+ 2 Connections between the discovery and the bijective ratios
+
+ In this section we establish a connection between the discovery and the bijective ratios.
+Bijective analysis was introduced in  [ 3 ] in the context of online computation, assuming that each request is drawn from a discrete, finite set. For instance, in the context of the paging problem, each request belongs to the set of all pages. Let ${\cal I}_{n}$ denote the set of all
+requests of size $n$ . For a cost-minimization problem $\Pi$ with discrete, finite requests, let $\pi:{\cal I}_{n}\rightarrow{\cal I}_{n}$ denote a bijection over ${\cal I}_{n}$ . Given two online algorithms $A$ and $B$ for $\Pi$ , the bijective ratio of $A$ against $B$ , is defined as
+
+ $\textrm{br}(A,B)=\min_{\pi:{\cal I}_{n}\rightarrow{\cal I}_{n}}\sup_{\sigma\in{\cal I}_{n}}\frac{A(\sigma)}{B(\pi(\sigma))},\textrm{ for all $n\geq n_{0}$},$ 
+
+ where $A(\sigma)$ denotes the cost of $A$ on request sequence $\sigma$ .
+
+ Assuming ${\cal I}_{n}$ is finite,
+an equivalent definition of $\textrm{br}(A,B)$ is as follows. Let $A(i,n)$ denote the $i$ -th least costly request sequence for $A$ among request sequences in
+ ${\cal I}_{n}$ . Then
+
+ $\textrm{br}(A,B)=\sup_{n}\max_{i}\frac{A(i,n)}{B(i,n)}.$ 
+
+ Consider in contrast, the linear search problem. Here, there is only one request: the unknown position of the hider (i.e., $n=1$ ). However, the set of all requests is not only infinite, but uncountable. Thus, the above definitions do not carry over to our setting, and we need to seek alternative definitions. One possibility is to discretize the set of all requests (as in  [ 4 ] ). Namely, we may assume that the hider can hide only at integral distances from the origin. Then given strategies $S_{1},S_{2}$ , one could define the bijective ratio of $S_{1}$ against $S_{2}$ as $\sup_{i}\frac{S_{1}(i)}{S_{2}(i)}$ , where $S(i)$ denotes the $i$ -th least costly request (hider position) in strategy $S$ .
+
+ While the latter definition may indeed be valid, it is still not a faithful representation of the continuous setting. For instance,
+for hiding positions “close” to the origin, the discretization adds overheads that should not be present, and skews the expressions of the ratios.
+For this reason, we need
+to adapt the definition so as to reflect the continuous nature of the problem. Specifically, note that while the concept “the cost of the $i$ -th least costly request in $S$ ” is not well-defined in the continuous setting, the related concept of “the cost for discovering a total length equal to $l$ in $S$ ” is, in fact, well defined, and is precisely the value $D(S,l)$ . We can thus define the bijective ratio of $S_{1}$ against $S_{2}$ as
+
+ $\textrm{br}(S_{1},S_{2})=\sup_{l}\frac{D(S_{1},l)}{D(S_{2},l)},$ 
+
+ which is the same as the definition of the discovery ratio (Definition  1 ).
+
+ Contribution
+
+ We begin, in Section  3 , by identifying the optimal tradeoff between the competitive ratio of a strategy and its discovery ratio (against all possible strategies). The result implies that there are strategies of discovery ratio $2+\epsilon$ , for arbitrarily small $\epsilon>0$ , which is tight. As corollary, we obtain that strategy doubling has discovery ratio equal to 3. These results allow us to
+set up the framework and provide some intuition for our main results, but also demonstrate that the discovery ratio, on itself, does not lead to a useful classification of strategies, when one considers the entire space of strategies.
+
+ Our main technical results are obtained in Section  4 . Here, we apply synthetically both the competitive and the discovery ratios. More precisely, we restrict our interest to the set of competitively optimal strategies, which we further analyze using the discovery ratio as a supplementary measure. We prove that the strategy
+ aggressive , which explores the branches to the furthest possible extent while satisfying the competitiveness constraint, has discovery ratio 1.6; moreover, we show that this is the optimal discovery ratio in this setting.
+In contrast, we show that the strategy doubling has discovery ratio 2.333. In addition, we provide evidence that such “aggressiveness” is requisite. More precisely, we show that any competitively optimal strategy that is also optimal with respect to the discovery ratio must have the exact same behavior as the aggressive strategy in the first five iterations.
+
+ In terms of techniques, the main technical difficulty in establishing the discovery ratios stems from answering the following question: given a
+length $l\in{\mathbb{R}}^{+}$ , what is the strategy $S$ that minimizes $D(S,l)$ , and how can one express this minimum discovery cost?
+This is a type of inverse or dual problem that can be of independent interest in the context of search problems, in the spirit of a concept such as the reach of a strategy  [ 21 ] , also called extent in  [ 22 ] (and which is very useful in the competitive analysis of search strategies). We model this problem as a linear program for whose objective value we first give a lower bound; then we show this bound is tight by providing an explicit 9-competitive strategy which minimizes $D(S,l)$ .
+
+ Related work
+
+ The linear search problem was first introduced and studied in works by Bellman  [ 9 ] and Beck  [ 7 ] . The generalization of linear search to $m$ concurrent, semi-infinite branches is known as star search or ray search ; thus linear search is equivalent to star search for $m=2$ .
+Optimal strategies for linear search under the (deterministic) competitive
+ratio were first given by [ 8 ] . Moreover  [ 19 ] gave optimal strategies for the generalized problem of star search, a result that was rediscovered later  [ 6 ] .
+Some of the related work includes the study of randomization  [ 24 ] ; multi-searcher strategies  [ 27 ] ;
+multi-target searching  [ 25 , 28 ] ;
+searching with turn cost  [ 17 , 2 ] ; searching with an upper bound on the target distance  [ 21 , 12 ] ; fault-tolerant search  [ 16 ] ; and the variant in which some probabilistic information on target placement is known  [ 22 , 23 ] . This list is not exclusive; see also Chapter 8 in the book  [ 1 ] .
+
+ Linear search and its generalization can model settings in which we seek an intelligent allocation of resources to tasks under uncertainty. For this reason, the problem and its solution often arises in the context of diverse fields such as AI (e.g., in the design of interruptible algorithms   [ 11 ] ) and databases (e.g., pipeline filter ordering   [ 15 ] ).
+
+ Strategy aggressive has been studied in  [ 21 , 22 ] in the special case of maximizing the reach of a strategy (which informally is the maximum possible extent to which the branches can be searched without violating competitiveness) when we do not know the distance of the target from the origin. Although this gives some intuition that aggressive is indeed a good strategy, to the best of our knowledge, our work is the first that quantifies this intuition, in terms of comparing to other competitively optimal strategies using a well-defined performance measure.
+
+ Preliminaries
+
+ In the context of linear search, the searcher’s strategy can be described as an (infinite) sequence of lengths at which the two branches (numbered 0,1, respectively) are searched. Formally, a search strategy is determined by an infinite sequence of search segments $\{x_{0},x_{1},\ldots\}$ 
+such that $x_{i}>0$ and $x_{i+2}>x_{i}$ for all $i\in{\mathbb{N}}$ , in the sense that in iteration $i$ , the searcher starts from the origin, searches branch $i\bmod 2$ to distance $x_{i}$ from the origin, and then returns back to $O$ . We require that the search segments induce a complete exploration of both branches of the line, in that for every $d\in{\mathbb{R}}^{+}$ , there exist $i,j\in{\mathbb{N}}$ such that $x_{2i}\geq d$ , and $x_{2j+1}\geq d$ .
+
+ The constraint $x_{i+2}>x_{i}$ implies that the searcher explores a new portion of the line in each iteration. It is easy to see that any other strategy $X$ that does not conform to the above (namely, a strategy such that iterations $i$ , $i+1$ search the same branch, or a strategy in which $x_{i+2}\leq x_{i}$ can be transformed to a conforming strategy $X^{\prime}$ such that for any hider $H$ , $c(X^{\prime},S)\leq c(X,H)$ ). For convenience of notation, we will define $x_{i}$ to be equal to 0, for all $i 
+ We say that the searcher turns in iteration $i$ at the moment it switches directions during iteration $i$ , namely when it completes the exploration of length $x_{i}$ and returns back to the origin. Moreover, at any given point in time $t$ (assuming a searcher of unit speed), the number of turns incurred by time $t$ is defined accordingly.
+
+ We will denote by $\Sigma$ the set of all search strategies, and by $\Sigma_{c}$ the subset of $\Sigma$ that consists of strategies with competitive ratio $c$ . Thus $\Sigma_{9}$ is the set of competitively optimal strategies, and $\Sigma_{\infty}\equiv\Sigma$ . When evaluating the competitive ratio,
+we will make the standard assumption that the target must be at distance at least 1 from $O$ , since no strategy can have bounded competitive ratio if this distance can be arbitrarily small.
+
+ 3 Strategies of optimal discovery ratio in $\Sigma$ 
+
+ We begin, by establishing the optimal tradeoff between the competitive ratio and the discovery ratio against all possible
+strategies. This will allow us to obtain strategies of optimal discovery ratio, and also setup some properties of the measure that will be useful
+in Section  4 .
+
+ Let $X,Y$ , denote two strategies in $\Sigma$ , with $X=(x_{0},x_{1},\ldots)$ . From the definition of the discovery ratio we have that
+
+ $\textrm{dr}(X,Y)=\sup_{i\in\mathbb{N}}\sup_{\delta\in(0,x_{i}-x_{i-2}]}\frac{D(X,x_{i-1}+x_{i-2}+\delta)}{D(Y,x_{i-1}+x_{i-2}+\delta)}.$ 
+
+ Note that for $i=0$ , we have
+ $\frac{D(X,x_{i-1}+x_{i-2}+\delta)}{D(Y,x_{i-1}+x_{i-2}+\delta)}=\frac{D(X,\delta)}{D(Y,\delta)}\leq\frac{\delta}{\delta}=1.$ 
+This is because for all $\delta\leq x_{0}$ , $D(X,\delta)=\delta$ , and for all $\delta>0$ , $D(Y,\delta)\geq\delta$ .
+Therefore,
+
+ $\textrm{dr}(X,Y)=\sup_{i\in\mathbb{N}^{*}}\sup_{\delta\in(0,x_{i}-x_{i-2}]}\frac{D(X,x_{i-1}+x_{i-2}+\delta)}{D(Y,x_{i-1}+x_{i-2}+\delta)}.$ 
+
+ (2) 
+
+ The following theorem provides an expression of the discovery ratio in terms of the search segments of the strategy.
+
+ Theorem 1 . 
+
+ Let $X=(x_{0},x_{1},\ldots)$ . Then 
+
+ $\textrm{dr}(X,\Sigma)=\sup_{i\in\mathbb{N}^{*}}\frac{2\sum_{j=0}^{i-1}x_{j}+x_{i-2}}{x_{i-1}+x_{i-2}}.$ 
+
+ Proof.
+
+ Fix $Y\in\Sigma$ .
+From the definition of search segments in $X$ , we have that 
+
+ $D(X,x_{i-1}+x_{i-2}+\delta)=2\sum_{j=0}^{i-1}x_{j}+x_{i-2}+\delta,\quad\textrm{for $\delta\in(0,x_{i}-x_{i-2}]$}.$ 
+
+ (3) 
+
+ Moreover, for every $Y$ , we have 
+
+ $D(Y,x_{i-1}+x_{i-2}+\delta)\geq x_{i-1}+x_{i-2}+\delta.$ 
+
+ (4) 
+
+ Substituting ( 3 ) and ( 4 ) in ( 2 ) we obtain 
+
+ $\textrm{dr}(X,Y)\leq\sup_{i\in\mathbb{N}^{*}}\sup_{\delta\in(0,x_{i}-x_{i-2}]}\frac{2\sum_{j=0}^{i-1}x_{j}+x_{i-2}+\delta}{x_{i-1}+x_{i-2}+\delta}\leq\sup_{i\in\mathbb{N}^{*}}\frac{2\sum_{j=0}^{i-1}x_{j}+x_{i-2}}{x_{i-1}+x_{i-2}}.$ 
+
+ (5) 
+
+ For the lower bound, consider a strategy $Y_{i}=(y_{0}^{i},y_{1}^{i},\ldots)$ , for which $y_{0}^{i}=x_{i-1}+x_{i-2}+\delta$ (the values of $y_{j}^{i}$ for
+ $j\neq 0$ are not significant, as long as $Y_{i}$ is a valid strategy). Clearly,
+ $D(Y_{i},x_{i-1}+x_{i-2}+\delta)=x_{i-1}+x_{i-2}+\delta$ . Therefore, ( 2 ) implies 
+
+ $\textrm{dr}(X,Y_{i})\geq\sup_{\delta\in(0,x_{i}-x_{i-2}]}\frac{2\sum_{j=0}^{i-1}x_{j}+x_{i-2}+\delta}{x_{i-1}+x_{i-2}+\delta}=\frac{2\sum_{j=0}^{i-1}x_{j}+x_{i-2}}{x_{i-1}+x_{i-2}}.$ 
+
+ (6) 
+
+ The lower bound on $\textrm{dr}(X,\Sigma)$ follows from $\textrm{dr}(X,\Sigma)\geq\sup_{i\in\mathbb{N}^{*}}\textrm{dr}(X,Y_{i})$ .
+∎ 
+
+ In particular, note that for $i=2$ , Theorem  1 shows that for any strategy $X$ ,
+
+ $\textrm{dr}(X,\Sigma)\geq\frac{3x_{0}+2x_{1}}{x_{0}+x_{1}}\geq 2.$ 
+
+ We will show that there exist strategies with discovery ratio arbitrarily close to 2, thus optimal for $\Sigma$ .
+To this end, we will consider the geometric
+search strategy defined as $G_{\alpha}=(1,\alpha,\alpha^{2},\ldots)$ , with $\alpha>1$ .
+
+ Lemma 1 . 
+
+ For $G_{\alpha}$ defined as above, we have $\textrm{dr}(G_{\alpha},\Sigma)=\frac{2\alpha^{2}+\alpha-1}{\alpha^{2}-1}$ . 
+
+ Proof.
+
+ From Theorem  1 we have 
+
+ $\textrm{dr}(G_{\alpha},\Sigma)=\sup_{i\in\mathbb{N}^{*}}\frac{2\sum_{j=0}^{i-1}\alpha^{j}+\alpha^{i-2}}{\alpha^{i-1}+\alpha^{i-2}}=\sup_{i\in\mathbb{N}^{*}}\frac{2(\frac{\alpha^{i}-1}{\alpha-1})+\alpha^{i-2}}{\alpha^{i-1}+\alpha^{i-2}}=\sup_{i\in\mathbb{N}^{*}}\frac{2(\alpha^{i}-1)+\alpha^{i-1}-\alpha^{i-2}}{\alpha^{i}-\alpha^{i-2}}.$ 
+
+ The derivative of the function $f(i):=\frac{2(\alpha^{i}-1)+\alpha^{i-1}-\alpha^{i-2}}{\alpha^{i}-\alpha^{i-2}}$ in $i$ is 
+
+ $f^{\prime}(i)=\frac{2\alpha^{2-i}\log\alpha}{\alpha^{2}-1},$ 
+
+ which is positive. Thus, $\sup_{i\in{\mathbb{N}}^{*}}f(i)=\lim_{i\rightarrow\infty}f(i)$ , which gives 
+
+ $\textrm{dr}(G_{\alpha},\Sigma)=\lim_{i\rightarrow+\infty}f(i)=\lim_{i\rightarrow+\infty}\frac{2(\alpha^{i}-1)+\alpha^{i-1}-\alpha^{i-2}}{\alpha^{i}-\alpha^{i-2}}=\frac{2\alpha^{2}+\alpha-1}{\alpha^{2}-1}.$ 
+
+ ∎ 
+
+ In particular, Lemma  1 shows that the discovery ratio of $G_{\alpha}$ tends to 2, as $\alpha\rightarrow\infty$ , hence $G_{\alpha}$ 
+has asymptotically optimal discovery ratio. However, we can show a stronger result, namely that $G_{\alpha}$ achieves the optimal trade-off between the discovery ratio and the competitive ratio. This is established in the following theorem, whose proof is based on results
+by Gal  [ 20 ] and Schuierer  [ 30 ] that, informally, lower-bounds the supremum of an infinite sequence of functionals by the supremum of simple functionals of a certain geometric sequence.
+We also note that the competitive ratio of $G_{\alpha}$ is known to be equal to $1+2\frac{\alpha^{2}}{\alpha-1}$ (and is minimized for $\alpha=2$ ).
+
+ Theorem 2 . 
+
+ For every strategy $X\in\Sigma$ , there exists $\alpha>1$ such that $\textrm{dr}(X,\Sigma)\geq\frac{2\alpha^{2}+\alpha-1}{\alpha^{2}-1}$ 
+and $\textrm{cr}(X)\geq 1+2\frac{\alpha^{2}}{\alpha-1}$ . 
+
+ Proof.
+
+ Let $X=(x_{0},x_{1},\ldots)$ denote a strategy in $\Sigma$ . From ( 6 ) we know that 
+
+ $\textrm{dr}(X,\Sigma)\geq\sup_{i}F_{i}(X),$ 
+
+ where $F_{i}(X)$ is defined as the functional $\frac{2\sum_{j=0}^{i-1}x_{j}+x_{i-2}}{x_{i-1}+x_{i-2}}$ . Moreover, the competitive ratio of $X$ 
+can be lower-bounded by 
+
+ $\textrm{cr}(X)\geq\sup_{i}F^{\prime}_{i}(X),\ \textrm{ where }F^{\prime}_{i}(X)=1+2\frac{\sum_{j=0}^{i+1}x_{j}}{x_{i}}.$ 
+
+ This follows easily by considering a hider placed at distance $x_{i}+\epsilon$ , with $\epsilon\rightarrow 0$ ,
+at the branch that is searched by $X$ in iteration $i$ . 
+
+ In order to prove the theorem, we will make use of a result by Gal  [ 20 ] and Schuierer  [ 30 ] 
+which we state here in a simplified form. This result will allow us to lower bound the supremum of a sequence of functionals by the supremum of simple functionals of a geometric sequence. Given an infinite sequence
+ $X=(x_{0},x_{1},\ldots)$ , define $X^{+i}=(x_{i},x_{i+1},\ldots)$ as the suffix of the sequence $X$ starting at $x_{i}$ .
+Recall that $G_{\alpha}=(1,\alpha,\alpha^{2},\ldots)$ is defined to be the geometric sequence in $\alpha$ . 
+
+ Theorem 3 ( [ 20 , 30 ] ) . 
+
+ Let $X=(x_{0},x_{1},\ldots)$ be a sequence of positive numbers, $r$ 
+an integer, and $\alpha=\limsup_{n\rightarrow\infty}(x_{n})^{1/n}$ , for
+ $\alpha\in\mathbb{R}\cup\{+\infty\}$ .
+Let $F_{i}$ , $i\geq 0$ be a sequence of functionals which satisfy the following properties: 
+
+ 1. 
+
+ $F_{i}(X)$ only depends on $x_{0},x_{1},\ldots,x_{i+r}$ , 
+
+ 2. 
+
+ $F_{i}(X)$ is continuous for all $x_{k}>0$ , with $0\leq k\leq i+r$ , 
+
+ 3. 
+
+ $F_{i}(\lambda X)=F_{i}(X)$ , for all $\lambda>0$ , 
+
+ 4. 
+
+ $F_{i}(X+Y)\leq\max(F_{i}(X),F_{i}(Y))$ , and 
+
+ 5. 
+
+ $F_{i+1}(X)\geq F_{i}(X^{k+1})$ , for all $k\geq 1$ , 
+
+ then 
+
+ $\sup_{0\leq i 
+
+ It is easy to see that both $F_{i}(X)$ and $F^{\prime}_{i}(X)$ satisfy the conditions of Theorem  3 (this also follows from
+Example 7.3 in  [ 1 ] ). Thus, there exists $\alpha$ defined as in the statement of Theorem  3 such that 
+
+ $\displaystyle\textrm{dr}(X,\Sigma)$ 
+ $\displaystyle\geq$ 
+ $\displaystyle\sup_{i}F_{i}(G_{\alpha})=\frac{2\sum_{j=0}^{i-1}\alpha^{j}+\alpha^{i-2}}{\alpha^{i-1}+\alpha^{i-2}},\ \textrm{ and}$ 
+
+ (7) 
+
+ $\displaystyle\textrm{cr}(X,\Sigma)$ 
+ $\displaystyle\geq$ 
+ $\displaystyle\sup_{i}F^{\prime}_{i}(G_{\alpha})=1+2\frac{\sum_{j=0}^{i+1}\alpha^{j}}{\alpha^{i}}.$ 
+
+ (8) 
+
+ It is easy to verify that if $\alpha=1$ , then $\textrm{dr}(X,\Sigma),\textrm{cr}(X,\Sigma)=\infty$ . We can thus assume that $\alpha>1$ , and
+thus obtain from ( 7 ), ( 8 ), after some manipulations, that 
+
+ $\displaystyle\textrm{dr}(X,\Sigma)$ 
+ $\displaystyle\geq$ 
+ $\displaystyle\sup_{i}\frac{2(\alpha^{2}-\frac{1}{\alpha^{i-2}})+\alpha-1}{\alpha^{2}-1}=\frac{2\alpha^{2}+\alpha-1}{\alpha^{2}-1},\ \textrm{ and}$ 
+
+ $\displaystyle\textrm{cr}(X,\Sigma)$ 
+ $\displaystyle\geq$ 
+ $\displaystyle 1+\sup_{i}\frac{2\sum_{j=0}^{i+1}\alpha^{j}}{\alpha^{i}}=\sup_{i}1+2\frac{\alpha^{2}-\frac{1}{\alpha^{i}}}{\alpha-1}=1+2\frac{\alpha^{2}}{\alpha-1},$ 
+
+ which concludes the proof.
+∎ 
+
+ Figure  1 depicts this tradeoff, as attained by the search strategy $G_{\alpha}$ (see also Lemma  1 ).
+
+ Note, however, that although $G_{\alpha}$ , with $\alpha\rightarrow\infty$ has optimal discovery ratio, its competitive ratio is unbounded. Furthermore, strategy
+ ${\tt doubling}\equiv G_{2}$ has optimal competitive ratio equal to 9, whereas its discovery ratio is equal to 3. This motivates the topic of the
+next section.
+
+ 4 The discovery ratio of competitively optimal strategies
+
+ In this section we focus on strategies in $\Sigma_{9}$ , namely the set of competitively optimal strategies.
+For any strategy $X\in\Sigma_{9}$ , it is known that there is an infinite set of linear inequalities that relate its search segments, as shown in the following lemma
+(see, e.g,  [ 22 ] ). For completeness, we include a proof of this lemma.
+
+ Lemma 2 . 
+
+ The strategy $X=(x_{0},x_{1},x_{2},\ldots)$ is in $\Sigma_{9}$ if and only if its segments satisfy the following inequalities 
+
+ $1\leq x_{0}\leq 4,\quad x_{1}\geq 1\quad\textrm{and }\quad x_{n}\leq 3x_{n-1}-\sum_{i=0}^{n-2}x_{i},\quad\textrm{for all $n\geq 1$}.$ 
+
+ Proof.
+
+ It is well-known that the competitive ratio of $X$ is determined by seeking, for all $n\geq 0$ , a target that is placed at distances $x_{n}+\epsilon$ , where $\epsilon\rightarrow 0$ , and in the same branch that is searched by $X$ in iteration $n$ , namely branch $n\bmod 2$ ; call this target the $n$ -th target . The cost incurred by $X$ for locating the $(n-1)$ -th target, where $n\geq 1$ is equal to
+ $2(\sum_{i=0}^{n-1}x_{i})+x_{n}+x_{n-1}+\epsilon$ , whereas the optimal cost is $x_{n-1}+\epsilon$ . From the definition of the competitive ratio, and since
+ $\epsilon\rightarrow 0$ , we obtain that 
+
+ $2\sum_{i=0}^{n-1}x_{i}+x_{n}+x_{n-1}\leq 9\cdot x_{n-1}\Rightarrow x_{n}\leq 3x_{n-1}-\sum_{i=0}^{n-2}x_{i}.$ 
+
+ Moreover, we can obtain one more inequality that involves $x_{0}$ , by assuming a target placed at distance 1 from $O$ in branch 1.
+Thus, we obtain that $2x_{0}+1\leq 9$ , or, equivalently, $x_{0}\leq 4$ . 
+
+ Last, note that $x_{0},x_{1}\geq 1$ from the assumption that the target is at distance at least 1 from the origin.
+∎ 
+
+ We now define a class of strategies in $\Sigma_{9}$ as follows. For given $t\in[1,4]$ , let $R_{t}$ denote the strategy whose search segments are determined
+by the linear recurrence
+
+ $x_{0}=t,\quad\textrm{and }\quad x_{n}=3x_{n-1}-\sum_{i=0}^{n-2}x_{i},\quad\textrm{for all $n\geq 1$}.$ 
+
+ In words, $R_{t}$ is such that for every $n>1$ , the inequality relating $x_{0},\ldots,x_{n}$ is tight. The following lemma determines the search lengths of $R_{t}$ as function of $t$ . The lemma also implies that $R_{t}$ is indeed a valid search strategy, for all $t\in[1,4]$ , in that $x_{n}>x_{n-2}$ , for all $n$ , and $x_{n}\rightarrow\infty$ , as $n\rightarrow\infty$ .
+
+ Lemma 3 . 
+
+ The strategy $R_{t}$ is defined by the sequence $x_{n}=t(1+\frac{n}{2})2^{n}$ , for $n\geq 0$ . Moreover,
+ $T_{n}(R_{t})=t(n+1)2^{n}$ . 
+
+ Proof.
+
+ The lemma is clearly true for $n\in\{0,1\}$ .
+For $n\geq 2$ , the equality $x_{n}=3x_{n-1}-\sum_{i=0}^{n-2}x_{i}$ implies that $T_{n}=\sum_{i=0}^{n}x_{i}=4x_{n-1}$ . Therefore, 
+
+ $T_{n}-T_{n-1}=4x_{n-1}-4x_{n-2}\Rightarrow x_{n}=4(x_{n-1}-x_{n-2}).$ 
+
+ The characteristic polynomial of the above linear recurrence is $\xi^{2}-4\xi+4$ , with the unique root $\xi=2$ .
+Thus, $x_{n}$ is of the form $x_{n}=(a+bn)2^{n}$ , for $n\geq 0$ , where $a$ and $b$ are determined by the initial conditions $x_{0}=t$ and $x_{1}=3t$ .
+Summarizing, we obtain that for $n\geq 0$ we have that
+ $x_{n}=t(1+\frac{n}{2})2^{n},\ \textrm{and }T_{n}=4x_{n-1}=t(n+1)2^{n}.$ 
+∎ 
+
+ Among all strategies in $R_{t}$ we are interested, in particular, in the strategy $R_{4}$ . This strategy has some intuitively appealing properties:
+It maximizes the search segments in each iteration (see Lemma  5 ) and minimizes the number of turns required to discover a
+certain length (as will be shown in Corollary  6 ). Using the notation of the introduction, we can say that $R_{4}\equiv{\tt aggressive}$ . In this section we will show that $R_{4}$ has optimal discovery ratio among all competitively optimal strategies. Let us denote by $\bar{x}_{i}$ the search segment in the $i$ -th iteration in $R_{4}$ .
+
+ Corollary 4 . 
+
+ The strategy $R_{4}$ can be described by the sequence $\bar{x}_{n}=(n+2)2^{n+1}$ , for $n\geq 0$ . Moreover, $T_{n}(R_{4})=(n+1)2^{n+2}$ , for $n\geq 0$ . 
+
+ The following lemma shows that, for any given $n$ , the total length discovered by any competitively optimal strategy $X$ at the turning point of the $n$ -th iteration cannot exceed the corresponding length of $R_{4}$ . Its proof can also be found in  [ 22 ] , but we give a different proof using ideas that we will apply later (Lemma  7 ).
+
+ Lemma 5 . 
+
+ For every strategy $X=(x_{0},x_{1},\ldots)$ with $X\in\Sigma_{9}$ , it holds that $x_{n}\leq\bar{x}_{n}$ , for all $n\in\mathbb{N}$ ,
+where $\bar{x}_{n}$ is the search segment in the $n$ -th iteration of $R_{4}$ . Hence, in particular, we have $x_{n}+x_{n-1}\leq\bar{x}_{n}+\bar{x}_{n-1}$ , for all $n\in\mathbb{N}$ . 
+
+ Proof.
+
+ For a given $n\geq 0$ , let $P_{n}$ denote the following linear program. 
+
+ max 
+ $\displaystyle x_{n}$ 
+
+ subject to 
+ $\displaystyle 1\leq x_{0}\leq 4,$ 
+
+ $\displaystyle x_{1}\geq 1,$ 
+
+ $\displaystyle x_{i}\leq 3x_{i-1}-\sum_{j=0}^{i-2}x_{j},\quad 1\leq i\leq n.$ 
+
+ We will show, by induction on $i$ , that for all $i\leq n$ , 
+
+ $x_{n}\leq(i+2)2^{i-1}x_{n-i}-i2^{i-1}T_{n-i-1}(X).$ 
+
+ The lemma will then follow, since for $i=n$ we have 
+
+ $x_{n}\leq(n+2)2^{n-1}x_{0}\leq(n+2)2^{n-1}\cdot 4=(n+2)2^{n+1}=\bar{x}_{n},$ 
+
+ where the last equality is due to Corollary  4 .
+We will now prove the claim. Note that, the base case, namely $i=1$ , follows directly from the LP constraint. For the induction hypothesis, suppose that for $i\geq 1$ , it holds that 
+
+ $x_{n}\leq(i+2)2^{i-1}x_{n-i}-i2^{i-1}T_{n-i-1}(X).$ 
+
+ (9) 
+
+ We will show that the claim holds for $i+1$ .
+Since 
+
+ $x_{n-i}\leq 3x_{n-i-1}-T_{n-i-2}(X),$ 
+
+ (10) 
+
+ then 
+
+ $\displaystyle x_{n}$ 
+ $\displaystyle\leq(i+2)2^{i-1}(3x_{n-i-1}-T_{n-i-2}(X))-i2^{i-1}T_{n-i-1}(X)$ 
+
+ (subst. ( 10 ) in ( 9 )) 
+
+ $\displaystyle=(i+2)2^{i-1}(3x_{n-i-1}-T_{n-i-2}(X))-i2^{i-1}(T_{n-i-2}(X)+x_{n-i-1})$ 
+
+ (def. $T_{n-i-1}$ ) 
+
+ $\displaystyle=(i+3)2^{i}x_{n-i-1}+(i+1)2^{i}T_{n-i-2}(X),$ 
+
+ (arranging terms) 
+
+ which completes the proof of the claim.
+∎ 
+
+ Given strategy $X$ and $l\in\mathbb{R}^{+}$ , define $m(X,l)$ as the number of turns that $X$ has performed by the time it discovers a total
+length equal to $l$ . Also define
+
+ $m^{*}(l)=\inf_{X\in\Sigma_{9}}m(X,l),$ 
+
+ that is, $m^{*}(l)$ is the minimum number of turns that a competitively optimal strategy is required to perform in order to discover length equal to $l$ . From the constraint $x_{0}\leq 4$ , it follows that clearly $m^{*}(l)=0$ , for $l\leq 4$ .
+The following corollary to Lemma  5 gives an expression for $m^{*}(l)$ , for general values of $l$ .
+
+ Corollary 6 . 
+
+ For given $l>4$ ,
+ $m^{*}(l)=m(R_{4},l)=\min\{n\in\mathbb{N}_{\geq 1}:(3n+5)2^{n}\geq l\}.$ 
+
+ Proof.
+
+ From Lemma  5 , the total length discovered by any $X\in\Sigma_{9}$ at the turning point of the $n$ -th iteration cannot exceed $\bar{x}_{n}+\bar{x}_{n-1}$ for $n\geq 1$ , which implies that $m^{*}(l)=n$ , if $l\in(\bar{x}_{n-1}+\bar{x}_{n-2},\bar{x}_{n}+\bar{x}_{n-1}]$ for $n\geq 1$ . In other words, 
+
+ $m^{*}(l)=\min\{n\in\mathbb{N}_{\geq 1}:\bar{x}_{n}+\bar{x}_{n-1}\geq l\}.$ 
+
+ From Corollary  4 , we have $\bar{x}_{n}=(n+2)2^{n+1}$ , for $n\geq 0$ . Hence, 
+
+ $m^{*}(l)=\min\{n\in\mathbb{N}_{\geq 1}:(3n+5)2^{n}\geq l\}.$ 
+
+ ∎ 
+
+ The following lemma is a central technical result that is instrumental in establishing the bounds on the discovery ratio.
+For a given $l\in\mathbb{R}^{+}$ , define
+
+ $d^{*}(l)=\inf_{X\in\Sigma_{9}}D(X,l).$ 
+
+ In words, $d^{*}(l)$ is the minimum cost at which a competitively optimal strategy can discover a length equal to $l$ .
+Trivially, $d^{*}(l)=l$ if $l\leq 4$ . Lemma  7 gives an expression of $d^{*}(l)$ for $l>4$ in terms of $m^{*}(l)$ ;
+it also shows that there exists a $t\in(1,4]$ such that the strategy $R_{t}$ attains this minimum cost.
+
+ We first give some motivation behind the purpose of the lemma. When considering general strategies in $\Sigma$ , we used a lower
+bound on the cost for discovering a length $l$ as given by ( 4 ), and which corresponds to a strategy that
+never turns. However, this lower bound is very weak when
+one considers strategies in $\Sigma_{9}$ . This is because a competitive strategy needs to turn sufficiently often, which affects considerably
+the discovery costs.
+
+ We also give some intuition about the proof. We show how to model the question by means of a linear program. Using the constraints of the LP,
+we first obtain a lower bound on its objective in terms of the parameters $l$ and $m^{*}(l)$ . In this process, we also obtain a lower bound on
+the first segment of the strategy ( $x_{0}$ ); this is denoted by $t$ in the proof. In the next step, we show that the strategy $R_{t}$ has discovery cost that matches the lower bound on the objective, which suffices to prove the result.
+
+ Lemma 7 . 
+
+ For $l>4$ , it holds 
+
+ $d^{*}(l)=D(R_{t},l)=l\cdot\frac{6m^{*}(l)+4}{3m^{*}(l)+5},\quad\textrm{ where $t=l\cdot\frac{2^{2-m^{*}(l)}}{3m^{*}(l)+5}\in(1,4]$}.$ 
+
+ Proof.
+
+ Let $X=(x_{0},x_{1},\ldots)\in\Sigma_{9}$ denote the strategy which minimizes the quantity $D(X,l)$ . Then there must exist a smallest $n\geq m^{*}(l)$ such that the searcher discovers a total length $l$ during the $n$ -th iteration. More precisely, suppose that this happens when the searcher is at branch $n\bmod 2$ , and at some position $p$ (i.e., distance from $O$ ), with $p\in(x_{n-2},x_{n}]$ . Then we have $x_{n-1}+p=l$ , and 
+
+ $d^{*}(l)=D(X,l)=2\sum_{i=0}^{n-1}x_{i}+p=2\sum_{i=0}^{n-1}x_{i}+(l-x_{n-1})=2\sum_{i=0}^{n-2}x_{i}+x_{n-1}+l.$ 
+
+ Therefore, $d^{*}(l)$ is the objective of the following linear program. 
+
+ min 
+ $\displaystyle 2\sum_{i=0}^{n-2}x_{i}+x_{n-1}+l$ 
+
+ subject to 
+ $\displaystyle x_{n}+x_{n-1}\geq l,$ 
+
+ $\displaystyle 1\leq x_{0}\leq 4,$ 
+
+ $\displaystyle x_{i-2}\leq x_{i},$ 
+ $\displaystyle\quad i\in[2,n]$ 
+
+ $\displaystyle 1\leq x_{i}\leq 3x_{i-1}-\sum_{j=0}^{i-2}x_{j},$ 
+ $\displaystyle\quad i\in[1,n].$ 
+
+ Recall that $n\geq m^{*}(l)$ is a fixed integer.
+Let Obj denote the objective value of the linear program. We claim that, for $1\leq i\leq n$ , 
+
+ $x_{n-i}\geq\frac{2^{2-i}}{3i+5}l+\frac{3i-1}{3i+5}T_{n-i-1}\quad\textrm{and}\quad\textrm{Obj}\geq\frac{6i+4}{3i+5}l+\frac{9\cdot 2^{i}}{3i+5}T_{n-i-1}.$ 
+
+ The claim provides a lower bound of the objective, since for $i=n$ it implies that 
+
+ $x_{0}\geq\frac{2^{2-n}}{3n+5}l\quad\textrm{and}\quad\textrm{Obj}\geq\frac{6n+4}{3n+5}l\geq\frac{6m^{*}(l)+4}{3m^{*}(l)+5}l,$ 
+
+ where the last inequality follows from the fact $n\geq m^{*}(l)$ . We will argue later that this lower bound is tight, 
+
+ First, we prove the claim, by induction on $i$ , for all $i\leq n$ . We first show the base case, namely $i=1$ .
+Since $x_{n}\leq 3x_{n-1}-T_{n-2}$ and $x_{n}+x_{n-1}\geq l$ , it follows that 
+
+ $x_{n-1}\geq l-x_{n}\geq l-(3x_{n-1}-T_{n-2})\Rightarrow x_{n-1}\geq\frac{l}{4}+\frac{T_{n-2}}{4},\quad\textrm{hence}$ 
+
+ $\textrm{Obj}=l+2T_{n-2}+x_{n-1}\geq l+2T_{n-2}+\frac{l}{4}+\frac{T_{n-2}}{4}=\frac{5}{4}l+\frac{9}{4}T_{n-2},$ 
+
+ thus the base case holds. For the induction step, suppose that 
+
+ $x_{n-i}\geq\frac{2^{2-i}}{3i+5}l+\frac{3i-1}{3i+5}T_{n-i-1}\quad\textrm{and}\quad\textrm{Obj}\geq\frac{6i+4}{3i+5}l+\frac{9\cdot 2^{i}}{3i+5}T_{n-i-1}.$ 
+
+ Then, 
+
+ $\displaystyle 3x_{n-i-1}-T_{n-i-2}$ 
+ $\displaystyle\geq x_{n-i}$ 
+
+ (by LP constraint) 
+
+ $\displaystyle\geq\frac{2^{2-i}}{3i+5}l+\frac{3i-1}{3i+5}T_{n-i-1}$ 
+
+ (ind. hyp.) 
+
+ $\displaystyle=\frac{2^{2-i}}{3i+5}l+\frac{3i-1}{3i+5}(T_{n-i-2}+x_{n-i-1})$ 
+
+ (def. $T_{n-i-1}$ ) 
+
+ By rearranging terms in the above inequality we obtain 
+
+ $\displaystyle(3-\frac{3i-1}{3i+5})x_{n-i-1}$ 
+ $\displaystyle\geq\frac{2^{2-i}}{3i+5}l+(1+\frac{3i-1}{3i+5})T_{n-i-2}\Rightarrow$ 
+
+ $\displaystyle\frac{6i+16}{3i+5}x_{n-i-1}$ 
+ $\displaystyle\geq\frac{2^{2-i}}{3i+5}l+\frac{6i+4}{3i+5}T_{n-i-2}\Rightarrow x_{n-i-1}\geq\frac{2^{1-i}}{3i+8}l+\frac{3i+2}{3i+8}T_{n-i-2},$ 
+
+ and 
+
+ Obj 
+ $\displaystyle\geq\frac{6i+4}{3i+5}l+\frac{9\cdot 2^{i}}{3i+5}T_{n-i-1}$ 
+
+ (ind. hyp.) 
+
+ $\displaystyle=\frac{6i+4}{3i+5}l+\frac{9\cdot 2^{i}}{3i+5}(T_{n-i-2}+x_{n-i-1})$ 
+
+ (def. $T_{n-i-1}$ ) 
+
+ $\displaystyle\geq\frac{6i+4}{3i+5}l+\frac{9\cdot 2^{i}}{3i+5}T_{n-i-2}+\frac{9\cdot 2^{i}}{3i+5}(\frac{2^{1-i}}{3i+8}l+\frac{3i+2}{3i+8}T_{n-i-2})$ 
+
+ (ind. hyp.) 
+
+ $\displaystyle=\frac{6i+10}{3i+8}l+\frac{9\cdot 2^{i+1}}{3i+8}T_{n-i-2}.$ 
+
+ This concludes the proof of the claim, which settles the lower bound on $d^{*}(l)$ . It remains to show that this bound is tight. Consider the strategy $R_{t}$ , with $t=\frac{2^{2-m^{*}(l)}}{3m^{*}(l)+5}l$ .
+In what follows we will show that $R_{t}$ is a feasible solution of the LP, and that $D(R_{t},l)=\frac{6m^{*}(l)+4}{3m^{*}(l)+5}l$ . 
+
+ First, we show that $t\in(1,4]$ . For the upper bound, from Corollary  6 , we have $(3m^{*}(l)+5)2^{m^{*}(l)}\geq l$ , which implies that 
+
+ $1\geq l\cdot\frac{2^{-m^{*}(l)}}{3m^{*}(l)+5}\Rightarrow 4\geq l\cdot\frac{2^{2-m^{*}(l)}}{3m^{*}(l)+5}\Rightarrow 4\geq t.$ 
+
+ In order to show that $t>1$ , consider first the case $l\in(4,5]$ . Then $m^{*}(l)=1$ , which implies that 
+
+ $t=\frac{2^{2-m^{*}(l)}}{3m^{*}(l)+5}l=\frac{l}{4}\geq 1.$ 
+
+ Moreover, if $l>5$ , by Corollary  6 , $m^{*}(l)$ is the smallest integer solution of the inequality $(3n+5)2^{n}\geq l$ , then $(3m^{*}(l)+2)2^{m^{*}(l)-1} 
+
+ $\displaystyle t$ 
+ $\displaystyle=\frac{2^{2-m^{*}(l)}}{3m^{*}(l)+5}l=\frac{4l}{(3m^{*}(l)+5)2^{m^{*}(l)}}=\frac{2l}{(3m^{*}(l)+2)2^{m^{*}(l)-1}\cdot\frac{3m^{*}(l)+5}{3m^{*}(l)+2}}$ 
+
+ $\displaystyle>\frac{2l}{l\cdot\frac{3m^{*}(l)+5}{3m^{*}(l)+2}}=\frac{6m^{*}(l)+4}{3m^{*}(l)+5}>1.$ 
+
+ The last inequality holds since we have $m^{*}(l)\geq 1$ , for $l>5$ . This concludes that $t\in(1,4]$ , and $R_{t}$ is a feasible solution of the LP since $R_{t}$ satisfies all other constraints by its definition. 
+
+ It remains thus to show that $D(R_{t},l)=\frac{6m^{*}(l)+4}{3m^{*}(l)+5}l$ . By Lemma  3 , we have 
+
+ $\displaystyle x_{m^{*}(l)}+x_{m^{*}(l)-1}$ 
+ $\displaystyle=t\left(1+\frac{m^{*}(l)}{2}\right)2^{m^{*}(l)}+t\left(1+\frac{m^{*}(l)-1}{2}\right)2^{m^{*}(l)-1}$ 
+
+ $\displaystyle=t\cdot 2^{m^{*}(l)}\cdot\frac{3m^{*}(l)+5}{4}=\frac{2^{2-m^{*}(l)}}{3m^{*}(l)+5}l\cdot 2^{m^{*}(l)}\cdot\frac{3m^{*}(l)+5}{4}=l.$ 
+
+ Then $R_{t}$ has exactly discovered a total length $l$ right before the $m^{*}(l)$ -th turn. Hence, 
+
+ $\displaystyle D(R_{t},l)$ 
+ $\displaystyle=2T_{m^{*}(l)-2}+x_{m^{*}(l)-1}+l$ 
+
+ $\displaystyle=t\cdot\left(m^{*}(l)-1\right)2^{m^{*}(l)-1}+t\cdot\left(1+\frac{m^{*}(l)-1}{2}\right)2^{m^{*}(l)-1}+l$ 
+
+ (by Lemma  3 ) 
+
+ $\displaystyle=t\cdot\frac{(3m^{*}(l)-1)2^{m^{*}(l)}}{4}+l$ 
+
+ (arranging terms) 
+
+ $\displaystyle=\frac{2^{2-m^{*}(l)}}{3m^{*}(l)+5}l\cdot\frac{(3m^{*}(l)-1)2^{m^{*}(l)}}{4}+l$ 
+
+ (substituting $t$ ) 
+
+ $\displaystyle=\left(\frac{3m^{*}(l)-1}{3m^{*}(l)+5}+1\right)\cdot l=\frac{6m^{*}(l)+4}{3m^{*}(l)+5}\cdot l.$ 
+
+ (arranging terms) 
+
+ This concludes the proof of the lemma.
+∎ 
+
+ We are now ready to prove the main results of this section. Recall that for any two strategies $X,Y$ , $\textrm{dr}(X,Y)$ is given by ( 2 ).
+Combining with ( 3 ), as well as with the fact that for $Y\in\Sigma_{9}$ , we have that $D(Y,l)\geq d^{*}(l)$ , (from the definition
+of $d^{*}$ ), we obtain that
+
+ $\textrm{dr}(X,\Sigma_{9})=\sup_{i\in\mathbb{N}^{*}}\sup_{\delta\in(0,x_{i}-x_{i-2}]}F_{i}(X,\delta),\quad\textrm{where }F_{i}(X,\delta)=\frac{2\sum_{j=0}^{i-1}x_{j}+x_{i-2}+\delta}{d^{*}(x_{i-1}+x_{i-2}+\delta)}.$ 
+
+ (11) 
+
+ Recall that for the strategy $R_{4}=(\bar{x}_{0},\bar{x}_{1},\ldots)$ , its segments $\bar{x}_{i}$ are given in Corollary  4 .
+
+ Theorem 4 . 
+
+ For the strategy $R_{4}$ it holds that $\textrm{dr}(R_{4},\Sigma_{9})=8/5$ . 
+
+ Proof.
+
+ We will express the discovery ratio using ( 11 ). For $i=1$ , and $\delta\in(0,\bar{x}_{1}]$ , we have that 
+
+ $F_{1}(R_{4},\delta)=\frac{2\bar{x}_{0}+\delta}{d^{*}(\bar{x}_{0}+\delta)}=\frac{8+\delta}{d^{*}(4+\delta)}.$ 
+
+ From Lemma  7 , $d^{*}(4+\delta)=(4+\delta)\cdot\frac{6\cdot 1+4}{3\cdot 1+5}=\frac{5(4+\delta)}{4}$ ; this is because
+ $1\leq m^{*}(4+\delta)\leq m^{*}(16)=1$ . Then, 
+
+ $F_{1}(R_{4},\delta)=\frac{8+\delta}{\frac{5(4+\delta)}{4}}=\frac{32+4\delta}{20+5\delta},\ \textrm{hence }\sup_{\delta\in(0,\bar{x}_{1}]}F_{1}(R_{4},\delta)=\frac{8}{5}.$ 
+
+ (12) 
+
+ For given $i\geq 2$ , and $\delta\in(0,\bar{x}_{i}-\bar{x}_{i-2}]$ , we have 
+
+ $F_{i}(R_{4},\delta)=\frac{2T_{i-1}+\bar{x}_{i-2}+\delta}{d^{*}(\bar{x}_{i-1}+\bar{x}_{i-2}+\delta)},$ 
+
+ where $T_{i-1}$ is given by Corollary  4 . Moreover, from Lemma  7 we have that 
+
+ $d^{*}(\bar{x}_{i-1}+\bar{x}_{i-2}+\delta)=(\bar{x}_{i-1}+\bar{x}_{i-2}+\delta)\cdot\frac{6m^{*}(\bar{x}_{i-1}+\bar{x}_{i-2}+\delta)+4}{3m^{*}(\bar{x}_{i-1}+\bar{x}_{i-2}+\delta)+5}=(\bar{x}_{i-1}+\bar{x}_{i-2}+\delta)\cdot\frac{6i+4}{3i+5},$ 
+
+ where the last equality follows from the fact that $m^{*}(\bar{x}_{i-1}+\bar{x}_{i-2}+\delta)=i$ . This is because 
+
+ $i\leq m^{*}(\bar{x}_{i-1}+\bar{x}_{i-2}+\delta)\leq m^{*}(\bar{x}_{i-1}+\bar{x}_{i-2}+\bar{x}_{i}-\bar{x}_{i-2})=m^{*}(\bar{x}_{i}+\bar{x}_{i-1})=i.$ 
+
+ Substituting with the values of the search segments as well as $T_{i-1}$ , we obtain that 
+
+ $F_{i}(R_{4},\delta)=\frac{i\cdot 2^{i+2}+i\cdot 2^{i-1}+\delta}{((i+1)2^{i}+i\cdot 2^{i-1}+\delta)\cdot\frac{6i+4}{3i+5}}=\frac{9i\cdot 2^{i-1}+\delta}{((3i+2)2^{i-1}+\delta)\cdot\frac{6i+4}{3i+5}}.$ 
+
+ Since 
+
+ $\frac{\partial F_{i}(R_{4},\delta)}{\partial\delta}=-\frac{2^{i+1}(3i-1)(3i+5)}{(3i+2)(2^{n}(3i+2)+2\delta)^{2}}\leq 0,$ 
+
+ then $F_{i}(R_{4},\delta)$ is monotone decreasing in $\delta$ . Thus 
+
+ $\sup_{\delta\in(0,\bar{x}_{i}-\bar{x}_{i-2}]}F_{i}(R_{4},\delta)=\frac{9i\cdot 2^{i-1}}{((3i+2)2^{i-1})\cdot\frac{6i+4}{3i+5}}=\frac{9i(3i+5)}{(3i+2)(6i+4)},$ 
+
+ and then 
+
+ $\sup_{i\in\mathbb{N}_{i\geq 2}}\sup_{\delta\in(0,\bar{x}_{i}-\bar{x}_{i-2}]}F_{i}(R_{4},\delta)=\frac{(9\cdot 2)(3\cdot 2+5)}{(3\cdot 2+2)(6\cdot 2+4)}=\frac{99}{64} 
+
+ (13) 
+
+ Combining ( 11 ), ( 12 ) and ( 13 ) yields the proof of the theorem.
+∎ 
+
+ The following theorem shows that $R_{4}$ has optimal discovery ratio among all competitively optimal strategies.
+
+ Theorem 5 . 
+
+ For every strategy $X\in\Sigma_{9}$ , we have $\textrm{dr}(X,\Sigma_{9})\geq\frac{8}{5}$ . 
+
+ Proof.
+
+ Let $X=(x_{0},\ldots)$ . We will consider two cases, depending on whether $x_{0} 
+
+ $F_{1}(X,\epsilon)=\frac{2x_{0}+\epsilon}{d^{*}(x_{0}+\epsilon)}=\frac{2x_{0}+\epsilon}{x_{0}+\epsilon},$ 
+
+ from which we obtain that 
+
+ $\sup_{\delta\in(0,x_{1}]}F_{1}(X,\delta)\geq F_{1}(X,\epsilon)\geq\frac{2x_{0}+\epsilon}{x_{0}+\epsilon}\rightarrow 2,\ \textrm{as $\epsilon\rightarrow 0^{+}$}.$ 
+
+ Next, suppose that $x_{0}=4$ . In this case, for $\delta\in(0,x_{1}]$ , it readily follows that $F_{1}(X,\delta)=F_{1}(R_{4},\delta)$ .
+Therefore, from ( 12 ), we have that 
+
+ $\sup_{\delta\in(0,x_{1}]}F_{1}(X,\delta)=\sup_{\delta\in(0,x_{1}]}\frac{32+4\delta}{20+5\delta}=\frac{8}{5}.$ 
+
+ The lower bound follows directly from ( 11 ).
+∎ 
+
+ Recall that $G_{2}$ is the standard doubling strategy $G_{2}=(2^{0},2^{1},\ldots)$ . The following theorem shows that within $\Sigma_{9}$ , $G_{2}$ has worse discovery ratio than $R_{4}$ . The proof follows along the lines of the proof of Theorem  4 , where instead of using the search segments $\bar{x}_{i}$ of $R_{4}$ , we use the search segment $x_{i}=2^{i}$ of $G_{2}$ .
+
+ Theorem 6 . 
+
+ For the strategy $G_{2}=(x_{0},x_{1},\ldots)$ , we have $\textrm{dr}(G_{2},\Sigma_{9})=\frac{7}{3}.$ 
+
+ Proof.
+
+ We will express the discovery ratio using ( 11 ).
+For $i=1$ , and $\delta\in(0,x_{1}]$ , we have that 
+
+ $F_{1}(G_{2},\delta)=\frac{2x_{0}+\delta}{d^{*}(x_{0}+\delta)}=\frac{2+\delta}{d^{*}(1+\delta)}.$ 
+
+ From the definition, $d^{*}(1+\delta)=1+\delta$ ; this is because
+ $0\leq m^{*}(1+\delta)\leq m^{*}(3)=0$ . Then, 
+
+ $F_{1}(G_{2},\delta)=\frac{2+\delta}{1+\delta},\ \textrm{hence }\sup_{\delta\in(0,\bar{x}_{1}]}F_{1}(G_{2},\delta)=2.$ 
+
+ (14) 
+
+ For $i=2$ and $\delta\in(0,x_{2}-x_{0}]$ , we have that 
+
+ $F_{2}(G_{2},\delta)=\frac{3x_{0}+2x_{1}+\delta}{d^{*}(x_{0}+x_{1}+\delta)}=\frac{7+\delta}{d^{*}(3+\delta)}.$ 
+
+ From Lemma  7 , $d^{*}(3+\delta)$ either equals to $3+\delta$ if $\delta\in(0,1]$ , or equals to $(3+\delta)\cdot\frac{6\cdot 1+4}{3\cdot 1+5}=\frac{5(3+\delta)}{4}$ if $\delta\in(1,x_{2}-x_{0}]$ . This is because
+ $0\leq m^{*}(3+\delta)\leq m^{*}(6)=1$ . Then, for $\delta\in(0,1]$ , 
+
+ $F_{2}(G_{2},\delta)=\frac{7+\delta}{3+\delta},\ \textrm{hence }\sup_{\delta\in(0,1]}F_{2}(G_{2},\delta)=\frac{7}{3}.$ 
+
+ (15) 
+
+ For $\delta\in(1,x_{2}-x_{0}]$ , 
+
+ $F_{2}(G_{2},\delta)=\frac{7+\delta}{\frac{5(3+\delta)}{4}}=\frac{28+4\delta}{15+5\delta},\ \textrm{hence }\sup_{\delta\in(1,x_{2}-x_{0}]}F_{2}(G_{2},\delta)=\frac{28}{15}.$ 
+
+ (16) 
+
+ Combining ( 15 ) and ( 16 ) yields 
+
+ $\sup_{\delta\in(0,x_{2}-x_{0}]}F_{2}(G_{2},\delta)=\frac{7}{3}.$ 
+
+ (17) 
+
+ For given $i\geq 3$ , and $\delta\in(0,x_{i}-x_{i-2}]$ , we have 
+
+ $F_{i}(G_{2},\delta)=\frac{2T_{i-1}+x_{i-2}+\delta}{d^{*}(x_{i-1}+x_{i-2}+\delta)}=\frac{2^{i+1}-2+2^{i-2}+\delta}{d^{*}(2^{i-1}+2^{i-2}+\delta)}=\frac{9\cdot 2^{i-2}-2+\delta}{d^{*}(2^{i-1}+2^{i-2}+\delta)}.$ 
+
+ Moreover, from Lemma  7 we have that 
+
+ $d^{*}(2^{i-1}+2^{i-2}+\delta)=(2^{i-1}+2^{i-2}+\delta)\cdot\frac{6m^{*}(2^{i-1}+2^{i-2}+\delta)+4}{3m^{*}(2^{i-1}+2^{i-2}+\delta)+5}.$ 
+
+ and 
+
+ $m^{*}(x_{i-1}+x_{i-2}+\delta)\geq m^{*}(x_{i-1}+x_{i-2})=m^{*}(3\cdot 2^{i-2}).$ 
+
+ For $i\in\{3,4\}$ and $\delta\in(0,x_{i}-x_{i-2}]$ , $m^{*}(x_{i-1}+x_{i-2}+\delta)\geq m^{*}(3\cdot 2^{i-2})\geq 1$ ,
+then 
+
+ $d^{*}(2^{i-1}+2^{i-2}+\delta)\geq(2^{i-1}+2^{i-2}+\delta)\cdot\frac{6\cdot 1+4}{3\cdot 1+5}=\frac{15\cdot 2^{i-2}+5\delta}{4},$ 
+
+ hence, for $i=3$ , 
+
+ $F_{3}(G_{2},\delta)=\frac{9\cdot 2^{i-2}-2+\delta}{d^{*}(2^{i-1}+2^{i-2}+\delta)}\leq\frac{16+\delta}{\frac{30+5\delta}{4}}=\frac{64+4\delta}{30+5\delta}.$ 
+
+ We obtain that 
+
+ $\sup_{\delta\in(0,x_{3}-x_{1}]}F_{3}(G_{2},\delta)\leq\frac{64}{30}.$ 
+
+ (18) 
+
+ For $i=4$ , 
+
+ $F_{4}(G_{2},\delta)=\frac{9\cdot 2^{i-2}-2+\delta}{d^{*}(2^{i-1}+2^{i-2}+\delta)}\leq\frac{32+\delta}{\frac{}{60+5\delta}{4}}=\frac{128+4\delta}{60+5\delta}.$ 
+
+ We obtain that 
+
+ $\sup_{\delta\in(0,x_{4}-x_{2}]}F_{4}(G_{2},\delta)\leq\frac{128}{60}.$ 
+
+ (19) 
+
+ For $i\geq 5$ and $\delta\in(0,x_{i}-x_{i-2}]$ , $m^{*}(x_{i-1}+x_{i-2}+\delta)\geq m^{*}(3\cdot 2^{i-2})\geq 2$ ,
+then 
+
+ $d^{*}(2^{i-1}+2^{i-2}+\delta)\geq(2^{i-1}+2^{i-2}+\delta)\cdot\frac{6\cdot 2+4}{3\cdot 2+5}=\frac{48\cdot 2^{i-2}+16\delta}{11},$ 
+
+ and 
+
+ $F_{i}(G_{2},\delta)=\frac{9\cdot 2^{i-2}-2+\delta}{d^{*}(2^{i-1}+2^{i-2}+\delta)}\leq\frac{9\cdot 2^{i-2}-2+\delta}{\frac{48\cdot 2^{i-2}+16\delta}{11}}=\frac{99\cdot 2^{i-2}-22}{48\cdot 2^{i-2}}\leq\frac{99}{48},$ 
+
+ hence, for $i\geq 5$ , 
+
+ $\sup_{\delta\in(0,x_{i}-x_{i-2}]}F_{i}(G_{2},\delta)\leq\frac{99}{48}.$ 
+
+ (20) 
+
+ Combining ( 14 ), ( 17 ), ( 18 ), ( 19 ) and ( 20 ) yields the proof of the theorem.
+∎ 
+
+ A natural question arises: Is $R_{4}$ the unique strategy of optimal discovery ratio in $\Sigma_{9}$ ? The following theorem provides
+evidence that optimal strategies cannot be radically different than $R_{4}$ , in that they must mimic it in the first few iterations.
+
+ Theorem 7 . 
+
+ Strategy $X=(x_{0},x_{1},\ldots)\in\Sigma_{9}$ , has optimal discovery ratio in $\Sigma_{9}$ only if
+ $x_{i}=\bar{x}_{i}$ , for $0\leq i\leq 4$ . 
+
+ Proof.
+
+ Consider a strategy $X(x_{0},x_{1},\ldots)\in\Sigma_{9}$ . Recall that the discovery ratio of $X$ is given by Equation ( 11 ).
+We will prove the theorem by induction on $i$ . 
+
+ We first show the base case, namely $i=0$ . The base case holds by the argument used in the proof of Theorem  5 which shows that if $x_{0} 0$ , we have 
+
+ $\displaystyle m^{*}(x_{i+1}+x_{i}+\epsilon)$ 
+ $\displaystyle=m^{*}(x_{i+1}+\bar{x}_{i}+\epsilon)$ 
+
+ (by induction hypothesis) 
+
+ $\displaystyle\leq m^{*}(\bar{x}_{i+1}+\bar{x}_{i})$ 
+
+ (by monotonicity of $m^{*}$ and Lemma  5 ) 
+
+ $\displaystyle=i+1,$ 
+
+ (by definition of $m^{*}$ ) 
+
+ which implies that, by Lemma  7 , 
+
+ $d^{*}(x_{i}+x_{i-1}+\epsilon)=(x_{i}+x_{i-1}+\epsilon)\cdot\frac{6\cdot m^{*}(x_{i+1}+x_{i}+\epsilon)+4}{3\cdot m^{*}(x_{i+1}+x_{i}+\epsilon)+5}\leq(x_{i}+x_{i-1}+\epsilon)\cdot\frac{6\cdot(i+1)+4}{3\cdot(i+1)+5}.$ 
+
+ (21) 
+
+ Therefore 
+
+ $\displaystyle F_{i+2}(X,\epsilon)$ 
+ $\displaystyle=\frac{2\cdot\sum_{j=0}^{i+1}x_{j}+x_{i}+\epsilon}{d^{*}(x_{i+1}+x_{i}+\epsilon)}$ 
+
+ $\displaystyle=\frac{2T_{i}(R_{4})+2x_{i+1}+\bar{x}_{i}+\epsilon}{d^{*}(x_{i+1}+\bar{x}_{i}+\epsilon)}$ 
+
+ (by ind. hyp.) 
+
+ $\displaystyle\geq\frac{2T_{i}(R_{4})+2x_{i+1}+\bar{x}_{i}+\epsilon}{(x_{i+1}+\bar{x}_{i}+\epsilon)\cdot\frac{6\cdot(i+1)+4}{3\cdot(i+1)+5}}$ 
+
+ (Equation ( 21 )) 
+
+ $\displaystyle=\frac{(i+1)2^{i+3}+(i+2)2^{i+1}+2x_{i+1}+\epsilon}{(x_{i+1}+(i+2)2^{i+1}+\epsilon)\cdot\frac{6\cdot(i+1)+4}{3\cdot(i+1)+5}}$ 
+
+ (Corollary  4 ) 
+
+ $\displaystyle\geq\frac{(i+1)2^{i+3}+(i+2)2^{i+1}+(i+3)2^{i+3}+\epsilon}{(i+3)2^{i+2}+(i+2)2^{i+1}+\epsilon}\cdot\frac{3i+8}{6i+10}.$ 
+
+ (monoton. on $x_{i+1}$ ) 
+
+ Hence 
+
+ $\sup_{\delta\in(0,x_{i+2}-x_{i}]}F_{i+2}(X,\delta)\geq\frac{(i+1)2^{i+3}+(i+2)2^{i+1}+(i+3)2^{i+3}}{(i+3)2^{i+2}+(i+2)2^{i+1}}\cdot\frac{3i+8}{6i+10}=\frac{9i+18}{6i+10},$ 
+
+ which is greater than $\frac{8}{5}$ if $i\leq 3$ . We conclude, from ( 11 ) that $\textrm{dr}(X,\Sigma_{9})>8/5$ , which is a contradiction.
+∎ 
+
+ We conclude with a simple observation.
+
+ Lemma 8 . 
+
+ We have $\textrm{dr}(R_{t},\Sigma)=3$ for any $t>1$ . 
+
+ Proof.
+
+ By Theorem  1 we have 
+
+ $\displaystyle\textrm{dr}(R_{t},\Sigma)$ 
+ $\displaystyle=\sup_{i\in\mathbb{N}^{*}}\frac{2\sum_{j=0}^{i-1}x_{j}+x_{i-2}}{x_{i-1}+x_{i-2}}$ 
+
+ $\displaystyle=\sup_{i\in\mathbb{N}^{*}}\frac{2n2^{n-1}+(1+\frac{n-2}{2})2^{n-2}}{(1+\frac{n-1}{2})2^{n-1}+(1+\frac{n-2}{2})2^{n-2}}$ 
+
+ $\displaystyle=\sup_{i\in\mathbb{N}^{*}}\frac{n+\frac{1}{4}+\frac{n-2}{8}}{\frac{1}{2}+\frac{n-1}{4}+\frac{1}{4}+\frac{n-2}{8}}$ 
+
+ $\displaystyle=\sup_{i\in\mathbb{N}^{*}}\frac{9n}{3n+2}$ 
+
+ $\displaystyle=3.$ 
+
+ ∎ 
+
+ Figure 1: Top: Illustration of the tradeoff between the competitive and discovery ratios with respect to $\Sigma$ in $G_{\alpha}$ . Here, each point corresponds to a value of $\alpha>1$ . The bold point corresponds to the strategy $G_{2}$ and all strategies $R_{t}$ . Bottom: The discover ratios with respect to $\Sigma_{9}$ .
+
+ References
+
+ [1] 
+
+S. Alpern and S. Gal.
+
+ The theory of search games and rendezvous .
+
+ Kluwer Academic Publishers, 2003.
+
+ [2] 
+
+S. Angelopoulos, D. Arsénio, and C. Dürr.
+
+ Infinite linear programming and online searching with turn cost.
+
+ Theoretical Computer Science , 670:11–22, 2017.
+
+ [3] 
+
+S. Angelopoulos, R. Dorrigiv, and A. López-Ortiz.
+
+ On the separation and equivalence of paging strategies.
+
+ In Proceedings of the 18th Annual ACM-SIAM Symposium on Discrete
+Algorithms (SODA) , pages 229–237, 2007.
+
+ [4] 
+
+S. Angelopoulos, M. Renault, and P. Schweitzer.
+
+ Stochastic dominance and the bijective ratio of online algorithms,
+2016.
+
+ arXiv:1607.06132.
+
+ [5] 
+
+S. Angelopoulos and P. Schweitzer.
+
+ Paging and list update under bijective analysis.
+
+ Journal of the ACM , 60(2), 2013.
+
+ [6] 
+
+R. Baeza-Yates, J. Culberson, and G. Rawlins.
+
+ Searching in the plane.
+
+ Information and Computation , 106:234–244, 1993.
+
+ [7] 
+
+A. Beck.
+
+ On the linear search problem.
+
+ Naval Research Logistics , 2:221–228, 1964.
+
+ [8] 
+
+A. Beck and D.J. Newman.
+
+ Yet more on the linear search problem.
+
+ Israel J. of Math. , 8:419–429, 1970.
+
+ [9] 
+
+R. Bellman.
+
+ An optimal search problem.
+
+ SIAM Review , 5:274, 1963.
+
+ [10] 
+
+P. Berman.
+
+ Online Algorithms: The State of the Art , chapter Online
+searching and navigation, pages 232–241.
+
+ Springer, 1998.
+
+ [11] 
+
+D.S. Bernstein, L. Finkelstein, and S. Zilberstein.
+
+ Contract algorithms and robots on rays: unifying two scheduling
+problems.
+
+ In Proceedings of the 18th International Joint Conference on
+Artificial Intelligence (IJCAI) , pages 1211–1217, 2003.
+
+ [12] 
+
+P. Bose, J. De Carufel, and S. Durocher.
+
+ Searching on a line: A complete characterization of the optimal
+solution.
+
+ Theoretical Computer Science , 569:24–42, 2015.
+
+ [13] 
+
+J. Boyar, K. S. Larsen, and A. Maiti.
+
+ A comparison of performance measures via online search.
+
+ Theor. Comput. Sci. , 532:2–13, 2014.
+
+ [14] 
+
+Joan Boyar, Sandy Irani, and Kim S. Larsen.
+
+ A comparison of performance measures for online algorithms.
+
+ Algorithmica , 72(4):969–994, 2015.
+
+ [15] 
+
+A. Condon, A. Deshpande, L. Hellerstein, and N. Wu.
+
+ Algorithms for distributional and adversarial pipelined filter
+ordering problems.
+
+ ACM Trans. Algorithms , 5(2):24:1–24:34, 2009.
+
+ [16] 
+
+J. Czyzowicz, K. Georgiou, E. Kranakis, D. Krizanc, L. Narayanan, J. Opatrny,
+and S. Shende.
+
+ Search on a Line by Byzantine Robots.
+
+ In 27th International Symposium on Algorithms and Computation
+(ISAAC 2016) , pages 27:1–27:12, 2016.
+
+ [17] 
+
+E.D. Demaine, S.P. Fekete, and S. Gal.
+
+ Online searching with turn cost.
+
+ Theoretical Computer Science , 361:342–355, 2006.
+
+ [18] 
+
+S. Gal.
+
+ A general search game.
+
+ Israel Journal of Mathematics , 12:32–45, 1972.
+
+ [19] 
+
+S. Gal.
+
+ Minimax solutions for linear search problems.
+
+ SIAM J. on Applied Math. , 27:17–30, 1974.
+
+ [20] 
+
+S. Gal.
+
+ Search Games .
+
+ Academic Press, 1980.
+
+ [21] 
+
+C. Hipke, C. Icking, R. Klein, and E. Langetepe.
+
+ How to find a point in the line within a fixed distance.
+
+ Discrete Applied Mathematics , 93:67–73, 1999.
+
+ [22] 
+
+P. Jaillet and M. Stafford.
+
+ Online searching.
+
+ Operations Research , 49:234–244, 1993.
+
+ [23] 
+
+M-Y. Kao and M.L. Littman.
+
+ Algorithms for informed cows.
+
+ In Proceedings of the AAAI 1997 Workshop on Online Search ,
+1997.
+
+ [24] 
+
+M-Y. Kao, J.H. Reif, and S.R. Tate.
+
+ Searching in an unknown environment: an optimal randomized algorithm
+for the cow-path problem.
+
+ Inform. and Comp. , 131(1):63–80, 1996.
+
+ [25] 
+
+D. G. Kirkpatrick.
+
+ Hyperbolic dovetailing.
+
+ In Proceedings of the 17th Annual European Symposium on
+Algorithms (ESA) , pages 616–627, 2009.
+
+ [26] 
+
+E. Koutsoupias, C.H. Papadimitriou, and M. Yannakakis.
+
+ Searching a fixed graph.
+
+ In Proc. of the 23rd Int. Colloq. on Automata, Languages and
+Programming (ICALP) , pages 280–289, 1996.
+
+ [27] 
+
+A. López-Ortiz and S. Schuierer.
+
+ On-line parallel heuristics, processor scheduling and robot searching
+under the competitive framework.
+
+ Theor. Comp. Sci. , 310(1–3):527–537, 2004.
+
+ [28] 
+
+A. McGregor, K. Onak, and R. Panigrahy.
+
+ The oil searching problem.
+
+ In Proc. of the 17th European Symposium on Algorithms (ESA) ,
+pages 504–515, 2009.
+
+ [29] 
+
+R.Dorrigiv and A. López-Ortiz.
+
+ A survey of performance measures for on-line algorithms.
+
+ SIGACTN: SIGACT News (ACM Special Interest Group on Automata and
+Computability Theory) , 36(3):67–81, September 2005.
+
+ [30] 
+
+S. Schuierer.
+
+ Lower bounds in online geometric searching.
+
+ Computational Geometry: Theory and Applications , 18(1):37–53,
+2001.
+
+ Experimental support, please
+ view the build logs 
+ for errors. Generated by
+
+ L
+ A 
+ T
+ E 
+
+ xml 
+
+ .
+
+ Instructions for reporting errors
+
+ We are continuing to improve HTML versions of papers, and your feedback helps enhance accessibility and mobile
+ support. To report errors in the HTML that will help us improve conversion and rendering, choose any of the
+ methods listed below:
+
+ Click the "Report Issue" ( ) button, located in the page header.
+
+ Tip: You can select the relevant text first, to include it in your report.
+
+ Our team has already identified the following issues . We appreciate your time reviewing and reporting rendering errors we
+ may not have found yet. Your efforts will help us improve the HTML versions for all readers, because disability
+ should not be a barrier to accessing research. Thank you for your continued support in championing open access for
+ all.
+
+ Have a free development cycle? Help support accessibility at arXiv! Our collaborators at LaTeXML maintain a list of packages that need conversion , and welcome developer contributions .
+
+ We gratefully acknowledge support from
+ our major funders ,
+ member institutions , ,
+ and all contributors.
+
+ About 
+ · 
+ Help 
+ · 
+ Contact 
+ · 
+ Subscribe 
+ · 
+ Copyright 
+ · 
+ Privacy 
+ · 
+ Accessibility 
+ · 
+ Operational Status (opens in new tab) 
+
+ Major funding support from

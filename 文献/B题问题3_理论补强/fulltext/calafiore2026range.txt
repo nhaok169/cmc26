@@ -1,0 +1,1401 @@
+This paper has been accepted for publication in
+SIAM Journal on Optimization.
+
+SET-MEMBERSHIP LOCALIZATION
+    VIA RANGE MEASUREMENTS
+                GIUSEPPE C. CALAFIORE*
+
+      Abstract. In this paper we discuss a classical geometrical problem of estimating an unknown
+point's location in R" from several noisy measurements of the Euclidean distances from this point
+to a set of known reference points (anchors). We approach the problem via a set-membership
+methodology, in which we assume the distance measurements to be affected by unknown-but-bounded
+errors, and we characterize the set of all points that are consistent with the measurements and their
+assumed error model. This set is nonconvex, but we show in the paper that it is contained in a
+region given by the intersection of certain closed balls and a polytope, which we call the localization
+set. Then, we develop efficient methods, based on convex programming, for computing a tight outer-
+bounding set of simple structure (a box, or an ellipsoid) for the localization set, which then acts
+as a guaranteed set-valued location estimate. The center of the bounding set also serves as a point
+location estimate. Related problems of inner approximation of the localization set via balls and
+ellipsoids are also posed as convex programming problems. Different from existing methods based
+on semidefinite programming relaxations of a nonconvex cost minimization problem, our approach
+is direct, geometric and based on a polyhedral set of points that satisfy pairwise differences of the
+measurement equations.
+
+      Key words. Multilateration, trilateration, range-based localization, GPS problem, distance
+measurements, interval calculus, set-membership estimation, convex optimization.
+
+     MSC codes. 65G40, 62P30, 68U99, 52A27, 52B55, 62G15, 65D99, 90C25, 90C90
+
+      1. Introduction. Accurate localization is a fundamental problem arising in var-
+ious applications, including wireless sensor networks, robotics, and navigation sys-
+tems. One widely used approach for localization is multilateration, which aims at
+determining the position of an object (e.g., vessel, aircraft, robot, etc.) based on
+range (distance) measurements from multiple known reference points, called beacons
+or anchors. Depending on the application, the distance measurements can be inferred
+from the time of arrival (TOA) or time difference of arrival (TDoA) of signals from
+beacons, from direct laser measurements, from received signal strength, etc.
+
+      There exists a vast literature on multilateration methods, with classical results
+dating back to the 1980s and early 1990s [2, 11]; we direct the reader to the recent
+review paper [27| for a complete survey of the topic of multilateration, its applica-
+tions, and pointers to relevant references. In the typical approach to multilateration,
+an objective criterion is constructed which accounts for the sum of residuals between
+measurements and point-to-beacon distances, and such objective is then minimized
+with respect to the unknown position by means of optimization techniques. The main
+issue in this respect is that the objective takes typically the form of a nonlinear Least
+Squares problem, named range-based LS, or of a nonlinear Maximum Likelihood es-
+timation problem, and this problem is nonconvex and difficult to solve in general.
+Certain approaches, see, e.g., [4], hence apply convex relaxation techniques to obtain
+an approximate problem that is amenable to solution via semidefinite programming
+solvers. A different approach, called the squared-range-based least squares (SR-LS),
+applies instead a Least Squares methodology to the squared distance measurements,
+see again [4]. This also results in a nonconvex problem formulation, which is amenable
+to approximate solution via relaxation. Along this line of minimizing a sum of mea-
+surement equation errors via convex relaxation, in the more general context of sensor
+
+    *Dipartimento di Elettronica e Telecomunicazioni,  Politecnico di Torino,  Italy.  Email:
+giuseppe.calafiore@polito.it
+network localization, are also the contributions in [7], where semidefinite programming
+(SDP) relaxations are proposed, in [23] where a second-order cone (SOC) relaxation is
+studied, and in [19] where a SOC approach is proposed, considering also uncertainty
+on the anchors' locations. A more classical approach is also to solve directly the
+nonconvex optimization problem by means of iterative methods such as the Gauss-
+Newton algorithm, see, e.g., [9, 31]. Also, it is well known that squared distance
+measurement equations can be transformed into a set of linear equations by taking
+pairwise differences between equations, which makes the quadratic terms elide, see,
+e.g., [11, 17]. The resulting set of linear equations can then be solved via linear Least
+Squares.
+
+      These known localization methods typically rely on a stochastic description of
+measurement noise, assuming it follows a known statistical distribution. Further,
+they all focus on computing one single point estimate of the unknown location. In
+many practical scenarios, however, noise characteristics may be uncertain or difficult
+to model accurately, and this may lead to degraded localization performance. Further,
+it may be of practical interest not only to compute a point estimate, but actually to
+estimate an entire region in space in which the object of interest may be located,
+based on the measurements information and on the a-priori knowledge on the noise
+characteristics.
+
+      In this paper we explore a set-membership approach to localization, which offers
+an alternative framework that does not rely on probabilistic assumptions. Instead,
+it assumes that measurement errors lie within known intervals, allowing for a set-
+based analysis of the localization problem. Error intervals are indeed more easily
+and naturally obtainable in practice than a full stochastic description of the error
+distribution, see Remark 1 below for further discussion. By leveraging set theory and
+constraint-based formulations, the set-membership approach provides estimates of
+the region where the target object is guaranteed to reside, rather than merely a point
+estimate. Such guarantees make set-membership localization particularly attractive
+for safety-critical applications requiring robust and reliable position estimation.
+
+      The literature on set-membership approaches to localization via multilateration
+seems however to be rather scarce. For instance, the approach in [29] is limited to
+two-dimensional localization, and proposes distributed set-membership filtering based
+on a received signal strength indicator (RSSI) to dynamically reduce the localization
+error. In [26] the authors propose a set-membership approach to improve the posi-
+tioning accuracy and stability of a Visible Light Positioning system in two dimensions,
+which is solved by means of a computationally-intensive interval analysis-based set in-
+version algorithm. Closer to our approach, in [21] the authors consider interval errors
+in the measurement equations and then seek for the positions estimate which mini-
+mizes the worst-case estimation error over all feasible positions, i.e., over all positions
+that are compatible with the error bounds. The resulting problem is a nonconvex
+optimization problem, which is solved by means of semidefinite relaxation techniques.
+The approach of [21], however, while considering interval errors and worst-case errors,
+is still aimed at computing one single point estimate, and it is based on nonconvex
+problem formulations that are dealt with by means of relaxations.
+
+      In the present work, we first observe that under an interval error setting, plain
+distance measurements equations and squared distance measurements equations are
+equivalent and lead to a unified model of the form (2.3), which also accommodates
+both absolute (additive) and relative (multiplicative) error terms. Based on this
+general model, the m nonlinear equations related to the distance or squared distance
+measurements from a point x to the m beacons are transformed into a set of p = m(m--
+
+                                                                              2
+1)/2 linear equations obtained by taking all pair-wise differences among the original
+equations. These linear equations are subject to polytopic (and non independent)
+errors. In Section 3 we characterize explicitly a convex localization set ¥V that is
+guaranteed to contain the original set Virue of all point consistent with the original
+nonlinear measurement equations. Then, in Section 4 we show how to compute a
+maximal ellipsoid inscribed in V; the center of such ellipsoid can be taken as a central
+estimate of the unknown target's position. Notably, such inscribed ellipsoid can be
+computed efficiently via convex programming; in particular, we need to solve a convex
+second-order cone program (SOCP) for finding an inscribed ball (which is a particular
+case of an ellipsoid), or a semidefinite program (SDP) for finding a general inscribed
+ellipsoid. The key Section 5 discusses instead how we can compute minimal outer
+bounding sets for VY, and hence for Virue GC ¥. We discuss in particular a simple
+technique for computing a bounding box Aouter D ¥ via SOCP, and a technique
+for computing a bounding ellipsoid via SDP. Further aspects are then investigated in
+Section 6. In particular, Section 6.1 discusses a local approximation approach based on
+convex quadratic programming for seeking a point in Yirue, while Section 6.2 discusses
+how we can deal with the issue of outliers or error realizations that do not respect the
+assumed bounds. Although many practical localization problems are posed in two-
+dimensional or three-dimensional spaces, we remark that the methodology proposed
+in the present paper works in spaces of any finite dimension. The proposed approach
+is tested numerically on random scenarios in Section 7. Conclusions are drawn in
+Section 8.
+
+      1.1. Further discussion on related work. Some recent studies have explored
+modeling frameworks that are somewhat related to, but distinct from, the proposed
+approach. For example, Yu et al. [30] introduced Ellipsoid SLAM, where location
+uncertainty is modeled via bounding ellipsoids in the SLAM context, demonstrating
+the inadequacy of Gaussian noise assumptions in many real-world scenarios and the
+effectiveness of an unknown-but-bounded (UBB) approach. The SLAM problem dis-
+cussed in [30], however, is substantially different from the one we discuss in the present
+paper. Indeed, SLAM is based on recursive linearization, and hence approximation,
+of the state and measurement equations. Linearization is a local approach which in-
+troduces non-convex residual errors that are not captured by the ellipsoidal bound.
+Therefore, the propagated ellipsoid bears no theoretical guarantee of actually contain-
+ing the system state: it is merely an approximation, often under-approximating the
+true feasible region. This is distinctively different from our approach, which provides
+guaranteed overbounding sets. Similarly, in [18] the authors propose a method for
+multiple-source localization based on acoustic energy measurements. In this case, the
+measurement equation depends on the distance from acoustic sources according to the
+sum of inverse power laws, and the measurement error is assumed to be bounded in a
+given interval. A bounding ellipsoid is computed for each source based on linearization
+of the measurement equation and conservative on-line bounding of the linearization
+residual.
+
+      Zhang et al. [32] proposed a set-membership approach to state estimation using
+zonotopes (a special type of polytopes) rather than ellipsoids. While [32] makes again
+a case for the use of UBB noise models in a state estimation setting, its approach
+only applies to linear dynamical systems, and thus can not deal with nonlinear mea-
+surement models such as the one arising in the multilateration context we discuss
+in this paper. Wang et al. [24] deal with ellipsoidal state estimation in a nonlinear
+setting, but instead of classical linearization they propose the reformulation of the
+
+                                                                     3
+state-bounding problem as a semi-infinite optimization problem which is then solved
+approximately via constraint sampling, thus again lacking formal guarantees of state
+containment.
+
+      The above-mentioned approaches deal with dynamic state estimation and are
+based on recursive local approximation (linearization). They all require an "initial
+guess" localization set to be provided, e.g., in the form of an ellipsoid, so to allow
+the linearization procedure to start. The problem we consider in this paper tackles
+instead the localization problem from a global point of view, with no initial guess
+available for performing a linearization approach. In a sense, the method discussed in
+the present paper can be seen as a technique for determining the initial localization
+set needed by recursive, linearization-based, methods.
+
+      Notation. We use a standard notation for vectors and matrices: «  R" denotes
+a column vector of dimension n, and A  RTM" denotes a matrix with m rows and
+n columns. A! denotes the transpose of A while At denotes the Moore-Penrose
+pseudo-inverse of A. We denote by S" the space of n x n real symmetric matrices.
+We denote by J,,, 1, the n x n identity matrix and a vector of all ones of dimension n,
+respectively; the suffix specifying the dimension can be omitted when easily inferable
+from context. (A) denotes the null space (or kernel) of A, R(A) denotes the range
+space of A, N+(A) denotes the orthogonal complement of V(A). When involving
+vectors, inequalities are intended element-wise. The notation A > 0 means that A is
+symmetric and positive semidefinite.
+
+      2. Problem setup. We are given m anchor points with known coordinates in
+a given reference frame, described by vectors a  R", i =1,...,m, and we collect
+m measurements related to the Euclidean distance from point xz  R" to each anchor
+point. Two types of measurements are typically considered, one based on the squared
+distance and one based on the distance itself:
+
+         - Squared distance measurements:
+
+       (2.1)  yi = |le@---a|+[e3, i=1,...,m.
+
+       - Plain distance measurements:
+
+       (2.2)  24 =|le--allo+e,            i=1,...,m.
+
+Each of these models can be justified based on the specific application; e.g., time-of-
+flight measurements that relate distance to the travel time of a signal from the anchor
+to the point typically return plain distance measurements, while power attenuation
+measurements typically return squared distance measurements, see, e.g., [27].
+
+      The error terms in the above range measurement models are here considered to be
+unknown-but-bounded, rather than stochastic, see Remark 1 for further motivation of
+this assumption. In particular, we accommodate in our model both absolute interval
+errors where ¢;  [e; ,¢/], i= 1,...,m, in model (2.1) or e;  [e; ef], i=1,...,m,
+in model (2.2), and relative interval errors where ¢; = ||a -- a ||3é;, &  [&,é],
+
+i=1,...,m, in model (2.1) or e; = |la--||a2;, &;  [é , Ef], i= 1,..., m, in model
+
+(2.2). We let , e~, e+ denote the vectors whose entries are ;, ;, 7, respectively, for
+i=1,...,m, and we define similarly vectors é,~,é*,e,e+,e~,é,é*,é-. We assume
+that > > --1, ; > --1 for alli, and that y; > efa,? a> ey for all 7.
+
+     We next observe that both model (2.1) and model (2.2), with both absolute or
+relative errors, all reduce to a single equivalent model of the form
+
+(2.3)         Ie a2 =&, &  [67 .Et], d= 1,--.,m,
+
+                                       4
+where the upper and lower bounds on ; differ depending on the specific model and
+type of error (absolute or relative). In particular, it can be easily verified that:
+
+        - For model (2.1) with absolute errors, it holds that
+
+       (2.4)  & = Yi -- Gi,   & =y-¢,& =w-«6,                 t=1,...,m.
+
+       - For model (2.1) with relative errors, it holds that  . ee
+
+       25)    g= 1+4Yi&%, g _. 146Yi es . 14Yi6
+
+       - For model (2.2) with absolute errors, it holds that
+
+          (2.6)  =(%---e)', & =(a- e} )?, éf = (4 - e;)?,            i=1,...,m.
+       - For model (2.2) with relative errors, it holds that
+
+       e7. )  6=- 4= >        gst ig s_4 ¢ o> y(1o+ém,))2            i= 1@=1,..-,TMM.
+                    (1+ é,)?                       SEO a (1? +6; )?
+
+We let , ~, * denote the vectors containing entries £;, > Et , respectively, for
+i=1,...,m, and we let H denote the hyperrectangle
+
+(2.8)         H={EERTMSE:S EEF}.
+
+In the sequel we focus only on the general model (2.3), which is representative of
+all four measurement models discussed above. According to (2.3), each measurement
+confines the possible locations x in a hyperspherical shell region
+
+(2.9)         Si = {we R": ep< |jw-- alla < er}.
+
+The set Yirue, containing all x locations that are compatible with all the uncertain
+measurements, is the intersection of the S; regions:
+
+                              Xtirue = ()     Sj.
+
+                              i=l          m
+
+Mrue is in general a nonconvex set. Figure 1 shows an example in R? with three
+anchors, where each S; is a circular annulus.
+
+     REMARK 1 (Interval noise model). An unknown-but-bounded assumption on
+measurement errors is appropriate, for instance, when one has physical sensor error
+limits, or when the measurement device provides a certified accuracy or resolution,
+e.g., a LIDAR range sensor with +3cm repeatability, see, e.g., [22, 15]. Error bounds
+can be rigorously derived from the physics of the underlying sensor mechanisms or
+from manufacturer calibration certificates, see, e.g., [14]. Also, in situations in which
+one can not confidently identify a noise distribution (non-stationary sensors, aging
+equipment, variable environments), a deterministic bound is more credible than as-
+suming, say, Gaussianity of the measurement errors. This is typical in early-stage
+system identification or in field robotics where environmental conditions fluctuate.
+In practice, bounds on errors can be obtained from calibration data, manufacturer
+specifications, or from truncated statistical models (e.g., 30 Gaussian bounds).
+
+                                                                     5
+Fic. 1. Localization with three anchors in R?.
+
+In safety-critical systems (aerospace, autonomous driving, process control) one
+needs guarantees for any admissible noise realization. In such cases, the UBB model
+allows one to prove that constraints on states or outputs hold for all noise realizations
+within the bounds, a statement which is not obtainable via purely stochastic models.
+In our context, the use of UBB noise and a set-membership approach leads to deriving
+an outer bounding set which is guaranteed to contain our localization target.
+We also remark that the specific interval UBB model used in eqs. (2.1), (2.2)
+appears more suitable in our context that an ellipsoidal UBB error model. Indeed,
+it seems natural to assume that measurement errors in eq. (2.1) or in eq. (2.2) are
+independent from one another, since they depend only on the characteristics of the
+distance measurement device, and this is reflected well in the assumptions that they
+lie in independent intervals. An ellipsoidal model for the measurement errors would
+instead imply a mutual dependence among the measurement errors (e.g., the ampli-
+tude of errors 1,...,m--1 constrains the amplitude of error ,,), which would be
+unnatural in our context.                                                      *
+
+      In the next section we introduce a convex region 1, called the localization set,
+that provides a certified outer bound for the true feasible set Virue of locations com-
+patible with the uncertain measurements (note that Vrue is in general nonconvex).
+Specifically, V is defined as the intersection of the m measurement closed balls and
+the difference-of-measurements (d.o.m.) polyhedron %q.
+      3. The d.o.m. polyhedron 4%, and localization set 7.
+      3.1. The difference of measurements graph. Observe that the ith measure-
+ment equation (2.3) can be expanded to
+
+                            lIe]3 -- 2a + la|[3 = &
+
+Then, subtracting the jth measurement equation from the ith, for i 4 7, we obtain
+that
+
+             =lla--l2[30--7 2a(alTa -- a+ )a+ ||l5a -- 3 --|lar|]3 a+ 2|2Ba -- |Ja [5
+
+where we observe that the quadratic terms in x disappear. Considering then all pairs
+of measurement equations, with i < 7, we obtain p = m(m -- 1)/2 linear equations in
+x of the form
+
+(3.1)           20" (a) -- a) = \ja |] -- ja 12 -- (& -- &),
+
+for alli,7 =1,...,m,i< Jj. We assume without loss of generality that the p pairs are
+ordered as (1,2), (1,3),..., (1, m), (2,3),...,(2,m),...,(m--1,m). We next define
+
+(3.2)                                   v = E,
+
+where E  R®" is a matrix whose kth row has the form (e" --e)TM, where e  RTM
+
+is the ith standard basis vector (i.e., composed of all zeros, except for a one in position
+zi), and (7,7), 7 <j, form the kth pair of anchors.
+
+       REMARK 2. There is a natural graph-theoretic interpretation of our problem
+structure. The m anchors form the vertices of a graph, and we say there is an edge
+(i, 7) from node j to i whenever we consider the corresponding difference of measure-
+ments eq. (3.1). Considering all difference of measurements (i,7) for all 7 > i thus
+forms a connected graph G with m vertices and p = m(m -- 1)/2 edges. We observe
+that, according to its definition, E'  RTM? represents the incidence matrix of such
+graph.                                                                 *
+
+Letting
+
+                A= [a .-- al] eERTMTM,
+
+                w = [la3 --- Ja 2] eR",
+
+one can verify that eqs. (3.1) can be rewritten compactly as
+
+(3.3)           2EA'ex=Ew-v, v= E
+
+where
+
+                (a) -- @())T                    la 3 -- la 3
+
+         EA! =                       :  ' Ew =  Ja"|)5 : -- |JalTM [3
+
+                (alTM=1) -- qlrn))T
+      3.2. The difference-of-measurements polyhedron. We next characterize a
+convex polyhedral set! that is guaranteed to contain Xrue-
+
+     PROPOSITION 3.1. Let V = {v  RP: v= E,  H}. The set
+
+                           Xi = {x  R":2EA = l Ewe -v, ve V}
+
+is a polyhedron, and it holds that Xirue C Xa.
+
+Proof. We first observe that for any x  Aire, by definition, all eqs. (2.3) hold
+for some   H, and hence the relative difference equations (3.1), which are derived
+from (2.3), also hold, which means that x  ¥q, and therefore Vrue C Xa. Next,
+observe that V is a polytope, since it is the image of the hyperectangle H through a
+linear map, see, e.g., [13]. Similarly, Yq is a polyhedron since it is the preimage of a
+polytope through an affine map, see, e.g., ex. 3.9 in [6].                  O
+
+      It follows from Proposition 3.1 that the set Vq is characterized via a set of linear
+equalities and inequalities as XY, = {a  R" : 2EA'a = Ew -- E,   H}. Finding
+a point in Vy, or determining that no such point exists, amounts to solving a linear
+programming (LP) feasibility problem. Observe that while  belongs to an orthotope
+Hf, that is, the elements of  are bounded in independent intervals, this is not true for
+v = E, whose entries are instead dependent. We next give an alternate description
+of V and hence of ¥q.
+
+_ PROPOSITION 3.2. Let V = {v  R?: v  R(E), Etv +al  H,a  R}. Then,
+V=V.
+
+Proof. As observed in Remark 2 matrix EF  R"" represents the (transpose) inci-
+dence matrix of the difference-of-measurements graph G. Since this graph is connected
+by construction, it holds that F has rank m--1, with nullspace V(F) = {a1,a  R};
+see, e.g., Lemma 2.2 in [3]. Now, suppose first that vy  V. Then v = E for some
+, which implies vy  R(E), and all  compatible with this equation are parametrized
+by = Etv+al for a  R, therefore it must be Etv + a1  H for some a, which
+implies that v  V. Conversely, suppose vy  V. Then, v  R(F) and we define
+ = Ety+al  H, for which it holds that
+
+       Eé = EE'v+aF1 =»,
+
+since 1 is in the nullspace of E and EEtv = v due to the fact that EE? is the
+orthogonal projector onto R(E), but v  R(F) hence the projection coincides with
+v; so we showed that v  V. This concludes the proof that V and V coincide.  O
+
+       PROPOSITION 3.3. The set Xq is given by
+
+(3.4)  Xa = {x ER": & < Qu-2QAr+al1<é&t,aeER}
+
+where                                                        V}.  By applying
+
+                             Q=EE= Fm (mln =1yn1),).
+
+Proof. From the definition, % = {2  R" : (Ew -- 2EA'x)
+Proposition 3.2 we obtain the equivalent representation
+
+       Xi = {a R": Ew-2EA'e  R(EB), El(Ew-2EA'x) +01 ¢ H,a R}.
+
+      1A convex polyhedral set, or polyhedron, is the intersection of a finite number of closed half-
+spaces.
+
+                                                                     8
+However, the first of these conditions, i.e., Ew --2EA'x  R(E), is always satisfied,
+therefore we have that Vy = {x  R" : El(Ew --2EA'r)+a1  H,a  R}, that
+is X% = {x  R" : Qu--2QA'x+al  H,a  R}, where Q = E'E  RTMTM
+is the unique orthogonal projector matrix (symmetric, idempotent) onto the range
+of E', which coincides with the orthogonal complement of the kernel of E. Since
+N(E) = {a1}, it can be verified that we have explicitly Q = 4 (mI --1m1,,), which
+concludes the proof.
+
+     REMARK 3 (Emptiness, boundedness). Observe that elements x7  V4 are those
+who solve the system of linear equations
+
+                           2EA'« = Ew--E, for some   H.
+
+Since the left-hand side of the above equation is in R(EA') while the right-hand
+side is in R(E), and it holds in general that R(EA') C R(E), we have that Vy is
+nonempty if and only if
+
+(3.5)       JéeH: Ew-£) R(EA'),
+
+a condition that can be checked via linear programming, since it amounts to finding
+
+  H such that U'E = U' Ew, where U contains by columns a basis for the
+
+nullspace V(AE'), being R(EA') = N+(AE'). Notice that if the measurements
+are indeed generated by the model equation (2.1) or (2.2) for some true location Ztrue,
+and if the noise terms respect their bounds, then there surely exist at least one point
+in Nrue (-2-, Vtrue itself), and hence Vine is nonempty, thus Vy D Airue is also
+nonempty. Emptiness of Yq can hence only happen if some measurement does not
+respect the assumed model equation, or if the error bounds are not respected, which
+may happen in practice in the presence of outliers or unexpected errors or failures in
+the measurement equipment; see Section 6.2 for a discussion on how to tackle this
+situation.
+       Set Vy is unbounded if (3.5) holds and N(E£A') is nontrivial, since obviously in
+such case x may grow unbounded along any direction in V(£A'). Thus, the condition
+that EA' has full rank guarantees boundedness of Vj (and hence of Xirue). Notice in
+particular that in the special but common case when m = n+ 1 and rank(EA') =n
+then R(EA') = R(E), hence ¥q is surely bounded and nonempty.                   *
+
+       REMARK 4 (Standard conditions). The typical situations we are interested in
+
+are those in which n > 2 and m > n+1, that is the number of anchors is larger
+
+than the space dimension. This assumption insures that p = m(m--1)/2 >m>n
+so that matrices A  R?" and E  R?" are "tall" matrices. We also typically
+consider anchors that are in general position, so that EA' is full column rank, i.e.,
+rank(EA') =n, which guarantees boundedness of Vj, as mentioned in the previous
+remark.                                                                        *
+
+      3.3. The localization set *¥. In Section 3.2 we characterized a polyhedron
+
+which is guaranteed to contain Virue. We next observe that, by definition, Virue is
+also contained in a convex region H given by intersection of m closed balls
+
+(3.6) Hi = {vw ER": |le--alo < VG}, 1=1,...,m,                    m
+
+Defining                                        HEH.
+
+                                                       i=l
+
+(3.7)       X= XiNH
+we have that Virue C ¥, and we hence call ¥ the localization set. This set provides a
+convex outer bounding of the true (and nonconvex) set Vrue of possible solutions of
+the noisy measurement equations (2.3), and refines the outer bound set given by %q.
+The tightness of the bounding Virue C ¥ depends on anchors' configuration, target
+position and noise bounds. We do not provide formal results on the bounding tight-
+ness in this paper. However, numerical experiments shows that ¥ typically becomes
+nearly coincident with Vue when anchors are well distributed around the target,
+while near colinear or coplanar or clustered anchors increase conservativeness, see an
+exemplification of this fact in Figure 2 and Figure 3. The ratio vol(¥)/ vol(Atrue)
+provides a useful measure of this conservativeness and it is estimated in the numerical
+experiments of Section 7.
+
+      Figure 2 shows an example in R? with m = 3 anchors, where the gray polygon
+depicts Vz and the area contoured in green depicts Vipue. The boundaries of the
+balls H,; (i-e., the corresponding spheres) are depicted in blue. The localization set
+X = X4NH is not shown directly in the picture, but it can be easily inferred visually
+by intersecting Yq with the discs H;, 7 = 1,2,3. Figure 3 shows the same target
+and relative bounds used in Figure 2, but with one anchor progressively displaced
+so to worsen the conditioning of the EA' matrix (anchor points tend to be "nearer
+to colinearity"). We observe that the gray polygon depicting Y, becomes larger as
+the anchors' geometry worsens. If the anchors become exactly colinear, Yq would
+become unbounded, as discussed in Remark 3. Boundedness of the localization set
+X = XaNH is however maintained in all cases, due to the intersection of ¥q with the
+bounded balls H;, i =1,...,m.
+
+  iY 17 ~ : J
+                      \
+
+       Fic. 2. Sets Xtrue (bordered in green) and Xq (bordered in black and filled in gray) on a 2-
+dimensional example with three anchors. Left panel: full view with annular regions depicted in blue
+and red; Right panel: detail of the true non-convex localization set Xtrue and its bounding polytope
+Xa-
+
+      4. Inner approximation of the localization set. We next discuss how to
+compute simple sets included in ¥ (the localization set), and hence obtain convenient
+central estimates of the location. Since ¥ is a convex outer bound of the true feasible
+set Virue, these inner approximations are guaranteed to lie in V, but they are not
+necessarily subsets of Virue. Section 5 discusses instead the main problem of finding
+
+                                                                              10
+       Fic. 3. Modification of the polytope Xq with respect to Figure 2, as the right-most anchor moves
+so to worsen the conditioning of the anchors' geometry.
+
+an outer bounding set guaranteed to include ¥, and hence "rue.
+
+      4.1. Computing an inscribed ball. We take a Chebychev-type approach and
+discuss how to compute a large ball contained in VY. The central estimate will then
+be given by the center of such ball. Denoting the ball by
+
+       Bic,r) = { ER":  =c+ru, cE R", |lullo < 1,
+
+where c is the center and r is the radius, we have that B(c,r) C ¥ = XaNH if and only
+if B(c,r) C Xq and B(c,r) CH. We next examine these two inclusions separately.
+
+      First, using the characterization in Proposition 3.3, we have that B(c,r) C ¥q if
+for any x  B(c,r) there exist a  R such that
+
+(4.1)  & <-2(QAia"+ (Quji tas gf, i=1,...,m,
+
+where [QA']; denotes the ith row of matrix QA! and [Qu]; denotes the ith element
+of vector Qw. The problem here is that the a value may depend on zw (i.e., on wu),
+hence if we impose the above conditions to hold for a single fixed and common a we
+obtain a conservative estimate. In such case we have that the above conditions hold
+if there exist @ such that for 7 = 1,...,m,
+
+                           max --2[QA'],¢-- 2r[QA'],u + [Qu]; +a < et
+                          \u|/2<1
+                         min --2[(QA'],c--2r[QA'],u+ [Qu]; +a > &
+                          I|ull2<1
+
+Since maxy,),<1 wu = ||wll2 and miny,,),<; w'u = --||w|l2, the above conditions
+become explicitly
+
+                      --2QA "ic + 2r||[QA"]ill2 + Qu]: +a < EF
+                     -- 2QA']ic-- 2r||[QA "illo + [Qu]i + a> &.
+
+We hence have that B(c,r) C %q if
+
+       --2QA'c+2rz+Qw+al <ét
+       --2QA'c--2rz+Qut+al>é,
+
+                                    11
+where z  RTM is such that z; = ||[QA']i||2,i =1,...,m. As discussed above, however,
+these conditions are conservative due to the fact that we considered a fixed a for all
+points in the ball. The situation can be improved (i.e., a larger inscribed ball can be
+obtained) by allowing a to depend on x = c+ru, hence on u. Specifically, we consider
+an affine dependence of the form
+
+                                  a=a+h'u,
+
+where now @  R and hh  R" are parameters to be determined. Such choice of an
+affine dependence, inspired by the adjustable robust solutions and affine recourse ideas
+of [5], allows for a reduction of the conservativeness while still resulting in a tractable
+problem formulation. The inclusion conditions now become, for i = 1,...,m,
+
+         & <-2(QA'](e+ru) + [Qu]; +athlus< &, Vu: |lull2 <1,
+
+that is
+
+(4.2)  <---2[|QA ic + (--2r[QA"]i +h! )ut [Qui +a < gF, Yu: |lully <1.
+
+Proceeding as previously by computing explicitly the maximum and the minimum
+of the central expression in (4.2) with respect to u, we obtain that (4.2) holds for
+a=1,...,m, if and only if
+
+(4.3)    -2(QiAc + lh! -- 2r[QA "Jill + [Qui tas EF,
+(4.4)    -2(QA"]ic-- |b" -- 2r[QA]illz + (Qu]i +a > &,
+
+hold for « = 1,...,m. These constitute a set of convex second-order cone (SOC)
+constraints on the decision variables c,r,@ and h that guarantee B(c,r) C %q.
+
+     Next, we consider the inclusion B(c,r) C H. This holds if and only if ||a--a |p <
+Jet holds for all x  B(c,r) and all i, that is if an only if
+
+         u:|jmualjx2<1 ||c--a® +rullg <     n/.étO,  i=1 pees Mm.
+
+Since by the triangle inequality
+
+         llc-- a +rulla < |le-- a | + rllulle,
+
+with equality holding when u is parallel to c-- a, we have that B(c,r) C H holds if
+and only if
+
+(4.5)    lc--aM gtr                      <V/ét, t=1,...,m.
+
+We have therefore the following
+     PROPOSITION 4.1. A ball B(c,r) C ¥ can be computed by solving the following
+
+conver SOC program
+
+         max                      r
+(4.6)    cER" ,r>0,aER, AER
+              s.t.: (4.3),(4.4),(45), i=1,...,m.
+
+                                     12
+      4.2. Computing an inscribed ellipsoid. Generalizing the approach described
+in the previous section, we next discuss how to compute a large (in the sense of the
+sum of semi-axes lengths) ellipsoid  inscribed in 4%. We describe the ellipsoid by
+
+            E(c,W) ={x@ ER": r2=c+Wu, llulle < 1},
+
+where W  S" isa positive semidefinite matrix (which we denote by W > 0) describing
+the ellipsoid's shape, and c  R" is the ellipsoid's center. We have in this case (see,
+e.g., Sec. 10.4.3 in [10]) that E(c,W) C %Xq if
+
+            & <-2QA!c-- 2QA'Wut Qu +a(u)1 < *
+
+holds for all u : ||u||z < 1. Posing as before a = @+h'u and taking the maximum and
+minimum of the central expression above with respect to u we obtain the equivalent
+conditions
+
+((44..87))  --22[[QQAA""]Jiiec =+ ||||"? ---- 221[QQAA"]":]WWI]:ll2o ++ [[QQuu]]i: ++a> < E.F
+
+The inclusion (c, W) C H; holds instead if and only if ||e-- a + Wull2 <                       /& for
+all u: |lull2 < 1. Since
+
+            le a -- + Walle < |lelo--+ |a |Wulle
+                             < |le-- a lo + |W] alo
+                               < |le|I--o + a|W],
+
+where ||W|| denotes the spectral (maximum singular value) norm of W, we have that
+a sufficient (and generally conservative) condition for the inclusion E(c,W) C H;, is
+given by
+
+                            lle-- a 2 + WI) s VF,
+
+which in turn can be represented using a slack variable 7 > 0 as
+
+(4.9)       lc- aM lat+ys Ve,
+
+with W x yI. We therefore have the following
+     PROPOSITION 4.2. An ellipsoid E(c,W) C ¥ can be computed by solving the fol-
+
+lowing convex SDP problem:
+
+(4.10)      cER" WES"ma,xa,yER,hER" trace(W)                   #=1,...,m,
+
+                              s.t.: (4.7), (4.8), (4.9),
+
+                                                     0OxW xy.
+
+      5. Outer bounding 1, y.. The approaches in the previous sections were aimed
+at finding inner approximations of V¥. We next describe two techniques aimed at
+finding outer bounding sets for VY, and hence for Vrue. The first one in Section 5.1
+focuses on finding intervals of containment along a given set of directions, which
+results in determination of a minimal outer box containing ¥. The second technique
+in Section 5.2 discusses how to determine an outer-bounndig ellipsoid for 7.
+
+                                                                              13
+      5.1. Computing an outer-bounding box for 1. Suppose we are given n
+orthogonal directions v,...,v[, such that v9"v = 6;;, 6; = 1 ifi = j and
+dij = 0 otherwise. For each i = 1,...,n, we compute the maximum and minimum
+components of x  ¥ along the direction vTM , by solving SOCPs
+
+           max _                    T ,,(2)
+                                  oe
+       vi         2ekn ae
+
+(5.1)             st.:  <-2QAlr+Qut+al < ét,
+
+                                  lea ln < /EF, F=1,...,m,
+
+       TO min _ pe ac: R          T(t)
+
+(5.2)             st.:  <-2QAlr+Qut+al <ét,
+
+                                  ja---a Jo < /EF, f= 1,...,m.
+
+     ProposITION 5.1. Let {v,...,v°} be an orthonormal set of vectors in R",
+and let yTMTM, yTM** be the vectors with entries rin ypnex , respectively, computed by
+solving (5.1), (5.2). Then, the bor
+
+           Aputer = {x ER                              n  aymin <<  "ymax }
+
+                                  :2= Sov,
+
+                                              w=1
+
+is such that Xirue C & C Aouter-
+
+Proof. Take any x  ¥. Since {v,...,v(TM} form an orthonormal basis for R",
+there exist coefficients 7;  R such that x = 37", iv, and these are actually the
+components of x along the basis vectors, that is y, = «'v, i= 1,...,n. Now, by
+definition of ¥, the selected point x satisfies the constraints of problems (5.1), (5.2),
+that is, it is feasible albeit possibly not optimal for these problems. Hence, it holds
+that ym < rly < ymex fori =1,...,n, that is ym < y < yP**, fori =1,...,n,
+which means that x © AHouter, which proves the inclusion ¥ C Aouter-         O
+
+      For example, the vs can be taken to be the standard basis of R", in which case
+we obtain an hyperrectangle (i.e., a box with sides aligned to the coordinate axes).
+Another choice would be to take as vs the set of orthogonal eigenvectors of the W
+matrix of the inscribed ellipsoid  of Proposition 4.2, which describe the directions of
+the semiaxes; we find in this way the minimal box with sides aligned to the ellipsoid
+axes that contains V,  and XVirue-
+
+      REMARK 5 (Complexity of box outer bounding). The typical situations of prac-
+tical interest in localization involve small n (say, n = 2, or n = 3) and a mod-
+erate number of anchors m > n. Typical instances of SOCP problems (5.1) and
+(5.2), therefore, do not require solution methods tailored for large-scale optimiza-
+tion, and can be solved effectively by means of standard primal-dual interior-point
+algorithms. Each of these problems involve n + 1 variables, m SOC constraints and
+2m linear inequality constraints. According to the classical self-concordant barrier
+complexity framework of [20] for interior-point algorithms, the barrier parameter
+for these problems is given by vy = 4m, hence the outer-iteration count to reach
+e-accuracy is O(/v log(1/e)) = O(2,/mlog(1/e)). Each iteration in turn requires
+
+                                                                              14
+roughly O(mn® + 2m?n? + 8m°) floating-point operations. The computational effort
+for computing the bounding box thus remains moderate, under the typical conditions
+of interest in practical localization applications.                        x
+
+      5.1.1. Directional localization. As a variant of the previous problem, we can
+also determine a guaranteed uncertainty range for the localization along any desired
+direction. Suppose we fix a probing direction v  R", ||v||2 = 1, and we ask ourselves
+what is the range of uncertainty in x around a central estimate c  1, along direction
+v. In formulae, we consider x = c+ yu, with c and v given, and we seek for the
+maximum and minimum values of y for which «  Y. These values can be computed
+exactly by solving two SOCPs, as follows
+
+       Ymax = +m,a0xR
+
+(5.3)          sto: & <---2QAT (c+) + Qutal <é,
+                       le+yv--lao </&*, i=1,...,m,
+
+       Ymin =          Y
+
+(5.4)          sto: & <--2QAT(c+w)+Qutal <é,
+                       le+yv--alMo </E*, i=1,...,m.
+
+      5.2. Computing an outer-bounding ellipsoid for V. Consider an ellipsoid
+O(c, P) described by the equation
+
+       O(c, P) = {2 ER": (w--c)'P(@---0) < 1},
+
+where P  S" is a positive definite matrix describing the ellipsoid's shape, and c  R"
+is the ellipsoid's center. Consider further the representation of the polyhedron ¥q
+given in Proposition 3.1
+
+                        Xy = {x CR" :2EA = E'(ws --6),  H},
+
+where H is the hyperrectangle in RTM defined in (2.8), and we assume the standard
+
+conditions of Remark 4 to hold, so that EA' is full-column rank and hence X, is
+bounded, i.e., it is a polytope. H has 2" vertices vTM,.. uM, q = 2TM, and Yq can
+be represented as the convex hull of the images wTM of v, i =1,...,q, through the
+linear map
+
+(5.5)          w = 51 (BA!) Bw --v), t=1,...,¢.
+
+The inclusion O D Xj is therefore satisfied if w  O,i=1,...,q, that is if
+
+(5.6)  (w --¢)'P'(w --e) <1, i=1,....¢
+
+For the inclusion O D H, where H = Ne, H, with H; being the balls defined in
+(3.6), we use a standard sufficient condition for computing an ellipsoid covering the
+intersection of ellipsoids (closed balls are a special case of ellipsoids) given by the S-
+procedure, see, e.g., Chapter 3 of [8] or Section 3.2 in [25]. The following proposition
+holds.
+
+                                                                              15
+      PROPOSITION 5.2. A suboptimal minimum-size ellipsoid O(c,P) D X can be
+found by solving for P  S", c  R" and rT  RTM the semidefinite optimization
+problem (SDP)
+
+        min trace(P)
+
+       Py,c,r>0
+
+                      (4) _ eyT  ~0,     i=1,...,2TM,
+       S.t.:  * P 1 (w  Cc)
+(5.7)
+                                                       -I,
+              an TiIn            --_     an 7a
+                             1+, ria 3 -- EF)          eT | = 0.
+                *                        *                P
+
+                    *
+
+Proof. The first set of conditions is obtained from (5.6) via Schur complement,
+and implies O D Xy. The second linear matrix inequality condition derives from
+application of the S-procedure to the implication
+
+ala --2+a a3'e --+ <0, i=1,...,m > (a@--0)'PV1(e@-c)-1<0,
+
+via the approach detailed in Section 11.4.2.5 of [10]. This second linear matrix in-
+equality implies O D H, and therefore conditions in problem (5.7) jointly enforce
+ODXNH=X.                                                                       0
+
+     REMARK 6 (Complexity of ellipsoidal outer bounding). Problem (5.7) is a stan-
+dard convex SDP which can be solved to global optimality via primal-dual interior-
+point methods. The problem involves g = 2TM LMI blocks of size (1 +1) x (n+1) and
+one LMI block of size (2n+1) x (2n+1). According to the classical self-concordant bar-
+rier framework of [20], the outer-iteration count to reach e-accuracy is O(./v log(1/e)),
+where vy = q(n + 1) + (2n + 1), whence the number of outer iterations scales as
+
+              O(V/q(n + 1) + (2n + 1) log(1/e)),
+
+while each iteration essentially requires O(q(n + 1)? + (2n + 1)3) floating-point oper-
+ations. Therefore, the computational cost grows linearly in q and cubicly in the LMI
+blocks' sizes. However, due to the exponential dependence q = 2TM, the computation
+of an ellipsoidal outer bound is more demanding than the computation of a box outer
+bound (cfr. the complexity analysis in Remark 5), and may become impractical when
+the number m of measurements increases.                                                 *
+
+       REMARK 7 (Central location estimate). We can use the center ce of the inscribed
+ellipsoid computed in Proposition 4.2, or the center c, of the inscribed ball computed
+in Proposition 4.1, as a central location estimate. Also, we can obtain central es-
+timates via the outer bounding sets, e.g., via the center of the outer-bounding box
+
+Aouter given in Proposition 5.1, or via the center of the outer-bounding ellipsoid O
+given in Proposition 5.2. The centers c, and c, of the inscribed sets belong to ¥ by
+
+construction, although they are in general not guaranteed to belong to Virue-           x
+
+      5.3. Algorithmic summary of the localization procedure. For clarity and
+ease of implementation, we summarize here the main computational steps required
+to obtain the set-membership outer-bounding localization estimates from the raw
+measurements.
+
+        1. Input data: Collect anchor positions A = [a ---aTM] and the m range
+          measurements (e.g., y; or 2;). Set the measurement bounds ~, * according
+          to the assumed absolute or relative error model (see Section 2).
+
+                                                                              16
+       2. Pre-processing & Outlier check (optional): To safeguard against bound
+           violations, solve the convex program (6.6) to find the minimal bound enlarge-
+          ments vt,v~. Update -- «+ -- --v~ and + + &*+ +v*TM (see Section 6.2
+          below).
+
+       3. Construct constants: Compute matrix E (the incidence matrix of the
+           difference-of-measurements graph, Section 3.1), vector w, and projector Q =
+           4 (mIm -- Im1,)-
+
+       4. Outer Bounding (Box): Choose n orthogonal directions v (e.g., the
+          standard basis). For each direction, solve the SOCPs (5.1) and (5.2) to find
+           the bounds y7** and 7". The Cartesian product of these intervals yields
+           the guaranteed outer bounding box Houter (Proposition 5.1).
+
+       5. Inner Approximation (Ellipsoid): Solve the SDP (4.10) to find the max-
+           imal inscribed ellipsoid E(c,W) (Proposition 4.2), using the pre-computed
+           bounds and matrices.
+
+      6. Additional insights and results. In this section we provide some addi-
+tional insights into the set-membership localization problem, examining in particular
+a technique for trying to find a point belonging to Vue, and a discussion on how to
+deal with situations in which the measurement errors violate the assumed upper or
+lower bounds.
+
+      6.1. Searching locally for a feasible point. As observed in Remark 7, the
+central estimate ce given by the center of the inscribed ellipsoid  C # may fail
+to belong to Vrue, and the same can happen for any other of the central estimates
+discussed in the previous sections, such as the center cy of the outer bounding box
+Aouter. In practice, this should not be an issue, since we are mostly interested in
+locating Xtrue via bounding sets, hence the center of such sets still carries the key
+information about where approximately Xtrue is located. However, if one insists in
+trying to find a point which truly belongs to Xtruc, the following local approach can
+be followed.
+
+     We let c denote a central estimate, computed as discussed in the previous sections;
+
+for instance, we may take c to be the center of the outer bounding box Aouter D Vetrue-
+If c  Xue (this condition is easy to check numerically), then there is nothing else
+to do. If instead c ¢ Vue, we search locally for a possible point that belongs to
+
+MXirue- The key observation is that when dealing with the original nonlinear constraints
+
+(2.9) the right hand side inequality poses no problem from a computational point
+of view, since it represents a convex constraint on x. Contrary, the left-hand side
+inequality is nonconvex in x. The idea we propose is that once a neighborhood of
+Xtrue, and a corresponding center c, has been determined, we can approximate locally
+
+the nonconvex constraint ||a2 -- a||3 > > by means of its first-order approximation
+around point
+                    Cc --qa®
+              VS jo-- aj ov (i) ==----
+
+that is, by means of an affine inequality of the form
+
+(6.1)         2c -- a)"(a -- ce) > 0.
+
+Figure 4 illustrates this idea on a two dimensional example. Intuitively, such approx-
+imation works best in a "far field" regime in which c is far from the anchors. One
+approach is thus to compute a new point « that belongs to the intersection of Y and
+the regions where (6.1) hold for i = 1,...,m. In practice, since the constraints (6.1)
+
+                                                                              17
+                                 \\                   4Zz
+
+      Fic. 4. Local linear approximation of the nonconvex constraint ||ja -- a®||Z > ;. The red
+
+box represents Houter, with center c which, in this illustration, does not belong to Xtrue (the darker
+
+shaded area).
+
+are locally more stringent than the original ones, to avoid infeasibility we add slack
+variables s; to allow some constraint violation, and we penalize such violations in the
+objective. Overall, we solve a convex optimization problem of the form
+
+            min            m
+
+       cER"",sERTM ,acR  ) |s3|
+
+                         --1
+
+(6.2)  st.:  <Qu---2QA'a+al < é*
+
+                         ja -- a 3 < &F,  a=1,...,m,
+
+                         (eC -- a) "(a --c) +8; >0,   i=1,...,m.
+
+The above problem is a convex quadratic programming problem (QP) which can
+be solved globally and with great efficiency. We remark, however, that the linearized
+constraints are still only an approximation of the actual nonlinear constraints, whence
+the optimal solution ¢ that we obtain from (6.2) may still fail to belong to Virue-
+
+      6.2. Errors that violate their bounds. As discussed in Remark 3, when the
+errors ; in the measurement equations (2.1) -- resp., the errors e; in the measurement
+equations (2.2) -- respect their assumed bounds, then the corresponding ; parameters
+are within the bounds ; oF , and the set Virue is nonempty. Contrary, when some
+of the actual errors happen to be outside their assumed bounds, the sets S; in (2.9)
+may have empty intersection, hence Virue, tq and ¥ may be empty. In such case, all
+the convex optimization problems discussed in the previous sections may turn out to
+be infeasible.
+
+      The described approach, however, can be modified so to accommodate the practi-
+cal situation in which some measurements may be affected by outliers or, in general, by
+errors that do not respect the assumed bounds. The idea is simply to allow for an en-
+largement of the bounds ~, +. That is, we consider variable bounds ~ --v~,*+vTM,
+where v+,v~ > 0 contain the upper and lower bound enlargements, respectively, and
+
+                                                                              18
+we seek for the minimum enlargement which guarantees that a ball of given radius
+r > 0 is contained in the new, enlarged, localization set ¥'. By looking at the deri-
+vations in Section 4.1 we see that a ball B(c,r) is contained in %' if
+
+(6.3)  -21QAT e+ RT = 2r[QA" illo + [Qu] ta < eh +",
+(6.4)  -2(QA']ie--||h' -- 2r[QAJille + (Qui + a> & -v,
+
+hold for17 = 1,...,m, and
+
+(6.5)  le a [3 + 2rle-- ap +r? < E+FuF,
+
+hold for i = 1,...,m, where this latter inequality is obtained by squaring (4.5). For
+given and typically small r > 0 we solve the convex program
+
+(6.6)               min                    m     + V; )
+
+       cER" hER",vt+ ,v- ERTM, AER       Soup
+
+                                  s.t.:       I
+
+                                         jJ=
+
+                                         vt,v~ > 0, (6.3), (6.4), (6.5),  ¢=1,...,m.
+
+This problem is always feasible. If at the optimum vt+,v~ = 0, then the original
+localization set Y was nonempty. If instead we have vt > 0, vt £0, ans/or v~ > 0,
+y-- # 0 at optimum, then ¥Y was empty, but we can enlarge the error bounds as
+& «  -v,  & + + v* and be guaranteed that the corresponding updated
+set ¥' is nonempty and contains a ball of radius r. Vectors y~ or vt with positive
+entries thus signal that the localization set is empty due to some of the measurements
+not respecting their assumed bounds. When this happens, we can inspect the size
+of the positive elements in v*+,v~ relative to the corresponding baseline values in
++,-, and decide whether we want to discard this experiment and repeat it with
+new measurements, or if we want to proceed to location estimation via the standard
+approach applied using the updated enlarged bounds. Problem (6.6) can thus be
+solved as a pre-processing step, before running the actual localization, for validating
+the feasibility of the assumed error bounds, for removing outliers, or for adjusting the
+error bounds so that the measurement equations become jointly feasible.
+
+      7. Numerical experiments. In these numerical experiments, we consider the
+measurement model (2.2) with relative additive errors é;  [é;,é7], and we take
+é, = --éf < 0 for all 7; the corresponding ;s and the relative bounds are given by
+(2.7). We experiment with space dimension n = 2 and n = 3. For given n, we select
+integer m  {n+ 1,...,10} and assign the m anchor positions a, i = 1,...,m,
+uniformly at random in [--1000, 1000]". The true object position true  R" is placed
+uniformly at random in [--100, 100]", and then m noisy measurements z; are generated
+as z = (1+é;)||true--aTM |2, i = 1,..., m, where é; are generated uniformly at random
+
+in [-é}, é7).
+     For each random problem instance, we compute the inscribed ellipsoid E(c., P) ac-
+
+cording to Proposition 4.2 and the bounding box Hoyter according to Proposition 5.1,
+with sides aligned to the ellipsoid 's axes. We then check if the center cy of Houter is
+in Virue; in the positive case we return as central estimate # = cy and in the negative
+case we solve problem (6.2) and return the corresponding optimal solution as estimate
+&. We further compute the actual distance from ¢ to the true object location "true,
+which represents the absolute position estimation error, and also evaluate the relative
+
+error by dividing ||ztruc -- #||2 by the average distance of # from the anchors. Finally,
+
+                                                                              19
+   1500 +
+   1000 +
+
+                                                                                                          200L 0
+
+         Fic. 5. Left: five anchors and intersection of their annuli. Right: outer bounding box for Xtrue
+  (in red) and inner ellipsoidal approximation of X D Xtrue (in blue).
+
+ we assess the set-membership localization error as the average of the half-side lengths
+
+of Aguter-
+
+       Figure 5 shows the result of one random instance of the setup described above,
+ with n = 2, m = 5, and error bound é} = 0.02 (i.e., 2% relative error) for all i. In the
+ left panel we see the anchors (stars) and their measurement annuli. The right panel
+ shows a close up of the intersection region: the outer bounding box Houter is depicted
+ in red, the inner ellipsoid  is depicted in blue. The black cross indicates ®truc, and
+ the red dot indicates cy, which in this case does belong to Virue, hence & = cp.
+
+      In the numerical experiments, for each n  {2,3} we selected in succession m 
+ {n+1,...,10} and, for each (n,m) pair, we generated and solved N = 100 random
+ experiments. We repeated all the experiments three times, with increasing relative
+ error bounds é/ = 0.02, é7 = 0.1, and é* = 0.2. The test was coded in Matlab, using
+ CVX [12] with Mosek solver [1] for SDP and SOCP, and run on a iMac 3.2 GHz Intel
+ Xeon desktop computer, without any particular care devoted to code optimization.
+
+       In each run we evaluated: the absolute error with respect to the box center,
+ e(cy) = ||co -- Ltruell2; the absolute error with respect to the modified center 7,
+ e(&) = || -- Ltruell2; the relative error ey (cp) obtained by dividing e(cy) by the av-
+ erage distance of c, from the anchors; the relative error ey(4%) obtained by dividing
+ e(@) by the average distance of ¢ from the anchors; the average eouter of the half-side
+ lengths of the bounding box Houter; the relative value eoutery obtained by dividing
+ outer by the average distance of c, from the anchors; a 0/1 indicator Iy,,. (cy) which
+ is 1 if cp  Atrue and zero otherwise; and an analogous indicator Iy,,,.(@) for ¢. These
+ values are then averaged over the N random experiments; the average of Iy,.... (Cp)
+ corresponds to the frequency fy(cy) with which cp  Yirue, the average of I,..,, (@)
+ corresponds to the frequency fy(#) with which @  Vrue. Further, we evaluated the
+ runtime ¢,. (in second) needed for computing the bounding box, and we assessed the
+ conservativeness of the inclusion VY D Xirue by estimating via a Monte-Carlo method
+ the ratio of volumes joi = vol(4')/vol(Xirue), obtained by generating N, = 10* uni-
+ form random points in ¥ and counting how many of them actually fall in Yirue; calling
+ N;, this number, the Monte-Carlo estimate of 7,0) is simply N,/N:.
+
+       The results for n = 2 and n = 3 are reported in Table 1 and Table 2, respectively,
+ for relative error level ey = 0.02. The experiments were then repeated for higher error
+
+                                                                               20
+level éy = 0.1, and the corresponding results are reported in Table 3 and Table 4,
+and further for ey = 0.2, with corresponding results reported in Table 5 and Table 6.
+
+m |_e(co)    e(Z)        e% (cp)      e% (z)  outer       Couter%    fy (cp)   fy (2)  t,           Tol
+
+3 | 47.53   21.388       20.16         2.45   43.25       14.88      49        80      0.66        2.09
+            14.59         1.99         1.71                                                        2.10
+4 | 17.04                 1.25         1.16   22.13       2.59       58        81      0.72        2.11
+            9.60          1.09         1.21                                                        2.51
+5 | 10.20   9.94          0.87        0.94    15.21       1.86       71        85      0.79        3.38
+                          0.71        0.79                                                         2.83
+6  9.08     7.80          0.65        0.85    13.47       1.64       63        80      0.88        2.62
+            6.11          0.52        0.57                                                         2.96
+7 7.15                                        9.99        1.22       67        80      0.92
+            7.17      N = 100     randomized                                                     0.02.
+8  5.51     4.59                              8.84        1.12       71        76      0.97
+
+9  5.36                                       7.87        0.96       79        87      1.06
+
+10 | 4.25                                     6.97        0.87       74        85      1.14
+                                              TABLE 1
+Average results over                          tests, for n = 2 and relative    error level ey =
+
+m | e(co)   e(%)       ex%(cr)      e%(#%)    outer Couter% Su (co)            fx(@) tr Mol
+4 | 70.15                  7.17               63.22       6.29       46        87      1.13 2.55
+            38.04         3.30         3.45
+5 | 35.08   27.54          2.40        2.59   39.43       3.75       58        84      1.22 2.36
+            25.86          1.72        2.54
+6 24.21     19.70          1.31        1.95   29.81       2.95       49        73      1.36 3.21
+            15.95          1.20        1.55
+7 | 17.39   14.97          1.12        1.51   23.63       2.34       68        86      1.46 2.59
+            11.47                      1.13
+8  13.57              N = 100                 20.91       2.02       80        86      1.51 2.23
+                                  randomized
+9  11.75                                      17.71       1.79       73        82      1.59 2.86
+
+10 | 11.46                                    15.72       1.55       79        87      1.68 2.89
+
+Average results over                          TABLE 2                          error level ey = 0.02.
+                                              tests, for n = 3 and relative
+
+m | e(co)    e(2)       e% (co)   e% (&)        outer     Couter%    fx (ey)   t% (3)  ty        TNvol
+                                                                               84      0.66 2.01
+3 | 152.49  113.21      20.55     12.52        169.84      22.47        50     79      0.72 2.46
+4 94.12     82.45        12.70    10.02        115.30      15.12        48
+5 56.31     61.17        7.22      7.41        79.88       10.14        62     86      0.80 2.16
+6 38.83     43.18        4.95      5.38        60.87        7.73        71
+7 37.49     40.71        4.92      5.14        56.76        7.29        63     89      0.84 2.22
+                                                            5.70        62     75      0.92 2.44
+8 29.35     36.86        3.70      4.55        45.35        5.17        73
+9 24.98     29.67        3.16      3.71        41.38        4.84        74     75      1.00 2.88
+10 | 22.97  25.81        2.85      3.20        39.07
+                                              TABLE 3     n = 2 and  relative  83      1.16 2.93
+                                              tests, for                       87      1.16 2.75
+
+Average results over N  = 100 randomized                                       error level ey =0.1.
+
+     We observe, as expected, that the absolute and relative errors decrease as the
+number m of anchors (and hence of measurements) increases. Also, we see that
+the local search step that computes & consistently improves the probability that the
+resulting estimate actually belongs to V;42e, compared to the plain outer box center
+cp. However, the absolute and relative errors with < improve compared to cp only
+for low values of m approximately, up to m = 4 for n = 2, and up to m = 6 for
+n = 3), while as m increases there seems to be no advantage in using # in place of cy
+in terms of absolute or relative localization errors. The average time t, for computing
+an outer box remains below 1.16s for n = 2 and below 1.72s for n = 3; it mildly
+grows with n and m, but it is insensitive to the noise level. We further observe that
+
+                                                                              21
+m | e(cp)     e(@)      ey (cp)  ex% (&)    Couter    Couter%    fx (cy)     tx (2)     ty    Tol
+                                                                                        1.12 1.96
+4 | 235.29   181.87     24.89    16.22     248.16      26.01        44         92
+                                                       18.09        56         88       1.20 2.08
+5 | 154.538  1388.54     15.65   12.88     179.08      14.10        63         89       1.28 2.27
+6 | 113.20   117.72      11.47   11.40     140.00      11.77        60         76
+7 | 85.60    94.70       8.47     9.02     119.11      10.65        66         82       1.35 2.28
+8 78.80      93.76       7.80     9.04     108.14       9.11        74         86
+9 66.49      71.77       6.80     7.15     89.20        8.13        70         82       1.52 2.59
+10 | 59.44   73.75       5.88     7.19     82.48
+                                          TABLE 4     n = 3 and  relative  error level  1.54 2.79
+                                          tests, for                                    1.66 2.92
+
+Average results over N  = 100 randomized                                                ey =0.1.
+
+m | e(cp)      e(@)     ey (cp)  ex% (&)    Couter    Couter%    fx (cy)   tx (2)       ty       Tol
+                                                                           91           0.67
+3 | 238.37   214.46     36.01    22.71     321.63      45.87        49                          1.71
+4 | 142.12   150.90      17.92   16.71     198.32      24.55        54     90           0.75    1.63
+5 | 111.17   119.91      1424    1362      168.60      21.18        54     82           0.86    2.21
+6 90.30      105.34      11.37   12.16     136.06      17.00        56                          2.31
+                                                       138.50       75     82           0.92    2.27
+7 74.45      83.57       9.30    10.14     107.81      11.89        74                          2.31
+8 62.41      73.44       7.78     9.03     95.68       10.93        69     88           0.97    2.75
+                                                        9.84        66     81           1.01    3.39
+9 58.01      67.40       7.22     8.10     88.57
+10 | 48.81   54.17       6.19     6.74     78.18      n = 2 and  relative  83           1.07  0.2.
+                                          TABLE 5                          76           1.13
+                                          tests, for
+Average results over N  = 100 randomized                                   error level ey =
+
+m | e(cy)     e(2)      ey (co)  ex 3)    Couter      Couter%    S% 9)     fx (2) tr            vol
+4 | 403.80   347.49     46.31    28.74    469.07 52.50              32     91           1.21    1.77
+5 | 234.85   237.01     2461     21.15    328.62 33.67              63     93           1.31    1.64
+6 | 219.68   226.07     22.32    20.60                              57                          1.99
+7 | 193.36   192.95      19.75   17.88    302.67 30.32              48     92           1.41    2.96
+8 | 145.29   170.62      1452    15.90                              66                          2.54
+                                          257.53 26.03              71     86           1.42    2.29
+9 | 126.69   158.13      12.60   15.25    213.12 21.21              68     86           1.51    3.25
+10 | 122.60  145.87      12.12   13.73
+                                          178.07 17.75           relative  86           1.65  0.2.
+                                          175.43 = 17.39                   82           1.72
+                                          TABLE 6
+Average results over N  = 100 randomized  tests, for n = 3 and             error level ey =
+
+the conservativeness of the inclusion Vrue CG XV, as measured by the Monte-Carlo
+estimated volume ratio 7,01, seems to moderately increase with the number m of
+measurements while being little influenced by n.
+
+      Finally, we tested the proposed set-membership estimation technique in the sit-
+uation where the measurements may be affected by outliers, that is by measure-
+ment errors that violate the assumed bounds. We considered the case of n = 2 and
+
+m  {3,...,10}. We assumed 2% noise bounds, i.e., é* = 0.02, but the actual
+
+measurement noise was generated in the simulation as
+
+                -- é}(1+uz)|lvtrue -- a ||2 with probability 0.9
+                  `1 0.5(1 + us)|ttrue -- a@ ||2 with probability 0.1,
+
+where wu; are generated uniformly at random in [--1, 1]. This means that the measure-
+ment errors respect the 2% assumed bound with probability 0.9, while with probabil-
+ity 0.1 they unexpectedly violate the assumed bound and may actually have a much
+larger level of relative error (up to 50% error). For each pair (n,m) we generated
+
+                                                                              22
+N = 100 random problem instances and, for each instance, we first solved Problem
+(6.6), assuming a feasibility radius r = 0.01. The solution to this problem yielded,
+whenever necessary, the minimal noise bound enlargements v+,v~ that guarantee
+that the updated bounds ~ «+ ~-- -- v7, * © &+ +v* would correspond to a
+nonempty localization set ¥ that contains a ball of radius r. After this pre-processing
+step, we solved normally, as in the previous experiments, for an inner ellipsoid and an
+outer bounding box, using the updated noise bounds computed in the pre-processing
+step. Notice that such pre-processing step also serves as an outlier detection method,
+since whenever we find vy~ 4 0 or vt 4 0 we know that some of the measurement
+errors did not respect the original bounds. The results of such experiments, averaged
+over the 100 runs, are reported in Table 7. These results are to be compared to those
+in Table 1, where we had the same assumed error bounds but no outliers.
+
+--BSemontanwss  |  3)  e(@)     e% (cy) ey (2) outer --Couter% fx (cb)  fy, (4)  tr    Tvol
+
+                   84.18 74.70  9.78  8.42  30.60  3.70  54.55          80.81    1.58  2.07
+
+                   65.94 59.64  8.06  7.34  15.64  1.94  50.00          66.33    1.58  5.91
+
+                   43.16 42.27  5.37  5.26  11.47  1.39  52.00          69.00    1.71  5.41
+
+                   20.07 20.19  2.52  2.53  6.87   0.89  53.61          70.10    1.83  7.79
+
+                   17.48 19.99  2.17  2.48  5.91   0.74  44.90          59.18    1.96  10.49
+
+                   15.83 15.76  1.92  1.91  4.74   0.60  52.17          57.61    2.08  13.62
+
+                   14.21 14.17  1.83  1.82  3.52   0.44  48.91          56.52    2.19  15.95
+
+                   13.27 13.74  1.72  1.79 3.17    0.40  61.29          64.52 2.27 16.83
+
+                                                                         TABLE 7
+       Average results over N = 100 randomized tests, for n = 2, relative error level ey = 0.2 and
+10% probability of outliers having 50% relative error.
+
+      A few comments on the results of Table 7 are in order. First, we observe that
+the average running times ¢t, are now slightly higher than those in Table 1, since
+they account for the additional effort due to the pre-processing, i.e., for solving Prob-
+lem (6.6). Next, we observe that the presence of errors violating the assumed bounds
+tends to make Vue and XY empty, while the pre-processing problem (6.6) aims at cor-
+recting this by enlarging the bounds so to make VY nonempty. However, the bounds
+are adjusted so to make ¥ "barely feasible," that is we seek for the minimum bound
+adjustment which guarantees that a small sphere is contained in V. Therefore, even
+with pre-processing, in the presence of errors violating the assumed bounds we expect
+to have ¥ sets smaller that those we obtained in Table 1 for the case where no outliers
+were present. Indeed, this fact is reflected in the columns outer and outery% in Table 7
+which measure the size of the bounding boxes, and appear to be smaller than the
+corresponding boxes in Table 1. The fact that the true feasible set V;ye is smaller or
+empty in the presence of outliers is also reflected in the greater difficulty in finding
+a feasible point (cfr. columns fy,(c,) and fy(#)) and in the higher volumetric ratios
+in column 701. The increased uncertainty due to the outlier errors naturally reflects
+also in higher estimation errors (absolute or relative distance from central estimate to
+the true target location), as reported in the first four columns of Table 7. We remark
+that in this latter numerical test we are using a model outside its intended scope,
+that is, under simulation conditions that severely violate the founding assumptions of
+the model itself (i-e., that the noise should be contained within the assumed bounds).
+Even in such "off-label" use, however, our proposed approach provides consistent re-
+sults and permits validation, or invalidation, of the working assumptions on the noise
+bounds.
+
+                                                                              23
+REMARK 8 (Comparison with point estimators). The literature offers various so-
+phisticated point estimators for localization under Gaussian noise assumptions, such
+as the interior-point bias treatment in [16] or the diffusion Gauss-Newton method in
+[28]. While such methods effectively minimize metrics like the Root Mean Square
+Error (RMSE) of the point estimate, our approach fundamentally shifts the paradigm
+from point estimation to guaranteed set outer bounding. Under an interval unknown-
+but-bounded (UBB) noise model, a direct comparative analysis using RMSE is con-
+ceptually misaligned: our primary objective is to guarantee that the true location lies
+entirely within the computed set for any admissible noise realization, a property that
+stochastic point estimators are not designed to fulfill. Therefore, while point estimates
+can be extracted from our bounding sets (e.g., their geometric centers), comparing
+their RMSE against specialized Gaussian-noise point estimators falls outside the in-
+tended scope of the set-membership framework.                                       *
+
+      8. Conclusions. This paper discussed the problem of finding a set-valued es-
+timate of an object's position from noisy but bounded range measurements. While
+standard location estimators only provide a single point estimate, the proposed ap-
+proach returns a region (the localization set ¥, or its outer bounding box or ellipsoid)
+which is guaranteed to contain the whole set Virue of the possible locations compatible
+with the measurements. On the one hand such guaranteed set-membership informa-
+tion can be useful and critical in certain applications, and on the other hand it has a
+clear geometrical meaning, and it can be computed efficiently and directly by means
+of convex programming, with no need to resort to linearizations or relaxations.
+
+      Several interesting aspects remain open to further investigation. For instance,
+the conservativeness of the inclusion Vzue GC ¥ could be explored formally, and its
+relation to the anchors' configuration geometry assessed quantitatively. Also, inner
+
+approximation of Yrue, or even just the determination of one point in this set, remains
+a problem worth additional investigation, although heuristics exists for its solution,
+e.g., linearization methods such as the one described in Section 6.1, or sampling-based
+methods. Further, one may consider the case where the anchors' locations are not
+known exactly, and investigate the effect of such uncertainty on the localization set.
+
+                                                        REFERENCES
+
+[1] M. ApS, The MOSEK optimization toolbox for MATLAB manual. Version 9.0., 2019, http:
+           //docs.mosek.com/9.0/toolbox/index.html.
+
+[2] S. BANCROFT, An algebraic solution of the GPS equations, IEEE Transactions on Aerospace
+           and Electronic Systems, 21 (1985).
+
+[3] R. Barat, Graphs and Matrices, 2nd Ed., Springer, 2014.
+[4] A. Beck, P. SToIcA, AND J. Li, Exact and approximate solutions of source localization prob-
+
+           lems, IEEE Tran. on Signal Processing, 56 (2008).
+[5] A. Ben-TaL, L. E. GHaour, AND A. NEMIROVSKI, Adjustable robust solutions of uncertain
+
+           linear programs, Mathematical Programming, 99 (2004), pp. 351-376, https://doi.org/10.
+            1007/s10107-003-0454-4, https://doi.org/10.1007/s10107-003-0454-4.
+[6] D. BERTSEKAS, Convex Analysis and Optimization, Athena Scientific, 2003.
+[7] P. Biswas, T.-C. Liana, K.-C. Tou, Y. YE, AND T.-C. WANG, Semidefinite program-
+            ming approaches for sensor network localization with noisy distance measurements, IEEE
+            Transactions on Automation Science and Engineering, 3 (2006), pp. 360-371, https:
+            //doi.org/10.1109/TASE.2006.877401.
+[8] S. Boyp, L. E. Guaour, E. FERON, AND V. BALAKRISHNAN, Linear Matrix Inequalities in
+            System and Control Theory, vol. 15 of SIAM Studies in Applied Mathematics, Society for
+            Industrial and Applied Mathematics, Philadelphia, PA, 1994, https://doi.org/10.1137/1.
+            9781611970777.
+[9] G. C. CALAFIORE, L. CARLONE, AND M. WEI, A distributed Gauss-Newton approach for range-
+
+                                                                           24
+              based localization of multi agent formations, in 2010 IEEE International Symposium on
+            Computer-Aided Control System Design, 2010, pp. 1152-1157, https://doi.org/10.1109/
+            CACSD.2010.5612770.
+       G. C. CALAFIORE AND L. E. GHAOUI, Optimization Models, Cambridge University Press, Cam-
+            bridge, UK, 2014, https://doi.org/https: //doi.org/10.1017/CBO9781107279667.
+       Y. T. CHAN AND K. C. Ho, A simple and efficient estimator for hyperbolic location, IEEE
+            Tran. on Signal Processing, 42 (1994).
+       M. GRANT AND S. Boyb, CVX: Matlab software for disciplined convex programming, version
+            2.1. https://cvxr.com/cvx, Mar. 2014.
+       M. HENK, J. RICHTER-GEBERT, AND G. M. ZIEGLER, Basic properties of convex polytopes, in
+              Handbook of Discrete and Computational Geometry, J. E. Goodman, J. O'Rourke, and
+              C. D. Téth, eds., CRC Press, 2017.
+       L. JAULIN, Robust set-membership state estimation; application to underwater robotics, Auto-
+              matica, 45 (2009), pp. 202-206. Representative foundational work on adopting rigorous
+              interval-bounded error models in practical robotic sensor applications.
+       K. KHOSHELHAM AND S. O. ELBERINK, Accuracy and resolution of kinect depth data for indoor
+              mapping applications, Sensors, 12 (2012), pp. 1437-1454. Provides empirical grounding for
+              bounded maximum error metrics in typical off-the-shelf range sensors.
+       S.-H. Kim, Y.-S. Kim, AND J.-H. KIM, Interior-point method for an optimal treatment of bias
+              in trilateration location, IEEE Transactions on Vehicular Technology, 62 (2013), pp. 2913---
+            2925.
+       D. Li AND Y. H. Hu, Least square solutions of energy based acoustic source localization
+              problems, in Workshops on Mobile and Wireless Networking/High Performance Scien-
+              tific, Engineering Computing/Network Design and Architecture/Optical Networks Con-
+              trol and Management/Ad Hoc and Sensor Networks/Compil, 2004, pp. 443-446, https:
+            //doi.org/10.1109/ICPPW.2004.1328053.
+
+[18] F. MENG, X. SHEN, Z. WANG, H. Liu, J. WANG, Y. ZHU, AND P. VARSHNEY, Multiple-source
+
+              ellipsoidal localization using acoustic energy measurements, Automatica, 118 (2020),
+            p. 109032, https://doi.org/10.1016/j.automatica.2020.109032.
+
+[19] G. NADDAFZADEH-SHIRAZI, M. B. SHENOUDA, AND L. LAMPE, Second order cone programming
+
+              for sensor network localization with anchor position uncertainty, IEEE Transactions on
+            Wireless Communications, 13 (2014), pp. 749-763, https: //doi.org/10.1109/TWC.2013.
+            120613.130170.
+
+[20] Y. NESTEROV AND A. NEMIROVSKI, Interior-Point Polynomial Algorithms in Convex Program-
+
+              ming, vol. 13 of SIAM Studies in Applied Mathematics, Society for Industrial and Applied
+            Mathematics, Philadelphia, PA, 1994, https: //doi.org/10.1137/1.9781611970791.
+
+[21] X. Su, G. MAo, B. ANDERSON, Z. YANG, AND J. CHE, Robust localization using range measure-
+
+              ments with unknown and bounded errors, IEEE Transactions on Wireless Communications,
+            16 (2017).
+       S. THRUN, W. BuRGARD, AND D. Fox, Probabilistic Robotics, MIT Press, Cambridge, MA,
+              2005. Discusses sensor measurement models, including truncated and bounded character-
+              istics for rangefinders.
+       P. TSENG, Second-order cone programming relaxation of sensor network localization,
+            SIAM Journal on Optimization, 18 (2007), pp. 156-185, https://doi.org/10.1137/
+            050640308, https://doi.org/10.1137/050640308, https://arxiv.org/abs/https://doi.org/10.
+            1137/050640308.
+
+[24] Z. WANG, X. SHEN, H. Liu, F. MENG, AND Y. ZHU, Dual set membership filter with minimizing
+
+              nonlinear transformation of ellipsoid, IEEE Transactions on Automatic Control, 66 (2021),
+            pp. 5423-5430, https: //doi.org/10.1109/TAC.2020.3046320.
+
+[25] Z. WANG, X. SHEN, AND Y. ZHU, On equivalence of major relaxation methods for minimum
+
+              ellipsoid covering intersection of ellipsoids, Automatica, 107 (2019), pp. 563-570, https:
+            //doi.org/10.1016/j.automatica.2019.06.007.
+       Z. WANG, X. ZHANG, A. LAMBERT, L. SHI, AND W. WANG, A set-membership approach for
+              visible light positioning with fluctuated RSS measurements, IPIN (Short Papers/Work-in-
+            Progress Papers), (2019).
+       E. WIDDISON AND D. Lona, A review of linear multilateration techniques and applications,
+            IEEE Access, 12 (2024), https: //doi.org/10.1109/ACCESS.2024.3361835.
+       Y. Wu, X. WANG, AND Y. SHEN, Adaptive range-based target localization using diffusion GN
+              method, IEEE Transactions on Signal and Information Processing over Networks, 8 (2022),
+              pp. 156-168.
+       B. YANG, Q. Qiu, Q.-L. HAN, AND F. YANG, Received signal strength indicator-based in-
+              door localization using distributed set-membership filtering, IEEE Tran. on Cybernetics,
+
+                                                                            25
+            52 (2022).
+[30] W. Yu, E. ZAMorA, AND A. Sorta, Ellipsoid slam: A novel set membership method for
+
+              simultaneous localization and mapping, Autonomous Robots, 40 (2016), pp. 125-137, https:
+            //doi.org/10.1007/s10514-015-9443-2.
+[31] G. ZENG, B. Mu, J. CHEN, Z. Sut, AND J. Wu, Global and asymptotically efficient localization
+              from range measurements, IEEE Transactions on Signal Processing, 70 (2022), pp. 5041--
+            5057, https://doi.org/10.1109/TSP.2022.3198167.
+[32] Y. ZHANG, B. CHEN, Z. WANG, W. ZHANG, L. Yu, AND L. Guo, Distributed zonotopic fusion
+              estimation for multi-sensor systems, arXiv preprint arXiv:2502.17752, (2025).
+
+                                                                            26
+

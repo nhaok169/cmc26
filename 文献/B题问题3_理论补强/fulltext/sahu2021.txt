@@ -1,0 +1,1437 @@
+                                                                                                                                                                                                                                                                    1
+
+                                         Optimal Sensor Placement for Source Localization:
+                                                      A Unified ADMM Approach
+
+                                                       Nitesh Sahu, Linlong Wu, Member, IEEE, Prabhu Babu, Bhavani Shankar M. R., Senior
+                                                                               Member, IEEE, and Björn Ottersten, Fellow, IEEE
+
+arXiv:2109.03639v2 [eess.SP] 4 Mar 2022     Abstract--Source localization plays a key role in many applica-              recovery mechanism from the observed data. The commonly
+                                         tions including radar, wireless and underwater communications.                  used approaches are based on time-of-arrival (TOA) [3], angle-
+                                         Among various localization methods, the most popular ones are                   of-arrival (AOA) [4], time-difference-of-arrival (TDOA) [5],
+                                         Time-Of-Arrival (TOA), Time-Difference-Of-Arrival (TDOA),                       received-signal-strength (RSS) [6] and frequency-difference-
+                                         Angle-Of-Arrival (AOA) and Received Signal Strength (RSS)                       of-arrival (FDOA) [7]. Apart from the employed estimation
+                                         based. Since the Cramér-Rao lower bounds (CRLB) of these                        approaches, the localization accuracy also depends on the
+                                         methods depend on the sensor geometry explicitly, sensor place-                 target-sensor geometry [8], [9]. Specifically, the mean squared
+                                         ment becomes a crucial issue in source localization applications.               error (MSE) in the estimation of the source position will be
+                                         In this paper, we consider finding the optimal sensor placements                a function of the sensor geometry. Therefore, optimal sensor
+                                         for the TOA, TDOA, AOA and RSS based localization scenarios.                    placement is a key problem in source localization applications.
+                                         We first unify the three localization models by a generalized
+                                         problem formulation based on the CRLB-related metric. Then                         However, owing to the highly nonlinear dependence of the
+                                         a unified optimization framework for optimal sensor placement                   MSE on the geometry, it is rather challenging to arrive at
+                                         (UTMOST) is developed through the combination of the alternat-                  the optimal sensor placements based on the MSE analysis.
+                                         ing direction method of multipliers (ADMM) and majorization-                    A viable alternative approach is to derive the Cramér-Rao
+                                         minimization (MM) techniques. Unlike the majority of the state-                 lower bound (CRLB) for the source localization model and
+                                         of-the-art works, the proposed UTMOST neither approximates                      then optimize the bound with respect to the positions of
+                                         the design criterion nor considers only uncorrelated noise in                   the sensors. Indeed, various schemes of sensor placement
+                                         the measurements. It can readily adapt to to different design                   have been proposed in the literature based on optimization
+                                         criteria (i.e. A, D and E-optimality) with slight modifications                 of the CRLB matrix or the Fisher information matrix (FIM,
+                                         within the framework and yield the optimal sensor placements                    i.e., the inverse of the CRLB matrix). The commonly used
+                                         correspondingly. Extensive numerical experiments are performed                  CRLB-based optimization criteria are the A-optimality (i.e.
+                                         to exhibit the efficacy and flexibility of the proposed framework.              minimizing the determinant of the CRLB) and D-optimality
+                                                                                                                         (i.e., minimizing the trace of the CRLB) [10].
+                                            Index Terms--Optimal sensor placement, source localization,
+                                         Cramér-Rao lower bound, alternating direction method of mul-                       For the two-dimensional (2D) case, the optimal sensor ge-
+                                         tipliers, majorization-minimization                                             ometries for the AOA based model was obtained by optimizing
+                                                                                                                         the D-optimality criterion in [11], which are shown to be
+                                                                   I. INTRODUCTION                                       lying in a equiangular configuration. In [12], the authors
+                                                                                                                         have considered the problem of optimal sensor placement
+                                         E NVIRONMENT sensing via wireless sensor networks                               for AOA­localization in 3D space, they have derived optimal
+                                               (WSNs) has been of significant research interest over                     sensing schemes by optimizing the A-optimal criterion. In
+                                         the past decade, and one of their key applications is the                       [13], the authors have designed optimal sensing direction by
+                                         target/source localization [1], [2]. From here on, we will                      optimizing the A-optimal design criterion for hybrid RSS,
+                                         use the terms target and source interchangeably. Typically,                     AOA and TOA localization problem. The authors of [14] have
+                                         in source localization, given some potentially noisy mea-                       proposed optimal sensor placement schemes for AOA-based
+                                         surements from the sensors, the position of the source is                       localization problem with distance dependent noise model.
+                                         estimated based on various approaches. A variety of source                      In [15], the problem of optimal sensor placement for AOA
+                                         localization techniques exist in the literature depending on                    model using frame theory was addressed. The authors of [16]
+                                         the type of information measured and the source position                        addressed the problem of optimal access point deployment (in
+                                                                                                                         the context of wifi-based localization) for AOA localization
+                                            Copyright (c) 2015 IEEE. Personal use of this material is permitted.         model. In [17], for the TDOA measurement model, the optimal
+                                         However, permission to use this material for any other purposes must be         geometry of the sensors is derived to correspond to vertices of
+                                         obtained from the IEEE by sending a request to pubs-permissions@ieee.org.       a m sided regular polygon, m being the number of sensors.
+                                         The first two authors contributed equally to this work. Corresponding author:   The same approach was later extended to the 3D case as
+                                         Linlong Wu.                                                                     well, showing the optimal geometry as centered platonic solids
+                                                                                                                         (tetrahedron, cube, etc) where source is present at the center
+                                            Linlong Wu, Bhavani Shankar M.R. and Björn Ottersten are with the            and sensors at the vertices [18]. In [19], the optimal sensor
+                                         Interdisciplinary Centre for Security, Reliability and Trust (SnT), University  geometries were derived for the TDOA model by employed the
+                                         of Luxembourg, 1855 Luxembourg City, Luxembourg. E-mail: {linlong.wu,
+                                         bhavani.shankar, bjorn.ottersten}@uni.lu. Their work is supported in part by
+                                         ERC AGNOSTIC under grant EC/H2020/ERC2016ADG/742648 and in part
+                                         by FNR CORE SPRINGER under grant C18/IS/12734677.
+
+                                            Nitesh Sahu and Prabhu Babu are with the Centre for Applied Re-
+                                         search in Electronics (CARE), Indian Institute of Technology Delhi, New
+                                         Delhi­110016, India. E-mail: {nitesh.sahu, prabhubabu}@care.iitd.ac.in.
+                                                                                                                                          2
+
+A-optimality criterion and considering both the centralized and           However, there is barely any method on designing optimal
+decentralized pairing configuration which are distinguished               placement strategies by optimizing the E-optimality, one
+by a common reference sensor. Furthermore, for the three-                 reason for which could be the difficulty of solving the
+dimensional (3D) case, The authors in [12], [20], [21] studied            associated optimization problem.
+the optimal sensor placement strategies by optimizing the A-
+optimality criterion for the TOA, AOA and RSS methodolo-          To address the aforementioned gaps in the literature, we
+gies, in which they approximated the A-optimality criterion via   propose a unified optimization framework for optimal sensor
+a general inequality and minimized the approximated criterion     placement design in this work. The key contributions of our
+with respect to the sensor positions. In [22], the optimal        work are mainly as follows:
+receiver position was determined based on A-optimality for
+both synchronous and asynchronous elliptical positioning (2D      · We have formulated a general sensor placement problem
+and 3D) that minimizes the localization error. The author            to cover various commonly considered cases on this
+in [23] proposed a framework for the optimal sensor-target           research topic. This general formulation subsumes the
+geometries for different types of sensor network with Bayesian       TOA, TDOA, AOA or RSS based model under the A-
+priors by taking into account the uncertainty in the prior           , D- or E-optimal design criterion. Therefore, by solving
+knowledge of the target position. In [24], an optimal sensor         this general problem, it is expected that a unified solving
+placement strategy has been presented for received signal            approach can be developed.
+strength difference (RSSD) based localization problem with
+unknown transmitted power by maximizing the determinant           · Based on the general problem formulation, a unified
+of FIM. In [25], the authors studied the problem of optimal          optimization-based framework has been proposed, which
+geometry analysis for TOA localization, where they employed          is to solve simpler sub-problems in an iterative manner.
+the D-optimal design criterion to arrive at optimal geometry.        The A-, D- or E-optimality can be handled under the
+In [26], a D-optimal design based optimal sensor placement           same umbrella of this framework with minor changes in
+strategy was explored for cognitive radar application.               the subproblems. Unlike the state-of-the-art approaches
+                                                                     which involve handling highly nonlinear trigonometric
+   Although much research has been conducted in this field,          functions directly or approximating them necessarily,
+several gaps are still observed from the literature as follows:      our unified framework neither handles any trigonometric
+                                                                     functions nor invokes any approximation in the associated
+   · The majority of the works assume that the noise in the          optimization problem.
+      measurements are uncorrelated, which would lead to a
+      simplified design criterion. Although it is not unnatu-     · To the best of our knowledge, the E-optimal design
+      ral to assume uncorrelated noise in the measurement            criterion was never considered in the literature for optimal
+      models, under some circumstances, the noise in some            sensor placement. Our unified framework encompasses
+      measurements could actually be correlated. For example,        the E-optimal design criterion. Additionally, in the data
+      in ocean applications, the deployed hydrophones will be        models of the three source localization methods, we do
+      influenced by the action of the same regional swell or         not assume that the noise in the model to be necessarily
+      flows, which may cause the ADC saturation and bring the        uncorrelated. Our unified framework can readily handle
+      correlated measurement errors [27]. Even with the strong       the case of correlated noise in the model.
+      assumption that the sensor measurements are uncorre-
+      lated, in the case of TDOA-based source localization, the   · Extensive numerical simulations has been performed for
+      measurement noise covariance matrix will be correlated         designing optimal sensor placement for all three (TOA,
+      (see equation (16)). Therefore, one can not rule out           TDOA, RSS1) source localization methods for three op-
+      the possibility of correlated measurement noise and it         timal design criteria (A-, D- and E-optimal designs).
+      has to be considered while designing sensor placement
+      strategies.                                                 The rest of the paper is organized as follows. In Section II, we
+
+   · It has been observed in the literature that various spe-     describe the system models for the TOA, TDOA, AOA and
+      cialized algorithms/methodologies were developed to de-
+      sign optimal sensor placement strategies by optimizing      RSS based source localization, and then formulate a unified
+      different design criterion. There is clearly a lack of a
+      unified framework encompassing all the design criteria      CRLB based problem of optimal sensor placement. In Section
+      (like A- and D-optimality criteria) for the various source
+      localization methodologies. Such a framework, while         III, an optimization approach to optimal sensor placement is
+      being theoretically elegant, should also offer flexibility
+      to the designer to incorporate more application-dependent   developed under the A-, D- and E-optimality design criteria for
+      constraints on the sensor locations.
+                                                                  all the TOA, TDOA and RSS models. Section IV demonstrates
+   · The design based on the E-optimality (i.e., minimizing
+      the largest eigenvalue of the CRLB) [10] usually be-        numerical results. Conclusions are drawn in Section V.
+      haves substantially more reliably with respect to min-         Notations: Rn and Rm×n denote the n-dimensional real-
+      imization of the variances of the parameter estimates.
+                                                                  valued vector space and m × n real-valued matrix space,
+
+                                                                  respectively. Scalars, vectors and matrices are denoted by
+
+                                                                  standard lowercase letter a, lower case boldface letter a and
+
+                                                                  upper case boldface letter A, respectively. A B represents
+
+                                                                  that A - B is a positive semidefinite matrix. The subscripts
+                                                                                         1
+                                                                  (.)T ,  (.)-1,            denote the  transpose,  inverse  and  square  root
+                                                                                  (.) 2
+
+                                                                  of a matrix, respectively. Tr (.), m (.), det (.) and . F denote
+                                                                  the trace, maximum eigenvalue, determinant and Frobenius
+
+                                                                     1We will see that the problem formulations for RSS and AOA are essentially
+                                                                  the same, and hence, we presents the simulations for RSS for illustration.
+                                                                                                                                                 3
+
+norm of a matrix, respectively. . p and |.| represents for                 Consequently, the joint density function of the observation
+the p norm of a vector and the absolute value of a scalar,                 vector s is given by
+
+respectively.  E [.],  log10 (.),  ln (.),  Im,  1m  and  d   denote  the                        1
+                                                          dx
+statistical expectation, base-10 logarithm, natural logarithm,             p (s; p) =       m
+
+m × m identity matrix, m × 1 vector with all elements equal                            (2) 2 det (Rtoa)                                          (4)
+                                                                                                                                               .
+to 1, and differentiation with respect to x, respectively.                             exp  -  1  (s  -   2g   (p))T  Rt-o1a  (s  -  2g  (p))
+                                                                                               2
+
+      II. SYSTEM MODELS AND A UNIFIED PROBLEM                              As stated in the introduction, under some circumstances,
+                            FORMULATION                                    especially when some of the sensors are of a similar nature,
+                                                                           their inherent noise would be correlated due to the similar
+   Consider the problem of locating a stationary target in the             mechanism and hardware implementation. Thus, Rtoa will not
+3D space using m sensors with known locations. The sensor                  necessarily be a diagonal matrix in general.
+may be active with transmitting signals and receiving the echos
+(e.g. radar and sonar) or passive receiving the signal reflected              We denote an unbiased estimate of the true target location
+or transmitted by the target (e.g. hydrophone and microphone).             by p^, the covariance matrix of which satisfies the following
+The static target is assumed to be located at an unknown                   well-known inequality [32]
+coordinates p  Rn, and m stationary sensors are located
+at known coordinates ri  Rn, i = 1, . . . m with m  n + 1.                        E (p^ - p) (p^ - p)T C (p) = F-1 (p) ,                       (5)
+Depending on the nature of the target (i.e, active or passive)
+and sensors (i.e. types of measurement), several localization              where C (p) is the CRLB matrix, and F (p) is the Fisher
+methods can be deployed. In this section, the TOA, TDOA                    information matrix (FIM) [32] given by
+and RSS based localization cases will be considered. For each
+of them, the system model is first introduced followed by the              F (p) = E         ln p (s; p)           ln p (s; p) T          Rn×n.
+derived CRLB. Based on these CRLBs, a general problem is                                         p                     p
+formulated to unify the sensor placements of different models.
+                                                                                                                                               (6)
+
+                                                                           According to (6), the FIM for the TOA based localization can
+
+                                                                           be expressed as
+
+A. System Model for TOA-Based Localization                                                   Ftoa (p) = 4HT R-to1aH,                           (7)
+
+   Considering the scenario of a passive target and multiple               and the CRLB matrix is thereby
+active sensors measuring the round-trip TOA, the noisy mea-
+surement at the i-th sensor is modeled as                                                                         1
+                                                                                                                  4
+ti = 2                 p - ri                                                     Ctoa  (p)  =    F-to1a  (p)  =      HT R-to1aH -1 ,          (8)
+                          c
+                                   2 + ni, i = 1, . . . m,            (1)  where
+
+where p - ri 2 is the target range from the i-th sensor, c                                    h1T               (p-r1)T 
+denotes the wave propagation speed in the medium, and ni                                      ... 
+represents the TOA measurement noise. It is usually assumed                            H                              p-r1 2       .           (9)
+that ni follows a Gaussian distribution [28]­[30] denoted by
+ni  N 0, i2 . Additionally, it is worth mentioning that the                                                              ...
+design under the Gaussian CRLB yields the best performance
+in the worst case over a large class of distributions [31], which                                 hm T               (p-rm)T
+further validates this Gaussian assumption.                                                                           p-rm 2
+
+   After converting the TOA measurement to the correspond-                 The matrix H is referred to as the orientation matrix, in which
+ing distance measurement, we have                                          each hi is a unit vector (i.e. hTi hi = 1) defining the orientation
+                                                                           of the i-th sensor with respect to the target. Therefore, the
+si = 2 p - ri 2 + cni, i = 1, . . . m,                                (2)  CRLB essentially depends only on the orientation of sensors
+
+                                                                           with respect to the target, and the ranges between the target
+
+                                                                           and sensors will not affect it. In other words, designing the
+
+                                                                           sensor placement is equivalent to designing the orientation of
+
+                                                                           all the sensors.
+
+where si cti, cni  N 0, c2i2 , and c is the speed of light.                Remark 1. The above parameterization of CRLB matrix in
+   Concatenating all measurements from the m sensors to-                   term of the unit vectors {hi} is very different from the
+                                                                           common parameterization approach seen in the literature. In
+gether, we have the following measurement model                            the current literature, the elements of {hi} vectors are usually
+                                                                           specified in term of "azimuth" and "elevation" angles, and
+                       s = 2g (p) + toa,                              (3)  thus the resulting CRLB matrix will be a complicated function
+
+where s = [s1, . . . , sm]T denotes the measurements from                  of trigonometric functions. Differently, we prefer to keep the
+                                   p - r1 2 , . . . , p - rm 2]T and       elements of {hi} in Cartesian coordinates (we can easily
+the m sensors, g (p) = [           N (0, Rtoa) with the covariance         compute the corresponding azimuth and elevation angle from
+toa = [cn1, . . . , cnm]T 
+                                                                           hi), which enables us to develop a neat optimization method
+matrix Rtoa assumed to be a general positive definite matrix.
+                                                                                                                                               4
+
+later. Hence,the CRLB matrix (7) will be treated as a function             Remark 3. From equation (16), it can be seen clearly that
+of the orientation matrix H.                                               Rtdoa will not be diagonal even if E nnT is diagonal. Thus,
+                                                                           in the case of the TDOA based localization, the covariance
+Remark 2. The noise in the model (3) is assumed to be                      matrix Rtdoa by nature is a non-diagonal positive definite
+                                                                           matrix.
+distance independent (distance from the target). However,
+                                                                              Similarly, the FIM and CRLB for the TDOA based local-
+when the noise is distance dependent, one can constrain that               ization can be expressed as, respectively,
+the optimal design on a predefined sphere for 3D case or
+                                                                                  Ftdoa (p) = HT KT R-td1oaKH                                  (17)
+circle for 2D case, which would lead to a similar constraint
+(hTi hi = c2, where c denotes the radius of the sphere or the              and
+circle). Moreover, our approach in this work can also handle
+the case where hTi hi = ci2 with arbitrarily predefined ci for
+each sensor, which can been seen clearly in Algorithm 2.
+
+B. System Model for TDOA-Based Localization                                    Ctdoa (p) = F-td1oa (p) = HT KT R-td1oaKH -1 , (18)
+
+   Consider the target to be active and each sensor receives the           in which the CRLB matrix is also a function of the orientation
+wave transmitted by the target. We assume that the sensors are             matrix H.
+ideally time synchronized but unsynchronized with the target's
+clock. Upon receiving the wave transmitted by the target, each             C. System Model for RSS-Based Localization
+sensor estimates the TOA of the wave as
+                                                                              In the RSS based source localization, the target transmits
+          ti = t0 +  p - ri  2  + ni, i = 1, . . . , m,       (10)         some specific signal which is received by each sensor. Each
+                         c                                                 sensor receives the signal and measures the RSS at its own
+                                                                           location. In the absence of disturbance, the average power
+where t0 represents the unknown time at which target transmits             received at the i-th receiver is modeled as [33]
+the wave, ni  N 0, i2 denotes the measurement error of
+the TOA of the wave, and p, ri and c are the same as in the                       Pi =                   KiPt     , i = 1, . . . , m,          (19)
+                                                                                                        p - ri
+previous subsection. Converting the time measurements to the                                                     2
+
+distance measurements, we get
+
+          si = p - ri 2 + cni, i = 1, . . . , m,              (11)         where Pi and Pt denote the receiving and transmitted power,
+                                                                           respectively, Ki accounts for all other factors which affect the
+where si c ti - t0 and cni  N 0, c2i2 .                                    received power, and  denotes the path loss constant ( = 2
+   Since t0 is unknown, TOA difference or range difference
+                                                                           in case of free space). It is assumed that Ki, Pt and  are
+can be used as an alternative for source localization. One of              known a priori obtained through calibration campaign [34],
+
+the sensors is set as the reference or anchor sensor, with respect         [35].
+
+to which the range difference or TOA difference is computed.               Due to shadow fading, the RSS disturbance is assumed to be
+
+Without loss of generality, considering the first sensor as the            log-normally distributed [29], [36]. Thus, the measured RSS
+
+reference sensor, we can compute the range difference as                   at the i-th sensor in decibel scale is modeled as
+
+follows:                                                                          10 log10 Pi =10 log10 Ki + 10 log10 Pt                       (20)
+
+                                                                                                        - 10 log10 p - ri 2 + wi,
+
+si1 = p - ri 2 - p - r1 2 + cni - cn1, i = 2, . . . , m.                   where the measurement error wi is now Gaussian distributed.
+                                                                     (12)  For the notation simplicity, by converting the base-10 loga-
+
+ Concatenating all {si1} in a vector form, we have                         rithm in (20) to natural logarithm, we have
+
+                          s = Kg (p) + Kn,                    (13) ln Pi = ln Ki + ln Pt -  ln p - ri 2 + (0.1 ln 10) wi, (21)
+where s = [s21, . . . , sm1]T , n = [cn1, . . . , cnm]T and           which can be further rewritten as
+
+                                -1 1 0 . . . 0                                    zi = - ln p - ri 2 + irss                                    (22)
+
+K         -1m-1 Im-1  =         -1    0    1    ...  0     .  (14)         where zi = ln Pi - ln Ki - ln Pt, irss = (0.1 ln 10) wi, and
+                                 ...  ...  ...  ...  ...                   irss  N 0, i2 . Collecting all the measurements from the
+                                                                           m sensors, the vector matrix form is
+                                -1 0 0 . . . 1
+
+Denoting tdoa Kn, then (13) becomes                                                                     z = - (p) + rss,                       (23)
+
+                         s = Kg (p) + tdoa,                   (15)         where z                      =         [z1, . . . , zm]T ,  rss     =
+where tdoa  N (0, Rtdoa) with                                              [1rss, . . . , mrss]T                 N (0, Rrss), and         (p)  =
+                                                                           [ln p - r1 2 , . .                    rm 2]T .
+           Rtdoa = E tdoaTtdoa = KE nnT KT .                                                      .  ,  ln p  -
+
+                                                                           Similar to the TOA-based source localization, the FIM based
+
+                                                              (16) on model (23) can be computed as
+                                                                                                                             5
+
+                                                                     It is clear to see that all the three expressions are functions of
+
+                  Frss (p) = 2HT DT Rr-s1sDH,                  (24)  the orientation matrix H and share the same structure.
+
+where D = diag ( p - r1 2 , . . . , p - rm 2)-1 is referred             Ignoring the constant scalars of Ctoa (p), Ctdoa (p),
+to as the range matrix. Consequently, the CRLB matrix is             Crss (p) and Caoa (p), a unified expression for all the three
+                                                                     CRLBs can be defined as
+                                 1
+     Crss (p)  =  Fr-s1s (p)  =  2        HT DT R-rs1sDH -1 .  (25)  C (H) =  HT T R-1H  -1                                  (30)
+
+                                                                                            ,
+
+Remark 4. Unlike the TOA and TDOA cases, the RSS based               which will be reduced to one of the expressions of (29) when
+                                                                     R and  are specified. Thus, this general expression makes it
+CRLB depends on both the orientation matrix H and the range          viable to unify different sensor placement problems with just
+                                                                     a single one elegantly. Hereafter, we refer C (H) as a general
+matrix D. Here, we would like to note that in optimal sensor-        CRLB matrix.
+
+target geometry analysis, one of the key underlying assumption          Since C (H) is a matrix, some function is required to
+                                                                     convert the goodness of C (H) into a scalar value, which will
+is that an initial estimate of the target position is known by       serve as the evaluation or optimization metric. Actually, in the
+                                                                     CRLB based design or optimization, there are many choices
+some other means. Consequently, the sensors can be placed            for this required function. Among them, the A-, D- and E-
+                                                                     optimality2 are the most widely used metrics [37], [38]. For
+optimally based on the initial estimate of the target [23], which    the sake of notation simplicity, a general scalar-valued function
+                                                                     f (·) is used to represent these three optimalities, which will
+in turn can further refine the estimate of the target position.      be specified later when solving the relevant problem.
+
+Therefore, the range matrix D is known coarsely from each               Therefore, based on the expression C (H), we have a
+                                                                     general problem formulation for sensor placement, i.e.,
+sensor based on an initial estimate of the target position, and
+
+we are more interested in determining the orientation matrix
+
+H with respect to that initial target position.
+
+Remark 5. The optimal sensor placement for AOA model
+can be easily included in our framework, a brief explanation
+on the same is as follows. From [13] and [12], the FIM for
+AOA­based model would be
+
+                  Faoa (p) = HT DT R-ao1aDH,                   (26)  minimize f (C (H))
+                                                                     H
+                                                                                                                             (31)
+                                                                     subject to hTi hi = 1, i = 1, . . . , m.
+where
+
+                              - sin 1 cos 1                          Before addressing this problem, several points which are worth
+                                                                     to illustrate as follows:
+                  H =            ...      ... 
+                                                               (27)  · Problem (31) is a unified formulation in two aspects:
+                                                                        First, C (H) can be one of the CRLBs shown in (29) for
+                              - sin m cos m                             the TOA, TDOA, AOA and RSS based source localiza-
+                                                                        tion. Second, the general function f (.) can be trace Tr (.),
+and                                                                     determinant det (.), or maximum eigenvalue m (.) for
+                                                                        A-, D- and E-optimal designs. Thus, any method solving
+                              1/d1 . . . 0                              problem (31) will make itself a unified approach to
+                                                                        cover a lots of common cases in the context of sensor
+                  D =  ... . . . ...                           (28)     placement.
+
+                              0 . . . 1/dm                           · Problem (31) is nonconvex in both the objective functions
+                                                                        and constraints, which is challenging to tackle in general.
+where 1, . . . , m are the orientation angles of the sensors            Further, in the case of E-optimal design, it is non-
+with respect to the target and d1, . . . , dm denote the distance       differentiable in general due to f (.) = m (.). Conse-
+between the sensors to the target. It can be seen from (26)             quently, to the best of our knowledge, most of the analytic
+that the FIM for AOA has the same structure as the FIM                  approaches can only handle some special cases (e.g. a
+for RSS model (i.e. equation (24)) except for the differences           diagonal R and only A or D-optimality). For heuristic
+in H. In fact, we will have the similar expression for the              approaches, the computational cost make themselves less
+AOA in the 3D case, and the corresponding H for AOA can                 appealing especially for a large-scale sensor network.
+also be reparameterized as matrix with unit norm rows as the            Accordingly, the optimization approach to this general
+norms of the rows of H would be a constant. To conclude,                problem would become quite competitive.
+the unified framework proposed in our work can easily include
+AOA localization model.
+
+D. A General CRLB-Based Problem Formulation
+
+Up to this point, we have derived the three CRLB matrices              III. A UNIFIED OPTIMIZATION APPROACH TO OPTIMAL
+                                                                                             SENSOR PLACEMENT
+for the TOA, TDOA, AOA and RSS based models, and they
+                                                                     A. Reformulation and The ADMM Framework
+are listed as follows:                    HT R-to1aH -1                 The ADMM method is a powerful optimization frame-
+                                 1
+       TOA :      Ctoa (p)    =  4                                   work, which has been successfully applied to many
+       TDOA
+               :  Ctdoa (p) = HT KT R-td1oaKH -1               (29)     2The A-, D-, and E-optimal designs refer to trace Tr (.), determinant
+                                                                     det (.), or maximum eigenvalue max (.) of the CRLB matrix, respectively.
+       RSS :      Crss (p)    =        1  HT DT Rr-s1sDH -1
+       AOA :                          2
+
+                  Caoa (p) = HT DT R-ao1aDH-1.
+                                                                                                                                                  6
+
+convex and nonconvex problems. To tackle problem                            problem) algorithm is an iterative method to solve an opti-
+
+(31), the ADMM framework is adopted. Let D =                                mization problem. It works by creating a surrogate function
+ H  Rm×n | hiT hi = 1, i = 1, . . . , m and introduce an
+                                                                            for the original objective function (at each iteration) which
+auxiliary variable X such that H = X, then we can rewrite
+                                                                            either majorizes or minorizes the original objective and this
+(31) as
+                                                                            surrogate function is optimized instead of the original objec-
+               minimize f XT R-1X -1                                        tive. Let f (u) be the objective to be minimized then at  -th
+               HD,X                                                (32)     iteration the surrogate function g (u | u ) is created such that
+                                                                            f (u ) = g (u | u ) and f (u)  g (u | u ) for all u. The
+               subject to H = X.                                            next iterate u+1 is computed as follows:
+
+Its augmented Lagrangian is formed as
+
+                                                                                         u +1     =  argmin    g  (u  |  u )  .        (39)
+
+L (X, H, G) =f XT R-1X -1 + Tr GT (H - X)                                                                   u
+
+                          H - X          2  ,                               The iterations of MM monotonically decrease the objective
+                  +2                     F                                  function and more details on MM can be found in [42].
+
+                                                                   (33)        We will solve problem (38) using the majorization-
+                                                                            minimization (MM) technique , which will lead to a double-
+where G  Rm×n is the Lagrangian multiplier,  > 0 is the                     loop algorithm finally.
+
+augmented Lagrangian parameter [39].                                           At the  -th iteration of MM, the global bound of the
+                                                                            objective function of problem (38) should be constructed,
+The standard ADMM update rules for problem (32) are [39]:                   which is provided in the following lemma.
+
+            Xk+1  =    argmin     L  (X,       Hk ,  Gk )          (34a)
+                                                                   (34b)
+                               X                                   (34c)    Lemma 6. The objective function of problem (38) is upper
+
+          Hk+1 = argH minDL (Xk+1, H, Gk)                                   bounded by
+            Gk+1 = Gk +  (Hk+1 - Xk+1) ,
+                                                                            gL (Y) =f    YT Y -1      +        m      (R)  Tr    YT Y
+                                                                                                         2
+The two subproblems (34a) and (34b) will be solved subse-                                                                              (40)
+quently in the following subsections.                                                    - Tr AkT, Y      Tr          YT RY
+                                                                                                      -  2                       ,
+
+B. Solving the Subproblem of X                                              where m (R) is the maximum eigenvalue of R,
+
+   Given Hk and Gk at the k-th iteration, L (X, Hk, Gk) can                              R = R - m (R) Im,                             (41)
+be expressed as
+                                                                                         Ak, = Ek - RY ,                               (42)
+
+L (X, Hk, Gk)                                                               and the equality holds when Y = Y .
+
+=f   XT R-1X -1        + Tr  GkT (Hk - X)                   Hk - X  2             Proof: See Appendix A.
+                                                     +              F          Within the MM iterations, the next update Y+1 is com-
+                                                                            puted by solving the following problem:
+                                                        2
+
+=f   XT R-1X -1                   XT X      - Tr     DkT X  + k,
+                       + Tr
+                                                                    (35)
+                          2
+
+where k = Tr      GkT Hk     +       Tr     HTk T Hk          and                        YT Y -1     
+                                  2                                                               + 2 m (R) Tr
+                                                                            minimize f                                   YT Y    - Tr  ATk, Y  .
+
+                      Dk = Gk + Hk.                                (36)           Y
+
+                                                                                                                                       (43)
+
+Let  R-  1  X  =  Y,  and  then   (35)   can   be    written  as            Let Y be a minimizer of problem (38) computed by the MM
+         2
+                                                                            iterations, then we can compute Xk+1 as
+
+L (Y, Hk, Gk)
+
+                                                                      (37)                                     1
+     YT Y -1      + Tr                                        + k                        Xk+1 = R 2 Y.                                 (44)
+=f                           YT RY             - Tr ETk Y
+                       2
+                                                                            Note that the form of update equation for Xk+1 is the same
+with Ek = R1/2Dk. Thus, the optimization problem w.r.t X                    for all TOA, TDOA and RSS based methods irrespective of
+is equivalent to                                                            the choice of f (.). However, the solution step of the problem
+                                                                            in (43) would be dependent on the choice of f (.). In the
+minimize f     YT Y -1                      YT RY    - Tr ETk Y ,           following, we will discuss how to solve problem (43) when
+                             + Tr                                           f (.) = Tr (.) (for A-optimal design), f (.) = logdet (.) (for
+      Y                           2                                         D-optimal design) and f (.) = m (.) (for E-optimal design).
+                                                                   (38)
+where the term f YT Y -1 is nonconvex and may not                              1) Problem (43) for A-Optimal Design : In the case of
+                                                                            A-optimal design, we have f (.) = Tr (.), and problem (43)
+lead to any closed form solution. For some complicated                      becomes
+
+optimization problems that cannot be handled by a single
+
+optimization technique, it has been demonstrated that MM
+
+could be incorporated to solve the subproblem [40], [41]. A
+
+brief review of the MM algorithm is as follows:                                          YT Y -1        
+                                                                                                     + 2 m (R) Tr
+The MM (MM stands for "majorize-minimize" for mini-                         minimize Tr                                  YT Y    - Tr  ATk, Y     ,
+
+mization problem or "minorize-maximize" for maximization                          Y
+
+                                                                                                                                       (45)
+                                                                                                                                                                                                                7
+
+where the objective function is denoted by gA (Y). Let Ak, =                                                                                               Y +1 = U^ VT ,                                 (57)
+UVT be the singular value decomposition (SVD) of Ak, ,
+and then the SVD of Y can be written as Y = UVT , where                                                                                where matrix ^ is a diagonal matrix with the elements
+the singular value matrix  is unknown. Therefore, gA (Y) in                                                                            {^i}ni=1.
+problem (45) can be seen as a function of  only and can be
+                                                                                                                                          3) Problem (43) for E-Optimal Design: In the E-optimal
+written as                                                                                                                             design case, problem (43) becomes
+
+gA () Tr               T  -1                            T        - Tr   T   ,
+                                     + m (R) Tr
+                                     2
+                                                                            (46)
+                                                                                                                                                     YT Y -1       
+which can be further rewritten as                                                                                                      minimize m               + 2 m (R) Tr           YT Y     - Tr    AkT, Y     ,
+
+                                                                                                                                             Y
+
+                                        n                                                                                                                                                                 (58)
+
+                           gA ({i}) = iA (i) ,                             (47)                                                        where the objective function is denoted by gE (Y).
+
+                                        i=1                                                                                            Similar to the A and D optimal designs, we can write
+
+{whLie}erniet={1^Aiai}r(ein=is1)inbgeultai-hre2v+maliu2neismmoizf(eRYr )oafin2gd-AA({ik,ii},, )arenisndp(e{4c7tii)}v,ine=tlhy1e. nand  gE (Y) in term of the singular value matrix  as
+
+                                                                                                                                       gE () m       T  -1                             T        - Tr  T     ,
+                                                                                                                                                                + 2 m (R) Tr
+                                                                                                                                                                                                          (59)
+
+                           ^i     =  argmin    Ai  (i)  .                  (48)                                                        which can be further rewritten as
+
+                                            i                                                                                                                                     n              n
+                                                                                                                                                                                 i=1            i=1
+The minimizer ^i can be easily computed numerically as one                                                                             gL  ({i})  =  max   1       +     m  (R)        i2 -          ii.  (60)
+of the positive roots of the quartic equation                                                                                                              i2         2
+                                                                                                                                                     1in
+
+        dAi (i)            =  -2i-3  +  m          (R) i   -  i  =  0,     (49) Therefore, in case of the E-optimal design, we have to solve
+           di                                                                      the following minimax problem
+
+Hence, the solution of problem (45) is
+
+                              Y +1 = U^ VT ,                               (50)                                                        minimize      max    1       +       m  (R)      n   i2  -   n   ii
+                                                                                                                                                            i2           2             i=1         i=1
+where ^ is the diagonal matrix with the elements {^i}in=1.                                                                                   i       1in
+   2) Problem (43) for D-Optimal Design: In the case of D-
+                                                                                                                                       subject to i  0, i = 1, . . . , n.
+optimal design, problem (43) becomes                                                                                                                                                                      (61)
+
+                                                                                                                                       Unlike the previous cases, we will not have any closed form
+
+minimize logdet            YT Y -1                         YT Y     - Tr ATk, Y                                                        ,solution for the nonconvex problem (61). However, through
+                                     + 2 m (R) Tr                              (51)                                                    the variable transform i2 = i, problem (61) be reformulated
+      Y
+
+where the objective function is denoted as gD (Y).                                                                                     using the epigraph form as
+
+Similar to the A-Optimal design case, we can write gD (Y)
+
+in term of singular value matrix  as                                                                                                                                      n             n
+                                                                                                                                                           2             i=1           i=1
+gD () logdet               T  -1                           T     - Tr      T   ,                                                           minimize  t  +     m    (R)        i  -          i   i
+                                     + 2 m (R) Tr
+                                                                                                                                                i,t
+
+                                                                            (52)                                                           subject to i  0, i = 1, . . . , n                              (62)
+
+which can be further rewritten as                                                                                                                    1
+                                                                                                                                                     i
+                                        n                                                                                                                     t, i  =    1, . . . , n
+
+                           gD ({i}) = iD (i) ,                             (53)                                                                      t  0.
+
+                                        i=1
+
+where   {^iDi}(in=i1)      -2 log (i) + 0.5m (R)           i2 -     i i .                                                              Problem (62) is convex in n + 1 (with n  3) scalar variables.
+   Let                     the minimizer of gD (),         then                                                                        Thus, it can be solved efficiently by some solvers like CVX
+                       be                                                                                                              [43]. Let ^i be the solution of problem (62), then {^i} can
+
+                              ^i  =  argmin    Di  (i)                     (54)                                                        be obtained using ^i = ^i. Hence, Y+1 = U^ VT where
+                                                                                                                                       matrix ^ is a diagonal matrix with the elements {^i}in=1.
+                                            i
+                                                                                                                                          So far, we have derived the solving methods to problem
+and ^i is one of the positive roots of the quadratic equation                                                                          (34a) for all the A-, D- and E-optimal design criteria. The
+                                                                                                                                       proposed algorithms are summarized in Algorithm 1.
+        dDi (i)            =   m     (R) i     -   i  -    2i-1  =  0,     (55)
+           di
+
+which can be computed as
+
+                       ^i = i +       i2 + 8m           (R)  .                     C. Solving the Subproblem of H
+                                     2m (R)                                (56)
+
+                                                                                      As in the next step of ADMM, we compute Hk+1, for that
+
+Hence, the solution of problem (51) can be written as                                                                                  we write the expression for L (Xk+1, H, Gk) as
+                                                                                                                                                        8
+
+Algorithm 1 Proposed method to problem (34a)                                            where hi and cik+1 are the i-th column of HT and (Ck+1)T ,
+                                                                                        respectively. Since hTi hi = 1, L (Xk+1, H, Gk) can be
+Input: m, n, , R, Hk, Gk                                                                further written as
+
+Output: Xk+1
+                     1
+1:   Ek                 (Gk + Hk)
+         = R2
+
+2: R = R - m (R) Im                                                                                                     m     m
+                                                                                                                     2
+3:   Y   =  R-          1  Xk                                                           L (Xk+1, H, Gk) =                    d2i + dihTi cki +1 + k+1.  (67)
+                        2
+
+4:  = 0                                                                                                                 i=1   i=1
+
+5: repeat                                                                               The objective L (Xk+1, H, Gk) is separable in hi.
+                                                                                           Therefore, the minimizer h^i of (67) for H  D is given by
+6: Ak, = Ek - RY
+7: Compute the SVD Ak, = Udiag ({i}) VT
+                                                                                                               h^i = -cik+1/ cik+1 2
+            (I) A-optimality criterion:                                                                                                                 (68)
+
+                        Solve  2        - m (R) i      +  i  =     0  to  obtain  ^i    and Hk+1 is computed as Hkrs+s1 = h^1, . . . , h^m T .
+                               i3                                                          2) Update of H for TOA: For the TOA based model, the
+
+            (II) D-optimality criterion:
+                               i +       i2 +8m (R)
+8:                      ^i  =           2m (R)                                          expression for Hk+1 can be derived by following the same
+         
+            (III) E-optimality criterion:                                               derivation of the above RSS case by setting  = Im. It finally
+                                                                                        leads to the same expression as given in (68) and thus Hkto+a1 =
+                        Solve problem (62) to obtian           ^i                                         T
+
+                        ^i = ^i                                                         h^1, . . . , h^m    .
+
+9: ^ = diag ([^1, . . . , ^n])                                                          3) Update of H for TDOA: For the TDOA based model,
+
+10:      Y +1 = U^ VT                                                                   considering  = K and R = Rtdoa, we have
+
+11:    + 1                                                                                      L (Xk+1, H, Gk)
+
+12: until Convergence                                                                                        HT MH      + Tr  CTk+1 KH   + k+1,         (69)
+                                                                                                = Tr
+                                     1
+                                                                                                  2
+13: Xk+1 = R 2 Y
+
+     L (Xk+1, H, Gk)                                                                    where M KT K 0, and k+1 is defined by (64) with
+                                                                                        R = Rtdoa. Minimizing (69) with respect to H  D is
+
+                                                                                        not straightforward, so similar to the previous subsection,
+
+     =f XkT+1R-1Xk+1 -1 + Tr GkT (H - Xk+1)                                             we employ MM to minimize L (Xk+1, H, Gk). The term
+                                                                                        Tr HT MH in (69) is convex of H, and we reformulate it
+
+                        (H - Xk+1)T (H - Xk+1)                                          via concave function as follows:
+     + Tr
+                                                                                           L (Xk+1, H, Gk)
+        2
+       
+     = Tr   HT T H                      + Tr     CTk+1 H     + k+1,                             HT MH - m (M) HT H + max (M) HT H
+                                                                                        = 2 Tr
+       2                                                                          (63)
+
+where Ck+1 = Gk - Xk+1 and                                                                 Tr CkT+1KH + k+1                                             (70)
+
+         k+1 =f XTk+1R-1Xk+1 -1                                                                 HT MH          +     m     (M) Tr  HT H
+                                                                                        = Tr                      2
+                                                                                  (64)
+                                        2                                                 2
+
+                            + Tr           XkT+1 Xk+1  -  GkT  Xk+1       .                + Tr CTk+1KH + k+1,
+
+Minimizing (63) with respect to H depends on the choice of                              where M = M - m (M) Im 0. Since hTi hi = 1, i and
+, which has different expressions for different localization                            Tr HT H = m, (70) becomes
+models. In the following, we will derive the updates of H for
+all three models separately.                                                            L  (Xk+1, H, Gk)       =           HT MH   +Tr   CTk+1KH +µk+1,
+                                                                                                                   Tr
+   1) Update of H for RSS/AOA: For the RSS based method,                                                                                                (71)
+we substitute  = D in (63) and obtain                                                                             2
+
+                                                                                        where  µk+1       =  k+1  +     mm   (M).
+                                                                                                                     2
+
+                                                                                        Since Tr HT MH is concave, its upper bound3 at any
+
+     L (Xk+1, H, Gk)                                                                    H = Ht can be the first order Taylor series expansion as
+                                                                                        follows:
+            HT DT DH                       + Tr  CTk+1 DH      + k+1,             (65)
+     = Tr
+
+       2
+
+which can be further rewritten (noting that D is diagonal                                 Tr HT MH  2Tr HtT MH - Tr HtT MHt . (72)
+matrix) as
+                                                                                        Using (72), the upper bound of L (Xk+1, H, Gk) can be
+     L (Xk+1, H, Gk)                                                                    written as
+
+            m                           + Tr      m                              (66)      3Similar to the procedure we handled in the update of X, we find the global
+= 2 Tr                                                                + k+1,            upper bound for the function in (71) at some given H = Ht and obtain the
+               di2hihTi                              dicki +1hiT                        next iterate by minimizing the global upper bound.
+
+           i=1                                   i=1
+                                                                         9
+
+Algorithm 2 Proposed method to problem (34b)                             Algorithm 3 Unified opTimization fraMework for Optimal
+                                                                         Sensor placemenT (UTMOST)
+Input: m, n, , R, Xk+1, Gk                                               Input: m, n, , R  {Rtoa, Rtdoa, Rrss} ,  = {Im, K, D}
+                                                                         Output: H
+Output: Hk+1
+                                                                          1: Set k = 0
+1: Ck+1 = Gk - Xk+1                                                       2: Initialize Hk  D and Gk
+       (I) TOA based model:                                               3: Xk = Hk
+                                                                          4: repeat
+            = Im                                                          5: Calculate Xk+1 via Algorithm 1
+           h^i = -cik+1/ cki +1 2                                         6: Calculate Hk+1 via Algorithm 2
+       (II) TDOA based model:                                             7: Update Gk+1 by (34c)
+                                                                          8: until convergence
+           =K                                                             9: Hk+1 = h^1, . . . , h^m T
+           t=0
+           repeat                                                         and t used in the Algorithms 1 and 2 respectively should
+                                                                         not be confused with the ADMM iteration index k. The
+2:             M = M - m (M) Im                                          index  denotes the index for the MM iterations for solving
+               Bk,t = MT Ht + KT Ck+1                                    problem (43), and t denotes the index for the MM iterations
+               h^i,t = -bik,t/ bik,t 2                                   for computing the update Hk+1 in the case of TDOA. It is
+               tt+1                                                      noted that the proposed approach is quite general to cover
+                                                                         many models under different optimal design criteria, which
+           until convergence                                             can be seen clearly from Algorithm 1-3.
+
+       (III) RSS/AOA based model:                                           The main computational burden in the proposed algorithm is
+                                                                         the computation of SVD of Ak, in the loop to compute Xk+1
+           =D                                                            which can be computed with the computation complexity of
+           h^i = -cik+1/ cki +1 2                                        O m2n + mn2 . Apart from the SVD, all other computations
+3: Hk+1 = h^1, . . . , h^m T                                             in both the inner loop and outer loop are computationally
+                                                                         simpler. The computation of R1/2, R-1/2, and m (R) are
+    L (Xk+1, H, Gk)  Tr (Bk,t)T H + k,t,                          (73)   not dependent on the iterations and can be accomplished once
+                                                                         outside of the outer loop.
+where  k,t  =  µk+1 -     Tr  HTt MHt  and Bk,t = MT Ht +
+                       2                                                    For A- and D-optimal designs, the cost function in (31)
+                                                                         is nonconvex but smooth (as the objectives are differentiable),
+KT Ck+1. The next update Ht+1 at the t-th iteration of MM                and in the case of E-optimal design, the objective (31) is
+                                                                         non-convex and non-smooth (non-differentiable). It is well
+is computed by solving                                                   known that the convergence of nonconvex ADMM to a general
+                                                                         nonconvex problem is still an open question. However, the
+                                                    m                    approaches mentioned in [44]­[46] can be adapted to prove
+                                                                         the convergence of ADMM iterations to a KKT point of
+Ht+1   =    arg min Tr    (Bk,t)T H   = arg min              hTi bik,t,  the respective optimal design problems. Moreover, we always
+                                                                         observed numerically the algorithm to be converging in our
+                 HD                             HD  i=1                  simulation studies. The MM iterations employed in the update
+                                                                         of X and as well as H (for TDOA case) do converge and its
+where bik,t is the i-th row of Bk,t.                              (74)   proof of convergence can be found in [47].
+
+Thus, the minimizer h^i of (74) is given by                                                  IV. SIMULATION RESULTS
+
+               h^i,t = -bik,t/ bik,t 2                            (75)      In this section, we discuss the simulation results consider-
+                                                                         ing various localization methodologies and different optimal
+and Ht+1 is computed as Ht+1 =         h^1,t, . . . , h^m,t  T           design criteria.
+
+                                                               .         A. Sanity and Convergence Check
+
+   Let H be the minimizer of (69), which would be obtained                  First of all, we perform the sanity check or show the
+after the convergence of the MM loop. Consequently, for the              correctness of the proposed algorithmic framework for the
+                                                                         special case, when matrix R is diagonal with same diagonal
+ADMM update of H, we have Hk+1 = H.                                      entries and  = Im (thus it becomes the TOA model), for
+   So far, we have derived the update rule of H in the                   which the analytical optimal values are known in the literature
+
+ADMM framework, which differs slightly depending on the
+
+localization models. The complete description of the derived
+
+algorithms to problem (34b) is given in Algorithm 2.
+
+D. Summary of the Unified Approach and Computational
+Complexity
+
+   In Algorithm 3, we summarize the proposed unified solving
+approach to the general sensor placement problem (32), where
+k denotes the index for the ADMM iterations. The indices
+                                                                                                                                       10
+
+                                       TABLE I                                                                  We initialize the proposed algorithm such that the sensors are
+COMPARISON BETWEEN THE THEORETICAL AND NUMERICAL OPTIMAL                                                        uniformly placed with respect to target with the following
+                                                                                                                initialization
+             OBJECTIVE VALUES FOR THE TOA BASED MODEL
+
+m fAtheo  fAalgo        fDtheo         fDalgo  fEtheo  fEalgo                                                           100        
+
+5 1.8000 1.8000 -1.5324 -1.5324 0.60000 0.60033                                                                     =    0   1  0   .
+                                                                                                                         0   0  1
+10 0.9000 0.9000 -3.6119 -3.6119 0.30000 0.30004                                                                H0      -1   0  0      (79)
+                                                                                                                         0  -1  0
+15 0.6000 0.6000 -4.8283 -4.8283 0.20000 0.20017
+
+20 0.4500 0.4500 -5.6913 -5.6913 0.15000 0.15003                                                                        0 0 -1
+
+25 0.3600 0.3600 -6.3607 -6.3607 0.12000 0.12001 With this initialization we can compare the gain in accuracy
+
+                                                                                                                with the placement obtained by the proposed algorithm with
+
+[20]. When R = 2Im and  = Im then optimal solution                                                              respect to the considered uniform placement and moreover we
+of (31) for A-, D- and E-optimality criteria satisfies the                                                      can also observe how sensors change their positions with the
+                                                                                                                iterations of the algorithm from initial uniform placement to
+following relation [48]                                                                                         achieve a final optimal configuration.
+
+                  HT H          =   m  In,                  (76)                                                   In Figure 1, we demonstrate the convergence plots and
+                                    3                                                                           the corresponding 3D placement trajectories of the proposed
+                                                                                                                method for all A-, D- and E-optimal designs. The baseline is
+where H denotes the optimal solution for the case when R =                                                      the uniform placement (i.e. the sensors are uniformly placed
+2Im.                                                                                                            w.r.t. the target), which is also set as the initial point of
+                                                                                                                our proposed algorithm. First, it is clear to see that from
+The theoretical value of the objective function for A-,                                                         the convergence plots, our algorithm monotonically decreases
+                                                                                                                the design objective. Second, with reference to the uniform
+D- and E-optimality criteria, denoted by fAtheo, fDtheo and                                                     placement, the proposed method (after convergence) shows
+fpErtohpeoo,saenddatlhgeoirritchomrrsedspeonnodteidngbnyufmAaelgroic, aflDavlagloueanodbtfaEainlgeodfboyr       55 - 70% improvement in terms of the design criteria, which
+                                                                                                           the  implies further an enhancement of localization accuracy en-
+                                                                                                           the  abled by the proposed algorithm. Therefore, to obtain the
+                                                                                                                maximum localization accuracy especially when the measure-
+case R = 2Im with  = 1 are listed in table I. By applying                                                       ment noise is correlated, the sensors must be placed in their
+(76), we can compute fAtheo, fDtheo and fEtheo as follows:                                                      corresponding optimal configuration, which can be computed
+                                                                                                                from the proposed algorithm.
+                 fAtheo         92
+                          =      m                                                                                 Now, we apply a different sensor geometry in a 2D target
+                                                                                                                localization problem to investigate the estimation improvement
+                  fDtheo  =  log       272                  (77)                                                by designing the sensor placement. Specifically, we perform
+                  fEtheo  =             m3                                                                      the maximum likelihood estimation (MLE) in a 2D TOA based
+
+                                32  .
+                                 m
+
+   From table I it is observed that the optimal value of the ob-
+jective functions computed from the proposed algorithm con-
+verge to their corresponding analytical value, hence confirming
+the correctness of the proposed algorithmic framework.
+
+                                                                                                                source localization problem under different sensor placements,
+
+B. TOA Based Source Localization                                                                                which includes random placement, uniform placement, and
+                                                                                                                the placement via our proposed algorithm for the A-optimal
+   In this subsection, the proposed algorithmic framework is                                                    design. To perform the simulation, the sensors are assumed
+applied to determine the optimal configuration of sensors                                                       to be located on the circumference of a circle of unit radius
+around the target to optimize the localization accuracy for                                                     whose center is at origin and the target is assumed to be located
+TOA-based model. Without loss of generality, we assume the                                                      at (0.1, -0.3). The MLE is implemented by conducting the
+target to be roughly located at the origin, that is, p = [0, 0, 0]T .                                           2D grid search to arrive at the most probable target location
+As illustrated previously, the CRLB for the TOA-based model                                                     and then performing the Gauss-Newton algorithm [49]. The
+is independent of the sensor-target distance, so the sensors                                                    simulated noisy TOA measurements (both uncorrelated and
+are assumed to be on the unit sphere and only their optimal                                                     correlated noise case have been considered) have been gener-
+orientations are to be determined.                                                                              ated for uniform, optimal and for any randomly selected place-
+                                                                                                                ment. The results under different noises is provided in Table II,
+   We take m = 6, n = 3 and the noise covariance matrix                                                         where the MSE and bias of the MLE are obtained using 1000
+Rtoa to be a general positive definite matrix given by
+
+                  3.07    -1.73        1.90    2.63                                                             Monte Carlo simulations. We can see that the MSE and the
+          4.88                                         -1.61                                                    bias of the estimates in case of optimal placement are smaller
+
+Rtoa =    3.07  11.72     -3.51         4.48   3.95     0.24                                                .   than the uniform and random placements, which is consistent
+         -1.73  -3.51     21.82        -1.20   0.49    -4.74                                                    to the theoretical conclusion that MLE asymptotically reach
+          1.90   4.48     -1.20         3.63   3.71     1.00                                                    the trace of CRLB [20].
+          2.63   3.95      0.49         3.71   8.45     0.56
+                                                                                                                   In Figure (2), we diagrammatically show how the proposed
+
+         -1.61 0.24 -4.74 1.00 0.56 4.22                                                                        algorithmic framework finds the optimum of the design ob-
+
+                                                            (78) jective. We consider a total of three sensors in 2D space (i.e.
+                                                                                                                                                                                                                                                                                                             11
+
+                                                                                                                                                                                                                                                                              TABLE II
+
+                                                                                                                                             COMPARISON OF THE MLE PERFORMANCE FOR DIFFERENT PLACEMENT
+
+                                                                                              1
+
+                                                                                                                                                                                                                3
+
+                          7.5
+
+                          7                                                                0.5                                                                                                                                                      No. of sensors        Placement MSE (m2) Bias (m)
+
+                                                        UTMOST (proposed)       z (meter)                                                2
+
+Objective Function Value  6.5                           Uniform placement                                                                                                                                             1
+                                                                                                        0
+                                                                                                                                                                                                                                                                              Random         0.2171  0.1105
+                          6                                                                                                                                                                                                                                                   Uniform        0.1643  0.0630
+                                                                                                                                                                                                                                                                              Optimal        0.1456  0.0397
+                          5.5                                                              -0.5                                     4                                                                                                                       m=3
+                                                                                                                                                                                                                                                    (Uncorrelated Noise)
+                                                                                                                                                                                                                   5
+
+                          5
+
+                          4.5                                                              -1
+
+                                                                                              1                                                      6                                                                                                                        Random    0.2070       0.0998
+                                                                                                                                                                                                                                                                              Uniform   0.1260       0.0231
+                          4                                                                                                 0.5                                                                                                             1               m=4               Optimal   0.1156       0.0169
+                                                                                                                                                                                                                                                    (Uncorrelated Noise)
+                          3.5                                                                                                          0                                                                                               0.5                                    Random    31.0428      1.1099
+                                        20       40       60               80                                                               -0.5  -1 -1                                                                      0
+                            3                                                                                                                                                                                      -0.5
+                              0                                                                                             y (meter)                                                                                     x (meter)
+
+                                            Iterations
+
+                                                              (a) A-optimal design.                                                                                                                                                                        m=5                Uniform        9.2915  1.5758
+                                                                                                                                                                                                                                                    (Correlated Noise)        Optimal        3.7194  0.9597
+
+                                                                                                                                                                                                                                                                              Random         0.9840  0.3654
+
+                                                                                              1                                                                                                                                                            m=7                Uniform        1.2771  0.6482
+                                                                                                                                                 3                                                                                                  (Correlated Noise)        Optimal        0.4711  0.2483
+
+                          1.5                                                              0.5
+
+                                                     UTMOST (proposed)          z (meter)                                                2
+
+Objective Function Value                             Uniform placement                                                                                                                                                1
+
+                                                                                                                         0
+                          1
+
+                                                                                           -0.5                                     4                                                                                                               TDOA measurements to localize the target. The covariance
+                                                                                                                                                                                                                                                    matrix E nnT is associated with the error in estimation
+                          0.5                                                                                                                                                                                      5
+
+                                                                                           -1                                                                                                                                                       of sensor-target range and assumed as diagonal matrix with
+
+                                                                                              1                                                      6
+
+                          0                                                                                                 0.5                                                                                                                  1  E nnT = diag (0.18, 0.02, 0.46, 0.72, 0.42, 0.49). Conse-
+                                                                                                                                      0                                                                                                0.5          quently, the noise covariance matrix associated with the TDOA
+                               0    20      40       60       80           100                                                             -0.5   -1 -1                                                                      0
+                                                                                                                                                                                                                   -0.5
+                                                                                                                            y(meter)                                                                                      x (meter)
+
+                                            Iterations                                                                                                                                                                                              measurements is given by
+
+                                                              (b) D-optimal design
+
+                                                                                                                                                                                                                                                                           0.20 0.18 0.18 0.18 0.18 
+
+                                                                                              1                                                                                                                                                                 nnT  KT        0.18    0.64  0.18    0.18  0.18 
+                                                                                                                                                                                                                                                                          =    0.18    0.18  0.91    0.18  0.18  .
+                                                                                                                                                                                                                3                                   Rtdoa = KE            
+                          4.5                                                                                                                                                                                                                                                                                     
+
+                                                                                                                         0.5                                                                                                                                               0.18 0.18 0.18 0.60 0.18 
+
+                          4                             UTMOST (proposed)       z (meter)                                                2                                                                                                                                     0.18 0.18 0.18 0.18 0.67
+
+Objective Function Value                                Uniform placement                                                                                                                                             1
+                                                                                                      0
+                                                                                                                                                                                                                                                                                                             (80)
+                          3.5
+
+                                                                                           -0.5                                     4                                                                                                               Similar to the TOA case, we initialize the proposed algorithm
+
+                          3                                                                                                                                                                                        5                                with the uniform placement as given in (79).
+
+                          2.5                                                              -1                                                               6                                                                                    1  Figure 3 demonstrates the convergence plots and the corre-
+                                                                                           1                                                      -1 -1                                                                                0.5
+                            2                                                                                                                                                                                                0                      sponding sensor placements. The difference of the objective
+                                                                                                 0.5                                                                                                               -0.5
+                          1.5       50      100      150  200              250                             0                                                                                                              x (meter)                 values between the uniform and proposed (after convergence)
+                              0                                                                                -0.5
+
+                                                                                               y (meter)
+
+                                            Iterations                                                                                                                                                                                              placements shows the 70 - 80% improvement in localization
+
+                                                              (c) E-optimal design.                                                                                                                                                                 accuracy obtained by the proposed algorithm when the mea-
+
+Figure 1. Convergence plots and corresponding sensor placements for the                                                                                                                                                                             surement noise is correlated. In the right column of Figure
+TOA based model under the correlated measurement noise. Left: convergence
+plots; right: 3D view of sensor placement. Black square: target; blue circle:                                                                                                                                                                       3, we can see how the sensors move from the initial uniform
+initial position; blue pentagram: end position.
+                                                                                                                                                                                                                                                    placement to the final optimal configuration (obtained by the
+
+                                                                                                                                                                                                                                                    proposed algorithm) for the three optimal designs, respectively.
+
+m = 3, n = 2) and assume the sensors to be on unit circle
+
+with                           the  third   sensor        fixed   at       r3   =          [  1                                  ,  1    ]T       .  As                                                            earlier  target                  D. RSS Based Source Localization
+                                                                                                2                                     2
+is coarsely located at the origin and we want to determine                                                                                                                                                                                             In this subsection, we perform simulations for the RSS
+                                                                                                                                                                                                                                                    model. Recall that both AOA and RSS has the same formu-
+the optimal placement of the remaining two sensors on the                                                                                                                                                                                           lations and assumptions (see Remark 5 and expression (29)),
+                                                                                                                                                                                                                                                    the simulations of AOA will demonstrate the same patterns as
+unit circle (defined by their corresponding azimuth angles                                                                                                                                                                                          RSS and thus be omitted. Unlike the TOA and TDOA cases,
+                                                                                                                                                                                                                                                    in the RSS-based localization, the optimal placement also
+1 and 2) to obtain maximum localization performance. In                                                                                                                                                                                             depends on the sensor-target range. Assuming that the sensor-
+                                                                                                                                                                                                                                                    target range for each sensor is given (or roughly known), we
+figure 2a, 2b and 2c, the objective value has been plotted                                                                                                                                                                                          are interested in determining the optimal configuration. Let
+                                                                                                                                                                                                                                                    m = 6, n = 3, and the sensor-target range di (in meter) and
+with 1 and 2 as surface plot and the path taken by the                                                                                                                                                                                              the noise covariance matrix Rrss are set as, respectively,
+proposed algorithm to reach the optimal solution is shown on
+                                                                                                                                                                                                                                                       [d1, d2, d3, d4, d5, d6] = [50, 100, 150, 200, 250, 300] , (81)
+the corresponding contour plots for the A-, D- and E-optimal
+                                                                                                                                                                                                                                                    and
+designs, respectively.
+
+C. TDOA Based Source Localization
+
+   In this subsection, we perform simulations for the op-
+timal sensor placements for the TDOA model with m =
+6, n = 3. We assume that the first sensor is set as a
+reference for measuring TDOA's, so we will have m - 1
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                      12
+
+                                                                                    1016
+
+                                                                                    3.5               3                                      4                                                                                                                                                                                                         1
+
+Objective for A-optimal design  100                                                 3                                                                                                                                                                                                                                                                                                                                                     3
+                                                                                                       2                                                                                                                                                8
+                                80                                                                                                                                                             3.5
+                                                                                                                                                                                                                                                                                                                                                    0.5
+                                                                                    2.5
+                                                                                                                                                                                                                                                        7                                                 z (meter)                2
+
+                                60                                                                    1                                                                                                                       Objective Function Value                                                                                                                                                                                          1
+
+                                                                                    2     2 (radian)                                         3                                                                                                                                 UTMOST (proposed)                     0
+
+                                                                                                                                                                                                                                                        6                      Uniform placement
+
+                                40                                                                    0
+                                                                                                                                                                                           2.5
+                                                                                    1.5                                                                                                                                                                                                                              -0.5       4
+
+                                20                                                                                                                                                                                                                      5                                                                                                                                                                                    5
+
+                                                                                    1                 -1
+                                                                                                                                                                                            2
+                                0                                                                                                                                                                                                                       4                                                            -1
+                                4                                                                     -2                                                                                                                                                                                                             1
+                                                                                    0.5                                                                                                                                                                                                                                                                    6
+                                                                                                                                                                                                                                                                                                                           0.5                   -1 -1
+                                     2                           2                                                                                                                                                                                      3                                                                            0                                                                                                                                     1
+                                                                                                                                                                                                                                                                                                                                         -0.5                                                                                                                    0.5
+                                        0                                           0                                                        1.5                                                                                                                                                                                                                                                                                                       0
+                                                                                                                                                                                                                                                                                                                         y (meter)                                                                                                           -0.5
+                                                 -2           0                                       -3                                                                                                                                                                                                                                                                                                                                            x (meter)
+
+                                     2 (radian)      -4    -2                                             -3  -2  -1   0           1  2  3                                                                                                              2
+                                                                    1 (radian)
+                                                                                                                       1 (radian)                                                                                                                          0  20      40       60      80            100
+
+                                                                                                                                                                                                                                                                      Iterations
+
+                                                                 (a) A-optimal design.                                                                                                                                                                                                  (a) A-optimal design.
+
+                                                                                    1016
+
+                                                                                    2
+
+                                                                                    1.8               3                                                                                                                                                                                                              1
+
+Objective for D-optimal design  50                                                                                                           0.75                                                                                1                                                                                                                      3
+                                                                                                                                                                                                                              0.5
+                                                                                    1.6               2                                                                                                                                                                                                              0.5           2
+                                                                                                                                                                                                                                 0                                                                                                                                                 1
+                                40                                                                                                           0.7                                                                              -0.5
+
+                                                                                    1.4                                                                                                                                         -1                                                                        z (meter)
+                                                                                                                                                                                                                              -1.5
+                                30                                                                    1                                      0.65                                                   Objective Function Value
+                                                                                                                                                                                                                                -2
+                                                                                    1.2                                                                                                                                       -2.5                                                UTMOST (proposed)                  0
+
+                                                                                          2 (radian)                                         0.6                                                                                   0                                              Uniform placement
+
+                                20                                                  1
+
+                                                                                                      0                                      0.55                                                                                                                                                                    -0.5
+
+                                                                                    0.8                                                                                                                                                                                                                                         4
+
+                                10                                                                                                                                                                                                                                                                                                                                                                                                           5
+
+                                                                                    0.6               -1                                     0.5
+
+                                0                                                                                                                                                                                                                                                                                    -1
+                                4
+                                                                                    0.4                                                      0.45                                                                                                                                                                    1                           6
+
+                                     2                                              0.2               -2                                     0.4                                                                                                                                                                           0.5                                                                                                                                        1
+
+                                        0                        2                                                                                                                                                                                                                                                                    0                                                                                                                          0.5
+                                                                                                                                                                                                                                                                                                                                           -0.5                                                                                                        0
+                                                 -2           0                     0                 -3                                     0.35                                                                                                                                                                                                                                                                                            -0.5
+                                                                                                                                                                                                                                                                                                                           y (meter)                                                                                                                x (meter)
+                                     2 (radian)      -4  -2                                               -3  -2  -1   0           1  2  3                                                                                                                        20      40       60                80                                          -1 -1
+                                                                  1 (radian)
+                                                                                                                       1 (radian)
+                                                                                                                                                                                                                                                                      Iterations
+
+                                                                              (b) D-optimal design                                                                                                                                                                                      (b) D-optimal design
+
+                                                                                    1016
+
+                                                                                    4.5
+
+                                                                                                      3                                                                                                                                                                                                                                                1
+
+                                50                                                  4                                                        3.2                                                                                                                                                                                                                                                                                          3
+                                                                                                                                                                                                                                                        6
+Objective for E-optimal design                                                      3.5               2                                      3
+                                                                                                                                                                                                                                                                                                                                                    0.5
+                                40
+                                                                                                                                             2.8
+                                                                                                                                                                                                                                                                               UTMOST (proposed)          z (meter)                2
+                                                                                    3                                                                                                                                                                   5
+                                                                                                      1                                                                                                                       Objective Function Value                         Uniform placement                                                                                                                                                1
+                                30
+                                                                                                                                             2.6                                                                                                                                                                     0
+
+                                20                                                  2.5   2 (radian)
+                                                                                                                                                                                               2.4
+
+                                                                                                      0                                                                                                                                                 4                                                            -0.5
+
+                                                                                    2                                                        2.2                                                                                                                                                                                4
+
+                                10                                                                                                                                                                                                                                                                                                                                                                                                           5
+
+                                                                                    1.5               -1                                     2                                                                                                          3
+
+                                0                                                                                                            1.8                                                                                                                                                                     -1
+                                4
+                                                                                    1                                                                                                                                                                                                                                1                           6
+
+                                     2                                                                -2                                     1.6                                                                                                        2                                                                   0.5                                                                                                                                            1
+                                                                                                                                                                                                                                                                                                                                      0                                                                                                                          0.5
+                                        0                        2                  0.5                                                      1.4                                                                                                                                                                                           -0.5                                                                                                        0
+                                                                                                                                                                                                                                                                                                                                                                                                                                             -0.5
+                                                 -2           0                                       -3                                                                                                                                                                                                                   y (meter)                                                                                                                x (meter)
+
+                                     2 (radian)          -2                         0                     -3  -2  -1   0           1  2  3                                                                                                              1
+
+                                                     -4       1 (radian)                                                                                                                                                                                   0      50      100      150               200                                         -1 -1
+
+                                                                                                                       1 (radian)                                                                                                                                     Iterations
+
+                                                                 (c) E-optimal design.                                                                                                                                                                                                  (c) E-optimal design.
+
+Figure 2. Optimization trajectory for 2D TOA with some fixed sensor                                                                                                                                 Figure 3. Convergence plots and corresponding sensor placements for the
+positions. Left: objective function shape; right: contour plot. Red circle: initial                                                                                                                 TDOA based model under the correlated measurement noise. Left: conver-
+value, blue square: final optimal point.                                                                                                                                                            gence plots; right: 3D view of sensor placement. Black square: target; blue
+                                                                                                                                                                                                    circle: initial position; blue pentagram: end position.
+
+                                                     4.88      3.07                 -1.73                      1.90    2.63           -1.61  
+                                                              11.72                 -3.51                      4.48    3.95
+Rrss                                 =                3.07    -3.51                 21.82                     -1.20    0.49            0.24   .                                                     proposed algorithm when the measurement noise is correlated.
+                                                     -1.73     4.48                 -1.20                      3.63    3.71           -4.74
+                                                      1.90     3.95                  0.49                      3.71    8.45            1.00                                                            Next, we illustrate the impact of having imperfect knowl-
+                                                      2.63                                                                             0.56                                                         edge of range matrix D. To demonstrate this we perform a
+                                                                                                                                                                                                    simulation to compute the MLE (similar to table-II for the
+
+             -1.61 0.24 -4.74 1.00 0.56 4.22                                                                                                                                                        TOA model) for the RSS model, in which we evaluate the
+                                                                       (82)                                                                                                                         MSEs of the MLE method for the cases when D is perfectly
+                                                                                                                                                                                                    known and D is imperfectly known. The true target position is
+Therefore, by taking D = diag (d1, . . . , d6)-1, we can use the                                                                                                                                    taken as (0.1, -0.3) and in case of "Coarse D" we assumed
+
+proposed algorithm to compute the optimal configuration.
+
+                                Figure 4 demonstrates the convergence plots and the sensor that coarse target position is at (0.0, 0.0) and calculate the
+
+placements of the proposed method with reference to the range matrix. The MSEs of the MLE method (solved using
+
+uniform placement (the sensors are uniformly placed w.r.t. grid search and additional Gauss-Newton step) for the case of
+
+the target), where the i-th sensor is shown to be at distance optimal sensor placement done with the perfect knowledge of
+
+    di                                     from          the  target.           in  the   3D          plot.       The  difference        in  ob-                                                    D and coarsely known D are shown in table III here. It can
+max{di}
+jective values of the uniform placement and proposed method be seen from table III, the MSE in the case of coarsely known
+
+(after convergence) shows the 80-85% improvement (in terms D is higher than the case of perfectly known D, which is as
+
+of the design criteria) in localization accuracy obtained by the expected.
+                                                                                                                                                                                                                                     13
+
+                                                                                                                                                                       placement for all the TOA, TDOA, and RSS based source
+
+                                                                                    0.5                                                                                localization methods by specifying the system parameters. For
+
+                                                                                                                                     3                                 each localization model, this framework can be adapted with
+
+                          4.5
+
+                            4                                                             0                                    2           1                    slight modifications to design the sensor placement under all
+                          3.5                                                                                                                                   the A-, D- and E-optimality criteria. Through the numerical
+Objective Function Value                              UTMOST (proposed)  z (meter)                                                               5              simulations, we have demonstrated the versatility of the unified
+                            3                         Uniform placement                                                                                         approach by considering various placement scenarios and
+                          2.5                                                                                                                                0.2 also the improvement of localization accuracy brought by the
+                                                                                    -0.5                4                                                       optimal configuration of sensors.
+                            2
+                          1.5                                                          -1                                            6
+                                                                                       1
+                            1
+                          0.5                                                                0.5
+
+                              0                                                                   0                                                    0
+
+                                                                                                           -0.5                               -0.2
+
+                                                                                                                                     -0.4
+
+                                 50  100 150 200 250 300                                     y (meter)               -1     -0.6           x (meter)
+
+                                          Iterations
+
+                                                          (a) A-optimal design.                                                                                                                   APPENDIX
+
+                                                                                                                                                                       A. Proof of Lemma 6
+
+                                                                                    1                                                                                  Proof: The objective function of problem (38) can be
+
+                          4.5                                                                                                                                          written as
+
+                                                                                    0.5
+
+                          4                                                                                                 3
+
+Objective Function Value  3.5                         UTMOST (proposed)  z (meter)  0                                    2                                                    YT Y -1          
+                                                                                                                                                                                            + Tr
+                                                      Uniform placement                                                           1                                    f                             YT RY            - Tr EkT Y
+
+                          3                                                                                                                                                                    2
+
+                                                                                    -0.5             4                                  5
+
+                          2.5                                                                                                                                          =f YT Y -1 - Tr EkT Y
+
+                            2                                                       -1
+
+                          1.5                                                       1                                       6
+
+                            1                                                                0.5                                                                  0.5  
+                                                                                                                                                0                       Tr
+                          0.5                                                                     0                            -0.5                                                YT RY - m (R) YT Y + m (R) YT Y                   (83)
+                              0                                                                                                            x (meter)                   2
+                                                                                                           -0.5
+
+                                 50  100 150 200 250 300                                     y (meter)               -1                                                                        
+                                                                                                                                                                                            + Tr
+                                          Iterations                                                                                                                   =f     YT Y -1                YT RY
+
+                                                          (b) D-optimal design                                                                                                                 2
+                                                                                                                                                                       2
+                                                                                                                                                                           m       (R)  Tr  YT Y  - Tr         ETk Y  ,
+
+                                                                                                                               3                                       where R R - m (R) Im. Since R 0, Tr YT RY is
+
+                          3.5                                                       0.5                                  2           1
+
+                          3                   UTMOST (proposed)                                                                                                        concave of Y. Its first order Taylor expansion satisfies
+
+Objective Function Value                      Uniform placement          z (meter)        0
+
+                                                                                                                                                    5
+
+                          2.5                                                                           4
+
+                                                                                    -0.5                                                                               Tr YT RY  2Tr YT RY - Tr YT RY
+
+                                                                                                                               6                                                                                                     (84)
+
+                          2
+
+                                                                                       -1
+
+                          1.5                                                       0.5                                                                      0.2
+
+                                                                                                                                                          0            for all Y with the equality achieved at Y = Y .
+                                                                                                                                                                          Applying (84) on (83), we have the upper bound given by
+                          1                                                                          0                                              -0.2
+                                                                                                               -0.5                                                          gL (Y)
+                                                                                                                                           -0.4
+                                                                                                  y (meter)
+                          0.5                                                                                                        -0.6     x (meter)
+                              0
+                                 20   40  60          80      100                                                           -1 -0.8
+
+                                          Iterations
+
+                                     (c) E-optimal design.                                                                                                             =f  YT Y -1          +     m  (R)       Tr  YT Y  - Tr EkT Y
+                                                                                                                                                                                               2
+Figure 4. Convergence plots and corresponding sensor placements for the                                                                                                    
+RSS based model under the correlated measurement noise. Left: convergence                                                                                              +   2       2Tr  YT RY     - Tr         YT RY
+plots; right: 3D view of sensor placement. Black square: target; blue circle:
+initial position; blue pentagram: end position.                                                                                                                            YT Y -1                                 YT Y
+                                                                                                                                                                                               2
+                                                                                                                                                                       =f                   +     m  (R)       Tr
+
+                                                                 TABLE III                                                                                             - Tr                                 T  -         YT RY    ,
+                                 COMPARISON OF THE MLE PERFORMANCE FOR RSS MODEL.                                                                                                                                   Tr
+                                                                                                                                                                                   Ek - RY Y                       2
+
+                                                      D perfectly known                              D coarsely known                                                                                                                (85)
+
+                          No. of sensors MSE (m2) Bias (m) MSE (m2) Bias (m)                                                                                           which thereby completes the proof.
+
+                                 m=3                  0.5540             0.0872                   0.5627                             0.0972                                                        REFERENCES
+                                 m=4                  0.2797             0.2467                   0.3020                             0.2440
+                                 m=5                  0.3073             0.0846                   0.3116                             0.0865                            [1] I. F. Akyildiz, W. Su, Y. Sankarasubramaniam, and E. Cayirci, "A survey
+                                                                                                                                                                            on sensor networks," IEEE Communications magazine, vol. 40, no. 8,
+                          V. CONCLUSIONS                                                                                                                                    pp. 102­114, 2002.
+
+   In this paper, we have unified the three TOA, TDOA,                                                                                                                 [2] D. Li, K. D. Wong, Y. H. Hu, and A. M. Sayeed, "Detection, classifica-
+AOA and RSS based sensor placement case in a generalized                                                                                                                    tion, and tracking of targets," IEEE signal processing magazine, vol. 19,
+problem formulation based on the CRLB-related metric. For                                                                                                                   no. 2, pp. 17­29, 2002.
+this general problem, we have developed a unified optimization
+approach named UTMOST based on the ADMM and MM                                                                                                                         [3] J. Shen, A. F. Molisch, and J. Salmi, "Accurate passive location
+techniques. Within in this framework, we can handle the sensor                                                                                                              estimation using toa measurements," IEEE Transactions on Wireless
+                                                                                                                                                                            Communications, vol. 11, no. 6, pp. 2182­2192, 2012.
+
+                                                                                                                                                                       [4] Y. Zhu, D. Huang, and A. Jiang, "Network localization using angle of
+                                                                                                                                                                            arrival," in 2008 IEEE International Conference on Electro/Information
+                                                                                                                                                                            Technology. IEEE, 2008, pp. 205­210.
+
+                                                                                                                                                                       [5] B. Huang, L. Xie, and Z. Yang, "Tdoa-based source localization with
+                                                                                                                                                                            distance-dependent noises," IEEE Transactions on Wireless Communi-
+                                                                                                                                                                            cations, vol. 14, no. 1, pp. 468­480, 2014.
+                                                                                14
+
+ [6] A. J. Weiss, "On the accuracy of a cellular location system based on       [32] S. M. Kay, Fundamentals of statistical signal processing: estimation
+      rss measurements," IEEE transactions on vehicular technology, vol. 52,          theory. Prentice-Hall, Inc., 1993.
+      no. 6, pp. 1508­1518, 2003.
+                                                                                [33] H.-L. Song, "Automatic vehicle location in cellular communications
+ [7] K. Ho and W. Xu, "An accurate algebraic solution for moving source               systems," IEEE Transactions on Vehicular Technology, vol. 43, no. 4,
+      location using tdoa and fdoa measurements," IEEE Transactions on                pp. 902­908, 1994.
+      Signal Processing, vol. 52, no. 9, pp. 2453­2463, 2004.
+                                                                                [34] N. Patwari, A. O. Hero, M. Perkins, N. S. Correal, and R. J. O'dea,
+ [8] K. Yoo, J. Chun, and C. Ryu, "Crb-based optimal radar placement                  "Relative location estimation in wireless sensor networks," IEEE Trans-
+      for target positioning," in 2018 International Conference on Radar              actions on signal processing, vol. 51, no. 8, pp. 2137­2148, 2003.
+      (RADAR). IEEE, 2018, pp. 1­5.
+                                                                                [35] A new positioning technique for RSS-based localization based on a
+ [9] K. Yoo and J. Chun, "Analysis of optimal range sensor placement for              weighted least squares estimator. IEEE, 2008.
+      tracking a moving target," IEEE Communications Letters, vol. 24, no. 8,
+      pp. 1700­1704, 2020.                                                      [36] T. S. Rappaport et al., Wireless communications: principles and practice.
+                                                                                      prentice hall PTR New Jersey, 1996, vol. 2.
+[10] D. Ucinski, Optimal measurement methods for distributed parameter
+      system identification. CRC press, 2004.                                   [37] A. Atkinson, A. Donev, and R. Tobias, Optimum experimental designs,
+                                                                                      with SAS. Oxford University Press, 2007, vol. 34.
+[11] K. Dogançay and H. Hmam, "Optimal angular sensor separation for aoa
+      localization," Signal Processing, vol. 88, no. 5, pp. 1248­1260, 2008.    [38] L. Pronzato and A. Pázman, "Design of experiments in nonlinear
+                                                                                      models," Lecture notes in statistics, vol. 212, p. 1, 2013.
+[12] S. Xu and K. Dogançay, "Optimal sensor placement for 3-d angle-
+      of-arrival target localization," IEEE Transactions on Aerospace and       [39] S. Boyd, N. Parikh, and E. Chu, Distributed optimization and statistical
+      Electronic Systems, vol. 53, no. 3, pp. 1196­1211, 2017.                        learning via the alternating direction method of multipliers. Now
+                                                                                      Publishers Inc, 2011.
+[13] S. Xu, "Optimal sensor placement for target localization using hybrid
+      rss, aoa and toa measurements," IEEE Communications Letters, vol. 24,     [40] L. Wu and D. P. Palomar, "Sequence design for spectral shaping via
+      no. 9, pp. 1966­1970, 2020.                                                     minimization of regularized spectral level ratio," IEEE Transactions on
+                                                                                      Signal Processing, vol. 67, no. 18, pp. 4683­4695, 2019.
+[14] M. Hamdollahzadeh, R. Amiri, and F. Behnia, "Optimal sensor place-
+      ment for multi-source aoa localisation with distance-dependent noise      [41] T. Wei, L. Wu, and M. Shankar, "Sparse array beampattern synthesis
+      model," IET Radar, Sonar & Navigation, vol. 13, no. 6, pp. 881­891,             via majorization based admm," arXiv preprint arXiv:2104.04322, 2021.
+      2019.
+                                                                                [42] Y. Sun, P. Babu, and D. P. Palomar, "Majorization-minimization algo-
+[15] X. Fang and J. Li, "Frame theory for optimal sensor augmentation                 rithms in signal processing, communications, and machine learning,"
+      problem of aoa localization," IEEE Signal Processing Letters, vol. 25,          IEEE Transactions on Signal Processing, vol. 65, no. 3, pp. 794­816,
+      no. 9, pp. 1310­1314, 2018.                                                     2016.
+
+[16] Y. Zheng, J. Liu, M. Sheng, S. Han, Y. Shi, and S. Valaee, "Toward prac-   [43] M. C. Grant and S. P. Boyd, "The cvx users' guide release 2.0 (beta),"
+      tical access point deployment for angle-of-arrival based localization,"         2013.
+      IEEE Transactions on Communications, vol. 69, no. 3, pp. 2002­2014,
+      2020.                                                                     [44] Y. Wang, W. Yin, and J. Zeng, "Global convergence of admm in
+                                                                                      nonconvex nonsmooth optimization," Journal of Scientific Computing,
+[17] S. Zhao, B. M. Chen, and T. H. Lee, "Optimal sensor placement for                vol. 78, no. 1, pp. 29­63, 2019.
+      target localisation and tracking in 2d and 3d," International Journal of
+      Control, vol. 86, no. 10, pp. 1687­1704, 2013.                            [45] Q. Liu, X. Shen, and Y. Gu, "Linearized admm for nonconvex nons-
+                                                                                      mooth optimization with convergence analysis," IEEE Access, vol. 7,
+[18] B. Yang and J. Scheuing, "Cramer-rao bound and optimum sensor array              pp. 76 131­76 144, 2019.
+      for source localization from time differences of arrival," in Proceed-
+      ings.(ICASSP'05). IEEE International Conference on Acoustics, Speech,     [46] M. Hong, Z.-Q. Luo, and M. Razaviyayn, "Convergence analysis of
+      and Signal Processing, 2005., vol. 4. IEEE, 2005, pp. iv­961.                   alternating direction method of multipliers for a family of nonconvex
+                                                                                      problems," SIAM Journal on Optimization, vol. 26, no. 1, pp. 337­364,
+[19] W. Meng, L. Xie, and W. Xiao, "Optimal tdoa sensor-pair placement                2016.
+      with uncertainty in source location," IEEE Transactions on Vehicular
+      Technology, vol. 65, no. 11, pp. 9260­9271, 2016.                         [47] M. Razaviyayn, M. Hong, and Z.-Q. Luo, "A unified convergence
+                                                                                      analysis of block successive minimization methods for nonsmooth
+[20] S. Xu, Y. Ou, and X. Wu, "Optimal sensor placement for 3-d time-                 optimization," SIAM Journal on Optimization, vol. 23, no. 2, pp. 1126­
+      of-arrival target localization," IEEE Transactions on Signal Processing,        1153, 2013.
+      vol. 67, no. 19, pp. 5018­5031, 2019.
+                                                                                [48] J. Neering, C. Fischer, M. Bordier, and N. Maizi, "Optimal sensor con-
+[21] S. Xu, Y. Ou, and W. Zheng, "Optimal sensor-target geometries for 3-d            figuration for passive position estimation," in Proceedings of IEEE/ION
+      static target localization using received-signal-strength measurements,"        PLANS 2008, 2008, pp. 951­960.
+      IEEE Signal Processing Letters, vol. 26, no. 7, pp. 966­970, 2019.
+                                                                                [49] K. Dogancay and G. Ibal, "Instrumental variable estimator for 3d
+[22] L. Rui and K. Ho, "Elliptic localization: Performance study and optimum          bearings-only emitter localization," in 2005 International Conference
+      receiver placement," IEEE Transactions on Signal Processing, vol. 62,           on Intelligent Sensors, Sensor Networks and Information Processing.
+      no. 18, pp. 4673­4688, 2014.                                                    IEEE, 2005, pp. 63­68.
+
+[23] N. H. Nguyen, "Optimal geometry analysis for target localization with
+      bayesian priors," IEEE Access, vol. 9, pp. 33 419­33 437, 2021.
+
+[24] A. Heydari, M. Aghabozorgi, and M. Biguesh, "Optimal sensor place-
+      ment for source localization based on rssd," Wireless Networks, vol. 26,
+      no. 7, pp. 5151­5162, 2020.
+
+[25] N. H. Nguyen and K. Dogançay, "Optimal geometry analysis for
+      multistatic toa localization," IEEE Transactions on Signal Processing,
+      vol. 64, no. 16, pp. 4180­4193, 2016.
+
+[26] ----, "Optimal sensor placement for doppler shift target localization,"
+      in 2015 IEEE Radar Conference (RadarCon). IEEE, 2015, pp. 1677­
+      1682.
+
+[27] S. P. Robinson, P. A. Lepper, and R. A. Hazelwood, "Good practice
+      guide for underwater noise measurement." 2014.
+
+[28] S. Joshi and S. Boyd, "Sensor selection via convex optimization," IEEE
+      Transactions on Signal Processing, vol. 57, no. 2, pp. 451­462, 2008.
+
+[29] H. C. So and L. Lin, "Linear least squares approach for accurate received
+      signal strength based source localization," IEEE Transactions on signal
+      processing, vol. 59, no. 8, pp. 4035­4040, 2011.
+
+[30] S. P. Chepuri and G. Leus, "Sparsity-promoting sensor selection for non-
+      linear measurement models," IEEE Transactions on Signal Processing,
+      vol. 63, no. 3, pp. 684­698, 2014.
+
+[31] P. Stoica and P. Babu, "The gaussian data assumption leads to the largest
+      cramér-rao bound [lecture notes]," IEEE Signal Processing Magazine,
+      vol. 28, no. 3, pp. 132­133, 2011.
+

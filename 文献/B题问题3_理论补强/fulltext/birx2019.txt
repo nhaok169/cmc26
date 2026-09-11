@@ -1,0 +1,1894 @@
+SOURCE: https://arxiv.org/html/1901.04272
+
+Tight Analysis of the Smartstart Algorithm for Online Dial-a-Ride on the Line 
+
+ Report GitHub Issue
+
+ × 
+
+ Title: 
+
+ Content selection saved. Describe the issue below:
+
+ Description: 
+
+ Submit without GitHub 
+ Submit in GitHub 
+
+ arXiv is now an independent nonprofit! 
+ Learn more 
+ × 
+
+ Back to arXiv 
+
+ Why HTML? 
+
+ Report Issue 
+
+ Back to Abstract 
+
+ Download PDF 
+
+ Abstract 
+
+ 1 Introduction 
+
+ 2 Preliminaries 
+
+ 3 Upper Bound for the Open Version 
+
+ 4 Lower Bound for the Open Version 
+
+ 5 Lower Bound for the Closed Version 
+
+ References 
+
+ A Algorithm Ignore 
+
+ License: arXiv.org perpetual non-exclusive license
+
+arXiv:1901.04272v1 [math.OC] 14 Jan 2019
+
+ Tight Analysis of the Smartstart Algorithm for Online Dial-a-Ride on the Line
+
+ This work was supported by the ‘Excellence Initiative’ of the German Federal and State Governments and the Graduate School CE at TU Darmstadt. 
+
+ Alexander Birx
+
+ Yann Disser
+
+ Affiliation: Institute of Mathematics and Graduate School CE, TU Darmstadt, Germany 
+
+ Abstract
+
+ The online Dial-a-Ride problem is a fundamental online problem in a metric space, where transportation requests appear over time and may be served in any order by a single server with unit speed.
+Restricted to the real line, online Dial-a-Ride captures natural problems like controlling a personal elevator.
+Tight results in terms of competitive ratios are known for the general setting and for online TSP on the line (where source and target of each request coincide).
+In contrast, online Dial-a-Ride on the line has resisted tight analysis so far, even though it is a very natural online problem.
+
+ We conduct a tight competitive analysis of the Smartstart algorithm that gave the best known results for the general, metric case.
+In particular, our analysis yields a new upper bound of 2.94 for open, non-preemptive online Dial-a-Ride on the line, which improves the previous bound of 3.41 [Krumke’00].
+The best known lower bound remains 2.04 [SODA’17].
+We also show that the known upper bound of 2 [STACS’00] regarding Smartstart ’s competitive ratio for closed, non-preemptive online Dial-a-Ride is tight on the line.
+
+ 1 Introduction
+
+ Online optimization deals with settings where algorithmic decisions have to be made over time without knowledge of the future.
+A typical introductory example is the problem of controlling an elevator/conveyor system, where requests to transport passengers/goods arrive over time and the elevator needs to decide online how to adapt its trajectory along the real line.
+In terms of competitive analysis, the central question in this context is how much longer our trajectory will be in the worst-case, relative to an optimum offline solution that knows all requests ahead of time, i.e., we ask for solutions with good competitive ratio .
+
+ While the elevator problem is a natural online problem, even simplified versions of it have long resisted tight analysis.
+ Online TSP on the line is such a simplification, where a single server on the real line needs to serve requests that appear over time at arbitrary positions by visiting their location, i.e., requests do not need to be transported.
+We distinguish the closed and open variants of this problem, depending on whether the server needs to eventually return to the origin or not.
+Determining the exact competitive ratios for either variant had been an open problem for more than two decades [ 3 , 5 , 12 , 13 , 15 , 16 ] , when Bjelde et al. [ 4 ] were finally able to conduct a tight analysis that established competitive ratios of roughly 1.64 for the closed case and 2.04 for the open case.
+
+ The next step towards formally capturing the intuitive elevator problem is to allow transportation requests that appear over time; and to fix a capacity $c\in\mathbb{N}\cup\{\infty\}$ of the server that limits the number of transportation requests that can be served simultaneously.
+The resulting online Dial-a-Ride problem on the line has received considerable attention in the past [ 1 , 4 , 8 , 13 , 14 , 16 ] , but still resists tight analysis.
+The best known (non-preemptive) bounds put the competitive ratio in the range $[1.75,2]$ for the closed variant (see [ 4 , 1 ] ). For the open variant the best known (non-preemptive) bounds put the competitiv ratio in the range $[2.04,3]$ for $c=1$ and in the range $[2.04,3.41]$ for $c>1$ (see [ 4 , 13 ] ).
+In this paper, we show an improved upper bound of (roughly) $2.94$ for open online Dial-a-Ride on the line for arbitrary capacity $c\in\mathbb{N}\cup\{\infty\}$ .
+
+ A straight-forward algorithm for online Dial-a-Ride on the line is the algorithm Ignore [ 1 ] :
+Whenever the server is idle and unserved requests $R_{t}$ are present at the current time $t$ , compute an optimum schedule to serve these requests from the current location, and follow this schedule while ignoring newly incoming requests.
+ Ignore has a competitive ratio of exactly $4$ (see Appendix   A ).
+This competitive ratio can be improved by potentially waiting before starting the optimum schedule, in order to protect against requests that come in right after we decide to start.
+Ascheuer et al. [ 1 ] proposed the algorithm Smartstart (see Algorithm   1 ) that delays starting the optimum schedule until a certain time $t$ relative to the length $L(t,p,R_{t})$ of this schedule (formal definitions below).
+
+ Smartstart is parameterized by a factor $\Theta>1$ that scales this waiting period.
+In this paper, we conduct a tight analysis of the best competitive ratio of Smartstart for open/closed online Dial-a-Ride on the line, over all parameter values $\Theta>1$ .
+
+ Results and techniques.
+
+ The Smartstart algorithm is of particular importance for online Dial-a-Ride , since, on arbirary metric spaces, it achieves the best possible competitive ratio of $2$ for the closed variant [ 1 , 3 ] , and the best known competitive ratio of $2+\sqrt{2}\approx 3.41$ for the open variant [ 13 ] .
+We provide a conclusive treatment of this algorithm for online Dial-a-Ride on the line in terms of competitive analysis, both for the open and the closed variant.
+
+ Figure 1: Overview over our bounds for Smartstart .
+The functions $f_{1}$ (green) / $f_{2}$ (red) are upper bounds for the cases where Smartstart waits / does not wait before starting the final schedule, respectively.
+The upper bounds are drawn solid in the domains where they are tight for their corresponding case.
+The functions $g_{1}$ through $g_{4}$ (blue) are general lower bounds; dashed continuations indicate how far these bounds could be extended.
+
+ Regarding the open case, we show that Smartstart attains a competitive ratio of $\rho^{*}\approx 2.94$ for parameter value $\Theta^{*}\approx 2.05$ ( Section   3 ).
+To show this, we derive two separate upper bounds depending on $\Theta$ (cf. Figure   1 ): an upper bound $f_{1}(\Theta)$ for the case that Smartstart has a waiting period before starting its last schedule ( Proposition   3.3 ), and an upper bound $f_{2}(\Theta)$ for the case that Smartstart begins its final schedule immediately ( Proposition   3.7 ).
+The resulting general upper bound of $\max\{f_{1}(\Theta),f_{2}(\Theta)\}$ has its minimum precisely at the intersection point $(\Theta^{*},\rho^{*})$ of $f_{1}$ and $f_{2}$ .
+
+ On the other hand, we show that for $\Theta\in(2,3)$ there are instances where Smartstart waits before starting its final schedule and has competitive ratio at least $f_{1}(\Theta)$ ( Proposition   4.2 ).
+Similarly, we show that for $\Theta\in[2,2.303]$ there are instances where Smartstart does not wait before starting its final schedule and has competitive ratio at least $f_{2}(\Theta)$ ( Proposition   4.3 ).
+Together, this implies that the general upper bound of $\max\{f_{1}(\Theta),f_{2}(\Theta)\}$ is tight for $\Theta\in(2,2.303]$ , and thus for $\Theta=\Theta^{*}$ (cf. Figure   1 ).
+
+ To complete our analysis of Smartstart , we give lower bound constructions for different domains of $\Theta$ ( $g_{1}$ through $g_{4}$ in Figure   1 ) that establish that $\Theta^{*}$ is indeed the best parameter choice for Smartstart in the worst-case ( Lemma   4.8 ).
+The key ingredient to all our lower bounds is a way to lure Smartstart away from the origin ( Lemma   4.1 ).
+
+ Finally, for the closed variant of the problem, we provide a lower bound of $2$ on the best-possible competitive ratio of Smartstart over all possible choices of the parameter $\Theta>1$ ( Section   5 ).
+This tightly matches the known upper bound for general metric spaces [ 1 ] .
+
+ Significance.
+
+ The main contribution of this paper is a conclusive treatment of the algorithm Smartstart for online Dial-a-Ride on the line in terms of competitive analysis.
+Additionally, our analysis yields an improved upper bound of (roughly) $2.94$ for non-preemptive, open online Dial-a-Ride on the line.
+This is the first bound below $3$ and narrows the gap for the competitive ratio to $[2.04,2.94]$ .
+Our work is likely to serve as a starting point towards devising better algorithms (preemptive or non-preemptive) that narrow the gaps for both the open and closed setting by avoiding critical “mistakes” of Smartstart , as evidenced by our lower bound constructions
+
+ Further related work.
+
+ In this paper, we focus on the non-preemptive variant of online Dial-a-Ride on the line, where requests cannot be unloaded on the way in reaction to the arrival of new requests.
+For the case where preemption is allowed, the best known bounds for the closed version are $[1.64,2]$ (see [ 3 , 1 ] ), which is slightly worse than the gap of $[1.75,2]$ in the non-preemptive case.
+On the other hand, the best bounds for the open, preemptive variant are $[2.04,2.41]$ (see [ 4 ] ), which is better than the gap of $[2.04,2.94]$ in the non-preemptive case.
+In particular, the preemptive and non-preemptive cases can currently not be separated in terms of competitive ratios.
+
+ A variant of the online Dial-a-Ride problem where the objective is to minimize the maximal flow time, instead of the makespan, has been studied by Krumke et al. [ 14 , 15 ] .
+They established that in many metric spaces no online algorithm can be competitive with respect to this objective.
+Hauptmeier et al. [ 11 ] showed that a competitive algorithm is possible if we restrict ourselves to instances with “reasonable” load, which roughly means that requests that appear over a sufficiently large time period $T$ can always be served in time at most $T$ .
+
+ Lipmann et al. [ 17 ] studied a natural variant of closed, online Dial-a-Ride where the destinations of requests are only revealed upon collection by the server.
+For general metric spaces and server capacity $c$ , they showed a tight competitive ratio of $3$ in the preemptive setting, and lower/upper bounds of $\max\{3.12,c\}$ and $2c+2$ , respectively, in the non-preemptive setting.
+
+ Yi and Tian [ 18 ] considered the online Dial-a-Ride problem with deadlines, with the objective of serving the maximum number of requests.
+They provided bounds on the competitive ratio depending on the diameter of the metric space.
+In [ 19 ] they further studied this setting when the destination of requests are only revealed upon collection by the server.
+
+ The offline version of Dial-a-Ride on the line has been studied in various settings, for an overview see [ 7 ] .
+For the closed, non-preemptive case without release times, Gilmore and Gomory [ 9 ] and Atallah and Kosaraju [ 2 ] gave a polynomial time algorithm for a server with unit capacity $c=1$ , and Guan [ 10 ] showed that the problem is hard for $c=2$ .
+Bjelde et al. [ 4 ] extended this result to any finite $c\geq 2$ and both the open and closed case.
+They further showed that with release times the problem is already hard for finite $c\geq 1$ .
+On the other hand, the complexity of the case $c=\infty$ has not yet been established.
+The closed, preemptive case without release times was shown to be polynomial time solvable for $c=1$ by Atallah and Kosaraju [ 2 ] , and for $c\geq 2$ by Guan [ 10 ] .
+
+ For the closed, non-preemptive case with finite capacity, Krumke [ 13 ] provided a $3$ -approximation algorithm. Finally, Charikar and Raghavachari [ 6 ] gave approximation algorithms for the closed case without release times, both preemptive and non-preemptive, on general metric spaces.
+They also claimed to have a 2-approximation for the line, but this result appears to be incorrect (personal communication).
+
+ 2 Preliminaries
+
+ Formally, an instance of Dial-a-Ride on the line is given by a set of requests denoted by $\sigma=\{(a_{1},b_{1};r_{1}),(a_{2},b_{2};r_{2}),\dots,(a_{n},b_{n};r_{n})\}$ that need to be served by a single server with capacity $c\in\mathbb{N}\cup\{\infty\}$ , travelling with unit speed and starting at the origin on the real line.
+Request $\sigma_{i}$ appears at time $r_{i}>0$ at position $a_{i}\in\mathbb{R}$ of the real line and needs to be transported to position $b_{i}\in\mathbb{R}$ .
+The objective of the Dial-a-Ride problem on the line is to find a shortest schedule for the server to transport all requests without carrying more than $c$ requests at once, where the length of a schedule is the length of the resulting trajectory.
+In the closed version of the problem, the server eventually needs to return to the origin, in the open version it does not.
+In the online Dial-a-Ride problem on the line, each request $\sigma_{i}$ is revealed only at time $r_{i}$ , and $n$ is only revealed implicitly by the fact that no more requests appear.
+In contrast, in the offline problem, all requests are known ahead of time (but release times still need to be respected).
+
+ We define $L(t,p,R)$ to be the length of a shortest schedule that starts at position $p$ at time $t$ and serves all requests in $R\subseteq\sigma$ after they appeared (i.e., the schedule must respect release times).
+Observe that, for all $0\leq t\leq t^{\prime}$ , $p,p^{\prime}\in\mathbb{R}$ , and $R\subseteq\sigma$ , we have
+
+ $\displaystyle L(t,p,R)$ 
+ $\displaystyle\geq L(t^{\prime},p,R),$ 
+
+ (1) 
+
+ $\displaystyle L(t,p,R)$ 
+ $\displaystyle\leq|p-p^{\prime}|+L(t,p^{\prime},R).$ 
+
+ (2) 
+
+ By $x_{-}:=\min\{0,\min_{i=1,\dots,n}\{a_{i}\},\min_{i=1,\dots,n}\{b_{i}\}\}$ we denote the leftmost and by $x_{+}:=\max\{0,\max_{i=1,\dots,n}\{a_{i}\},\max_{i=1,\dots,n}\{b_{i}\}\}$ the rightmost position that needs to be visited by the server.
+Here and throughout, we orient the real line from left to right.
+Obviously, there is an optimum trajectory that only visits points in $[x_{-},x_{+}]$ , and we let Opt be such a trajectory and $\textsc{Opt}(\sigma):=L(0,0,\sigma)$ be its length.
+
+ For the description of online algorithms, we denote by $t$ the current time and by $R_{t}$ the set of requests that have appeared until time $t$ but have not been served yet.
+The algorithm Smartstart is given in Algorithm   1 .
+Essentially, Smartstart waits before starting an optimal schedule to serve all available requests at time
+
+ $\min_{t^{\prime}\geq t}\left\{t^{\prime}\geq\frac{L(t^{\prime},p,R_{t^{\prime}})}{\Theta-1}\right\},$ 
+
+ (3) 
+
+ where $p$ is the current position of the server and $\Theta>1$ is a parameter of the algorithm that scales the waiting time. Importantly, Smartstart ignores incoming requests while executing a schedule.
+Whenever we need to distinguish the behavior of Smartstart for different values of $\Theta>1$ , we write $\textsc{Smartstart}_{\Theta}$ to make the choice of $\Theta$ explicit.
+The length of Smartstart ’s trajectory is denoted by $\textsc{Smartstart}(\sigma)$ .
+Note that the schedules used by Smartstart are NP-hard to compute for $1 [ 4 ] .
+
+ Algorithm 1 Smartstart 
+
+ $p_{1}\leftarrow 0$ 
+
+ for $j=1,2,\dots$ do 
+
+       while $t\leq L(t,p_{j},R_{t})/(\Theta-1)$ do 
+
+           wait
+
+       $t_{j}\leftarrow t$ 
+
+       $S_{j}\leftarrow$ optimal offline schedule serving $R_{t}$ starting from $p_{j}$ 
+
+      execute $S_{j}$ 
+
+       $p_{j+1}\leftarrow$ current position
+
+ We let $N\in\mathbb{N}$ be the number of schedules needed by Smartstart to serve $\sigma$ .
+The $j$ -th schedule is denoted by $S_{j}$ , its starting time by $t_{j}$ , its starting point by $p_{j}$ , its ending point by $p_{j+1}$ (cf. Algorithm   1 ), and the set of requests served in $S_{j}$ by $\sigma_{S_{j}}$ .
+For convenience, we set $t_{0}=p_{0}=0$ .
+Finally, we denote by $y_{-}^{S_{j}}$ the leftmost and by $y_{+}^{S_{j}}$ the rightmost position that occurs in the requests $\sigma_{S_{j}}$ . Note that $y_{-}^{S_{j}}$ and $y_{+}^{S_{j}}$ need not lie on different sides of the origin, in contrast to $x_{-/+}$ .
+
+ 3 Upper Bound for the Open Version
+
+ In this section, we give an upper bound on the completion time
+
+ $\textsc{Smartstart}(\sigma)=t_{N}+L(t_{N},p_{N},\sigma_{S_{N}})$ 
+
+ (4) 
+
+ of Smartstart , relative to $\textsc{Opt}(\sigma)$ .
+To do this, we consider two cases, depending on whether or not Smartstart waits after finishing schedule $S_{N-1}$ and before starting the final schedule $S_{N}$ .
+If Smartstart waits, the starting time of schedule $S_{N}$ is given by
+
+ $t_{N}=\frac{1}{\Theta-1}L(t_{N},p_{N},\sigma_{S_{N}}),$ 
+
+ (5) 
+
+ otherwise, we have
+
+ $t_{N}=t_{N-1}+L(t_{N-1},p_{N-1},\sigma_{S_{N-1}}).$ 
+
+ (6) 
+
+ We start by giving a lower bound on the starting time of a schedule.
+
+ Lemma 3.1 . 
+
+ Algorithm Smartstart does not start schedule $S_{j}$ earlier than time $\frac{|p_{j+1}|}{\Theta}$ , i.e., we have $t_{j}\geq\frac{|p_{j+1}|}{\Theta}$ .
+
+ Proof.
+
+ Since Smartstart at least has to move from $p_{j}$ to $p_{j+1}$ , we have 
+
+ $L(t_{j},p_{j},\sigma_{S_{j}})\geq|p_{j}-p_{j+1}|.$ 
+
+ Note however that Smartstart needs at least time $|p_{j}|$ to reach $p_{j}$ . Therefore, we have 
+
+ $\displaystyle t_{j}$ 
+ $\displaystyle\geq\min\{t\geq|p_{j}|:t+|p_{j}-p_{j+1}|\leq\Theta t\}$ 
+
+ $\displaystyle=\min\left\{t\geq|p_{j}|:\frac{|p_{j}-p_{j+1}|}{\Theta-1}\leq t\right\}$ 
+
+ $\displaystyle=\max\left\{|p_{j}|,\frac{|p_{j}-p_{j+1}|}{\Theta-1}\right\}.$ 
+
+ (7) 
+
+ It remains to show 
+
+ $\max\left\{|p_{j}|,\frac{|p_{j}-p_{j+1}|}{\Theta-1}\right\}\geq\frac{|p_{j+1}|}{\Theta}.$ 
+
+ For $|p_{j}|\geq\frac{|p_{j+1}|}{\Theta}$ we trivially have 
+
+ $\max\left\{|p_{j}|,\frac{|p_{j}-p_{j+1}|}{\Theta-1}\right\}\geq|p_{j}|\geq\frac{|p_{j+1}|}{\Theta}.$ 
+
+ (8) 
+
+ For $|p_{j}| 
+
+ $|p_{j}-p_{j+1}|\overset{|p_{j}| }\left|\frac{p_{j+1}}{\Theta}-p_{j+1}\right|.$ 
+
+ (9) 
+
+ This leads to 
+
+ $\displaystyle\max\left\{|p_{j}|,\frac{|p_{j}-p_{j+1}|}{\Theta-1}\right\}$ 
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[15.0pt]{}}}}{{\geq}}\frac{|p_{j}-p_{j+1}|}{\Theta-1}$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[15.0pt]{(\ref{equation: Starting Time Second Approx})}}}}{{>}}\frac{|\frac{p_{j+1}}{\Theta}-p_{j+1}|}{\Theta-1}$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[15.0pt]{}}}}{{=}}\frac{|p_{j+1}|}{\Theta}$ 
+
+ (10) 
+
+ To sum it up, we have 
+
+ $t_{j}\overset{(\ref{equation: Starting Time Trivial Approx})}{\geq}\max\left\{|p_{j}|,\frac{|p_{j}-p_{j+1}|}{\Theta-1}\right\}\overset{(\ref{equation: Starting Time Third Approx}),(\ref{equation: Starting Time First Approx})}{\geq}\frac{|p_{j+1}|}{\Theta},$ 
+
+ as claimed.
+∎ 
+
+ The following bound on the length of Smartstart ’s schedules is an essential ingredient in our upper bounds.
+
+ Lemma 3.2 . 
+
+ For every schedule $S_{j}$ of Smartstart , we have
+
+ $L(t_{j},p_{j},\sigma_{S_{j}})\leq\left(1+\frac{\Theta}{\Theta+2}\right)\textsc{Opt}(\sigma).$ 
+
+ Proof.
+
+ First, we notice that by the triangle inequality we have 
+
+ $L(t_{j},p_{j},\sigma_{S_{j}})\leq|p_{j}|+L(t_{j},0,\sigma_{S_{j}})\leq\textsc{Opt}(\sigma)+|p_{j}|.$ 
+
+ (11) 
+
+ Now, let $\sigma^{\textsc{Opt}}_{S_{j}}$ be the first request of $\sigma_{S_{j}}$ that is picked up by Opt and let $a^{\textsc{Opt}}_{j}$ be its starting point and $r^{\textsc{Opt}}_{j}$ be its release time. We have 
+
+ $L(t_{j},p_{j},\sigma_{S_{j}})\leq|a^{\textsc{Opt}}_{j}-p_{j}|+L(t_{j},a^{\textsc{Opt}}_{j},\sigma_{S_{j}}),$ 
+
+ (12) 
+
+ again by the triangle inequality. Since Opt serves all requests of $\sigma_{S_{j}}$ starting at position $a^{\textsc{Opt}}_{j}$ no earlier than time $r^{\textsc{Opt}}_{j}$ , we have 
+
+ $L(t_{j},a^{\textsc{Opt}}_{j},\sigma_{S_{j}})\overset{r^{\textsc{Opt}}_{j}\leq t_{j}}{\leq}L(r^{\textsc{Opt}}_{j},a^{\textsc{Opt}}_{j},\sigma_{S_{j}})\leq\textsc{Opt}(\sigma)-r^{\textsc{Opt}}_{j},$ 
+
+ (13) 
+
+ which yields 
+
+ $\displaystyle L(t_{j},p_{j},\sigma_{S_{j}})$ 
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[35.0pt]{(\ref{equation: Triangle First Opt})}}}}{{\leq}}|a^{\textsc{Opt}}_{j}-p_{j}|+L(t_{j},a^{\textsc{Opt}}_{j},\sigma_{S_{j}})$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[35.0pt]{(\ref{equation: Opt Final Schedule})}}}}{{\leq}}\textsc{Opt}(\sigma)+|a^{\textsc{Opt}}_{j}-p_{j}|-r^{\textsc{Opt}}_{j}$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[35.0pt]{$t_{j-1} 
+
+ (14) 
+
+ Since $p_{j}$ is the destination of a request, Opt needs to visit it. In the case that Opt visits $p_{j}$ before collecting $\sigma^{\textsc{Opt}}_{S_{j}}$ , Opt still has to collect and serve every request of $\sigma_{S_{j}}$ after it has visited position $p_{j}$ the first time, which directly implies 
+
+ $\left(1+\frac{\Theta}{\Theta+2}\right)\textsc{Opt}(\sigma)>\textsc{Opt}(\sigma)\geq L(|p_{j}|,p_{j},\sigma_{S_{j}})\overset{|p_{j}|\leq t_{j}}{\geq}L(t_{j},p_{j},\sigma_{S_{j}}).$ 
+
+ On the other hand, if Opt collects $\sigma^{\textsc{Opt}}_{S_{j}}$ before visiting the position $p_{j}$ , we have 
+
+ $t_{j-1}+|a^{\textsc{Opt}}_{j}-p_{j}|\overset{t_{j-1} 
+
+ (15) 
+
+ since Opt cannot collect $\sigma^{\textsc{Opt}}_{S_{j}}$ before time $r^{\textsc{Opt}}_{j}$ and then still has to visit position $p_{j}$ .
+Thus, we have 
+
+ $\displaystyle L(t_{j},p_{j},\sigma_{S_{j}})$ 
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[35.0pt]{(\ref{equation: Schedule Length Via Opt Start})}}}}{{ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[35.0pt]{(\ref{equation: Opt Collect Before Visit})}}}}{{\leq}}2\textsc{Opt}(\sigma)-2t_{j-1}$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[35.0pt]{\text{Lem }\ref{lemma: Lower Bound Starting Time}}}}}{{\leq}}2\textsc{Opt}(\sigma)-2\frac{|p_{j}|}{\Theta}.$ 
+
+ (16) 
+
+ This implies 
+
+ $\displaystyle L(t_{j},p_{j},\sigma_{S_{j}})$ 
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[25.0pt]{(\ref{equation: Triangle Zero}),(\ref{equation: Second Approximation For Schedule Length})}}}}{{\leq}}\min\left\{\textsc{Opt}(\sigma)+|p_{j}|,2\textsc{Opt}(\sigma)-\frac{2}{\Theta}|p_{j}|\right\}$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[25.0pt]{}}}}{{\leq}}\left(1+\frac{\Theta}{\Theta+2}\right)\textsc{Opt}(\sigma),$ 
+
+ since the minimum above is largest for $|p_{j}|=\frac{\Theta}{\Theta+2}\textsc{Opt}(\sigma)$ .
+∎ 
+
+ The following proposition uses Lemma   3.2 to provide an upper bound for the competitive ratio of Smartstart , in the case, where Smartstart does have a waiting period before starting the final schedule.
+
+ Proposition 3.3 . 
+
+ In the case that Smartstart waits before executing $S_{N}$ , we have
+
+ $\frac{\textsc{Smartstart}(\sigma)}{\textsc{Opt}(\sigma)}\leq f_{1}(\Theta):=\frac{2\Theta^{2}+2\Theta}{\Theta^{2}+\Theta-2}.$ 
+
+ Proof.
+
+ Assume Smartstart waits before starting the final schedule. Then we have 
+
+ $t_{N}+L(t_{N},p_{N},\sigma_{S_{N}})=\Theta t_{N}$ 
+
+ (17) 
+
+ by definition of Smartstart . This implies 
+
+ $\displaystyle\textsc{Smartstart}(\sigma)$ 
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[15.0pt]{(\ref{equation: Costs Smartstart})}}}}{{=}}t_{N}+L(t_{N},p_{N},\sigma_{S_{N}})\stackrel{{\scriptstyle\text{\makebox[15.0pt]{(\ref{equation: Smartstart Definition Rearranged})}}}}{{=}}\Theta t_{N}\stackrel{{\scriptstyle\text{\makebox[15.0pt]{(\ref{equation: Starting Time No Wait})}}}}{{=}}\frac{\Theta}{\Theta-1}L(t_{N},p_{N},\sigma_{S_{N}}).$ 
+
+ Lemma   3.2 thus yields the claimed bound: 
+
+ $\displaystyle\textsc{Smartstart}(\sigma)$ 
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[35.0pt]{}}}}{{=}}\frac{\Theta}{\Theta-1}L(t_{N},p_{N},\sigma_{S_{N}})$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[35.0pt]{Lem \ref{lemma: Costs per Schedule}}}}}{{\leq}}\frac{\Theta}{\Theta-1}\left(1+\frac{\Theta}{\Theta+2}\right)\textsc{Opt}(\sigma)$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[35.0pt]{}}}}{{=}}\frac{2\Theta^{2}+2\Theta}{\Theta^{2}+\Theta-2}\textsc{Opt}(\sigma).\qed$ 
+
+ It remains to examine the case, where the algorithm Smartstart has no waiting period before starting the final schedule. We start with two lemmas that give us an upper bounds for the length of a schedule depending on its extreme positions.
+
+ Lemma 3.4 . 
+
+ Let $S_{j}$ with $j\in\{1,\dots,N\}$ be a schedule of Smartstart . Moreover, let $\textsc{Opt}(\sigma)=|x_{-}|+x_{+}+y$ for some $y\geq 0$ . Then, we have
+
+ $L(t_{j},0,\sigma_{S_{j}})\leq|\min\{0,y^{S_{j}}_{-}\}|+\max\{0,y^{S_{j}}_{+}\}+y.$ 
+
+ Proof.
+
+ We need to analyze the amount of time the server needs to serve $\sigma_{S_{j}}$ starting from position $0$ at time $t_{j}$ . First of all, note that the server does not wait at any point, since all requests of $\sigma_{S_{j}}$ already have appeared at time $t_{j}$ . Because of that, the server cannot go to the left of $\min\{0,y^{S_{j}}_{-}\}$ or to the right of $\max\{0,y^{S_{j}}_{+}\}$ while staying on an optimal route. Furthermore, we notice that the route Opt takes to serve $\sigma$ is a valid route to serve $\sigma_{S_{j}}$ , since $\sigma_{S_{j}}\subseteq\sigma$ . However, we can skip every part of the route Opt takes to collect $\sigma$ that lies left of $\min\{0,y^{S_{j}}_{-}\}$ or right of $\max\{0,y^{S_{j}}_{+}\}$ , since no requests of $\sigma_{S_{j}}$ have a starting or ending point that lies in those regions. Since all requests already have appeared at time $t_{j}$ , this does not produce additional waiting time, i.e., we can just delete the parts of the route that lie left of $\min\{0,y^{S_{j}}_{-}\}$ and right of $\max\{0,y^{S_{j}}_{+}\}$ and still have a valid route for serving $\sigma_{S_{j}}$ when starting at time $t_{j}$ . This shortens the length of the route by at least 
+
+ $|x_{-}|-|\min\{0,y^{S_{j}}_{-}\}|+x_{+}-\max\{0,y^{S_{j}}_{+}\},$ 
+
+ which gives us 
+
+ $\displaystyle L(t_{j},0,\sigma_{S_{j}})$ 
+ $\displaystyle\leq\textsc{Opt}(\sigma)-(|x_{-}|-|\min\{0,y^{S_{j}}_{-}\}|+x_{+}-\max\{0,y^{S_{j}}_{+}\})$ 
+
+ $\displaystyle=|\min\{0,y^{S_{j}}_{-}\}|+\max\{0,y^{S_{j}}_{+}\}+y,$ 
+
+ as desired.
+∎ 
+
+ Lemma 3.5 . 
+
+ Let $S_{j}$ with $j\in\{1,\dots,N\}$ be a schedule of Smartstart . Moreover, let $\textsc{Opt}(\sigma)=|x_{-}|+x_{+}+y$ for some $y\geq 0$ . Then we have
+
+ $L(t_{j},\max\{0,y^{S_{j}}_{-}\}+\min\{0,y^{S_{j}}_{+}\},\sigma_{S_{j}})\leq y^{S_{j}}_{+}-y^{S_{j}}_{-}+y.$ 
+
+ Proof.
+
+ First note that the case $\max\{0,y^{S_{j}}_{-}\}=\min\{0,y^{S_{j}}_{+}\}=0$ follows from Lemma   3.4 . Assume we have $\max\{0,y^{S_{j}}_{-}\}=y^{S_{j}}_{-}$ . Then all requests of $\sigma_{S_{j}}$ have starting and ending point on the right side of the origin and we have 
+
+ $0\leq y^{S_{j}}_{-}\leq y^{S_{j}}_{+},$ 
+
+ i.e., $\min\{0,y^{S_{j}}_{+}\}=0$ . Therefore, we need to examine $L(t_{j},y^{S_{j}}_{-},\sigma_{S_{j}})$ , i.e., the length of the optimal offline schedule serving the set of requests $\sigma_{S_{j}}$ and starting from position $y^{S_{j}}_{-}$ at time $t_{j}$ . We note that the server does not wait at any point, since all requests of $\sigma_{S_{j}}$ already have appeared at time $t_{j}$ . Because of that, the server cannot go to the left of $y^{S_{j}}_{-}$ or to the right of $y^{S_{j}}_{+}$ while staying on an optimal route. Furthermore, we notice that Opt cannot collect any requests of $\sigma_{S_{j}}$ before passing $y^{S_{j}}_{-}$ for the first time, since Opt starts at the origin. Therefore, removing the parts of the path that Opt takes until it first crosses $y^{S_{j}}_{-}$ , gives us a valid route to serve $\sigma_{S_{j}}$ since $\sigma_{S_{j}}\subseteq\sigma$ . Additionally, we can skip every part of the route Opt takes to collect requests that lie left of $0$ or right of $y^{S_{j}}_{+}$ since no requests of $\sigma_{S_{j}}$ have a starting or ending point that lies in those regions. Again, this does not produce additional waiting time. This shortens the length of the route by at least 
+
+ $|x_{-}|+y^{S_{j}}_{-}+x_{+}-y^{S_{j}}_{+},$ 
+
+ which gives us 
+
+ $\displaystyle L(t_{j},y^{S_{j}}_{-},\sigma_{S_{j}})$ 
+ $\displaystyle\leq\textsc{Opt}(\sigma)-(|x_{-}|+y^{S_{j}}_{-}+x_{+}-y^{S_{j}}_{+})$ 
+
+ $\displaystyle=y^{S_{j}}_{+}-y^{S_{j}}_{-}+y,$ 
+
+ as desired. 
+
+ It remains to examine the case $\min\{0,y^{S_{j}}_{+}\}=y^{S_{j}}_{+}$ . In this case all requests of $\sigma_{S_{j}}$ have starting and ending point on the left side of the origin and we have 
+
+ $y^{S_{j}}_{-}\leq y^{S_{j}}_{+}\leq 0,$ 
+
+ i.e., $\max\{0,y^{S_{j}}_{-}\}=0$ . Therefore, we have to examine $L(t_{j},y^{S_{j}}_{+},\sigma_{S_{j}})$ . From this point the proof works analogously to the former case with the roles of $y^{S_{j}}_{+}$ and $y^{S_{j}}_{-}$ switched, in particular, we have 
+
+ $\displaystyle L(t_{j},y^{S_{j}}_{+},\sigma_{S_{j}})$ 
+ $\displaystyle\leq\textsc{Opt}(\sigma)-(|x_{-}|+y^{S_{j}}_{-}+x_{+}-y^{S_{j}}_{+})$ 
+
+ $\displaystyle=y^{S_{j}}_{+}-y^{S_{j}}_{-}+y,$ 
+
+ as desired.
+∎ 
+
+ Next, we give an upper bound for the rightmost position that can be reached during a schedule.
+
+ Lemma 3.6 . 
+
+ Let $S_{j}$ with $j\in\{1,\dots,N\}$ be a schedule of Smartstart . Moreover, let $|x_{-}|\leq x_{+}$ and $\textsc{Opt}(\sigma)=|x_{-}|+x_{+}+y$ for some $y\geq 0$ . Then, for every point $p$ that is visited by $S_{j}$ we have
+
+ $p\leq|p_{j}|+|p_{j}-p_{j+1}|+y-|\min\{0,y^{S_{j}}_{-}\}|.$ 
+
+ Proof.
+
+ First of all, we notice that $S_{j}$ does not wait at any point since all requests of $\sigma_{S_{j}}$ already have appeared at time $t_{j}$ . Because of that, $S_{j}$ cannot go to the left of $\min\{p_{j},y^{S_{j}}_{-}\}$ or to the right of $\max\{p_{j},y^{S_{j}}_{+}\}$ while staying on a optimal route. It suffices to show 
+
+ $\max\{p_{j},y^{S_{j}}_{+}\}\leq|p_{j}|+|p_{j}-p_{j+1}|+y-|\min\{0,y^{S_{j}}_{-}\}|.$ 
+
+ (18) 
+
+ Since $|x_{-}|\leq x_{+}$ implies $\textsc{Opt}(\sigma)\geq 2|x_{-}|+x_{+}$ , we have $y\geq|x_{-}|\geq|\min\{0,y^{S_{j}}_{-}\}|$ . Note that $|x_{-}|\geq|\min\{0,y^{S_{j}}_{-}\}|$ holds since we always have $|x_{-}|\geq 0$ and $x_{-}\leq y^{S_{j}}_{-}$ , i.e., $|x_{-}|\geq|y^{S_{j}}_{-}|$ if $x_{-} 18 ) holds.
+Thus, we may assume $\max\{p_{j},y^{S_{j}}_{+}\}=y^{S_{j}}_{+}$ in the following. Similarly as before, if we have $y^{S_{j}}_{+} 18 ) again holds, since the right hand side is always non-negative. We may thus assume $y_{+}^{S_{j}}\geq 0$ , i.e., 
+
+ $\max\{0,y^{S_{j}}_{+}\}=y_{+}^{S_{j}}$ 
+
+ (19) 
+
+ in the following. According to the triangle inequality and Lemma   3.4 , we have 
+
+ $\displaystyle L(t_{j},p_{j},\sigma_{S_{j}})$ 
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[35.0pt]{}}}}{{\leq}}|p_{j}|+L(t_{j},0,\sigma_{S_{j}})$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[35.0pt]{Lem \ref{lemma: Approx Schedule From Zero}}}}}{{\leq}}|p_{j}|+|\min\{0,y^{S_{j}}_{-}\}|+\max\{0,y^{S_{j}}_{+}\}+y.$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[35.0pt]{(\ref{equation: Positivity Of Y})}}}}{{=}}|p_{j}|+|\min\{0,y^{S_{j}}_{-}\}|+y^{S_{j}}_{+}+y.$ 
+
+ (20) 
+
+ For the sake of contradiction, we assume 
+
+ $y^{S_{j}}_{+}>|p_{j}|+|p_{j}-p_{j-1}|+y-|\min\{0,y^{S_{j}}_{-}\}|.$ 
+
+ (21) 
+
+ Since $S_{j}$ has to visit both extreme points $\max\{p_{j},y^{S_{j}}_{+}\}=y^{S_{j}}_{+}$ and $\min\{p_{j},y^{S_{j}}_{-}\}$ , we have two possible scenarios: $S_{j}$ either visits $\smash{\min\{p_{j},y^{S_{j}}_{-}\}}$ before $\smash{y^{S_{j}}_{+}}$ or $S_{j}$ visits $\smash{\min\{p_{j},y^{S_{j}}_{-}\}}$ after $\smash{y^{S_{j}}_{+}}$ . In both cases $S_{j}$ ends in $p_{j+1}$ . In the first case, we have 
+
+ $\displaystyle L(t_{j},p_{j},\sigma_{S_{j}})$ 
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[8.0pt]{}}}}{{\geq}}|p_{j}-\min\{p_{j},y^{S_{j}}_{-}\}|+|\min\{p_{j},y^{S_{j}}_{-}\}-y_{+}^{S_{j}}|+|y_{+}^{S_{j}}-p_{j+1}|$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[8.0pt]{}}}}{{=}}p_{j}-\min\{p_{j},y^{S_{j}}_{-}\}+y_{+}^{S_{j}}-\min\{p_{j},y^{S_{j}}_{-}\}+y_{+}^{S_{j}}-p_{j+1}$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[8.0pt]{}}}}{{=}}p_{j}-2\min\{p_{j},y^{S_{j}}_{-}\}+2y_{+}^{S_{j}}-p_{j+1}$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[8.0pt]{(\ref{equation: Contradiction For Schedule Length})}}}}{{>}}p_{j}-2\min\{p_{j},y^{S_{j}}_{-}\}+y_{+}^{S_{j}}+|p_{j}|+|p_{j}-p_{j+1}|$ 
+
+ $\displaystyle\qquad+y-|\min\{0,y^{S_{j}}_{-}\}|-p_{j+1}$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[8.0pt]{}}}}{{\geq}}y_{+}^{S_{j}}+|p_{j}|+y-|\min\{0,y^{S_{j}}_{-}\}|-2\min\{p_{j},y^{S_{j}}_{-}\}.$ 
+
+ (22) 
+
+ In the second case, we obtain the same result 
+
+ $\displaystyle L(t_{j},p_{j},\sigma_{S_{j}})$ 
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[8.0pt]{}}}}{{\geq}}|p_{j}-y_{+}^{S_{j}}|+|y_{+}^{S_{j}}-\min\{p_{j},y_{-}^{S_{j}}\}|+|\min\{p_{j},y_{-}^{S_{j}}\}-p_{j+1}|$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[8.0pt]{}}}}{{=}}y_{+}^{S_{j}}-p_{j}+y_{+}^{S_{j}}-\min\{p_{j},y_{-}^{S_{j}}\}+p_{j+1}-\min\{p_{j},y_{-}^{S_{j}}\}$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[8.0pt]{}}}}{{=}}p_{j+1}+2y_{+}^{S_{j}}-2\min\{p_{j},y_{-}^{S_{j}}\}-p_{j}$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[8.0pt]{(\ref{equation: Contradiction For Schedule Length})}}}}{{>}}p_{j+1}+y_{+}^{S_{j}}+|p_{j}|+|p_{j}-p_{j+1}|+y$ 
+
+ $\displaystyle\qquad-|\min\{0,y_{-}^{S_{j}}\}|-2\min\{p_{j},y_{-}^{S_{j}}\}-p_{j}$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[8.0pt]{}}}}{{\geq}}y_{+}^{S_{j}}+|p_{j}|+y-|\min\{0,y^{S_{j}}_{-}\}|-2\min\{p_{j},y^{S_{j}}_{-}\}.$ 
+
+ (23) 
+
+ Now we again consider two cases. 
+
+ Case 1: $\min\{p_{j},y^{S_{j}}_{-}\}\leq 0$ 
+
+ In this case, we claim that
+
+ $-\min\{p_{j},y^{S_{j}}_{-}\}\geq|\min\{0,y^{S_{j}}_{-}\}|$ 
+
+ (24) 
+
+ holds. This is clear for $\min\{0,y_{-}^{S_{j}}\}=0$ and for $\min\{p_{j},y_{-}^{S_{j}}\}=y_{-}^{S_{j}}$ . In the remaining case, we have $\min\{0,y_{-}^{S_{j}}\}=y_{-}^{S_{j}}$ and $\min\{p_{j},y_{-}^{S_{j}}\}=p_{j}$ , i.e., $p_{j}\leq y_{-}^{S_{j}}\leq 0$ , which implies $-p_{j}\geq-y_{-}^{S_{j}}=|y_{-}^{S_{j}}|$ as desired. This gives us
+
+ $\displaystyle L(t_{j},p_{j},\sigma_{S_{j}})$ 
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[35.0pt]{(\ref{equation: Schedule Length Approx Two Case One}),(\ref{equation: Schedule Length Approx Two Case Two})}}}}{{>}}y_{+}^{S_{j}}+|p_{j}|+y-|\min\{0,y^{S_{j}}_{-}\}|-2\min\{p_{j},y^{S_{j}}_{-}\}$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[35.0pt]{(\ref{equation: Absolute Value Of Minimum})}}}}{{\geq}}y_{+}^{S_{j}}+|p_{j}|+y+|\min\{0,y^{S_{j}}_{-}\}|,$ 
+
+ which is a contradiction to inequality ( 20 ).
+
+ Case 2: $\min\{p_{j},y^{S_{j}}_{-}\}>0$ 
+
+ The inequality $y^{S_{j}}_{+}\geq y^{S_{j}}_{-}>0$ implies
+
+ $\max\{0,y^{S_{j}}_{-}\}+\min\{0,y^{S_{j}}_{+}\}=y^{S_{j}}_{-}.$ 
+
+ (25) 
+
+ Therefore, we can apply Lemma   3.5 and the triangle inequality to obtain
+
+ $\displaystyle L(t_{j},p_{j},\sigma_{S_{j}})$ 
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[50.0pt]{}}}}{{\leq}}|p_{j}-y^{S_{j}}_{-}|+L(t_{j},y^{S_{j}}_{-},\sigma_{S_{j}})$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[50.0pt]{(\ref{equation: Sum Of Min And Max}), Lem \ref{lemma: Approx Schedule Only One Side}}}}}{{\leq}}|p_{j}-y^{S_{j}}_{-}|+y^{S_{j}}_{+}-y^{S_{j}}_{-}+y$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[50.0pt]{}}}}{{=}}\max\{p_{j},y^{S_{j}}_{-}\}-\min\{p_{j},y^{S_{j}}_{-}\}+y^{S_{j}}_{+}-y^{S_{j}}_{-}+y.$ 
+
+ (26) 
+
+ We have
+
+ $\max\{p_{j},y^{S_{j}}_{-}\}-\min\{p_{j},y^{S_{j}}_{-}\}-y^{S_{j}}_{-}=p_{j}-2\min\{p_{j},y^{S_{j}}_{-}\}.$ 
+
+ (27) 
+
+ This gives us
+
+ $\displaystyle L(t_{j},p_{j},\sigma_{S_{j}})$ 
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[15.0pt]{(\ref{equation: Schedule Length Third Approx})}}}}{{\leq}}\max\{p_{j},y^{S_{j}}_{-}\}-\min\{p_{j},y^{S_{j}}_{-}\}+y^{S_{j}}_{+}-y^{S_{j}}_{-}+y$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[15.0pt]{(\ref{equation: Auxiliary For Schedule Length})}}}}{{=}}p_{j}-2\min\{p_{j},y^{S_{j}}_{-}\}+y^{S_{j}}_{+}+y.$ 
+
+ (28) 
+
+ Finally, we have
+
+ $\displaystyle L(t_{j},p_{j},\sigma_{S_{j}})$ 
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[15.0pt]{(\ref{equation: Schedule Length Approx Two Case Two})}}}}{{>}}y_{+}^{S_{j}}+|p_{j}|+y-|\min\{0,y^{S_{j}}_{-}\}|-2\min\{p_{j},y^{S_{j}}_{-}\}$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[15.0pt]{}}}}{{=}}y_{+}^{S_{j}}+p_{j}+y-2\min\{p_{j},y^{S_{j}}_{-}\},$ 
+
+ which is a contradiction to inequality ( 28 ).
+We conclude that ( 21 ) does not hold, which in turn proves ( 18 ) in the case that $\max\{p_{j},y^{S_{j}}_{+}\}=y^{S_{j}}_{+}$ holds.
+∎
+Now we can give an upper bound for the competitive ratio of Smartstart if the server is not waiting before starting the final schedule.
+
+ Proposition 3.7 . 
+
+ If Smartstart does not wait before executing $S_{N}$ , we have
+
+ $\frac{\textsc{Smartstart}(\sigma)}{\textsc{Opt}(\sigma)}\leq f_{2}(\Theta):=\left(\Theta+1-\frac{\Theta-1}{3\Theta+3}\right).$ 
+
+ Proof.
+
+ Assume algorithm Smartstart does not have a waiting period before the last schedule, i.e., Smartstart starts the final schedule $S_{N}$ immediately after finishing $S_{N-1}$ . Without loss of generality, we assume $|x_{-}|\leq x_{+}$ throughout the entire proof by symmetry. 
+
+ First of all, we notice that we may assume that Smartstart executes at least two schedules in this case. Otherwise either the only schedule has length $0$ , which would imply $\textsc{Opt}(\sigma)=\textsc{Smartstart}(\sigma)=0$ , or the only schedule would have a positive length, implying a waiting period. Let $\sigma^{\textsc{Opt}}_{S_{N}}$ be the first request of $\sigma_{S_{N}}$ that is served by Opt and let $a^{\textsc{Opt}}_{N}$ be its starting point and $r^{\textsc{Opt}}_{N}$ be its release time. We have 
+
+ $\displaystyle\textsc{Smartstart}(\sigma)$ 
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[45.0pt]{(\ref{equation: Costs Smartstart})}}}}{{=}}t_{N}+L(t_{N},p_{N},\sigma_{S_{N}})$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[45.0pt]{(\ref{equation: Starting Time Wait})}}}}{{=}}t_{N-1}+L(t_{N-1},p_{N-1},\sigma_{S_{N-1}})+L(t_{N},p_{N},\sigma_{S_{N}})$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[45.0pt]{$t_{N}\geq r^{\textsc{Opt}}_{N}$}}}}{{\leq}}t_{N-1}+L(t_{N-1},p_{N-1},\sigma_{S_{N-1}})+L(r^{\textsc{Opt}}_{N},p_{N},\sigma_{S_{N}}).$ 
+
+ (29) 
+
+ Since Opt serves all requests of $\sigma_{S_{N}}$ after time $r^{\textsc{Opt}}_{N}$ , starting with a request with starting point $a^{\textsc{Opt}}_{N}$ , we also have 
+
+ $\textsc{Opt}(\sigma)\geq r^{\textsc{Opt}}_{N}+L(r^{\textsc{Opt}}_{N},a^{\textsc{Opt}}_{N},\sigma_{S_{N}}).$ 
+
+ (30) 
+
+ Furthermore, we have 
+
+ $r^{\textsc{Opt}}_{N}>t_{N-1}$ 
+
+ (31) 
+
+ since otherwise $\sigma^{\textsc{Opt}}_{S_{N}}\in\sigma_{S_{N-1}}$ would hold. This gives us 
+
+ $\displaystyle\textsc{Smartstart}(\sigma)$ 
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[15.0pt]{(\ref{equation: First Approx Upper Bound No Wait})}}}}{{\leq}}t_{N-1}+L(t_{N-1},p_{N-1},\sigma_{S_{N-1}})+L(r^{\textsc{Opt}}_{N},p_{N},\sigma_{S_{N}})$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[15.0pt]{(\ref{equation: Schedule Triangule Eq})}}}}{{\leq}}t_{N-1}+L(t_{N-1},p_{N-1},\sigma_{S_{N-1}})$ 
+
+ $\displaystyle\qquad+|a^{\textsc{Opt}}_{N}-p_{N}|+L(r^{\textsc{Opt}}_{N},a^{\textsc{Opt}}_{N},\sigma_{S_{N}})$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[15.0pt]{(\ref{equation: First Approx Opt No Wait})}}}}{{\leq}}t_{N-1}+L(t_{N-1},p_{N-1},\sigma_{S_{N-1}})$ 
+
+ $\displaystyle\qquad+|a^{\textsc{Opt}}_{N}-p_{N}|+\textsc{Opt}(\sigma)-r^{\textsc{Opt}}_{N}$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[15.0pt]{(\ref{equation: Time First Request Last Schedule Opt})}}}}{{ 
+
+ (32) 
+
+ We denote by $\sigma^{\textsc{Smart}}_{S_{N-1}}$ the last request that is delivered during schedule $S_{N-1}$ by Smartstart . Note that the destination of $\sigma^{\textsc{Smart}}_{S_{N-1}}$ is $p_{N}$ . We consider two cases. 
+
+ Case 1: Opt collects $\sigma^{\textsc{Opt}}_{S_{N}}$ before delivering $\sigma^{\textsc{Smart}}_{S_{N-1}}$ 
+
+ Obviously Opt cannot collect the request $\sigma^{\textsc{Opt}}_{S_{N}}$ before its release time $r^{\textsc{Opt}}_{N}$ . Furthermore, since Opt still has to go to position $p_{N}$ for delivering request $\sigma^{\textsc{Smart}}_{S_{N-1}}$ after collecting $\sigma^{\textsc{Opt}}_{S_{N}}$ , we have
+
+ $\textsc{Opt}(\sigma)\geq r^{\textsc{Opt}}_{N}+|a^{\textsc{Opt}}_{N}-p_{N}|\overset{(\ref{equation: Time First Request Last Schedule Opt})}{>}t_{N-1}+|a^{\textsc{Opt}}_{N}-p_{N}|.$ 
+
+ (33) 
+
+ The inequality above gives us
+
+ $\displaystyle\textsc{Smartstart}(\sigma)$ 
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[15.0pt]{(\ref{equation: Second Approx Upper Bound No Wait})}}}}{{ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[15.0pt]{(\ref{equation: Approx Opt No Wait Case One})}}}}{{ 
+
+ (34) 
+
+ By definition of Smartstart , we have
+
+ $t_{N-1}\geq\frac{1}{\Theta-1}L(t_{N-1},p_{N-1},\sigma_{S_{N-1}}).$ 
+
+ (35) 
+
+ This leads to
+
+ $\displaystyle\textsc{Smartstart}(\sigma)$ 
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[25.0pt]{(\ref{equation: Third Approx Upper Bound No Wait})}}}}{{ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[25.0pt]{(\ref{equation: Approx Time Second To Final Schedule})}}}}{{\leq}}L(t_{N-1},p_{N-1},\sigma_{S_{N-1}})+2\textsc{Opt}(\sigma)$ 
+
+ $\displaystyle\qquad-\frac{1}{\Theta-1}L(t_{N-1},p_{N-1},\sigma_{S_{N-1}})$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[25.0pt]{}}}}{{=}}\frac{\Theta-2}{\Theta-1}L(t_{N-1},p_{N-1},\sigma_{S_{N-1}})+2\textsc{Opt}(\sigma)$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[25.0pt]{Lem \ref{lemma: Costs per Schedule}}}}}{{\leq}}\frac{\Theta-2}{\Theta-1}\left(1+\frac{\Theta}{\Theta+2}\right)\textsc{Opt}(\sigma)+2\textsc{Opt}(\sigma)$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[25.0pt]{}}}}{{=}}\frac{4\Theta^{2}-8}{\Theta^{2}+\Theta-2}\textsc{Opt}(\sigma).$ 
+
+ It can be shown that
+
+ $\frac{4\Theta^{2}-8}{\Theta^{2}+\Theta-2} 
+
+ holds for all $\Theta>1$ , which concludes this case.
+
+ Case 2: Opt delivers $\sigma^{\textsc{Smart}}_{S_{N-1}}$ before collecting the request $\sigma^{\textsc{Opt}}_{S_{N}}$ 
+
+ In this case we notice that we have
+
+ $\displaystyle\textsc{Smartstart}(\sigma)$ 
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[50.0pt]{(\ref{equation: First Approx Upper Bound No Wait})}}}}{{\leq}}t_{N-1}+L(t_{N-1},p_{N-1},\sigma_{S_{N-1}})+L(r_{N}^{\textsc{Opt}},p_{N},\sigma_{S_{N}})$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[50.0pt]{(\ref{equation: Approx Time Second To Final Schedule})}}}}{{\leq}}\Theta t_{N-1}+L(r_{N}^{\textsc{Opt}},p_{N},\sigma_{S_{N}})$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[50.0pt]{(\ref{equation: Schedule Time})}}}}{{\leq}}\Theta t_{N-1}+|p_{N}-a_{N}^{\textsc{Opt}}|+L(r_{N}^{\textsc{Opt}},a_{N}^{\textsc{Opt}},\sigma_{S_{N}})$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[50.0pt]{(\ref{equation: First Approx Opt No Wait})}}}}{{\leq}}\Theta t_{N-1}+|p_{N}-a_{N}^{\textsc{Opt}}|+\textsc{Opt}(\sigma)-r_{N}^{\textsc{Opt}}$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[50.0pt]{(\ref{equation: Time First Request Last Schedule Opt})}}}}{{ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[50.0pt]{$r_{N}^{\textsc{Opt}}\leq\textsc{Opt}(\sigma)$}}}}{{\leq}}\Theta\textsc{Opt}(\sigma)+|p_{N}-a_{N}^{\textsc{Opt}}|.$ 
+
+ This means the claim is shown if, we have
+
+ $|p_{N}-a_{N}^{\textsc{Opt}}| 
+
+ Therefore, we may assume in the following that
+
+ $|p_{N}-a_{N}^{\textsc{Opt}}|\geq\textsc{Opt}(\sigma)-\frac{\Theta-1}{3\Theta+3}\textsc{Opt}(\sigma).$ 
+
+ (36) 
+
+ Let $\textsc{Opt}(\sigma)=|x_{-}|+x_{+}+y$ for some $y\geq 0$ . By definition of $x_{-}$ and $x_{+}$ we have
+
+ $|p_{N}-a_{N}^{\textsc{Opt}}|+y\leq\textsc{Opt}(\sigma).$ 
+
+ (37) 
+
+ Since by assumption Opt delivers $\sigma^{\textsc{Smart}}_{S_{N-1}}$ to position $p_{N}$ before collecting $\sigma^{\textsc{Opt}}_{S_{N}}$ at position $a^{\textsc{Opt}}_{N}$ , we have
+
+ $|p_{N}-a^{\textsc{Opt}}_{N}|+|p_{N}|\leq\textsc{Opt}(\sigma),$ 
+
+ (38) 
+
+ and since $\sigma^{\textsc{Smart}}_{S_{N-1}}$ appears after time $t_{N-2}$ , we also have
+
+ $|p_{N}-a^{\textsc{Opt}}_{N}|+t_{N-2} 
+
+ (39) 
+
+ To sum it up, we may assume that
+
+ $\max\{y,|p_{N}|,t_{N-2}\}\overset{(\ref{equation: Distance Of Starting Points Assumption}),(\ref{equation: Distance Of Starting Points Approx One}),(\ref{equation: Distance Of Starting Points Approx Two}),(\ref{equation: Distance Of Starting Points Approx Three})}{\leq}\frac{\Theta-1}{3\Theta+3}\textsc{Opt}(\sigma)$ 
+
+ (40) 
+
+ holds. In the following, denote by $y^{S_{N-1}}_{-}$ the leftmost starting or ending point and by $y^{S_{N-1}}_{+}$ the rightmost starting or ending point of the requests in $\sigma_{S_{N-1}}$ . We compute
+
+ $\displaystyle\textsc{Smartstart}(\sigma)$ 
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[22.0pt]{(\ref{equation: Second Approx Upper Bound No Wait})}}}}{{ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[22.0pt]{(\ref{equation: Distance Of Starting Points Approx Three})}}}}{{ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[22.0pt]{(\ref{equation: Schedule Time})}}}}{{\leq}}|p_{N-1}|+L(t_{N-1},0,\sigma_{S_{N-1}})+2\textsc{Opt}(\sigma)-t_{N-2}$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[22.0pt]{Lem \ref{lemma: Lower Bound Starting Time}}}}}{{\leq}}(\Theta-1)t_{N-2}+L(t_{N-1},0,\sigma_{S_{N-1}})+2\textsc{Opt}(\sigma)$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[22.0pt]{Lem \ref{lemma: Approx Schedule From Zero}}}}}{{\leq}}(\Theta-1)t_{N-2}+\max\{0,|y^{S_{N-1}}_{-}|\}+\max\{0,y^{S_{N-1}}_{+}\}$ 
+
+ $\displaystyle\qquad+y+2\textsc{Opt}(\sigma).$ 
+
+ (41) 
+
+ Obviously, position $y^{S_{N-1}}_{+}$ is visited by Smartstart in schedule $S_{N-1}$ . Therefore, $y^{S_{N-1}}_{+}$ is smaller than or equal to the rightmost point that is visited by Smartstart during schedule $S_{N-1}$ , which gives us
+
+ $y^{S_{N-1}}_{+}\overset{\text{Lem }\ref{lemma: Rightmost Position}}{\leq}|p_{N-1}|+|p_{N-1}-p_{N}|+y-\max\{0,|y^{S_{N-1}}_{-}|\}.$ 
+
+ (42) 
+
+ On the other hand, because of $|x_{-}|\leq x_{+}$ , we have $\textsc{Opt}(\sigma)\geq 2|x_{-}|+x_{+}$ , which implies $y\geq|x_{-}|$ . By definition of $x_{-}$ and $y^{S_{N-1}}_{-}$ , we have $|x_{-}|\geq\max\{0,|y^{S_{N-1}}_{-}|\}$ . This gives us $y\geq\max\{0,|y^{S_{N-1}}_{-}|\}$ and
+
+ $0\leq|p_{N-1}|+|p_{N-1}-p_{N}|+y-\max\{0,|y^{S_{N-1}}_{-}|\}.$ 
+
+ (43) 
+
+ To sum it up, we have
+
+ $\max\{0,y^{S_{N-1}}_{+}\}\overset{(\ref{equation: Upper Bound Rightmost Point}),(\ref{equation: Approx Distance Starting Points Last Schedules})}{\leq}|p_{N-1}|+|p_{N-1}-p_{N}|+y-\max\{0,|y^{S_{N-1}}_{-}|\}.$ 
+
+ (44) 
+
+ The inequality above gives us
+
+ $\displaystyle\textsc{Smartstart}(\sigma)$ 
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[24.0pt]{(\ref{equation: Fourth Approx Upper Bound No Wait})}}}}{{ 
+
+ $\displaystyle\qquad+y+2\textsc{Opt}(\sigma)$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[24.0pt]{(\ref{equation: Upper Bound Rightmost Point Or Zero})}}}}{{\leq}}(\Theta-1)t_{N-2}+|p_{N-1}|+|p_{N-1}-p_{N}|+2y+2\textsc{Opt}(\sigma)$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[24.0pt]{}}}}{{\leq}}(\Theta-1)t_{N-2}+|p_{N-1}|+|p_{N-1}|+|p_{N}|+2y+2\textsc{Opt}(\sigma)$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[24.0pt]{Lem \ref{lemma: Lower Bound Starting Time}}}}}{{\leq}}(\Theta-1)t_{N-2}+2\Theta t_{N-2}+|p_{N}|+2y+2\textsc{Opt}(\sigma)$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[24.0pt]{(\ref{equation: Central Approx Upper Bound No Wait})}}}}{{\leq}}(3\Theta+2)\frac{\Theta-1}{3\Theta+3}\textsc{Opt}(\sigma)+2\textsc{Opt}(\sigma)$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[24.0pt]{}}}}{{=}}\left(\Theta+1-\frac{\Theta-1}{3\Theta+3}\right)\textsc{Opt}(\sigma).\qed$ 
+
+ We combine the results of Proposition   3.3 and Proposition   3.7 to obtain the main result of this section.
+
+ Theorem 3.8 . 
+
+ Let $\Theta^{*}$ be the only positive, real solution of $f_{1}(\Theta)=f_{2}(\Theta)$ , i.e.,
+
+ $\Theta^{*}+1-\frac{\Theta^{*}-1}{3\Theta^{*}+3}=\frac{2\Theta^{*2}+2\Theta^{*}}{\Theta^{*2}+\Theta^{*}-2}.$ 
+
+ Then, $\textsc{Smartstart}_{\Theta^{*}}$ is $\rho^{*}$ -competitive with $\rho^{*}:=f_{1}(\Theta^{*})=f_{2}(\Theta^{*})\approx 2.93768$ .
+
+ Proof.
+
+ For the case, where Smartstart does wait before starting the final schedule, we have established the upper bound 
+
+ $\frac{\textsc{Smartstart}(\sigma)}{\textsc{Opt}(\sigma)}\leq\frac{2\Theta^{2}+2\Theta}{\Theta^{2}+\Theta-2}=f_{1}(\Theta)$ 
+
+ in Proposition   3.3 and for the case, where Smartstart starts the final schedule immediately after the second to final one, we have established the upper bound 
+
+ $\frac{\textsc{Smartstart}(\sigma)}{\textsc{Opt}(\sigma)}\leq\Theta+1-\frac{\Theta-1}{3\Theta+3}=f_{2}(\Theta)$ 
+
+ in Proposition   3.7 . Therefore the parameter for Smartstart with the smallest upper bound is 
+
+ $\Theta^{*}=\argmin_{\Theta>1}\left\{\max\{f_{1}(\Theta),f_{2}(\Theta)\}\right\}.$ 
+
+ We note that $f_{1}$ is strictly decreasing for $\Theta>1$ and that $f_{2}$ is strictly increasing for $\Theta>1$ . Therefore the minimum above lies at the intersection point of $f_{1}$ and $f_{2}$ that is larger than $1$ , i.e., $\Theta^{*}$ is the only positive, real solution of 
+
+ $\Theta+1-\frac{\Theta-1}{3\Theta+3}=\frac{2\Theta^{2}+2\Theta}{\Theta^{2}+\Theta-2}.$ 
+
+ The resulting upper bound for the competitive ratio is 
+
+ $\rho^{*}=f_{1}(\Theta^{*})=f_{2}(\Theta^{*})\approx 2.93768.\qed$ 
+
+ 4 Lower Bound for the Open Version
+
+ In this section, we explicitly construct instances that demonstrate that the upper bounds given in the previous section are tight for certain ranges of $\Theta>1$ , in particular for $\Theta=\Theta^{*}$ (as in Theorem   3.8 ).
+Further, we show that choices of $\Theta>1$ different from $\Theta^{*}$ yield competitive ratios worse than $\rho^{*}\approx 2.94$ .
+Together, this implies that $\rho^{*}$ is exactly the best possible competitive ratio for Smartstart .
+
+ All our lower bounds rely on the following lemma that gives a way to lure Smartstart away from the origin, with almost no time overhead.
+More specifically, the lemma provides a way to make Smartstart move to any position $p>0$ within time $p+\mu$ , where $\mu>0$ is arbitrarily small.
+
+ Lemma 4.1 . 
+
+ Let the capacity $c\in\mathbb{N}\cup\{\infty\}$ of the server be arbitrary but fixed, $p>0$ be any position on the real line and $\mu>0$ be any positive number. Furthermore, let $\delta>0$ be such that $\frac{p}{\delta\Theta}=n\in\mathbb{N}$ and $\delta Smartstart finishes serving the set of requests $\sigma=\{\sigma_{1},\dots,\sigma_{n+1}\}$ with
+
+ $\displaystyle\sigma_{1}$ 
+ $\displaystyle=(\delta,\delta;0),$ 
+
+ $\displaystyle\sigma_{i}$ 
+ $\displaystyle=\left(i\delta,i\delta;\frac{1}{\Theta-1}\delta+(i-1)\delta\right)\text{ for }i\in\{2,\dots,n\}$ 
+
+ $\displaystyle\sigma_{n+1}$ 
+ $\displaystyle=\left(p,p;\mu+n\delta\right)$ 
+
+ and reaches the position $p$ at time $p+\mu$ , provided that no additional requests appear until time $\frac{p}{\Theta}+\mu$ .
+
+ Proof.
+
+ We show via induction that every request $\sigma_{i}$ with $i\in\{1,\dots,n\}$ is served in a separate schedule $S_{i}$ with starting position $p_{i}=(i-1)\delta$ and starting time 
+
+ $t_{i}=\frac{1}{\Theta-1}\delta+(i-1)\delta.$ 
+
+ This is clear for $i=1$ : By definition, Smartstart starts from $p_{1}=0$ . The schedule $S_{1}$ to serve $\sigma_{1}$ is started at time 
+
+ $t_{1}=\min\left\{t\geq 0\;\middle|\;\frac{L(t,0,\{\sigma_{1}\})}{\Theta-1}\leq t\right\}=\frac{1}{\Theta-1}\delta,$ 
+
+ and reaches position $\delta$ at time $\frac{1}{\Theta-1}\delta+\delta=\frac{\Theta}{\Theta-1}\delta$ .
+Note that the release time of every request $\sigma_{i}$ is larger than $t_{1}$ , ensuring that $S_{1}$ indeed only serves $\sigma_{1}$ . 
+
+ We assume the claim is true for some $k\in\{1,\dots,n-1\}$ . Consider $i=k+1$ . By reduction, the server finishes schedule $S_{k}$ at position $p_{k+1}=k\delta$ at time $\frac{1}{\Theta-1}\delta+k\delta$ . Therefore, we have 
+
+ $t_{k+1}\geq\frac{1}{\Theta-1}\delta+k\delta.$ 
+
+ On the other hand, we have 
+
+ $\frac{L\left(\frac{\delta}{\Theta-1}+k\delta,k\delta,\{\sigma_{k+1}\}\right)}{\Theta-1}=\frac{\delta}{\Theta-1} 
+
+ Since there are no other unserved requests at time $\frac{1}{\Theta-1}\delta+k\delta$ , the schedule $S_{k+1}$ is started at time $t_{k+1}=\frac{1}{\Theta-1}\delta+k\delta$ and only serves $\sigma_{k+1}$ as claimed.
+It remains to examine the final request $\sigma_{n+1}$ . The above shows that in the schedule $S_{n}$ is finished at time 
+
+ $t_{n}+L(t_{n},p_{n},\{\sigma_{n}\})=\frac{1}{\Theta-1}\delta+(n-1)\delta+\delta=\frac{1}{\Theta-1}\delta+n\delta 
+
+ at position $n\delta=\frac{p}{\Theta}$ , i.e., before the request $\sigma_{n+1}$ is released at time $\mu+n\delta$ . On the other hand, we have 
+
+ $\frac{L\left(\mu+n\delta,\frac{p}{\Theta},\{\sigma_{n+1}\}\right)}{\Theta-1}=\frac{\frac{\Theta-1}{\Theta}p}{\Theta-1}=\frac{p}{\Theta}=n\delta 
+
+ Therefore the final schedule $S_{n+1}$ is started at time $t_{n+1}=\mu+n\delta=\mu+\frac{p}{\Theta}$ , and we get 
+
+ $\displaystyle\textsc{Smartstart}((\sigma_{i})_{i\in\{1,\dots,n+1\}})$ 
+ $\displaystyle=t_{n+1}+L(t_{n+1},p_{n+1},\{\sigma_{n+1}\})$ 
+
+ $\displaystyle=\mu+\frac{p}{\Theta}+\frac{\Theta-1}{\Theta}p$ 
+
+ $\displaystyle=\mu+p.$ 
+
+ Note that for every request the starting point is identical to the ending point.
+Thus, our construction remains valid for every capacity $c\in\mathbb{N}\cup\{\infty\}$ .
+Furthermore, there is no interference with requests that are released after time $t_{n+1}=\mu+\frac{p}{\Theta}$ .
+∎ 
+
+ Equipped with this strategy to lure Smartstart away from the origin, we now move on to establish lower bounds matching Propositions 3.3 and 3.7 .
+
+ Proposition 4.2 . 
+
+ Let the capacity $c\in\mathbb{N}\cup\{\infty\}$ of the server be arbitrary but fixed and let $2 0$ , there is a set of requests $\sigma$ such that Smartstart waits before starting the final schedule and such that the inequality
+
+ $\frac{\textsc{Smartstart}(\sigma)}{\textsc{Opt}(\sigma)}\geq\frac{2\Theta^{2}+2\Theta}{\Theta^{2}+\Theta-2}-\varepsilon$ 
+
+ holds, i.e., the upper bound established in Proposition   3.3 is tight for $\Theta\in(2,3)$ .
+
+ Proof.
+
+ Let $\varepsilon>0$ with $\smash{\varepsilon Lemma   4.1 with $p=1$ and $\mu=\frac{\varepsilon^{\prime}}{2}$ . For convenience, we start the enumeration of schedules with the first schedule after the application of Lemma   4.1 . Smartstart reaches position $p_{1}=1$ at time $1+\frac{\varepsilon^{\prime}}{2}$ . Now let the requests 
+
+ $\displaystyle\sigma_{1}^{(1)}$ 
+ $\displaystyle=\left(-\frac{1}{\Theta}+\varepsilon^{\prime},0;\frac{1}{\Theta}+\varepsilon^{\prime}\right),$ 
+
+ $\displaystyle\sigma_{1}^{(2)}$ 
+ $\displaystyle=\left(\frac{1}{\Theta},1;\frac{1}{\Theta}+\varepsilon^{\prime}\right)$ 
+
+ appear. Note that both requests appear after time $\frac{1}{\Theta}+\frac{\varepsilon^{\prime}}{2}$ and therefore do not interfere with the application of Lemma   4.1 . If Smartstart delivers $\smash{\sigma_{1}^{(2)}}$ before collecting $\smash{\sigma_{1}^{(1)}}$ the time it needs is at least 
+
+ $\displaystyle\phantom{=}\;\left|1-\frac{1}{\Theta}\right|+\left|\frac{1}{\Theta}-1\right|+\left|1-\left(-\frac{1}{\Theta}+\varepsilon^{\prime}\right)\right|+\left|\left(-\frac{1}{\Theta}+\varepsilon^{\prime}\right)-0\right|$ 
+
+ $\displaystyle=\frac{2\Theta-2}{\Theta}+\frac{\Theta+2}{\Theta}-2\varepsilon^{\prime}$ 
+
+ $\displaystyle=3-2\varepsilon^{\prime}.$ 
+
+ The best schedule that delivers $\smash{\sigma_{1}^{(2)}}$ after collecting $\smash{\sigma_{1}^{(1)}}$ delivers $\smash{\sigma_{1}^{(1)}}$ before visiting the starting point $-\frac{1}{\Theta}+\varepsilon^{\prime}$ of $\smash{\sigma_{1}^{(2)}}$ and needs time 
+
+ $\displaystyle\phantom{=}\;\left|1-\left(-\frac{1}{\Theta}+\varepsilon^{\prime}\right)\right|+\left|\left(-\frac{1}{\Theta}+\varepsilon^{\prime}\right)-0\right|+\left|0-\frac{1}{\Theta}\right|+\left|\frac{1}{\Theta}-1\right|$ 
+
+ $\displaystyle=1+\frac{1}{\Theta}-\varepsilon^{\prime}+\frac{1}{\Theta}-\varepsilon^{\prime}+1$ 
+
+ $\displaystyle=2+\frac{2}{\Theta}-2\varepsilon^{\prime}.$ 
+
+ By assumption, we have $\Theta>2$ , which implies $2+\frac{2}{\Theta}-2\varepsilon^{\prime} Smartstart delivers $\sigma_{1}^{(2)}$ after collecting $\sigma_{1}^{(1)}$ and, for all $t\geq 1+\frac{\varepsilon^{\prime}}{2}$ , we have 
+
+ $L(t,p_{1},\{\sigma_{1}^{(1)},\sigma_{1}^{(2)}\})=L(t,1,\{\sigma_{1}^{(1)},\sigma_{1}^{(2)}\})=2+\frac{2}{\Theta}-2\varepsilon^{\prime}.$ 
+
+ Again, by assumption, we have $\Theta Smartstart reaches position $p_{1}=1$ , the inequality 
+
+ $\frac{L(1+\frac{\varepsilon^{\prime}}{2},p_{1},\{\sigma_{1}^{(1)},\sigma_{1}^{(2)}\})}{\Theta-1}=\frac{2+\frac{2}{\Theta}-2\varepsilon^{\prime}}{\Theta-1}\overset{\Theta }1+\frac{1}{3}-\varepsilon^{\prime}\overset{\varepsilon^{\prime} }1+\frac{\varepsilon^{\prime}}{2}$ 
+
+ (45) 
+
+ holds. (Note that inequality ( 45 ) also holds for slightly larger $\Theta$ if we let $\varepsilon\rightarrow 0$ .) Because of inequality ( 45 ), Smartstart has a waiting period and starts the schedule $S_{1}$ at time 
+
+ $\displaystyle t_{1}$ 
+ $\displaystyle=\min\left\{t\geq 1+\frac{\varepsilon^{\prime}}{2}\;\middle|\;\frac{L(t,p_{1},\{\sigma_{1}^{(1)},\sigma_{1}^{(2)}\})}{\Theta-1}\leq t\right\}$ 
+
+ $\displaystyle=\min\left\{t\geq 1+\frac{\varepsilon^{\prime}}{2}\;\middle|\;\frac{2+\frac{2}{\Theta}-2\varepsilon^{\prime}}{\Theta-1}\leq t\right\}$ 
+
+ $\displaystyle=\frac{2+\frac{2}{\Theta}-2\varepsilon^{\prime}}{\Theta-1}$ 
+
+ $\displaystyle=\frac{2\Theta+2-2\varepsilon^{\prime}\Theta}{\Theta(\Theta-1)}.$ 
+
+ To sum it up, we have 
+
+ $\displaystyle\textsc{Smartstart}(\sigma)$ 
+ $\displaystyle=t_{1}+L(t_{1},p_{1},\{\sigma_{1}^{(1)},\sigma_{1}^{(2)}\})$ 
+
+ $\displaystyle=\frac{2\Theta+2-2\varepsilon^{\prime}\Theta}{\Theta(\Theta-1)}+2+\frac{2}{\Theta}-2\varepsilon^{\prime}$ 
+
+ $\displaystyle=\frac{2\Theta+2-2\varepsilon^{\prime}\Theta}{\Theta-1}.$ 
+
+ On the other hand, Opt goes from the origin to $-\frac{1}{\Theta}+\varepsilon^{\prime}$ to collect $\sigma_{1}^{(1)}$ at time $\frac{1}{\Theta}+\varepsilon^{\prime}$ (i.e., it has to wait for $2\varepsilon^{\prime}$ units of time after it reaches position $-\frac{1}{\Theta}+\varepsilon^{\prime}$ ) and delivers $\sigma_{1}^{(1)}$ to the origin at time $\frac{2}{\Theta}$ . Let $q>0$ be the position of a request arising from the application of Lemma   4.1 at the beginning of this proof. Then this requests is released earlier than time $q+\frac{\varepsilon^{\prime}}{2}$ . On the other hand, Opt reaches position $q$ not earlier than time $\frac{2}{\Theta}+q$ . Since we have $\Theta q+\frac{\varepsilon^{\prime}}{2}}$ and Opt can go straight from the origin to position $1$ , collecting an delivering all requests that occur by the application of Lemma   4.1 as well as $\smash{\sigma_{1}^{(2)}}$ on the way. Therefore, we have 
+
+ $\textsc{Opt}(\sigma)=\left|0-\left(-\frac{1}{\Theta}+\varepsilon^{\prime}\right)\right|+2\varepsilon^{\prime}+\left|\left(-\frac{1}{\Theta}+\varepsilon^{\prime}\right)-1\right|=\frac{1}{\Theta}+\frac{\Theta+1}{\Theta}=\frac{\Theta+2}{\Theta}.$ 
+
+ Note, that Opt can do this even if the capacity is $c=1$ , since no additional requests need to be carried over $[0,\frac{1}{\Theta}]\cup\{1\}$ , where the requests of the application of Lemma   4.1 appear, and because the carrying paths of $\smash{\sigma_{1}^{(1)}}$ and $\smash{\sigma_{1}^{(2)}}$ are disjoint. Since we have $\smash{\varepsilon^{\prime}=\frac{\Theta^{2}+\Theta-2}{2\Theta^{2}}\varepsilon}$ , we obtain 
+
+ $\frac{\textsc{Smartstart}(\sigma)}{\textsc{Opt}(\sigma)}=\frac{2\Theta^{2}+2\Theta-2\varepsilon^{\prime}\Theta^{2}}{\Theta^{2}+\Theta-2}=\frac{2\Theta^{2}+2\Theta}{\Theta^{2}+\Theta-2}-\varepsilon,$ 
+
+ as claimed.
+∎ 
+
+ Proposition 4.3 . 
+
+ Let the capacity $c\in\mathbb{N}\cup\{\infty\}$ of the server be arbitrary but fixed and let $2\leq\Theta\leq\frac{1}{2}(1+\sqrt{13})$ . For every sufficiently small $\varepsilon>0$ there is a set of requests $\sigma$ such that Smartstart immediately starts $S_{N}$ after $S_{N-1}$ and such that
+
+ $\frac{\textsc{Smartstart}(\sigma)}{\textsc{Opt}(\sigma)}\geq\Theta+1-\frac{\Theta-1}{3\Theta+3}-\varepsilon,$ 
+
+ i.e., the upper bound established in Proposition   3.7 is tight for $\Theta\in[2,\frac{1}{2}(1+\sqrt{13})]\approx[2,2.303]$ .
+
+ Proof.
+
+ Let $\varepsilon>0$ with $\smash{\varepsilon Lemma   4.1 with $p=1$ and $\mu=\frac{\varepsilon^{\prime}}{2}$ . For convenience, we start the enumeration of the schedules with the first schedule after the application of Lemma   4.1 . Algorithm Smartstart reaches position $p_{1}=1$ at time $1+\frac{\varepsilon^{\prime}}{2}$ . Now let the requests 
+
+ $\displaystyle\sigma_{1}^{(1)}$ 
+ $\displaystyle=\left(2+\frac{1}{\Theta}-\varepsilon^{\prime},2+\frac{1}{\Theta}-\varepsilon^{\prime};\frac{1}{\Theta}+\varepsilon^{\prime}\right),$ 
+
+ $\displaystyle\sigma_{1}^{(2)}$ 
+ $\displaystyle=\left(-\frac{1}{\Theta},-\frac{1}{\Theta};\frac{1}{\Theta}+\varepsilon^{\prime}\right)$ 
+
+ appear.
+Note that both requests are released after time $\frac{1}{\Theta}+\frac{\varepsilon^{\prime}}{2}$ and, therefore, do not interfere with the application of Lemma   4.1 .
+If Smartstart serves $\sigma_{1}^{(2)}$ before serving $\sigma_{1}^{(1)}$ the time it needs is at least 
+
+ $\left|1-\left(-\frac{1}{\Theta}\right)\right|+\left|\left(-\frac{1}{\Theta}\right)-\left(2+\frac{1}{\Theta}-\varepsilon^{\prime}\right)\right|=1+\frac{1}{\Theta}+2+\frac{2}{\Theta}-\varepsilon^{\prime}=3+\frac{3}{\Theta}-\varepsilon^{\prime}.$ 
+
+ The best schedule that serves $\sigma_{1}^{(2)}$ after serving $\sigma_{1}^{(1)}$ needs time 
+
+ $\displaystyle\left|1-\left(2+\frac{1}{\Theta}-\varepsilon^{\prime}\right)\right|+\left|\left(2+\frac{1}{\Theta}-\varepsilon^{\prime}\right)-\left(-\frac{1}{\Theta}\right)\right|$ 
+ $\displaystyle=1+\frac{1}{\Theta}-\varepsilon^{\prime}+2+\frac{2}{\Theta}-\varepsilon^{\prime}$ 
+
+ $\displaystyle=3+\frac{3}{\Theta}-2\varepsilon^{\prime}.$ 
+
+ Thus, Smartstart serves $\sigma_{1}^{(2)}$ after serving $\sigma_{1}^{(1)}$ , and, for all $t\geq 1+\frac{\varepsilon^{\prime}}{2}$ , we obtain 
+
+ $L\left(t,p_{1},\{\sigma_{1}^{(1)},\sigma_{1}^{(2)}\}\right)=L\left(t,1,\{\sigma_{1}^{(1)},\sigma_{1}^{(2)}\}\right)=3+\frac{3}{\Theta}-2\varepsilon^{\prime}.$ 
+
+ By assumption, we have $\Theta\leq\frac{1}{2}(1+\sqrt{13})$ and $\varepsilon Smartstart reaches position $p_{1}=1$ , the inequality 
+
+ $\displaystyle\frac{L\left(1+\frac{\varepsilon^{\prime}}{2},p_{1},\{\sigma_{1}^{(1)},\sigma_{1}^{(2)}\}\right)}{\Theta-1}$ 
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[64.0pt]{}}}}{{=}}\frac{3+\frac{3}{\Theta}-2\varepsilon^{\prime}}{\Theta-1}$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[64.0pt]{}}}}{{=}}\frac{3-2\varepsilon^{\prime}}{\Theta-1}+\frac{3}{\Theta(\Theta-1)}$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[64.0pt]{$1 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[64.0pt]{}}}}{{=}}\frac{3-2\varepsilon^{\prime}}{\frac{1}{2}(\sqrt{13}-1)}+1$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[64.0pt]{$\frac{1}{2}(\sqrt{13}-1) }}1+\frac{\varepsilon^{\prime}}{2}$ 
+
+ holds.
+Thus, Smartstart has a waiting period and starts schedule $S_{1}$ at time 
+
+ $\displaystyle t_{1}$ 
+ $\displaystyle=\min\left\{t\geq 1+\frac{\varepsilon^{\prime}}{2}\;\middle|\;\frac{L(t,p_{1},\{\sigma_{1}^{(1)},\sigma_{1}^{(2)}\})}{\Theta-1}\leq t\right\}$ 
+
+ $\displaystyle=\min\left\{t\geq 1+\frac{\varepsilon^{\prime}}{2}\;\middle|\;\frac{3+\frac{3}{\Theta}-2\varepsilon^{\prime}}{\Theta-1}\leq t\right\}$ 
+
+ $\displaystyle=\frac{3+\frac{3}{\Theta}-2\varepsilon^{\prime}}{\Theta-1}$ 
+
+ $\displaystyle=\frac{3\Theta+3}{\Theta(\Theta-1)}-\frac{2\varepsilon^{\prime}}{\Theta-1}.$ 
+
+ Next, we let the final request 
+
+ $\sigma_{2}=\left(\frac{3\Theta+3}{\Theta(\Theta-1)}-\frac{2}{\Theta}-\varepsilon^{\prime},\frac{3\Theta+3}{\Theta(\Theta-1)}-\frac{2}{\Theta}-\varepsilon^{\prime};\frac{3\Theta+3}{\Theta(\Theta-1)}\right)$ 
+
+ appear. Smartstart finishes schedule $S_{1}$ at time 
+
+ $t_{1}+L(t_{1},p_{1},\{\sigma_{1}^{(1)},\sigma_{1}^{(2)}\})=\frac{3\Theta+3}{\Theta(\Theta-1)}-\frac{2\varepsilon^{\prime}}{\Theta-1}+3+\frac{3}{\Theta}-2\varepsilon^{\prime}=\frac{3\Theta+3}{\Theta-1}-\frac{2\Theta\varepsilon^{\prime}}{\Theta-1}$ 
+
+ at position $p_{2}=-\frac{1}{\Theta}$ . For all $t\geq\frac{3\Theta+3}{\Theta-1}-\frac{2\Theta}{\Theta-1}\varepsilon^{\prime}$ , we obtain 
+
+ $L\left(t,-\frac{1}{\Theta},\{\sigma_{2}\}\right)=\frac{3\Theta+3}{\Theta(\Theta-1)}-\frac{1}{\Theta}-\varepsilon^{\prime}.$ 
+
+ By assumption, we have $2\leq\Theta\leq\frac{1}{2}(1+\sqrt{13}) 
+
+ $\displaystyle\frac{L\left(\frac{3\Theta+3}{\Theta-1}-\frac{2\Theta\varepsilon^{\prime}}{\Theta-1},-\frac{1}{\Theta},\{\sigma_{2}\}\right)}{\Theta-1}$ 
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[40.0pt]{}}}}{{=}}\frac{3\Theta+3}{\Theta(\Theta-1)^{2}}-\frac{1+\Theta\varepsilon^{\prime}}{\Theta(\Theta-1)}$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[40.0pt]{$\Theta\geq 2$}}}}{{ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[40.0pt]{$1>5\Theta\varepsilon^{\prime}$}}}}{{ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[40.0pt]{$\Theta 
+
+ (46) 
+
+ holds.
+(Note that inequality ( 46 ) still holds for slightly smaller $\Theta$ if we let $\varepsilon\rightarrow 0$ .)
+Because of inequality ( 46 ), the final schedule $S_{2}$ is started at time 
+
+ $t_{2}=\frac{3\Theta+3}{\Theta-1}-\frac{2\Theta\varepsilon^{\prime}}{\Theta-1}$ 
+
+ without waiting. To sum it up, we have 
+
+ $\displaystyle\textsc{Smartstart}(\sigma)$ 
+ $\displaystyle=t_{2}+L(t_{2},p_{2},\{\sigma_{2}\})$ 
+
+ $\displaystyle=\frac{3\Theta+3}{\Theta-1}-\frac{2\Theta\varepsilon^{\prime}}{\Theta-1}+\frac{3\Theta+3}{\Theta(\Theta-1)}-\frac{1}{\Theta}-\varepsilon^{\prime}$ 
+
+ $\displaystyle=\frac{3\Theta+3}{\Theta-1}+\frac{3\Theta+3}{\Theta(\Theta-1)}-\frac{1}{\Theta}-\frac{3\Theta-1}{\Theta-1}\varepsilon^{\prime}.$ 
+
+ On the other hand, Opt goes from the origin straight to position $-\frac{1}{\Theta}$ serving request $\sigma_{1}^{(2)}$ at time $\frac{1}{\Theta}+\varepsilon^{\prime}$ (i.e., it has to wait for $\varepsilon^{\prime}$ units of time after it reaches position $-\frac{1}{\Theta}$ ) and returns to the origin at time $\frac{2}{\Theta}+\varepsilon^{\prime}$ .
+Let $q>0$ be the position of a request that has occurred by the application of Lemma   4.1 at the beginning of this proof.
+Then this request is released earlier than time $q+\frac{\varepsilon^{\prime}}{2}$ . Since Opt reaches position $q$ not earlier than time $\frac{2}{\Theta}+\varepsilon^{\prime}+q>q+\frac{\varepsilon^{\prime}}{2}$ , Opt can go straight from the origin to the right and can serve all remaining requests without waiting.
+Note that the position $\smash{\frac{3\Theta+3}{\Theta(\Theta-1)}-\frac{2}{\Theta}-\varepsilon^{\prime}}$ of $\sigma_{2}$ is equal to or to right of the position $\smash{2+\frac{1}{\Theta}-\varepsilon^{\prime}}$ of $\smash{\sigma_{1}^{(2)}}$ because of $\Theta\leq\frac{1}{2}(1+\sqrt{13})$ .
+Thus, Opt finishes at position $\frac{3\Theta+3}{\Theta(\Theta-1)}-\frac{2}{\Theta}-\varepsilon^{\prime}$ and we have 
+
+ $\displaystyle\textsc{Opt}(\sigma)$ 
+ $\displaystyle=\left|0-\left(-\frac{1}{\Theta}\right)\right|+\varepsilon^{\prime}+\left|-\frac{1}{\Theta}-\left(\frac{3\Theta+3}{\Theta(\Theta-1)}-\frac{2}{\Theta}-\varepsilon^{\prime}\right)\right|$ 
+
+ $\displaystyle=\frac{1}{\Theta}+\varepsilon^{\prime}+\frac{1}{\Theta}+\frac{3\Theta+3}{\Theta(\Theta-1)}-\frac{2}{\Theta}-\varepsilon^{\prime}$ 
+
+ $\displaystyle=\frac{3\Theta+3}{\Theta(\Theta-1)}.$ 
+
+ Note that Opt can do this even if $c=1$ since for all requests the starting point is equal to the destination.
+Since we have $\varepsilon^{\prime}=\frac{3\Theta+3}{3\Theta^{2}-\Theta}\varepsilon$ , we finally obtain 
+
+ $\displaystyle\frac{\textsc{Smartstart}(\sigma)}{\textsc{Opt}(\sigma)}$ 
+ $\displaystyle=\frac{\frac{3\Theta+3}{\Theta-1}+\frac{3\Theta+3}{\Theta(\Theta-1)}-\frac{1}{\Theta}-\frac{3\Theta-1}{\Theta-1}\varepsilon^{\prime}}{\frac{3\Theta+3}{\Theta(\Theta-1)}}$ 
+
+ $\displaystyle=\Theta+1-\frac{\Theta-1}{3\Theta+3}-\frac{3\Theta^{2}-\Theta}{3\Theta+3}\varepsilon^{\prime}$ 
+
+ $\displaystyle=\Theta+1-\frac{\Theta-1}{3\Theta+3}-\varepsilon,$ 
+
+ as claimed.
+∎ 
+
+ Recall that the optimal parameter $\Theta^{*}$ established in Theorem   3.8 is the only positive, real solution of the equation
+
+ $\Theta+1-\frac{\Theta-1}{3\Theta+3}=\frac{2\Theta^{2}+2\Theta}{\Theta^{2}+\Theta-2},$ 
+
+ which is $\Theta^{*}\approx 2.0526$ . Therefore, according to Proposition   4.2 and Proposition   4.3 the parameter $\Theta^{*}$ lies in the ranges where the upper bounds of Propositions 3.3 and 3.7 are both tight. It remains to make sure that for all $\Theta$ that lie outside of this range the competitive ratio of $\textsc{Smartstart}_{\Theta}$ is larger than $\rho^{*}\approx 2.93768$ .
+
+ Lemma 4.4 . 
+
+ Let the capacity $c\in\mathbb{N}\cup\{\infty\}$ of the server be arbitrary but fixed and let $1 
+
+ $\frac{\textsc{Smartstart}(\sigma)}{\textsc{Opt}(\sigma)}>\rho^{*}\approx 2.93768.$ 
+
+ Proof.
+
+ Let $\varepsilon>0$ with $\varepsilon Lemma   4.1 with $p=1$ and $\mu=\varepsilon$ . For convenience, we start the enumeration of the schedules with the first schedule after the application of Lemma   4.1 . Smartstart reaches position $p_{1}=1$ at time $1+\varepsilon$ . Now let the requests 
+
+ $\displaystyle\sigma_{1}^{(1)}$ 
+ $\displaystyle=\left(\frac{1}{\Theta},1+\frac{\varepsilon}{2};\frac{1}{\Theta}+2\varepsilon\right),$ 
+
+ $\displaystyle\sigma_{1}^{(2)}$ 
+ $\displaystyle=\left(-\frac{1}{\Theta},-\varepsilon;\frac{1}{\Theta}+2\varepsilon\right)$ 
+
+ appear. Note that both requests appear after time $\frac{1}{\Theta}+\varepsilon$ and therefore do not interfere with the application of Lemma   4.1 . If Smartstart collects $\sigma_{1}^{(2)}$ before delivering $\sigma_{1}^{(1)}$ the time it needs is at least 
+
+ $\left|1-\left(-\frac{1}{\Theta}\right)\right|+\left|\left(-\frac{1}{\Theta}\right)-\left(1+\frac{\varepsilon}{2}\right)\right|=2+\frac{2}{\Theta}+\frac{\varepsilon}{2}.$ 
+
+ The best schedule that collects $\sigma_{1}^{(2)}$ after delivering $\sigma_{1}^{(1)}$ needs time 
+
+ $\displaystyle\hphantom{=}\,\left|1-\frac{1}{\Theta}\right|+\left|\frac{1}{\Theta}-\left(1+\frac{\varepsilon}{2}\right)\right|+\left|\left(1+\frac{\varepsilon}{2}\right)-\left(-\frac{1}{\Theta}\right)\right|+\left|\left(-\frac{1}{\Theta}\right)-(-\varepsilon)\right|$ 
+
+ $\displaystyle=\frac{\Theta-1}{\Theta}+\frac{\Theta-1}{\Theta}+\frac{\varepsilon}{2}+\frac{\Theta+1}{\Theta}+\frac{\varepsilon}{2}+\frac{1}{\Theta}-\varepsilon$ 
+
+ $\displaystyle=3.$ 
+
+ By assumption, we have $\Theta\leq 2$ , which implies $3 Smartstart delivers $\sigma_{1}^{(2)}$ after collecting $\sigma_{1}^{(1)}$ and for all $t\geq 1+\varepsilon$ we have 
+
+ $L(t,p_{1},\{\sigma_{1}^{(1)},\sigma_{1}^{(2)}\})=L(t,1,\{\sigma_{1}^{(1)},\sigma_{1}^{(2)}\})=3.$ 
+
+ Again, by assumption, we have $\Theta\leq 2$ and $\varepsilon Smartstart reaches position $p_{1}=1$ , the inequality 
+
+ $\frac{L\left(1+\varepsilon,p_{1},\{\sigma_{1}^{(1)},\sigma_{1}^{(2)}\}\right)}{\Theta-1}=\frac{3}{\Theta-1}>1+\varepsilon$ 
+
+ holds. Thus, Smartstart has a waiting period and starts schedule $S_{1}$ at time 
+
+ $\displaystyle t_{1}$ 
+ $\displaystyle=\min\left\{t\geq 1+\varepsilon\;\middle|\;\frac{L(t,p_{1},\{\sigma_{1}^{(1)},\sigma_{1}^{(2)}\})}{\Theta-1}\leq t\right\}$ 
+
+ $\displaystyle=\min\left\{t\geq 1+\varepsilon\;\middle|\;\frac{3}{\Theta-1}\leq t\right\}$ 
+
+ $\displaystyle=\frac{3}{\Theta-1}.$ 
+
+ To sum it up, we have 
+
+ $\textsc{Smartstart}(\sigma)=t_{1}+L(t_{1},p_{1},\{\sigma_{1}^{(1)},\sigma_{1}^{(2)}\})=\frac{3}{\Theta-1}+3=\frac{3\Theta}{\Theta-1}.$ 
+
+ On the other hand, Opt goes from the origin to $-\frac{1}{\Theta}$ to collect $\sigma_{1}^{(1)}$ at time $\frac{1}{\Theta}+2\varepsilon$ (i.e., it has to wait for $2\varepsilon$ units of time after it reaches position $-\frac{1}{\Theta}$ ) and returns to the origin at time $\frac{2}{\Theta}+2\varepsilon$ . Let $q$ be the position of a request that has occurred by the application of Lemma   4.1 at the beginning of this proof. Then this requests is released earlier than time $q+\varepsilon$ . Since Opt reaches position $q$ not earlier than time $\frac{2}{\Theta}+2\varepsilon+q>q+\varepsilon$ , Opt can go straight from position $-\frac{1}{\Theta}$ to position $1+\frac{\varepsilon}{2}$ collecting and delivering all requests that occur by the application of Lemma   4.1 as well as $\smash{\sigma_{1}^{(2)}}$ on the way. Therefore, we have 
+
+ $\textsc{Opt}(\sigma)=\left|0-\left(-\frac{1}{\Theta}\right)\right|+2\varepsilon+\left|-\frac{1}{\Theta}-\left(1+\frac{\varepsilon}{2}\right)\right|=\frac{2}{\Theta}+1+\frac{5\varepsilon}{2}=\frac{\Theta+2+\frac{5}{2}\varepsilon\Theta}{\Theta}.$ 
+
+ Note, that Opt can do this even if the capacity is $c=1$ since no additional requests need to be carried over $[0,\frac{1}{\Theta}]\cup\{1\}$ , where the requests of the application of Lemma   4.1 appear, and since the carrying paths of $\smash{\sigma_{1}^{(1)}}$ and $\smash{\sigma_{1}^{(2)}}$ are disjoint. Finally, we have 
+
+ $\frac{\textsc{Smartstart}(\sigma)}{\textsc{Opt}(\sigma)}=\frac{3\Theta^{2}}{\Theta^{2}+\Theta-2+\frac{5}{2}\varepsilon(\Theta^{2}-\Theta)}.$ 
+
+ (47) 
+
+ Note that the fraction in equality ( 47 ) becomes larger with decreasing $\varepsilon$ . By assumption, we have $\varepsilon 
+
+ $\frac{\textsc{Smartstart}(\sigma)}{\textsc{Opt}(\sigma)}>\frac{3\Theta^{2}}{\frac{41}{40}\Theta^{2}+\frac{39}{40}\Theta-2}=:g_{1}(\Theta).$ 
+
+ The function $g_{1}$ is monotonically decreasing on $(1,2]$ . Therefore, we have 
+
+ $\frac{\textsc{Smartstart}(\sigma)}{\textsc{Opt}(\sigma)}>g_{1}(2)=\frac{80}{27}>2.95>\rho^{*}$ 
+
+ for all $\Theta\in(1,2]$ .
+∎ 
+
+ Lemma 4.5 . 
+
+ Let the capacity $c\in\mathbb{N}\cup\{\infty\}$ of the server be arbitrary but fixed and let $\frac{1}{2}(1+\sqrt{13}) 
+
+ $\frac{\textsc{Smartstart}(\sigma)}{\textsc{Opt}(\sigma)}>\rho^{*}\approx 2.93768.$ 
+
+ Proof.
+
+ Let $\varepsilon>0$ with $\varepsilon Lemma   4.1 with $p=1$ and $\mu=\varepsilon$ . For convenience, we start the enumeration of the schedules with the first schedule after the application of Lemma   4.1 . Smartstart reaches position $p_{1}=1$ at time $1+\varepsilon$ . Now let the requests 
+
+ $\displaystyle\sigma_{1}^{(1)}$ 
+ $\displaystyle=\left(2+\frac{1}{\Theta}-\frac{\varepsilon}{2},2+\frac{1}{\Theta}-\frac{\varepsilon}{2};\frac{1}{\Theta}+2\varepsilon\right),$ 
+
+ $\displaystyle\sigma_{1}^{(2)}$ 
+ $\displaystyle=\left(-\frac{1}{\Theta}-\varepsilon,-\frac{1}{\Theta}-\varepsilon;\frac{1}{\Theta}+2\varepsilon\right)$ 
+
+ appear. Note that both requests appear after time $\frac{1}{\Theta}+\varepsilon$ and therefore do not interfere with the application of Lemma   4.1 . If Smartstart serves $\sigma_{1}^{(2)}$ before serving $\sigma_{1}^{(1)}$ the time it needs is at least 
+
+ $\displaystyle\left|1-\left(-\frac{1}{\Theta}-\varepsilon\right)\right|+\left|\left(-\frac{1}{\Theta}-\varepsilon\right)-\left(2+\frac{1}{\Theta}-\frac{\varepsilon}{2}\right)\right|$ 
+ $\displaystyle=\frac{\Theta+1}{\Theta}+\varepsilon+\frac{2\Theta+2}{\Theta}+\frac{\varepsilon}{2}$ 
+
+ $\displaystyle=3+\frac{3}{\Theta}+\frac{3}{2}\varepsilon.$ 
+
+ The best schedule that serves $\sigma_{1}^{(2)}$ after serving $\sigma_{1}^{(1)}$ needs time 
+
+ $\displaystyle\phantom{=}\;\left|1-\left(2+\frac{1}{\Theta}-\frac{\varepsilon}{2}\right)\right|+\left|\left(2+\frac{1}{\Theta}-\frac{\varepsilon}{2}\right)-\left(-\frac{1}{\Theta}-\varepsilon\right)\right|$ 
+
+ $\displaystyle=\frac{\Theta+1}{\Theta}-\frac{\varepsilon}{2}+\frac{2\Theta+2}{\Theta}+\frac{\varepsilon}{2}$ 
+
+ $\displaystyle=3+\frac{3}{\Theta}.$ 
+
+ Therefore Smartstart serves $\sigma_{1}^{(2)}$ after serving $\sigma_{1}^{(1)}$ and, for all $t\geq 1+\varepsilon$ , we have 
+
+ $L(t,p_{1},\{\sigma_{1}^{(1)},\sigma_{1}^{(2)}\})=L(t,1,\{\sigma_{1}^{(1)},\sigma_{1}^{(2)}\})=3+\frac{3}{\Theta}.$ 
+
+ By assumption, we have $\Theta\leq 1+\sqrt{2}$ and $\varepsilon Smartstart reaches position $p_{1}=1$ , the inequality 
+
+ $\displaystyle\frac{L\left(1+\varepsilon,p_{1},\{\sigma_{1}^{(1)},\sigma_{1}^{(2)}\}\right)}{\Theta-1}$ 
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[55.0pt]{}}}}{{=}}\frac{3+\frac{3}{\Theta}}{\Theta-1}$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[55.0pt]{$\Theta\leq 1+\sqrt{2}$}}}}{{\geq}}\frac{3}{\sqrt{2}}+\frac{3}{2+\sqrt{2}}$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[55.0pt]{$\varepsilon }}1+\frac{\varepsilon}{2}$ 
+
+ holds. Thus, Smartstart has a waiting period and starts schedule $S_{1}$ at time 
+
+ $\displaystyle t_{1}$ 
+ $\displaystyle=\min\left\{t\geq 1+\varepsilon\;\middle|\;\frac{L(t,p_{1},\{\sigma_{1}^{(1)},\sigma_{1}^{(2)}\})}{\Theta-1}\leq t\right\}$ 
+
+ $\displaystyle=\min\left\{t\geq 1+\varepsilon\;\middle|\;\frac{3+\frac{3}{\Theta}}{\Theta-1}\leq t\right\}$ 
+
+ $\displaystyle=\frac{3+\frac{3}{\Theta}}{\Theta-1}$ 
+
+ $\displaystyle=\frac{3\Theta+3}{\Theta(\Theta-1)}.$ 
+
+ Next, we let the final request 
+
+ $\sigma_{2}=\left(2+\frac{1}{\Theta}-\varepsilon,2+\frac{1}{\Theta}-\varepsilon;\frac{3\Theta+3}{\Theta(\Theta-1)}+\varepsilon\right)$ 
+
+ appear. Smartstart finishes schedule $S_{1}$ at time 
+
+ $t_{1}+L\left(t_{1},p_{1},\{\sigma_{1}^{(1)},\sigma_{1}^{(2)}\}\right)=\frac{3\Theta+3}{\Theta(\Theta-1)}+3+\frac{3}{\Theta}=\frac{3\Theta+3}{\Theta-1}$ 
+
+ at position $p_{2}=-\frac{1}{\Theta}-\varepsilon$ . For all $t\geq\frac{3\Theta+3}{\Theta-1}$ , we have 
+
+ $L(t,-\frac{1}{\Theta}-\varepsilon,\{\sigma_{2}\})=2+\frac{2}{\Theta}.$ 
+
+ By assumption, we have $\Theta>\frac{1}{2}(1+\sqrt{13})$ , which implies that for the finishing time $\frac{3\Theta+3}{\Theta-1}$ of schedule $S_{1}$ the inequality 
+
+ $\frac{L\left(\frac{3\Theta+3}{\Theta-1},p_{2},\{\sigma_{2}\}\right)}{\Theta-1}=\frac{2+\frac{2}{\Theta}}{\Theta-1} 
+
+ holds. Therefore the final schedule $S_{2}$ is started at time $t_{2}=\frac{3\Theta+3}{\Theta-1}$ . To sum it up, we have 
+
+ $\textsc{Smartstart}(\sigma)=t_{2}+L(t_{2},p_{2},\{\sigma_{2}\})=\frac{3\Theta+3}{\Theta-1}+2+\frac{2}{\Theta}.$ 
+
+ On the other hand, Opt goes from the origin straight to position $-\frac{1}{\Theta}-\varepsilon$ to serve request $\smash{\sigma_{1}^{(2)}}$ at time $\frac{1}{\Theta}+2\varepsilon$ (i.e., it has to wait for $\varepsilon$ units of time after it reaches position $-\frac{1}{\Theta}-\varepsilon$ ) and returns to the origin at time $\frac{1}{\Theta}+3\varepsilon$ . Let $q>0$ be the position of a request that has occurred by the application of Lemma   4.1 at the beginning of this proof. Then this requests is released earlier than time $q+\varepsilon$ . Since Opt reaches position $q$ not earlier than time $\frac{2}{\Theta}+3\varepsilon+q>q+\varepsilon$ , Opt can go straight from position $-\frac{1}{\Theta}-\varepsilon$ to position $2+\frac{1}{\Theta}-\frac{\varepsilon}{2}$ serving the requests that occur by applying Lemma   4.1 as well as $\smash{\sigma_{1}^{(1)}}$ and $\sigma_{2}$ on the way. Therefore, we have 
+
+ $\displaystyle\textsc{Opt}(\sigma)$ 
+ $\displaystyle=\left|0-\left(-\frac{1}{\Theta}-\varepsilon\right)\right|+\varepsilon+\left|-\frac{1}{\Theta}-\varepsilon-\left(2+\frac{1}{\Theta}-\varepsilon\right)\right|$ 
+
+ $\displaystyle=\frac{1}{\Theta}+3\varepsilon+2+\frac{2}{\Theta}-\frac{\varepsilon}{2}$ 
+
+ $\displaystyle=\frac{2\Theta+3}{\Theta}+\frac{5\varepsilon}{2}.$ 
+
+ Note that Opt reaches position $2+\frac{1}{\Theta}-\frac{\varepsilon}{2}$ at time $\frac{2\Theta+3}{\Theta}+\frac{5\varepsilon}{2}$ and can immediately serve $\smash{\sigma_{1}^{(1)}}$ since the assumption $\Theta>\frac{1}{2}(1+\sqrt{13})$ implies 
+
+ $\frac{2\Theta+3}{\Theta}+\frac{5\varepsilon}{2}>\frac{2\Theta+3}{\Theta}+\varepsilon>\frac{3\Theta+3}{\Theta(\Theta-1)}+\varepsilon.$ 
+
+ The latter inequality holds, because of the monotonicity of the curves $2\Theta+3$ and $3+\frac{3}{\Theta}$ and their intersection at $\Theta=\frac{1}{2}(1+\sqrt{13})$ . Note furthermore that Opt can serve all requests on the way even if capacity $c=1$ holds since for all requests the starting point is equal to the ending point. To sum it up, we have 
+
+ $\frac{\textsc{Smartstart}(\sigma)}{\textsc{Opt}(\sigma)}=\frac{\frac{3\Theta+3}{\Theta-1}+2+\frac{2}{\Theta}}{\frac{2\Theta+3}{\Theta}+\frac{5\varepsilon}{2}}.$ 
+
+ (48) 
+
+ Note that the fraction in ( 48 ) becomes larger with decreasing $\varepsilon$ . By assumption, we have $\varepsilon 
+
+ $\frac{\textsc{Smartstart}(\sigma)}{\textsc{Opt}(\sigma)}>\frac{\frac{3\Theta+3}{\Theta-1}+2+\frac{2}{\Theta}}{\frac{2\Theta+3}{\Theta}+\frac{1}{10}}=:g_{2}(\Theta).$ 
+
+ The function $g_{2}$ is monotonically decreasing on $(\frac{1}{2}(1+\sqrt{13}),1+\sqrt{2}]$ . Therefore, we have 
+
+ $\frac{\textsc{Smartstart}(\sigma)}{\textsc{Opt}(\sigma)}\geq g_{2}(1+\sqrt{2})=\frac{10}{573}(109+45\sqrt{2})>3>\rho^{*}$ 
+
+ for all $\Theta\in(\frac{1}{2}(1+\sqrt{13}),1+\sqrt{2}]$ .
+∎ 
+
+ Lemma 4.6 . 
+
+ Let the capacity $c\in\mathbb{N}\cup\{\infty\}$ of the server be arbitrary but fixed and let $1+\sqrt{2} 
+
+ $\frac{\textsc{Smartstart}(\sigma)}{\textsc{Opt}(\sigma)}>\rho^{*}\approx 2.93768.$ 
+
+ Proof.
+
+ Let $\varepsilon>0$ with $\varepsilon Lemma   4.1 with $p=1$ and $\mu=\varepsilon$ . For convenience, we start the enumeration of the schedules with the first schedule after the application of Lemma   4.1 . Smartstart reaches position $p_{1}=1$ at time $1+\varepsilon$ . Now let the requests 
+
+ $\displaystyle\sigma_{1}^{(1)}$ 
+ $\displaystyle=\left(\frac{1}{\Theta},1;\frac{1}{\Theta}+2\varepsilon\right),$ 
+
+ $\displaystyle\sigma_{1}^{(2)}$ 
+ $\displaystyle=\left(-\frac{1}{\Theta},-\frac{1}{\Theta};\frac{1}{\Theta}+2\varepsilon\right)$ 
+
+ appear. Note that both requests appear after time $\frac{1}{\Theta}+\varepsilon$ and therefore do not interfere with the application of Lemma   4.1 . If Smartstart serves $\sigma_{1}^{(2)}$ before delivering $\sigma_{1}^{(1)}$ the time it needs is at least 
+
+ $\left|1-\left(-\frac{1}{\Theta}\right)\right|+\left|\left(-\frac{1}{\Theta}\right)-1\right|=2+\frac{2}{\Theta}.$ 
+
+ The best schedule that serves $\sigma_{1}^{(2)}$ after delivering $\sigma_{1}^{(1)}$ needs time 
+
+ $\left|1-\left(\frac{1}{\Theta}\right)\right|+\left|\left(\frac{1}{\Theta}\right)-1\right|+\left|1-\left(-\frac{1}{\Theta}\right)\right|=\frac{2\Theta-2}{\Theta}+\frac{\Theta+1}{\Theta}=3-\frac{1}{\Theta}.$ 
+
+ By assumption, we have $\Theta Smartstart serves $\sigma_{1}^{(2)}$ after delivering $\sigma_{1}^{(1)}$ and for all $t\geq 1+\varepsilon$ we have 
+
+ $L(t,p_{1},\{\sigma_{1}^{(1)},\sigma_{1}^{(2)}\})=L(t,1,\{\sigma_{1}^{(1)},\sigma_{1}^{(2)}\})=3-\frac{1}{\Theta}.$ 
+
+ Again, by assumption, we have $\Theta Smartstart reaches position $p_{1}=1$ the inequality 
+
+ $\frac{L\left(1+\varepsilon,p_{1},\{\sigma_{1}^{(1)},\sigma_{1}^{(2)}\}\right)}{\Theta-1}=\frac{3-\frac{1}{\Theta}}{\Theta-1}>1+\varepsilon$ 
+
+ holds. Thus, Smartstart has a waiting period and starts schedule $S_{1}$ at time 
+
+ $\displaystyle t_{1}$ 
+ $\displaystyle=\min\left\{t\geq 1+\varepsilon\;\middle|\;\frac{L(t,p_{1},\{\sigma_{1}^{(1)},\sigma_{1}^{(2)}\})}{\Theta-1}\leq t\right\}$ 
+
+ $\displaystyle=\min\left\{t\geq 1+\varepsilon\;\middle|\;\frac{3-\frac{1}{\Theta}}{\Theta-1}\leq t\right\}$ 
+
+ $\displaystyle=\frac{3-\frac{1}{\Theta}}{\Theta-1}$ 
+
+ $\displaystyle=\frac{3\Theta-1}{\Theta(\Theta-1)}.$ 
+
+ Next, we let the final request 
+
+ $\sigma_{2}=\left(1,1;\frac{3\Theta-1}{\Theta(\Theta-1)}+\varepsilon\right)$ 
+
+ appear. Smartstart finishes schedule $S_{1}$ at time 
+
+ $t_{1}+L(t_{1},p_{1},\{\sigma_{1}^{(1)},\sigma_{1}^{(2)}\})=\frac{3-\frac{1}{\Theta}}{\Theta-1}+3-\frac{1}{\Theta}=\frac{3\Theta-1}{\Theta-1}.$ 
+
+ at position $p_{2}=-\frac{1}{\Theta}$ . For all $t\geq\frac{3\Theta-1}{\Theta-1}$ , we have 
+
+ $L\left(t+L(t_{1},-\frac{1}{\Theta},\{\sigma_{2}\}\right)=1+\frac{1}{\Theta}.$ 
+
+ By assumption, we have $\Theta>1+\sqrt{2}$ , which implies that for the finishing time $\frac{3\Theta-1}{\Theta-1}$ of schedule $S_{1}$ the inequality 
+
+ $\frac{L\left(\frac{3\Theta-1}{\Theta-1},p_{2},\{\sigma_{2}\}\right)}{\Theta-1}=\frac{1+\frac{1}{\Theta}}{\Theta-1} 
+
+ holds. Therefore the final schedule $S_{2}$ is started at time $t_{2}=\frac{3\Theta-1}{\Theta-1}$ . To sum it up, we have 
+
+ $\textsc{Smartstart}(\sigma)=t_{2}+L(t_{2},p_{2},\{\sigma_{2}\})=\frac{3\Theta-1}{\Theta-1}+1+\frac{1}{\Theta}.$ 
+
+ On the other hand, Opt goes from the origin to $-\frac{1}{\Theta}$ to collect $\smash{\sigma_{1}^{(1)}}$ at time $\frac{1}{\Theta}+2\varepsilon$ (i.e., it has to wait for $2\varepsilon$ units of time after reaching position $-\frac{1}{\Theta}$ ) and returns to the origin at time $\frac{2}{\Theta}+2\varepsilon$ . Let $q>0$ be the position of a request that has occurred by the application of Lemma   4.1 at the beginning of this proof. Then this requests is released earlier than time $q+\varepsilon$ . Since Opt reaches position $q$ not earlier than time $\frac{2}{\Theta}+2\varepsilon+q>q+\varepsilon$ , Opt can go straight from position $-\frac{1}{\Theta}$ to position $1$ collecting and delivering all requests that occur by the application of Lemma   4.1 as well as $\smash{\sigma_{1}^{(2)}}$ . Note that Opt can also collect $\sigma_{2}$ at arrival at position $1$ at time $1+\frac{2}{\Theta}+2\varepsilon$ since the assumption $\Theta>1+\sqrt{2}$ implies 
+
+ $1+\frac{2}{\Theta}+2\varepsilon=\frac{\Theta^{2}+\Theta-2}{\Theta(\Theta-1)}+2\varepsilon\geq\frac{3\Theta-1}{\Theta(\Theta-1)}+\varepsilon.$ 
+
+ The latter inequality holds, because of the monotonicity of the curves $\Theta^{2}+\Theta-2$ and $3\Theta-1$ and intersection at $\Theta=1+\sqrt{2}$ . Therefore, we have 
+
+ $\textsc{Opt}(\sigma)=\left|0-\left(-\frac{1}{\Theta}\right)\right|+2\varepsilon+\left|-\frac{1}{\Theta}-1\right|=1+\frac{2}{\Theta}+2\varepsilon.$ 
+
+ Note that Opt can do this even if capacity $c=1$ holds since no additional requests need to be carried over $[0,\frac{1}{\Theta}]\cup\{1\}$ , where the requests of the application of Lemma   4.1 appear. Finally, we have 
+
+ $\frac{\textsc{Smartstart}(\sigma)}{\textsc{Opt}(\sigma)}=\frac{\frac{3\Theta-1}{\Theta-1}+1+\frac{1}{\Theta}}{1+\frac{2}{\Theta}+2\varepsilon}.$ 
+
+ (49) 
+
+ Note that the fraction in equality ( 49 ) becomes larger with decreasing $\varepsilon$ . By assumption, we have $\varepsilon 
+
+ $\frac{\textsc{Smartstart}(\sigma)}{\textsc{Opt}(\sigma)}>\frac{\frac{3\Theta-1}{\Theta-1}+1+\frac{1}{\Theta}}{1.1+\frac{2}{\Theta}}=:g_{3}(\Theta).$ 
+
+ The function $g_{3}$ has exactly one local minimum in the range $(1+\sqrt{2},3)$ at 
+
+ $\hat{\Theta}=\frac{349}{247}+\frac{\sqrt{84998}}{247}.$ 
+
+ Therefore, we have 
+
+ $\frac{\textsc{Smartstart}(\sigma)}{\textsc{Opt}(\sigma)}>g_{3}(\hat{\Theta})\approx 3.01454>3>\rho^{*}.$ 
+
+ ∎ 
+
+ Lemma 4.7 . 
+
+ Let the capacity $c\in\mathbb{N}\cup\{\infty\}$ of the server be arbitrary but fixed and let $\Theta\geq 3$ . There is a set of requests $\sigma$ such that
+
+ $\frac{\textsc{Smartstart}(\sigma)}{\textsc{Opt}(\sigma)}>\rho^{*}\approx 2.93768.$ 
+
+ Proof.
+
+ Let $\varepsilon>0$ with $\varepsilon Lemma   4.1 with $p=1$ and $\mu=\varepsilon$ . For convenience, we start the enumeration of the schedules with the first schedule after the application of Lemma   4.1 . Algorithm Smartstart reaches position $p_{1}=1$ at time $1+\varepsilon$ . Now let the requests 
+
+ $\displaystyle\sigma_{1}^{(1)}$ 
+ $\displaystyle=\left(\frac{\Theta+1}{2\Theta}+\frac{\varepsilon}{2},1;\frac{1}{\Theta}+2\varepsilon\right),$ 
+
+ $\displaystyle\sigma_{1}^{(2)}$ 
+ $\displaystyle=\left(\frac{1}{\Theta},\frac{1}{\Theta};\frac{1}{\Theta}+2\varepsilon\right)$ 
+
+ appear. Note that both requests appear after time $\frac{1}{\Theta}+\varepsilon$ and therefore do not interfere with the application of Lemma   4.1 and that the carrying path of $\smash{\sigma_{1}^{(1)}}$ does not cross the position $\frac{1}{\Theta}$ of $\smash{\sigma_{1}^{(2)}}$ since the assumption $\Theta\geq 3$ implies $\smash{\frac{1}{\Theta} Smartstart serves $\smash{\sigma_{1}^{(2)}}$ before delivering $\smash{\sigma_{1}^{(1)}}$ the time it needs is at least 
+
+ $\left|1-\frac{1}{\Theta}\right|+\left|\frac{1}{\Theta}-1\right|=2-\frac{2}{\Theta}.$ 
+
+ The best schedule that serves $\sigma_{1}^{(2)}$ after delivering $\sigma_{1}^{(1)}$ needs time 
+
+ $\displaystyle\phantom{=}\;\left|1-\left(\frac{\Theta+1}{2\Theta}+\frac{\varepsilon}{2}\right)\right|+\left|\left(\frac{\Theta+1}{2\Theta}+\frac{\varepsilon}{2}\right)-1\right|+\left|1-\frac{1}{\Theta}\right|$ 
+
+ $\displaystyle=2\left(\frac{\Theta-1}{2\Theta}-\frac{\varepsilon}{2}\right)+\frac{\Theta-1}{\Theta}$ 
+
+ $\displaystyle=2-\frac{2}{\Theta}-\varepsilon.$ 
+
+ Therefore Smartstart serves $\sigma_{1}^{(2)}$ after delivering $\sigma_{1}^{(1)}$ and for all $t\geq 1+\varepsilon$ we have 
+
+ $L\left(t,p_{1},\{\sigma_{1}^{(1)},\sigma_{1}^{(2)}\}\right)=L\left(t,1,\{\sigma_{1}^{(1)},\sigma_{1}^{(2)}\}\right)=2-\frac{2}{\Theta}-\varepsilon.$ 
+
+ By assumption, we have $\Theta\geq 3$ , which implies that for the finishing time $1+\varepsilon$ of schedule $S_{1}$ the inequality 
+
+ $\frac{L\left(1+\varepsilon,p_{1},\{\sigma_{1}^{(1)},\sigma_{1}^{(2)}\}\right)}{\Theta-1}=\frac{2-\frac{2}{\Theta}-\varepsilon}{\Theta-1}\leq 1+\varepsilon$ 
+
+ holds. Thus, the schedule $S_{1}$ is started immediately after the application of Lemma   4.1 at time $t_{1}=1+\varepsilon$ . Next, we let the final request 
+
+ $\sigma_{2}=\left(1,1;1+2\varepsilon\right)$ 
+
+ appear. Smartstart finishes schedule $S_{1}$ at time 
+
+ $t_{1}+L(t_{1},p_{1},\{\sigma_{1}^{(1)},\sigma_{1}^{(2)}\})=1+\varepsilon+2-\frac{2}{\Theta}-\varepsilon=3-\frac{2}{\Theta}$ 
+
+ at position $p_{2}=\frac{1}{\Theta}$ . For all $t\geq 3-\frac{2}{\Theta}$ , we have 
+
+ $L(t,p_{2},\{\sigma_{2}\})=1-\frac{1}{\Theta}.$ 
+
+ By assumption, we have $\Theta\geq 3$ , which implies that for the finishing time $3-\frac{2}{\Theta}$ of schedule $S_{1}$ the inequality 
+
+ $\frac{L\left(3-\frac{2}{\Theta},\frac{1}{\Theta},\{\sigma_{2}\}\right)}{\Theta-1}=\frac{1-\frac{1}{\Theta}}{\Theta-1}\leq 3-\frac{2}{\Theta}.$ 
+
+ holds. Therefore the final schedule $S_{2}$ is started at time $t_{2}=3-\frac{2}{\Theta}$ . To sum it up, we have 
+
+ $\textsc{Smartstart}(\sigma)=t_{2}+L(t_{2},p_{2},\{\sigma_{2}\})=3-\frac{2}{\Theta}+1-\frac{1}{\Theta}=4-\frac{3}{\Theta}.$ 
+
+ On the other hand, Opt waits at the origin until time $2\varepsilon$ . Let $q$ be the position of a request that has occurred by the application of Lemma   4.1 at the beginning of this proof. Then this requests is released earlier than time $q+\varepsilon$ . Since Opt reaches position $q$ not earlier than time $q+2\varepsilon>q+\varepsilon$ , Opt can go straight from the origin to position $1$ collecting and delivering all requests that occur by the application of Lemma   4.1 as well as, $\smash{\sigma_{1}^{(1)}}$ , $\smash{\sigma_{1}^{(2)}}$ and $\sigma_{2}$ . Therefore, we have 
+
+ $\textsc{Opt}(\sigma)=1+2\varepsilon.$ 
+
+ Note that Opt can do this even if capacity $c=1$ holds since no additional requests need to be carried over $[0,\frac{1}{\Theta}]\cup\{1\}$ , where the requests of the application of Lemma   4.1 appear. To sum it up, we have 
+
+ $\frac{\textsc{Smartstart}(\sigma)}{\textsc{Opt}(\sigma)}=\frac{4-\frac{3}{\Theta}}{1+2\varepsilon}.$ 
+
+ (50) 
+
+ Note that the fraction in equality ( 50 ) becomes larger with decreasing $\varepsilon$ . By assumption, we have $\varepsilon 
+
+ $\frac{\textsc{Smartstart}(\sigma)}{\textsc{Opt}(\sigma)}>\frac{4-\frac{3}{\Theta}}{1+\frac{1}{75}}=:g_{4}(\Theta).$ 
+
+ The function $g_{4}$ is strictly monotonically increasing on $[3,\infty)$ . Therefore, we have 
+
+ $\frac{\textsc{Smartstart}(\sigma)}{\textsc{Opt}(\sigma)}>g_{4}(3)=\frac{225}{76}>2.95>\rho^{*}\qed.$ 
+
+ We summarize the Lemmas 4.4 , 4.5 , 4.6 and 4.7 into one lemma.
+
+ Lemma 4.8 . 
+
+ Let
+
+ $I_{1}=(1,2],\quad I_{2}=(\tfrac{1}{2}(1+\sqrt{13}),1+\sqrt{2}],\quad I_{3}=(1+\sqrt{2},3),\quad I_{4}=[3,\infty)$ 
+
+ be intervals. For every $i\in\{1,2,3,4\}$ there is a set of requests $\sigma$ , such that, for all $\Theta\in I_{i}$ ,
+
+ $\frac{\textsc{Smartstart}(\sigma)}{\textsc{Opt}(\sigma)}>\rho^{*}\approx 2.93768.$ 
+
+ Proof.
+
+ This is an immediate consequence of the Lemmas 4.4 , 4.5 , 4.6 and 4.7 .
+∎ 
+
+ Our main theorem now follows from Theorem   3.8 combined with Propositions 4.2 and 4.3 , as well as Lemma   4.8 .
+
+ Theorem 4.9 . 
+
+ The competitive ratio of $\textsc{Smartstart}_{\Theta^{*}}$ is exactly
+
+ $\rho^{*}=f_{1}(\Theta^{*})=f_{2}(\Theta^{*})\approx 2.93768.$ 
+
+ For every other $\Theta>1$ with $\Theta\neq\Theta^{*}$ the competitive ratio of $\textsc{Smartstart}_{\Theta}$ is larger than $\rho^{*}$ .
+
+ Proof.
+
+ We have shown in Proposition   4.2 that the upper bound 
+
+ $\frac{\textsc{Smartstart}(\sigma)}{\textsc{Opt}(\sigma)}\leq f_{1}(\Theta)=\frac{2\Theta^{2}+2\Theta}{\Theta^{2}+\Theta-2}$ 
+
+ established in Proposition   3.3 for the case, where Smartstart waits before starting the final schedule, is tight for all $\Theta\in(2,3)$ . Furthermore, we have shown in Proposition   4.3 that the upper bound 
+
+ $\frac{\textsc{Smartstart}(\sigma)}{\textsc{Opt}(\sigma)}\leq f_{2}(\Theta)=\left(\Theta+1-\frac{\Theta-1}{3\Theta+3}\right)$ 
+
+ established in Proposition   3.7 for the case, where Smartstart does not wait before starting the final schedule, is tight for all $\Theta\in(2,\frac{1}{2}(1+\sqrt{13})]$ . Since $\Theta^{*}\approx 2.0526$ lies in those ranges, the competitive ratio of $\textsc{Smartstart}_{\Theta^{*}}$ is indeed exactly $\rho^{*}$ . 
+
+ It remains to show that for every $\Theta>1$ with $\Theta\neq\Theta^{*}$ the competitive ratio is larger. First, according to Lemma   4.8 , the competitive ratio of Smartstart with parameter $\Theta\in(1,2]$ or $\Theta\in(\frac{1}{2}(1+\sqrt{13}),\infty)$ is larger than $\rho^{*}$ . By monotonicity of $f_{1}$ , every function value in $(2,\Theta^{*})$ is larger than $f_{1}(\Theta^{*})=\rho^{*}$ . Thus, the competitive ratio of Smartstart with parameter $\Theta\in(2,\Theta^{*})$ is larger than $\rho^{*}$ , since $f_{1}$ is tight on $(2,\Theta^{*})$ by Proposition   4.2 . Similarly, by monotonicity of $f_{2}$ , every function value in $(\Theta^{*},\frac{1}{2}(1+\sqrt{13})]$ is larger than $f_{2}(\Theta^{*})=\rho^{*}$ . Thus, the competitive ratio of Smartstart with parameter $\Theta\in(\Theta^{*},\frac{1}{2}(1+\sqrt{13})]$ is larger than $\rho^{*}$ , since $f_{1}$ is tight on $(\Theta^{*},\frac{1}{2}(1+\sqrt{13})]$ by Proposition   4.3 .
+∎ 
+
+ 5 Lower Bound for the Closed Version
+
+ We provide a lower bound for Smartstart for closed online Dial-a-Ride on the line that matches the upper bound given in [ 1 ] for arbitrary metric spaces.
+Note that in this setting, by definition, every schedule of Smartstart is a closed walk that returns to the origin.
+
+ Theorem 5.1 . 
+
+ The competitive ratio of Smartstart for closed online Dial-a-Ride on the line with $\Theta=2$ is exactly $2$ . For every other $\Theta>1$ with $\Theta\neq 2$ the competitive ratio of $\textsc{Smartstart}_{\Theta}$ is larger than $2$ .
+
+ Proof.
+
+ We show that the competitive ratio of $\textsc{Smartstart}_{2}$ is at least $2$ and that the competitive ratio of $\textsc{Smartstart}_{\Theta}$ is larger than $2$ for all $\Theta\neq 2$ .
+From the fact that Smartstart is 2-competitive even for general metric spaces [ 1 , Thm. 6] , it follows that $\textsc{Smartstart}_{2}$ has competitive ratio exactly 2 on the line. 
+
+ Let $\Theta\leq 2$ and consider the set of requests $\{\sigma_{1}\}$ with $\sigma_{1}=(0.5,0.5;0)$ .
+Obviously, Opt can serve this request and return to the origin in time $\textsc{Opt}(\{\sigma_{1}\})=1$ .
+Thus, for all $t\geq 0$ , we have $L(t,0,\{\sigma_{1}\})=1$ .
+On the other hand, Smartstart waits until time 
+
+ $t_{1}=\frac{L(t_{1},0,\{\sigma_{1}\})}{\Theta-1}=\frac{1}{\Theta-1}$ 
+
+ to start its only schedule and finishes at time $\frac{\Theta}{\Theta-1}$ .
+To sum it up, we have 
+
+ $\frac{\textsc{Smartstart}(\{\sigma_{1}\})}{\textsc{Opt}(\{\sigma_{1}\})}=\frac{\Theta}{\Theta-1}$ 
+
+ with $\frac{\Theta}{\Theta-1}>2$ for all $\Theta 
+
+ $\displaystyle\sigma_{1}$ 
+ $\displaystyle=(0.5,0.5;0)\quad\text{and}$ 
+
+ $\displaystyle\sigma_{2}$ 
+ $\displaystyle=\left(1-\frac{1}{\Theta-1}-\varepsilon,1-\frac{1}{\Theta-1}-\varepsilon;\frac{1}{\Theta-1}+\varepsilon\right).$ 
+
+ By assumption, we have $\Theta>2$ and $\varepsilon 
+
+ $\displaystyle 0$ 
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[55.0pt]{$\varepsilon 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[55.0pt]{$\Theta\leq 3$}}}}{{ 
+
+ i.e., the position of request $\sigma_{2}$ lies between $0$ and $0.5$ .
+If Opt moves to position $0.5$ and then returns to the origin, it is at position 
+
+ $a_{2}=0.5-\left|\underbrace{\left(\frac{1}{\Theta-1}+\varepsilon\right)}_{>0.5}-0.5\right|=1-\frac{1}{\Theta-1}-\varepsilon$ 
+
+ at time $r_{2}=\frac{1}{\Theta-1}+\varepsilon$ .
+Thus, Opt can serve $\sigma_{2}$ on the way and we have $\textsc{Opt}(\{\sigma_{1},\sigma_{2}\})=1$ .
+For all $t\geq 0$ , we have $L(t,0,\{\sigma_{1}\})=1$ .
+Therefore, Smartstart waits until time 
+
+ $t_{1}=\frac{L(t_{1},0,\{\sigma_{1}\})}{\Theta-1}=\frac{1}{\Theta-1}.$ 
+
+ before starting its first schedule. Since we have $\frac{1}{\Theta-1} Smartstart starts to serve $\sigma_{1}$ at time $t_{1}$ and returns to the origin at time $\frac{\Theta}{\Theta-1}$ .
+For all $t\geq 0$ , we have 
+
+ $L(t,0,\{\sigma_{2}\})=2-\frac{2}{\Theta-1}-2\varepsilon,$ 
+
+ thus Smartstart does not start the second and final schedule before time $\frac{2-\frac{2}{\Theta-1}-2\varepsilon}{\Theta-1}$ .
+By assumption, we have $\Theta>2$ , which implies $\smash{\frac{\Theta}{\Theta-1}>\frac{2-\frac{2}{\Theta-1}-2\varepsilon}{\Theta-1}}$ .
+Thus, the second schedule is started at time $\smash{t_{2}=\frac{\Theta}{\Theta-1}}$ and finished at time 
+
+ $\textsc{Smartstart}(\{\sigma_{1},\sigma_{2}\})=\frac{\Theta}{\Theta-1}+2-\frac{2}{\Theta-1}-2\varepsilon.$ 
+
+ To sum it up, we have 
+
+ $\displaystyle\frac{\textsc{Smartstart}(\{\sigma_{1},\sigma_{2}\})}{\textsc{Opt}(\{\sigma_{1},\sigma_{2}\})}$ 
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[40.0pt]{}}}}{{=}}\frac{\Theta}{\Theta-1}+2-\frac{2}{\Theta-1}-2\varepsilon$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[40.0pt]{$\varepsilon }}\frac{3\Theta-4}{\Theta-1}-2\frac{\Theta-2}{2(\Theta-1)}$ 
+
+ $\displaystyle\stackrel{{\scriptstyle\text{\makebox[40.0pt]{}}}}{{=}}2.$ 
+
+ Now let $\Theta>3$ and $\varepsilon\in(0,0.5-\frac{1}{\Theta-1})$ , and consider the set of requests $\{\sigma_{1},\sigma_{2}\}$ with 
+
+ $\displaystyle\sigma_{1}$ 
+ $\displaystyle=(0.5,0.5;0)\quad\text{and}$ 
+
+ $\displaystyle\sigma_{2}$ 
+ $\displaystyle=\left(0.5,0.5;\frac{1}{\Theta-1}+\varepsilon\right).$ 
+
+ By assumption, we have $\varepsilon 
+
+ $\frac{1}{\Theta-1}+\varepsilon 
+
+ i.e., $\sigma_{2}$ is released before position $0.5$ is reachable.
+If Opt moves to position $0.5$ and then returns to the origin, it can serve both requests without additional waiting time and we have $\textsc{Opt}(\{\sigma_{1},\sigma_{2}\})=1$ .
+For all $t\geq 0$ , we have $L(t,0,\{\sigma_{1}\})=1$ .
+Therefore, Smartstart waits until time 
+
+ $t_{1}=\frac{L(t_{1},0,\{\sigma_{1}\})}{\Theta-1}=\frac{1}{\Theta-1}.$ 
+
+ before starting its first schedule. Since we have $\frac{1}{\Theta-1} Smartstart starts to serve $\sigma_{1}$ at time $t_{1}$ and returns to the origin at time $\frac{\Theta}{\Theta-1}$ .
+For all $t\geq 0$ , we have 
+
+ $L(t,0,\{\sigma_{2}\})=1,$ 
+
+ thus Smartstart does not start the second and final schedule before time $\smash{\frac{1}{\Theta-1}}$ .
+By assumption, we have $\Theta>3$ , which implies $\smash{\frac{\Theta}{\Theta-1}>\frac{1}{\Theta-1}}$ . Thus, the second schedule is started at time $t_{2}=\frac{\Theta}{\Theta-1}$ and finished at time 
+
+ $\textsc{Smartstart}(\{\sigma_{1},\sigma_{2}\})=\frac{\Theta}{\Theta-1}+1.$ 
+
+ To sum it up, we have 
+
+ $\frac{\textsc{Smartstart}(\{\sigma_{1},\sigma_{2}\})}{\textsc{Opt}(\{\sigma_{1},\sigma_{2}\})}=\frac{\Theta}{\Theta-1}+1>2.$ 
+
+ ∎ 
+
+ References
+
+ [1] 
+
+Norbert Ascheuer, Sven Oliver Krumke, and Jörg Rambau.
+
+ Online dial-a-ride problems: Minimizing the completion time.
+
+ In Proceedings of the 17th Annual Symposium on Theoretical
+Aspects of Computer Science (STACS) , pages 639–650, 2000.
+
+ [2] 
+
+Mikhail J. Atallah and S. Rao Kosaraju.
+
+ Efficient solutions to some transportation problems with applications
+to minimizing robot arm travel.
+
+ SIAM Journal on Computing , 17(5), 1988.
+
+ [3] 
+
+G. Ausiello, E. Feuerstein, S. Leonardi, L. Stougie, and M. Talamo.
+
+ Algorithms for the on-line travelling salesman.
+
+ Algorithmica , 29(4):560–581, 2001.
+
+ [4] 
+
+Antje Bjelde, Yann Disser, Jan Hackfeld, Christoph Hansknecht, Maarten Lipmann,
+Julie Meißner, Kevin Schewior, Miriam Schlöter, and Leen Stougie.
+
+ Tight bounds for online TSP on the line.
+
+ In Proceedings of the 28th Annual Symposium on Discrete
+Algorithms (SODA) , pages 994–1005, 2017.
+
+ [5] 
+
+Michiel Blom, Sven O. Krumke, Willem E. de Paepe, and Leen Stougie.
+
+ The online TSP against fair adversaries.
+
+ INFORMS Journal on Computing , 13(2):138–148, 2001.
+
+ [6] 
+
+Moses Charikar and Balaji Raghavachari.
+
+ The finite capacity dial-a-ride problem.
+
+ In Proceedings of the 39th Annual Symposium on Foundations of
+Computer Science (FOCS) , pages 458–467, 1998.
+
+ [7] 
+
+Willem E. de Paepe, Jan Karel Lenstra, Jiri Sgall, René A. Sitters, and
+Leen Stougie.
+
+ Computer-aided complexity classification of dial-a-ride problems.
+
+ INFORMS Journal on Computing , 16(2):120–132, 2004.
+
+ [8] 
+
+Esteban Feuerstein and Leen Stougie.
+
+ On-line single-server dial-a-ride problems.
+
+ Theoretical Computer Science , 268(1):91–105, 2001.
+
+ [9] 
+
+Paul C. Gilmore and Ralph E. Gomory.
+
+ Sequencing a one state-variable machine: A solvable case of the
+traveling salesman problem.
+
+ Operations Research , 12(5):655–679, 1964.
+
+ [10] 
+
+D. J. Guan.
+
+ Routing a vehicle of capacity greater than one.
+
+ Discrete Applied Mathematics , 81(1-3):41–57, 1998.
+
+ [11] 
+
+Dietrich Hauptmeier, Sven Oliver Krumke, and Jörg Rambau.
+
+ The online dial-a-ride problem under reasonable load.
+
+ In Proceedings of the 4th Italian Conference on Algorithms and
+Complexity (CIAC) , pages 125–136, 2000.
+
+ [12] 
+
+Patrick Jaillet and Michael R. Wagner.
+
+ Generalized online routing: New competitive ratios, resource
+augmentation, and asymptotic analyses.
+
+ Operations Research , 56(3):745–757, 2008.
+
+ [13] 
+
+Sven O. Krumke.
+
+ Online optimization competitive analysis and beyond, 2001.
+
+ Habilitation thesis.
+
+ [14] 
+
+Sven O. Krumke, Willem E. de Paepe, Diana Poensgen, Maarten Lipmann, Alberto
+Marchetti-Spaccamela, and Leen Stougie.
+
+ On minimizing the maximum flow time in the online dial-a-ride
+problem.
+
+ In Proceedings of the Third International Conference on
+Approximation and Online Algorithms (WAOA) , pages 258–269, 2006.
+
+ [15] 
+
+Sven O. Krumke, Luigi Laura, Maarten Lipmann, Alberto Marchetti-Spaccamela,
+Willem de Paepe, Diana Poensgen, and Leen Stougie.
+
+ Non-abusiveness helps: An O(1)-competitive algorithm for
+minimizing the maximum flow time in the online traveling salesman problem.
+
+ In Proceedings of the 5th International Workshop on
+Approximation Algorithms for Combinatorial Optimization (APPROX) , pages
+200–214, 2002.
+
+ [16] 
+
+Maarten Lipmann.
+
+ On-Line Routing .
+
+ PhD thesis, Technical University Eindhoven, 2003.
+
+ [17] 
+
+Maarten Lipmann, Xiwen Lu, Willem E. de Paepe, Rene A. Sitters, and Leen
+Stougie.
+
+ On-line dial-a-ride problems under a restricted information model.
+
+ Algorithmica , 40(4):319–329, 2004.
+
+ [18] 
+
+Fanglei Yi and Lei Tian.
+
+ On the online dial-a-ride problem with time-windows.
+
+ In Proceedings of the 1st International Conference on
+Algorithmic Applications in Management (AAIM) , pages 85–94, 2005.
+
+ [19] 
+
+Fanglei Yi, Yinfeng Xu, and Chunlin Xin.
+
+ Online dial-a-ride problem with time-windows under a restricted
+information model.
+
+ In Proceedings of the 2nd International Conference on
+Algorithmic Aspects in Information and Management (AAIM) , pages 22–31,
+2006.
+
+ Appendix A Algorithm Ignore 
+
+ The algorithm Ignore was described in [ 1 ] (though the authors do not claim originality for the algorithm) for the closed case of the online Dial-a-Ride problem in arbitrary metric spaces.
+We describe the algorithm for the open case as it was introduced in [ 13 ] (see Algorithm   2 ):
+The server remains idle until the point in time $t$ when the first request appears.
+It then serves the requests released at time $t$ immediately by following a shortest schedule $S$ .
+All requests that appear during the time when the algorithm follows $S$ are temporarily ignored. After $S$ has been completed the server is at the destination of the last served request $p$ , computes a shortest schedule for the unserved requests starting in position $p$ and follows this schedule. Again all new requests appearing during the time that the server is following the schedule, are temporarily ignored. The algorithm keeps on following schedules and temporarily ignoring requests this way.
+
+ Algorithm 2 Ignore 
+
+ repeat 
+
+       if $R_{t}\neq\emptyset$ then 
+
+           Start optimal offline schedule serving $R_{t}$ starting from the current position
+
+       else 
+
+           wait
+
+ It was shown in [ 13 ] that $4$ is an upper bound for the competitive ratio of Ignore .
+We show that this is tight on the line.
+
+ Proposition A.1 . 
+
+ The competitive ratio of Ignore is $\rho_{\textsc{Ignore}}=4$ .
+
+ Proof.
+
+ It was shown in [ 13 , Theorem 2.29] that $4$ is a upper bound for the competitive ratio of Ignore for arbitrary metric spaces and therefore in particular for the real line. It remains to show that for every $\varepsilon>0$ there is a set of requests $\sigma$ such that 
+
+ $\frac{\textsc{Ignore}(\sigma)}{\textsc{Opt}(\sigma)}\geq 4-\varepsilon.$ 
+
+ Let $\varepsilon>0$ .
+We consider the set of requests $\sigma$ consisting of 
+
+ $\displaystyle\sigma_{1}$ 
+ $\displaystyle=\left(1-\frac{1}{5}\varepsilon,1-\frac{1}{5}\varepsilon;0\right),$ 
+
+ $\displaystyle\sigma_{2}^{(1)}$ 
+ $\displaystyle=\left(\frac{1}{2},1-\frac{1}{5}\varepsilon;\frac{1}{5}\varepsilon\right),$ 
+
+ $\displaystyle\sigma_{2}^{(2)}$ 
+ $\displaystyle=\left(0,0;\frac{1}{5}\varepsilon\right),$ 
+
+ $\displaystyle\sigma_{3}$ 
+ $\displaystyle=\left(1-\frac{1}{5}\varepsilon,1-\frac{1}{5}\varepsilon;1\right).$ 
+
+ Ignore first serves request $\sigma_{1}$ in time $1-\frac{1}{5}\varepsilon$ .
+Then, it serves the requests $\sigma_{2}^{(1)}$ and $\sigma_{2}^{(2)}$ .
+Note that serving $\sigma_{2}^{(1)}$ before collecting $\sigma_{2}^{(2)}$ takes time $2-\frac{3}{5}\varepsilon$ , while collecting $\sigma_{2}^{(2)}$ first takes time $2-\frac{2}{5}\varepsilon$ .
+Therefore Ignore serves $\sigma_{2}^{(1)}$ first and the second schedule ends in the origin.
+The third and final schedule again needs time $1-\frac{1}{5}$ to serve $\sigma_{3}$ .
+To sum it up, we have 
+
+ $\textsc{Ignore}(\sigma)=4-\varepsilon.$ 
+
+ Opt on the other hand waits until time $\frac{1}{5}\varepsilon$ at the origin for the request $\sigma_{2}^{(2)}$ and then just collects and delivers the remaining requests on its way to $p=1-\frac{1}{5}\varepsilon$ , resulting in 
+
+ $\textsc{Opt}(\sigma)=1.$ 
+
+ Therefore, we have 
+
+ $\rho_{\text{$\textsc{Ignore}$}}=\frac{\textsc{Ignore}(\sigma)}{\textsc{Opt}(\sigma)}=4-\varepsilon,$ 
+
+ as desired.
+∎ 
+
+ Experimental support, please
+ view the build logs 
+ for errors. Generated by
+
+ L
+ A 
+ T
+ E 
+
+ xml 
+
+ .
+
+ Instructions for reporting errors
+
+ We are continuing to improve HTML versions of papers, and your feedback helps enhance accessibility and mobile
+ support. To report errors in the HTML that will help us improve conversion and rendering, choose any of the
+ methods listed below:
+
+ Click the "Report Issue" ( ) button, located in the page header.
+
+ Tip: You can select the relevant text first, to include it in your report.
+
+ Our team has already identified the following issues . We appreciate your time reviewing and reporting rendering errors we
+ may not have found yet. Your efforts will help us improve the HTML versions for all readers, because disability
+ should not be a barrier to accessing research. Thank you for your continued support in championing open access for
+ all.
+
+ Have a free development cycle? Help support accessibility at arXiv! Our collaborators at LaTeXML maintain a list of packages that need conversion , and welcome developer contributions .
+
+ We gratefully acknowledge support from
+ our major funders ,
+ member institutions , ,
+ and all contributors.
+
+ About 
+ · 
+ Help 
+ · 
+ Contact 
+ · 
+ Subscribe 
+ · 
+ Copyright 
+ · 
+ Privacy 
+ · 
+ Accessibility 
+ · 
+ Operational Status (opens in new tab) 
+
+ Major funding support from

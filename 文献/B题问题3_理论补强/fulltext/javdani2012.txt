@@ -1,0 +1,1469 @@
+Efﬁcient Touch Based Localization through Submodularity
+Shervin Javdani, Matthew Klingensmith, J. Andrew Bagnell, Nancy S. Pollard, Siddhartha S. Srinivasa
+The Robotics Institute, Carnegie Mellon University
+{sjavdani, mklingen, dbagnell, nsp, siddh }@cs.cmu.edu
+Abstract— Many robotic systems deal with uncertainty by
+performing a sequence of information gathering actions. In this
+work, we focus on the problem of efﬁciently constructing such
+a sequence by drawing an explicit connection to submodularity.
+Ideally, we would like a method that ﬁnds the optimal sequence,
+taking the minimum amount of time while providing sufﬁcient
+information. Finding this sequence, however, is generally in-
+tractable. As a result, many well-established methods select ac-
+tions greedily. Surprisingly, this often performs well. Our work
+ﬁrst explains this high performance – we note a commonly used
+metric, reduction of Shannon entropy, is submodular under
+certain assumptions, rendering the greedy solution comparable
+to the optimal plan in the ofﬂine setting. However, reacting
+online to observations can increase performance. Recently
+developed notions of adaptive submodularity provide guarantees
+for a greedy algorithm in this online setting. In this work,
+we develop new methods based on adaptive submodularity for
+selecting a sequence of information gathering actions online.
+In addition to providing guarantees, we can capitalize on
+submodularity to attain additional computational speedups. We
+demonstrate the effectiveness of these methods in simulation
+and on a robot.
+I. I NTRODUCTION
+Uncertainty is a fundamental problem in robotics. It
+accumulates from various sources such as noisy sensors,
+inaccurate models, and poor calibration. This is particularly
+problematic for ﬁne manipulation tasks [1], such as grasping
+and pushing a small button on a drill, hooking the ﬁngers
+of a hand around a door handle and turning it (two running
+examples in our paper), or inserting a key into a keyhole.
+Because these tasks require high accuracy, failing to account
+for uncertainty often results in catastrophic failure.
+To alleviate these failures, many works perform a se-
+quence of uncertainty reducing actions prior to attempting the
+task [2]–[6]. In this work, we address the efﬁcient automatic
+construction of such a sequence when information gaining
+actions are guarded moves [7]. See Fig. 1 for an example
+sequence which enabled a successful grasp of door handle
+with a noisy pose estimate.
+Ideally, the selected actions reduce uncertainty enough to
+accomplish the task while optimizing a performance criterion
+like minimum energy or time. Computing the optimal such
+sequence can be formulated as a Partially Observable Markov
+Decision Process (POMDP) [8]. However, ﬁnding optimal
+solutions to POMDPs is PSPACE complete [9]. Although
+several promising approximate methods have been devel-
+oped [10]–[13], they are still not well suited for many ma-
+nipulation tasks due to the continuous state and observation
+spaces.
+Previous work on uncertainty reduction utilizes online
+planning within the POMDP framework, looking at locally
+Fig. 1: We adaptively select a sequence of touch actions to reduce uncer-
+tainty. Here, we show actions selected by our Hypothesis Pruning method,
+enabling a successful grasp.
+reachable states during each decision step [14]. In general,
+these methods limit the search to a low horizon [15], often
+using the greedy strategy of selecting actions with the highest
+expected beneﬁt in one step [2]–[5]. This is out of necessity
+- computational time increases exponentially with the search
+depth. However, this simple greedy strategy often works
+surprisingly well.
+One class of problems known to perform well with a
+greedy strategy is submodular maximization . A metric is
+submodular if it exhibits the diminishing returns property,
+which we deﬁne rigorously in Section III-A. A striking fea-
+ture of submodular maximizations is that the greedy strategy
+is provably near-optimal. Furthermore, no polynomial time
+algorithm can guarantee optimality [16], [17].
+One often used metric for uncertainty reduction is the ex-
+pected decrease in Shannon entropy [2]–[6], [18]–[20]. This
+is referred to as the information gain metric, and has been
+shown to be submodular under certain assumptions [21]. Not
+surprisingly, many robotic systems which perform well with
+a low horizon use this metric [2]–[5], [18], though most do
+not make the connection with submodularity. We note that
+Hsiao mentions that touch localization could be formulated
+as a submodular maximization [15].
+The guarantees for submodular maximization only hold
+arXiv:1208.6067v3  [cs.RO]  23 Apr 2013
+
+in the non-adaptive setting. That is, if we were to select a
+sequence of actions ofﬂine, and perform the same sequence
+regardless of which observations we received online, greedy
+action selection would be near-optimal. Unfortunately, it
+has been shown that this can perform exponentially worse
+than a greedy adaptive algorithm for information gain [22].
+Thus, while there are no formal guarantees for performing a
+submodular maximizations online, we might hope for good
+performance.
+Recent notions of adaptive submodularity [23] extend the
+guarantees of submodularity to the adaptive setting, requiring
+properties similar to those of submodular functions. Unfor-
+tunately, information gain does not have these properties.
+With information gain as our inspiration, we design a similar
+metric that does. In addition to providing guarantees with
+respect to that metric, formulating our problem as an adaptive
+submodular maximization enables a computational speedup
+through a lazy-greedy algorithm [23], [24] which does not
+reevaluate every action at each step.
+We present three greedy approaches for selecting uncer-
+tainty reducing actions. The ﬁrst is our variant of information
+gain. This approach is similar to previous works [2]–[6],
+[18]–[20], though we also enforce the assumptions required
+for submodular maximization. The latter two maximize the
+expected number of hypotheses they disprove. We show these
+metrics are adaptive submodular. We apply all methods to
+selecting touch based sensing actions and present results
+comparing the accuracy and computation time of each in
+Section V. Finally, we show the applicability of these meth-
+ods on a real robot.
+II. R ELATED WORK
+Hsiao et al. [4], [15] select a sequence of uncertainty
+reducing tactile actions through forward search in a POMDP.
+Possible actions consist of pre-speciﬁed world-relative trajec-
+tories [4], motions based on the current highest probability
+state. Actions are selected using either information gain or
+probability of success as a metric [15], with a forward search
+depth of up to three actions. Aggressive pruning and cluster-
+ing of observations makes online selection tractable. While
+Hsiao considers a small, focused set of actions (typically
+∼5) at a greater depth, we consider a broad set of actions
+(typically∼150) at a search depth of one action.
+Hebert et al. [5] independently approached the problem of
+action selection for touch based localization. They utilize a
+greedy information gain metric, similar to our own. However,
+they do not make a connection to submodularity, and provide
+no theoretical guarantees with their approach. Additionally,
+they model noise only in X,Y,Z, while we use X,Y,Z, θ.
+Furthermore, by using a particle based representation instead
+of a histogram (as in [5], [15]), we can model the underlying
+belief distribution more efﬁciently.
+Others forgo the ability to plan with the entire belief space
+altogether, projecting onto a low-dimensional space before
+generating a plan to the goal. During execution, this plan
+will likely fail, because the true state was not known. Erez
+and Smart use local controllers to adjust the trajectory [25].
+Platt et al. note when the belief space diverges from what
+the plan expected, and re-plan from the new belief [26].
+They prove their approach will eventually converge to the
+true hypothesis. While these methods plan signiﬁcantly faster
+due to their low-dimensional projection, they pick actions
+suboptimally. Furthermore, by ignoring part of the belief
+space, they sacriﬁce the ability to avoid potential failures. For
+example, these methods cannot guarantee that a trajectory
+will not collide and knock over an object, since the planner
+may ignore the part of the belief space where the object is
+actually located.
+Petrovskaya et al. [27] consider the problem of full 6DOF
+pose estimation of objects through tactile feedback. Their
+primary contribution is an algorithm capable of running in
+the full 6DOF space quickly. In their experiments, action
+selection was done randomly, as they do not attempt to
+select optimal actions. To achieve an error of ∼5mm, they
+needed an average of 29 actions for objects with complicated
+meshes. While this does show that even random actions
+achieve localization eventually, we note that our methods
+take signiﬁcantly fewer actions.
+In the DARPA Autonomous Robotic Manipulation Soft-
+ware (ARM-S) competition, teams were required to local-
+ize, grasp, and manipulate various objects within a time
+limit. Many teams ﬁrst took uncertainty reducing actions
+before attempting to accomplish tasks [28]. Similar strategies
+were used to enable a robot to prepare a meal with a
+microwave [29], where touch-based actions are used prior
+to pushing buttons. To accomplish these tasks quickly, some
+of these works rely on hand-tuned motions and policies,
+speciﬁed for a particular object and environment. While this
+enables very fast localization with high accuracy, a sequence
+must be created manually for each task and environment.
+Furthermore, these sequences aren’t entirely adaptive.
+Dogar and Srinivasa [30] use the natural interaction of
+an end effector and an object to handle uncertainty with
+a push-grasp. By utilizing ofﬂine simulation, they reduce
+the online problem to enclosing the object’s uncertainty in
+a pre-computed capture region. Online, they simply plan a
+push-grasp which encloses the uncertainty inside the capture
+region. This work is complimentary to ours - the push-grasp
+works well on objects which slide easily, while we assume
+objects do not move. We believe each approach is applicable
+in different scenarios.
+Outside of robotics, many have addressed the problem of
+query selection for identiﬁcation. In the noise-free setting,
+a simple adaptive algorithm known as generalized binary
+search (GBS) [31] is provably near optimal. Interestingly,
+this algorithm selects queries identical to greedy information
+gain if there are only two outcomes [19]. The GBS method
+was extended to multiple outcomes, and shown to be adaptive
+submodular [23]. Our Hypothesis Pruning metric is similar
+to this formulation, but with different action and observation
+spaces that enable us to model touch actions naturally.
+Recently, there have been guarantees made for the case of
+noisy observations. For binary outcomes and independent,
+random noise, the GBS was extended to noisy generalized
+
+binary search [32]. For cases of persistent noise, where
+performing the same action results in the same noisy out-
+come, adaptive submodular formulations have been devel-
+oped based on eliminating noisy versions of each hypothe-
+sis [33], [34]. In all of these cases, the message is the same
+- with the right formulation, greedy selection performs well
+for uncertainty reduction.
+III. P ROBLEM FORMULATION
+We review the basic formulation for adaptive submodular
+maximization. For a more detailed explanation, see [23].
+Let a possible object state be φ, called the realization.
+Let Φ be a random variable over all realizations. Thus, the
+probability of a certain state is given by p(φ ) = P [Φ = φ ].
+At each decision step, we select an action a from A, the
+set of all available actions, which incurs a cost c(a). Each
+action will result in some observation o from O, the set of all
+possible observations. We assume that given a realization φ,
+the outcome of an action a is deterministic. Let A⊆ A be all
+the actions selected so far. During execution, we maintain the
+partial realization ψA, a sequence of observations received
+indexed by A. We call it a partial realization as it encodes
+how realizations φ∈ Φ agree with observations.
+For the case of tactile localization, φ is the object pose. A
+corresponds to all end-effector guarded move trajectories [7],
+which terminate when the hand touches an obstacle. O
+encompasses any possible observation, which is the set of
+all distances along any trajectory within which the guarded
+move may terminate. The partial realization ψA essentially
+encodes the “belief state” used in POMDPs, which we denote
+by p(φ|ψA) = P [Φ = φ|ψA].
+Our goal is to ﬁnd an adaptive policy for selecting actions
+based on observations so far. Formally, a policy π is a
+mapping from a partial realization ψA to an action item a.
+Let A(π, φ ) be the set of actions selected by policy π if the
+true state is φ. We deﬁne two cost functions for a policy -
+the average cost and the worst case cost. These are:
+cavg = EΦ [c(A(π, Φ))]
+cwc = max
+φ
+c(A(π, φ ))
+Deﬁne some utility function f : 2A× OA→ R≥0, which
+depends on actions selected and observations received. We
+would like to ﬁnd a policy which that will reach some utility
+threshold Q while minimizing one of our cost functions.
+Formally:
+min c{avg,wc}(A(π, Φ))
+s.t. f (A(π, φ ), φ )≥ Q,∀φ
+This is often referred to as the Minimum Cost Cover
+problem, where we achieve some coverage Q while mini-
+mizing the cost to do so. We can consider optimal policies
+π∗
+avg and π∗
+wc for the above, optimized for their respective
+cost functions. Unfortunately, obtaining even approximate
+solutions is difﬁcult [16], [23]. However, a simple greedy
+algorithm achieves near-optimal performance if our objective
+function f satisﬁes properties of adaptive submodularity and
+monotonicty. We now brieﬂy review these properties.
+A. Submodularity
+First, let us consider the case when we do not condition on
+observations, optimizing an ofﬂine plan. We call a function
+f submodular if whenever X⊆ Y⊆ A, a∈ A\Y :
+Submodularity (diminishing returns):
+f (X∪{ a})− f (X)≥ f (Y∪{ a})− f (Y )
+The marginal beneﬁt of adding a to a smaller set X is at
+least as much as adding it to the superset Y . We also require
+monotonicty, or that adding more elements never hurts:
+Monotonicity (more never hurts):
+f (X∪{ a})− f (X)≥ 0
+The greedy algorithm maximizes f (A∪{a})− f (A)
+c(a) , the
+marginal utility per unit cost. As observations are not incor-
+porated, this corresponds to an ofﬂine plan. If submodularity
+and monotonicty are satisﬁed, the greedy algorithm will be
+within a (1 + lnmax a f (a)) factor of cavg(A(π∗
+avg, Φ)) for
+integer valued f [17].
+B. Adaptive Submodularity
+Now we consider the case where the policy adapts to new
+observations [23]. In this case, the expected marginal beneﬁt
+of performing an action is:
+∆(a|ψA) = E [ f (A∪{ a}, Φ)− f (A, Φ)| ψA]
+We call a function f adaptive submodular if whenever
+X⊆ Y⊆ A, a∈ A\Y :
+Adaptive Submodularity:
+∆(a|X)≥ ∆(a|Y )
+That is, the expected beneﬁt of adding a to a smaller set X
+is at least as much as adding it to the superset Y , for any set
+of observations received from actions Y\X. We also require
+strong adaptive monotonicity, or more items never hurts. For
+any a /∈ X, and any possible outcome o, this requires:
+Strong Adaptive Monotonicity :
+E [ f (X, Φ)|ψX ]≤ E [ f (X∪{ a}, Φ)|ψX , ψa = o]
+In this case, the greedy algorithm maximize ∆(a|ψX )
+c(a) . This
+encodes an online policy, since at each ψX incorporates the
+new observations. Surprisingly, we can bound the perfor-
+mance of the same algorithm with respect to both the optimal
+average case policy π∗
+avg and optimal worst case policy π∗
+wc.
+This has been shown to have be within a (1 + ln(Q)) factor
+of π∗
+avg, and a (1 +ln( Q
+minφ p(φ ) )) factor of π∗
+wc approximation
+for integer valued f , for self-certifying instances (see [23]
+for a more detailed explanation).
+IV. A PPLICATION TO TOUCH LOCALIZATION
+We would like to appeal to the above algorithms and
+guarantees for touch localization, while still maintaining
+generality for different objects and motions. Given an object
+mesh, we model the random realization Φ as a set of sampled
+particles. We can think of each particle φ∈ Φ representing
+some hypothesis of the true object pose.
+
+Fig. 2: We can think of tactile localization as a problem of set cover, which
+is adaptive submodular [23]. Each observation amounts to covering (green
+area) the hypotheses (black dots) which do not agree. Our objective is to
+maximize our coverage, or rule out as many hypotheses as possible.
+Each action a∈ A corresponds to an end-effector trajectory
+which stops when the object is touched. The cost c(a) is the
+time it would take to run this entire trajectory, plus some
+ﬁxed time for moving to the start pose. An observation o∈ R
+corresponds to the time it takes for the end-effector to make
+contact with the object. We deﬁne aφ as the time during
+trajectory a where contact ﬁrst occurs if the true state were φ.
+See Figure 3 for an example. If the swept path of a does not
+contact object φ, then aφ = ∞, which is a valid observation.
+With this formulation, we ﬁrst discuss some assumptions
+made about interactions with the world. We then present
+our different utility functions f , which capture the idea of
+reducing the uncertainty in Φ. In general, our objective will
+be to achieve a certain amount of uncertainty reduction while
+minimizing the time to do so.
+A. Submodularity Assumptions for Touch Localization
+Fitting into the framework of submodular maximization
+necessitates certain assumptions. First, all actions must be
+available at every step. Intuitively, this makes sense as a
+necessity for diminishing returns - if actions are generated
+at each step, then a new action may simply be better
+than anything so far. In some sense, non-greedy methods
+which generate actions based on the current belief state
+are optimizing both the utility of the current action, and
+the potential of actions that could be generated in the next
+step. Instead, we generate a large, ﬁxed set of information
+gathering trajectories at the start.
+Second, we cannot alter the underlying realization φ, so
+actions are not allowed to change the state of the environment
+or objects. Therefore, we cannot intentionally reposition
+objects, or model object movement caused by contact.
+When applied to object localization, this frameworks lends
+itself towards heavy objects that remain stationary when
+touched. For such problems, we believe having an efﬁcient
+algorithm with guaranteed near-optimality outweighs these
+limitations. To alleviate some of these limitations, we hope
+to explore near-touch sensors in the future [35], [36].
+B. Information Gain
+Information gain has been applied to touch localization
+before [4], [5]. In contrast to these, we utilize a large ﬁxed
+set of actions, enforce the assumptions from Section IV-A,
+and use a particle-based model (as opposed to a histogram).
+Following Krause and Guestrin [21], we deﬁne the infor-
+mation gain as the reduction in Shannon entropy. Let ΨA be
+Fig. 3: The observations for action a and realizations φ and φ′. Each
+observation aφ and a′
+φ corresponds to the time along the straight line
+trajectory when contact ﬁrst occurs with the object. We use the difference
+of times|aφ− aφ′| when measuring how far apart observations are.
+the random variable over ψA. Then we have
+IG(Φ; ΨA) = H(Φ)− H(Φ|ΨA)
+As they show, this function is monotone submodular if
+the observations ΨA are conditionally independent given the
+state φ. Thus, if we are evaluating this ofﬂine, we would
+be near-optimal compared to the optimal ofﬂine solution.
+However, this can actually perform exponentially worse than
+the online solution [22]. Therefore, we greedily select actions
+based on the marginal utility of a single action:
+∆IG(a) = H(Φ)− Eo [H(Φ|o)]
+We also need to deﬁne the probability of an observation.
+We consider a “blurred” measurement model where the
+probability of stopping at o conditioned on realization φ is
+weighted based on the time difference between o and aφ (the
+time of contact had φ been the true state), with σ modelling
+the measurement noise:
+p(aΦ = o|φ ) ∝ exp
+(
+−|o− aφ|
+2σ 2
+)
+We could consider evaluating H(Φ) with a discrete en-
+tropy calculation, where each φ∈ Φ is treated as an in-
+dividual item. However, our particle set Φ is modeling an
+underlying continuous distribution, and we would like to
+capture that. Thus, we instead ﬁt a Gaussian to the current
+set Φ and evaluate the entropy of that distribution. Let Σo be
+the covariance over the weighted set of hypotheses, and N
+the number of parameters (typically x, y, z, θ). We use the
+approximated entropy:
+H(Φ|o)≈ 1
+2 ln((2πe)N|Σo|)
+After performing the selected action, we update the belief
+by reweighting hypotheses as described above. We repeat
+the action selection process, setting Φ to be the updated
+distribution, until we reach some desired entropy.
+C. Hypothesis Pruning
+Intuitively, information gain is attempting to reduce uncer-
+tainty by removing probability mass. Here, we formulate a
+method with this underlying idea that also satisﬁes properties
+of adaptive submodularity and strong adaptive monotonicity.
+
+We refer to this as Hypothesis Pruning, since the idea is to
+prune away hypotheses that do not agree with observations.
+Golovin et al. describe the connection between this type
+of objective and adaptive submodular set cover [23]. Our
+formulation is similar - see Fig. 2 for a visualization.
+We note that adaptive submodular functions [23] cannot
+handle noise - they require any realization φ be consistent
+with only one observation per action. However, we would
+like to model sensor noise. A standard method for alleviating
+this is to construct a non-noisy problem by generating a
+realization for every possible noisy observations of every
+φ∈ Φ. Let ΩA(φ ) ={ ˆφ1, ˆφ2, . . .} be the function that gen-
+erates the new realizations ˆφi for actions A. Underlying
+our formulation, we consider constructing this non-noisy
+problem. Luckily, we can compute our objective function
+on the original Φ, and do not need to explicitly perform
+this construction. We present this more efﬁcient computation
+below, and show how to construct the equivalent non-noisy
+problem in Section VII.
+As before, we consider a “blurred” measurement model
+through two different observation models. In the ﬁrst, we
+deﬁne a cutoff threshold dT . If a hypothesis is within the
+threshold, we keep it entirely. Otherwise, it is removed. We
+call this metric Hypothesis Pruning (HP). In the second, we
+downweight hypotheses with a (non-normalized) Gaussian,
+effectively removing a portion of the hypothesis. We call this
+metric Weighted Hypothesis Pruning (WHP). The weighting
+functions are:
+ωHP
+o (aφ ) =
+{
+1 if |o− aφ|≤ dT
+0 else
+ωW HP
+o (aφ ) = exp
+(
+−|o− aφ|2
+2σ 2
+)
+For a partial realization ψ, we take the product of weights:
+pψ (φ ) =
+(
+∏
+{a,o}∈ψ
+ωo(aφ )
+)
+p(φ )
+Note that this can never increase the probability - for any
+ψ, pψ (φ )≤ p(φ ).
+Deﬁne Mψ as the non-normalized probability remaining
+after partial realization ψ, and mψ,a,o as the probability
+remaining after an additional action a and observation o:
+Mψ = ∑
+φ′∈Φ
+pψ (φ′)
+mψ,a,o = ∑
+φ′∈Φ
+pψ (φ′)ωo(aφ′)
+We can now deﬁne our objective function for any partial
+realization ψ, corresponding to removing probability mass:
+f (ψ) = 1− Mψ
+In practice, we need to discretize the inﬁnite observation
+set O. Formally, we require that an equal number of ob-
+servations per φ are considered. That is, for any action a
+and any realizations φi, φ j,|Ωa(φi)| =|Ωa(φ j)|1. In practice,
+we sample observations uniformly along the trajectory to
+approximately achieve this effect.
+To calculate the expected marginal gain, we also need
+to deﬁne the probability of receiving an observation. We
+present it here, and show the derivation in Section VII.
+Intuitively, this will be proportional to how much probability
+mass agrees with the observation. Let Oa be the set of all
+possible observations for action a:
+p(aΦ = o|ψ) = mψ,a,o
+∑o′∈Oa mψ,a,o′
+We note the marginal utility is the additional probability
+mass removed. For an action a and observation o this is
+fψ,a,o = Mψ− mψ,a,o. The expected marginal gain is:
+∆(a|ψ) = Eo
+[
+fψ,a,o
+]
+= ∑
+o∈Oa
+mψ,a,o
+∑o′∈Oa mψ,a,o′
+[
+Mψ− mψ,a,o
+]
+The greedy policy πgreedy maximizes the expected prob-
+ability mass removed per unit cost, or ∆(a|ψ)
+c(a) . After select-
+ing an action and receiving an observation, hypotheses are
+removed or downweighted as described above, and action
+selection is iterated. We now present our main guarantee:
+Theorem 1: Let our utility function be f as deﬁned above,
+utilizing either weighting function ωHP or ωW HP. Deﬁne a
+quality threshold Q such that min φ ,ΩA(φ ) f ({A, AΩA(φ )}) =
+Q.2 Let η be any value such that f (ψ) > Q− η implies
+f (ψ)≥ Q for all ψ. Let π∗
+avg and π∗
+wc be the optimal policies
+minimizing the expected and worst-case number of items
+selected, respectively. The greedy policy πgreedy satisﬁes:
+cavg(πgreedy)≤ cavg(π∗
+avg)
+(
+ln
+(Q
+η
+)
++ 1
+)
+cwc(πgreedy)≤ cwc(π∗
+wc)
+(
+ln
+( Q
+δ η
+)
++ 1
+)
+With δ a constant based on the underlying non-noisy prob-
+lem (see Section VII).
+Proof: In order to prove Theorem 1, we show that
+our objective f is adaptive submodular, strongly adaptive
+monotone, and self-certifying in an equivalent non-noisy
+problem. We show this in our Section VII.
+If we utilize ωHP as our weighting function, we can use
+η = minφ p(φ ). If we utilize ωW HP, η is related to how we
+discretize observations.
+In addition to being within a logarithmic factor of optimal,
+we utilize a lazy-greedy algorithm which does not reevaluate
+all actions at every step, speeding up computation [23], [24].
+1Note that we must be consistent between contact and no-contact obser-
+vations. That is, if we believe action a will contact φi but not φ j, it still must
+be that |Ωa(φi)| =|Ωa(φ j)|. Thus, we also have multiple noisy no-contact
+observations. See Section VII for details.
+2If we have a target uncertainty Q′, we can deﬁne a truncated function
+g(ψ) = min( f (ψ),Q′) to decrease our quality threshold. Truncation pre-
+serves adaptive submodularity [23], so g is adaptive submodular if f is.
+
+V. E XPERIMENTS
+We implement a greedy action selection scheme with
+each of the metrics described above (IG, HP, WHP). In
+addition, we compare against two other schemes - random
+action selection, and a simple human-designed scheme which
+approaches the object orthogonally along the X, Y and Z
+axes. Each object pose φ consist of a 4-tuple (x,y,z, θ )∈ R4,
+where (x,y,z) are the coordinates of the object’s center, and
+θ is the rotation about the z axis.
+We implement our algorithms using a 7-dof Barret arm
+with an attached 4-dof Barret hand. We localize two objects:
+a drill upright on a table, and a door. We deﬁne an initial
+sensed location Xs∈ R4. To generate the initial Φ, we sample
+a Gaussian distribution N(µ, Σ), where µ = Xs, and Σ is
+the prior covariance of the sensor’s noise. For simulation
+experiments, we also deﬁne the ground truth pose Xt∈ R4.
+For efﬁciency purposes, we also use a ﬁxed number of
+particles|Φ| at all steps, and resample after each selection,
+adding small noise to the resampled set of particles.
+A. Action Generation
+We generate linear motions of the end effector, consisting
+of a starting pose and a movement vector. Each action starts
+outside of all hypotheses, and moves as far as necessary
+to contact every hypotheses along the path. Note that using
+straight-line trajectories is not a requirement for our algo-
+rithm. We generate actions via three main techniques.
+1) Sphere Sampling: Starting positions are generated by
+sampling a sphere around the sensed position Xs. For each
+starting position, the end-effector is oriented to face the
+object, and the movement direction set to Xs. A random rota-
+tion is applied about the movement direction, and a random
+translation along the plane orthogonal to the movement.
+2) Normal Sampling: These actions are intended to have
+the hand’s ﬁngers contact the object orthogonally. First, we
+uniformly sample random contacts from the surface of the
+object. Then, for each ﬁngertip, we align its pre-deﬁned
+contact point and normal with our random sample, and
+randomly rotate the hand about the contact normal. We then
+set the movement direction as the contact normal.
+3) Table Contacting: We generate random start points
+around the sensed position Xs, and orient the end effector
+in the−z direction. These are intended to contact the table
+and reduce uncertainty in z.
+B. Simulation Experiments Setup
+We simulate an initial sensor error as Xt− Xs =
+(0.015,−0.015,−0.01,0.05) (in meters and radians). Our
+initial random realization Φ is sampled from N(µ, Σ) with
+µ = Xs, and Σ a diagonal matrix with Σxx = 0.03, Σyy = 0.03,
+Σzz = 0.03, Σθ θ = 0.1. We ﬁx |Φ| = 1500 hypotheses.
+We then generate an identical action set A for each metric.
+The set consists of the 3 human designed trajectories, 30
+sphere sampled trajectories (Section V-A.1), 160 normal
+trajectories (Section V-A.2), and 10 table contact trajectories
+(Section V-A.3), giving|A| = 203.
+0 1 2 3 4 50
+0.01
+0.02
+0.03
+0.04
+Action Number
+Sum of Eigenvalues
+Drill Covariance Evolution
+ 
+ 
+IG
+HP
+WHP
+Human
+Random
+0 1 2 3 4 50
+0.01
+0.02
+0.03
+0.04
+Action Number
+Sum of Eigenvalues
+Door Covariance Evolution
+ 
+ 
+IG
+HP
+WHP
+Human
+Random
+Fig. 4: Uncertainty after each action for drill and door experiments. The bars
+show the mean and 95% CI of the sum of eigenvalues of the covariance
+matrix over experiments described in in Section V-B.
+IG HP WHP
+Time (s) 47.171± 0.25 8.41± 0.58 25.70± 0.29
+TABLE I: Time to select one action for each metric, average and 95% CI
+over drill experiments described in Section V-B
+We run 10 experiments using a different random seed for
+each, generating a different set A and Φ, but ensuring each
+metric has the same A and initial Φ for a random seed. Each
+method chooses a sequence of ﬁve actions, except the human
+designed sequence which consists of only three actions.
+C. Simulation Experiments Results
+We analyze the uncertainty reduction of each metric as the
+sum of eigenvalues of the covariance matrix, as in Fig. 4.
+All metrics were able to reduce the uncertainty signiﬁcantly
+– conﬁrming our speculation in Section II that even random
+actions reduce uncertainty. However, as the uncertainty is
+reduced, the importance of action selection increases, as
+evidenced by the relatively poor performance of random
+selection for the later actions. Additionally, we see the human
+designed trajectories are effective for the drill, but perform
+poorly on the door. Unlike the drill, the door is not radially
+symmetric, and its ﬂat surface and protruding handle offer
+geometric landmarks that our action selection metrics can
+exploit, making action selection more useful.
+For one drill experiment, we also display the hypothesis
+set after each action in Fig. 5, and the ﬁrst 3 actions selected
+in Table II. Note that the actions selected are very different,
+while performance appears similar.
+Observation 1: Information Gain (IG), Hypothesis Pruning
+(HP), and Weighted Hypothesis Pruning (WHP) all perform
+similarly well. On the one hand, you might expect IG to
+perform poorly with adaptive greedy selection, as we don’t
+have any guarantees. On the other, Shannon entropy has
+many properties that make it a good measure of uncertainty.
+Fig. 4 displays the covariance of all particles, which is the
+criterion IG directly optimizes. Note that, surprisingly, HP
+and WHP perform comparably despite not directly optimiz-
+ing this measure.
+Observation 2: The HP and WHP perform faster than IG.
+This is due to their inherent simplicity and the more efﬁcient
+
+Fig. 5: The particle sets Φ from a single drill experiment after each update.
+Plotted positions corresponds to the x,y parameter of each φ∈ Φ, rotated by
+θ. Xs is the sensed position, Xt the true position, and Φi the particles after
+update i. Arrow lengths are approximately the length of the drill base. The
+initial Φ was sampled from a normal distribution with σx = 0.02, σy = 0.02,
+σz = 0.02, σθ = 0.2.
+lazy-greedy algorithm [23], [24]. See Table I for times. Addi-
+tionally, we lose little performance with large computational
+gains with the non-weighted observation model of HP.
+D. Robot Experiments
+We implemented each of our methods (IG, HP, WHP) on
+a robot with a Barret arm and hand, and attempted to open
+a door. Xs is initialized with a vision system corrupted with
+an artiﬁcial error of 0 .035m in the y direction. Our initial
+random realization Φ is sampled from N(µ, Σ) with µ =
+Xs, and Σ a diagonal matrix with Σxx = 0.02, Σyy = 0.04,
+Σzz = 0.02, Σθ θ = 0.08. We ﬁx |Φ| = 2000 hypotheses. We
+initially generate 600 normal action trajectories (Section V-
+A.2), though after checking for kinematic feasibility, only
+about 70 remain.
+We utilize each of our uncertainty reducing methods prior
+to using an open-loop sequence to grasp the door handle.
+Once our algorithm selects the next action, we motion plan
+to its start pose and perform the straight line guarded-
+move using a task space controller. We sense contact by
+thresholding the magnitude reported by a force torque sensor
+in the Barret hand.
+Without touch localization, the robot missed the door han-
+dle entirely. With any of our localization methods, the robot
+successfully opened the door, needing only two uncertainty
+reducing actions to do so. Selected actions are shown in
+Action 1 Action 2 Action 3
+IG
+HP
+WHP
+Random
+Human
+TABLE II: First three actions selected for each metric from the experiment
+in Fig. 5. Particles prior to the action are grey, and particles updated after
+observation are yellow.
+Table III, and full videos are provided online 3.
+Observation 3: Using our faster adaptive submodular met-
+rics, selecting an action takes approximately as long as
+planning and executing it. This suggests that adaptive action
+selection will often outperform a non-adaptive plan generated
+ofﬂine that requires no planning time, but more actions.
+VI. C ONCLUSION AND FUTURE WORK
+In this work, we aim to show that greedy selection with the
+proper metric works well for information gathering actions,
+both theoretically and practically. To do so, we draw an
+explicit connection between submodularity and touch based
+localization. We start with Information Gain (IG), which has
+been used extensively for uncertainty reduction [2]–[6], [18],
+3http://www.youtube.com/watch?v=_HiyKKDStBE
+
+IG HP WHP
+Action 1
+Action 2
+TABLE III: Actions selected during robot experiment. Interestingly, IG and
+HP select the same ﬁrst action. All metrics led to a successful grasp of the
+door handle.
+[20]. We note the assumptions necessary for this metric to
+be submodular, rendering the greedy algorithm near-optimal
+in the ofﬂine setting. We design our own metrics, Hypothesis
+Pruning (HP) and Weighted Hypothesis Pruning (WHP),
+which we show are adaptive submodular. Thus, greedy
+selection is guaranteed to provide near-optimal performance
+in the online setting. In addition, these metrics are much
+faster, both due to their simplicity and a more efﬁcient lazy-
+greedy algorithm [23], [24].
+The methods presented here naively reduce uncertainty
+without considering the underlying task. In actuality, a task
+and planner may not require the exact pose, but that all
+uncertainty lie within a particular distribution. While we can
+apply our naive methods and terminate when this holds,
+we may achieve the task-based target more quickly by
+optimizing for it directly.
+ACKNOWLEDGMENTS
+We gratefully acknowledge support of the Army Research
+Laboratory under Cooperative Agreement Number W911NF-
+10-2-0016, DARPA-BAA-10-28, NSF-EEC-0540865, and
+the Intel Embedded Computing ISTC.
+REFERENCES
+[1] T. Lozano-P ´erez, M. T. Mason, and R. H. Taylor, “Automatic synthesis
+of ﬁne-motion strategies for robots,” IJRR, vol. 3, no. 1, pp. 3–24,
+1984.
+[2] A. R. Cassandra, L. P. Kaelbling, and J. A. Kurien, “Acting under
+uncertainty: Discrete bayesian models for mobile-robot navigation,”
+in IEEE/RSJ IROS, 1996.
+[3] D. Fox, W. Burgard, and S. Thrun, “Active markov localization for
+mobile robots,” Robotics and Autonomous Systems , vol. 25, pp. 195–
+207, 1998.
+[4] K. Hsiao, T. Lozano-P ´erez, and L. P. Kaelbling, “Robust belief-based
+execution of manipulation programs,” in WAFR, 2008.
+[5] P. Hebert, J. W. Burdick, T. Howard, N. Hudson, and J. Ma, “Action
+inference: The next best touch,” in RSS Workshop on Mobile Manip-
+ulation, 2012.
+[6] J. Fu, S. Srinivasa, N. Pollard, and B. Nabbe, “Planar batting under
+shape, pose, and impact uncertainty,” in IEEE ICRA, 2007.
+[7] P. M. Will and D. D. Grossman, “An experimental system for computer
+controlled mechanical assembly,” IEEE Trans. Computers , vol. 24,
+no. 9, pp. 879–888, 1975.
+[8] L. P. Kaelbling, M. L. Littman, and A. R. Cassandra, “Planning and
+acting in partially observable stochastic domains,” Artiﬁcial Intelli-
+gence, vol. 101, pp. 99–134, 1998.
+[9] C. Papadimitriou and J. N. Tsitsiklis, “The complexity of markov
+decision processes,” Math. Oper. Res. , vol. 12, no. 3, pp. 441–450,
+1987.
+[10] N. Roy, G. Gordon, and S. Thrun, “Finding approximate pomdp
+solutions through belief compression,” JAIR, vol. 23, pp. 1–40, 2005.
+[11] T. Smith and R. G. Simmons, “Point-based POMDP algorithms:
+Improved analysis and implementation,” in UAI, 2005.
+[12] H. Kurniawati, D. Hsu, and W. S. Lee, “Sarsop: Efﬁcient point-based
+pomdp planning by approximating optimally reachable belief spaces,”
+in RSS, 2008.
+[13] G. Shani, J. Pineau, and R. Kaplow, “A survey of point-based pomdp
+solvers,” AAMAS, pp. 1–51, 2012.
+[14] S. Ross, J. Pineau, S. Paquet, and B. Chaib-draa, “Online planning
+algorithms for pomdps,” JAIR, vol. 32, pp. 663–704, 2008.
+[15] K. Hsiao, “Relatively robust grasping,” Ph.D. dissertation, Mas-
+sachusetts Institute of Technology, 2009.
+[16] U. Feige, “A threshold of ln n for approximating set cover,” JACM,
+vol. 45, no. 4, pp. 634–652, 1998.
+[17] L. A. Wolsey, “An analysis of the greedy algorithm for the submodular
+set covering problem,” Combinatorica, vol. 2, no. 4, pp. 385–393,
+1982.
+[18] F. Bourgault, A. A. Makarenko, S. B. Williams, B. Grocholsky, and
+H. F. Durrant-Whyte, “Information based adaptive robotic explo-
+ration,” in IEEE/RSJ IROS, 2002.
+[19] A. X. Zheng, I. Rish, and A. Beygelzimer, “Efﬁcient test selection in
+active diagnosis via entropy approximation,” in UAI, 2005.
+[20] L. Erickson, J. Knuth, J. M. O’Kane, and S. M. LaValle, “Probabilistic
+localization with a blind robot,” in IEEE ICRA, 2008.
+[21] A. Krause and C. Guestrin, “Near-optimal nonmyopic value of infor-
+mation in graphical models,” in UAI, 2005.
+[22] G. A. Hollinger, U. Mitra, and G. S. Sukhatme, “Active classication:
+Theory and application to underwater inspection,” in ISRR, 2011.
+[23] D. Golovin and A. Krause, “Adaptive submodularity: Theory and
+applications in active learning and stochastic optimization,” JAIR,
+vol. 42, no. 1, pp. 427–486, 2011.
+[24] M. Minoux, “Accelerated greedy algorithms for maximizing submod-
+ular set functions,” in Optimization Techniques, 1978, vol. 7.
+[25] T. Erez and W. D. Smart, “A scalable method for solving high-
+dimensional continuous pomdps using local approximation,” in UAI,
+2010.
+[26] R. Platt, L. Kaelbling, T. Lozano-P ´erez, and R. Tedrake, “A
+hypothesis-based algorithm for planning and control in non-gaussian
+belief spaces,” Massachusetts Institute of Technology, Tech. Rep.
+CSAIL-TR-2011-039, 2011.
+[27] A. Petrovskaya and O. Khatib, “Global localization of objects via
+touch,” IEEE Trans. on Robotics , vol. 27, no. 3, pp. 569–585, 2011.
+[28] DARPAtv, “Darpa autonomous robotic manipulation (arm) - phase 1,”
+http://www.youtube.com/watch?v=jeABMoYJGEU.
+[29] A. Collet, C. Dellin, M. Dogar, A. Dragan, S. Javdani, K. Strabala,
+M. V . Weghe, and S. Srinivasa, “Herb prepares a meal,” http://www.
+youtube.com/watch?v=9Oav3JajR7Q.
+[30] M. Dogar and S. Srinivasa, “Push-grasping with dexterous hands:
+Mechanics and a method,” in IEEE/RSJ IROS, 2010.
+[31] R. Nowak, “Generalized binary search,” in Proc. Allerton Conference
+on Communications, Control, and Computing , 2008.
+[32] ——, “Noisy generalized binary search,” in NIPS, 2009.
+[33] D. Golovin, A. Krause, and D. Ray, “Near-optimal bayesian active
+learning with noisy observations,” in NIPS, 2010.
+[34] G. Bellala, S. K. Bhavnani, and C. Scott, “Group-based active query
+selection for rapid diagnosis in time-critical situations,” IEEE Trans-
+actions on Information Theory , vol. 58, no. 1, pp. 459–478, 2012.
+[35] K. Hsiao, P. Nangeroni, M. Huber, A. Saxena, and A. Y . Ng, “Reactive
+grasping using optical proximity sensors,” in IEEE ICRA, 2009.
+[36] L.-T. Jiang and J. R. Smith, “Seashell effect pretouch sensing for
+robotic grasping,” in IEEE ICRA, 2012.
+
+VII. A PPENDIX
+Here we present the theorems and proofs showing the Hypothesis Pruning metrics are near-optimal. To do so, we prove
+our metrics are adaptive submodular, strongly adaptive monotone, and self-certifying. Note that the bounds on adaptive
+submodular functions require that observations are not noisy - that is, for a ﬁxed realization φ, an action is consistent with
+exactly one observation. In our case, we would like multiple observations to be consistent with a φ, as our sensors are
+noisy. Thus, we ﬁrst construct a non-noisy problem by creating many weighted “noisy” copies of each realization φ. We
+then show how to compute our objective on the original problem. Finally, we prove our bounds.
+A. Constructing the Non-Noisy Problem
+Similar to previous approaches in active learning, we construct a non-noisy problem by creating “noisy” copies of each
+realization φ for every possible noisy observation [33], [34]. Let Ωa(φ ) ={ ˆφ1, . . . ˆφK} be the function that creates K noisy
+copies for action a. Here, the original probability of φ is distributed among all the noisy copies, p(φ ) = ∑ ˆφ∈Ωa(φ ) p( ˆφ ). For
+convenience, we will also consider overloading Ω to take sets of actions, and sets of realizations. Let ΩA(φ ) recursively
+apply Ω for each a∈ A. That is, if we let A ={a1,a2, . . .} we apply Ωa1 to φ, then Ωa2 to every output of Ωa1(φ ), and so
+on. Note that we still have p(φ ) = ∑ ˆφ∈ΩA(φ ) p( ˆφ ). Additionally, let ΩA(Φ) apply ΩA to each φ∈ Φ and combine the set.
+The probability of each noisy copy comes from our weighting functions deﬁned in Section IV-C:
+ΩA(φ ) ={ ˆφ1, . . . ˆφK}
+p( ˆφ ) = p(φ )
+ωa ˆφ (aφ )
+∑
+ˆφ′∈Ωa(φ )
+ωa ˆφ′ (aφ ) (one action)
+p( ˆφ ) = p(φ ) ∏
+a∈A
+ωa ˆφ (aφ )
+∑
+ˆφ′∈Ωa(φ )
+ωa ˆφ′ (aφ ) (multiple actions)
+For simplicity, we also assume that the maximum value of our weighting function is equal to one for any action. We note
+that our weighting functions in Section IV-C have this property for the non-noisy observation where a ˆφ = aφ :
+max
+ˆφ∈Ωa(φ )
+ωa ˆφ (aφ ) = 1 ∀φ ,a (1)
+We build our set of non-noisy realizations ˆΦ = ΩA(Φ). Our objective function is over ˆΦ, specifying the probability mass
+removed form the original problem. One property we desire is if our observations are consistent with one noisy copy of φ,
+then we keep some proportion of all of the noisy copy (proportional to our weighting function ωHP or ωW HP). In our HP
+algorithm for example, if any noisy copy of φ remains, the objective function acts as if all of the probability mass remains.
+Following Golovin and Krause [23], we deﬁne our utility function over a set of actions A, and the observations we would
+receive if ˆφ were the true state:
+f (A, ˆφ ) = 1− ∑
+φ∈Φ
+(
+∏
+a∈A
+p(φ )
+max p(Ωa(φ ))
+)
+ ∑
+ˆφ∈ΩA(φ )
+p( ˆφ′) ∏
+a∈A
+δa ˆφ a ˆφ′
+
+
+Where δa ˆφ a ˆφ′ is the Kronecker delta function, equal to 1 if a ˆφ = a ˆφ′ and 0 otherwise, φ is the original realization from
+which ˆφ was produced, and max p(Ωa(φ )) is the highest probability of the “noisy” copies. By construction, any action will
+keep at most max p(Ωa(φ )) probability mass per action, since at most one noisy copy from Ωa(φ ) will be consistent with
+the observation. Intuitively, multiplying by p(φ )
+max p(Ωa(φ )) will make it so if we kept the highest weighted noisy copy of φ, our
+
+objective would be equivalent to keeping the entire realization φ.
+f (A, ˆφ ) = 1− ∑
+φ∈Φ
+(
+∏
+a∈A
+p(φ )
+max p(Ωa(φ ))
+)
+ ∑
+ˆφ′∈ΩA(φ )
+p( ˆφ′) ∏
+a∈A
+δa ˆφ a ˆφ′
+
+
+= 1− ∑
+φ∈Φ
+(
+∏
+a∈A
+p(φ )
+max p(Ωa(φ ))
+)
+ ∑
+ˆφ′∈ΩA(φ )
+∑
+ˆφ′′∈ΩA\A( ˆφ′)
+p( ˆφ′′) ∏
+a∈A
+δa ˆφ a ˆφ′′
+
+
+= 1− ∑
+φ∈Φ
+(
+∏
+a∈A
+p(φ )
+max p(Ωa(φ ))
+)
+ ∑
+ˆφ′∈ΩA(φ )
+(
+∏
+a∈A
+δa ˆφ a ˆφ′
+)
+∑
+ˆφ′′∈ΩA\A( ˆφ′)
+p( ˆφ′′)
+
+
+= 1− ∑
+φ∈Φ
+(
+∏
+a∈A
+p(φ )
+max p(Ωa(φ ))
+)
+ ∑
+ˆφ′∈ΩA(φ )
+p( ˆφ′) ∏
+a∈A
+δa ˆφ a ˆφ′
+
+
+Here, we separate the recursive splitting over the realization φ into those split based on actions in A and those split
+from other actions. Since ∏a∈A δa ˆφ a ˆφ′′ only depends on the response to actions in A, it only depends on noisy copies made
+from ΩA. Thus, we can factor those out. Additionally, we marginalize over the copies of ˆφ′ as ∑ ˆφ′′∈ΩA\A( ˆφ′) p( ˆφ′′) = p( ˆφ′).
+Overall, this simpliﬁcation enables us to only consider the copies from the actions in A. We further simplify:
+f (A, ˆφ ) = 1− ∑
+φ∈Φ
+(
+∏
+a∈A
+p(φ )
+max p(Ωa(φ ))
+)
+ ∑
+ˆφ′∈ΩA(φ )
+p( ˆφ′) ∏
+a∈A
+δa ˆφ a ˆφ′
+
+
+= 1− ∑
+φ∈Φ
+(
+∏
+a∈A
+p(φ )
+(
+∑ ˆφ′′∈Ωa(φ ) ωa ˆφ′′ (aφ )
+max ˆφ′∈Ωa(φ ) ωa ˆφ′ (aφ )p(φ )
+))
+ ∑
+ˆφ′∈ΩA(φ )
+p( ˆφ′) ∏
+a∈A
+δa ˆφ a ˆφ′
+
+ (2)
+= 1− ∑
+φ∈Φ
+
+∏
+a∈A
+∑
+ˆφ′′∈Ωa(φ )
+ωa ˆφ′′ (aφ )
+
+
+
+ ∑
+ˆφ′∈ΩA(φ )
+p( ˆφ′) ∏
+a∈A
+δa ˆφ a ˆφ′
+
+ (3)
+= 1− ∑
+φ∈Φ
+
+∏
+a∈A
+∑
+ˆφ′′∈Ωa(φ )
+ωa ˆφ′′ (aφ )
+
+
+
+ ∑
+ˆφ′∈ΩA(φ )
+p(φ )
+(
+∏
+a∈A
+ωa ˆφ′ (aφ )
+∑ ˆφ′′∈Ωa(φ ) ωa ˆφ′′ (aφ )
+)
+∏
+a∈A
+δa ˆφ a ˆφ′
+
+
+= 1− ∑
+φ∈Φ
+p(φ ) ∑
+ˆφ′∈ΩA(φ )
+
+∏
+a∈A
+∑
+ˆφ′′∈Ωa(φ )
+ωa ˆφ′′ (aφ )
+
+
+(
+∏
+a∈A
+ωa ˆφ′ (aφ )
+∑ ˆφ′′∈Ωa(φ ) ωa ˆφ′′ (aφ )
+)(
+∏
+a∈A
+δa ˆφ a ˆφ′
+)
+= 1− ∑
+φ∈Φ
+p(φ ) ∑
+ˆφ′∈ΩA(φ )
+(
+∏
+a∈A
+ωa ˆφ′ (aφ )
+)(
+∏
+a∈A
+δa ˆφ a ˆφ′
+)
+= 1− ∑
+φ∈Φ
+p(φ ) ∑
+ˆφ′∈ΩA(φ )
+∏
+a∈A
+ωa ˆφ′ (aφ )δa ˆφ a ˆφ′
+Where (2) plugging in the value of Ωa(φ ), (3) used (1) above. Now we consider how the function Ω generates noisy
+copies. We require that exactly one noisy copy ˆφ′∈ ΩA(φ ) agree with every observation received so far, and thus only one
+term will have a nonzero product ∏a∈A δa ˆφ a ˆφ′ . We defer further speciﬁc details of Ω until the next section. We get:
+f (A, ˆφ ) = 1− ∑
+φ∈Φ
+p(φ ) ∑
+ˆφ′∈ΩA(φ )
+∏
+a∈A
+ωa ˆφ′ (aφ )δa ˆφ a ˆφ′
+= 1− ∑
+φ∈Φ
+p(φ ) ∏
+a∈A
+ωa ˆφ (aφ )
+At this point we can see how this equals the objective function for partial realization ψ in Section IV-C. Let ψ ˆφ ={A,A ˆφ},
+
+where A are the actions taken and A ˆφ are the observations. We can see that:
+f (A, ˆφ ) = 1− ∑
+φ∈Φ
+p(φ ) ∏
+a∈A
+ωa ˆφ (aφ )
+= 1− ∑
+φ∈Φ
+pψ ˆφ (φ )
+= 1− Mψ ˆφ
+= f (ψ ˆφ )
+B. Observation Probabilities
+To compute expected marginal utilities, we will need to deﬁne our space of possible observations, and the corresponding
+probability for these observations. Let ψ ={ ˜A, ˜O} be the partial realization, and p(aΦ = o|ψ) be the probability of receiving
+observation o from performing action a conditioned on the partial realization ψ. Intuitively, this will correspond to how
+much probability mass agrees with the observation. More formally:
+p(aΦ = o|ψ) ∝ ∑
+φ∈Φ
+∑
+ˆφ∈ΩA(φ )
+p( ˆφ )δa ˆφ o ∏
+{ ˜a, ˜o}∈ψ
+δ ˜a ˆφ ˜o
+Similar to before, we will be able to consider noisy copies made from only actions in ˜A and a (the derivation follows
+exactly as in Section VII-A). This will simplify to:
+p(aΦ = o|ψ) ∝ ∑
+φ∈Φ
+∑
+ˆφ∈Ω{ ˜A∪a}(φ )
+p( ˆφ )δa ˆφ o ∏
+{ ˜a, ˜o}∈ψ
+δ ˜a ˆφ ˜o
+= ∑
+φ∈Φ
+p(φ ) ∑
+ˆφ∈Ω ˜A(φ )
+∑
+ˆφ′∈Ωa( ˆφ )
+( ωa ˆφ′ (aφ )
+∑ ˆφ′′∈Ωa(φ ) ωa ˆφ′′ (aφ ) δa ˆφ′ o
+)(
+∏
+{ ˜a, ˜o}∈ψ
+ω ˜a ˆφ′ ( ˜aφ )
+∑ ˆφ′′∈Ω ˜a(φ ) ω ˜a ˆφ′′ ( ˜aφ ) δ ˜a ˆφ′ ˜o
+)
+The ﬁrst term in parenthesis comes from the weighting of performing action a and receiving observation o, where we
+would like the only noisy copy of φ that agrees with that observation. The second term comes from that same operation,
+but for all actions and observations in ψ. Again, we know by construction that exactly one noisy copy agrees with all
+observations. Hence, we can write this as:
+p(aΦ = o|ψ) ∝ ∑
+φ∈Φ
+p(φ ) ∑
+ˆφ∈Ω ˜A(φ )
+∑
+ˆφ′∈Ωa( ˆφ )
+( ωa ˆφ′ (aφ )
+∑ ˆφ′′∈Ωa(φ ) ωa ˆφ′′ (aφ ) δa ˆφ′ o
+)(
+∏
+{ ˜a, ˜o}∈ψ
+ω ˜a ˆφ′ ( ˜aφ )
+∑ ˆφ′′∈Ω ˜a(φ ) ω ˜a ˆφ′′ ( ˜aφ ) δ ˜a ˆφ′ ˜o
+)
+= ∑
+φ∈Φ
+p(φ )
+(
+ωo(aφ )
+∑ ˆφ′′∈Ωa(φ ) ωa ˆφ′′ (aφ )
+)(
+∏
+{ ˜a, ˜o}∈ψ
+ω ˜o( ˜aφ )
+∑ ˆφ′′∈Ω ˜a(φ ) ω ˜a ˆφ′′ ( ˜aφ )
+)
+Finally, we would also like for ∑ ˆφ′′∈Ωa(φ ) ωa ˆφ′′ (aφ ) to be constant for all actions a and realizations φ, enabling us to factor
+those terms out. To approximately achieve this, we generate noisy copies by discretizing the trajectory uniformly along the
+path, and generate a noisy copy of each realization φ at every discrete location. We approximate our realization to be set
+at one of the discrete locations, such that aφ is equal to the nearest discrete location. For many locations, the weighting
+function will be less than some negligible ε. Let there be K discrete locations for any φ and a where ωaφ > ε. We say that
+|Ωa(φ )| = K. Thus, we can ﬁx the value of ∑ ˆφ′′∈Ωa(φ ) ωa ˆφ′′ (aφ ) = κ ∀a, φ. Note that we also need to be consistent with
+observations corresponding to not contacting an object anywhere along the trajectory. Therefore, we also consider K noisy
+copies for this case. Under these assumptions, we can further simplify:
+p(aΦ = o|ψ) ∝ ∑
+φ∈Φ
+p(φ )
+(
+ωo(aφ )
+∑ ˆφ′′∈Ωa(φ ) ωa ˆφ′′ (aφ )
+)(
+∏
+{ ˜a, ˜o}∈ψ
+ω ˜o( ˜aφ )
+∑ ˆφ′′∈Ω ˜a(φ ) ω ˜a ˆφ′′ ( ˜aφ )
+)
+≈ ∑
+φ∈Φ
+p(φ )
+( ωo(aφ )
+κ
+)(
+∏
+{ ˜a, ˜o}∈ψ
+ω ˜o( ˜aφ )
+κ
+)
+∝ ∑
+φ∈Φ
+p(φ )ωo(aφ ) ∏
+{ ˜a, ˜o}∈ψ
+ω ˜o( ˜aφ )
+= ∑
+φ∈Φ
+pψ (φ )ωo(aφ )
+= mψ,a,o
+
+Finally, we need to normalize all observations to get:
+p(aΦ = o|ψ) = mψ,a,o
+∑o′∈Oa mψ,a,o′
+Where Oa consists of all the discrete stopping points sampled, and the K observations for non-contact.
+C. Proving the Bound
+We showed that our utility function is equivalent to the mass removed from the original Φ: ˆf (ψ) = 1−Mψ. This function
+can utilize either of the two reweighting functions wHP or wW HP deﬁned in Section IV-C. Our objective is a truncated
+version of this: f (ψ) = min
+{
+Q, ˆf (ψ)
+}
+, where Q is the target value for how much probability mass we wish to remove. We
+assume that the set of all actions A is sufﬁcient such that f (A, ˆφ ) = Q,∀ ˆφ∈ˆΦ. Note that adaptive monotone submodularity
+is preserved by truncation, so showing these properties for ˆf implies them for f .
+Using our utility function and observation probability, it is not hard to see that the expected marginal beneﬁt of an action
+is given by:
+∆(a|ψA) = E
+[
+ˆf (A∪{ a},ˆΦ)− ˆf (A,ˆΦ)
+⏐⏐⏐ ψA]
+= ∑
+o∈Oa
+p(o|ψA)
+[
+(1− mψA,a,o)− (1− MψA )
+]
+= ∑
+o∈Oa
+mψA,a,o
+∑o′∈Oa mψA,a,o′
+[
+MψA− mψA,a,o
+]
+(4)
+This shows the derivation of the marginal utility, as deﬁned in Section IV-C. We now provide the proof for Theorem 1,
+by showing that this utility function is adaptive submodular, strongly adaptive monotone, and self-certifying:
+Lemma 1: Let A⊆ A, which result in partial realizations ψA. Our objective function deﬁned above is strongly adaptive
+monotone.
+Proof: We need to show that for any action and observation, our objective function will not decrease in value.
+Intuitively, our objective is strongly adaptive monotone, since we only remove probability mass and never add hypotheses.
+More formally:
+E
+[
+ˆf (A,ˆΦ)|ψA
+]
+≤ E
+[
+ˆf (A∪{ a},ˆΦ)|ψA, ψa = o
+]
+⇔ 1− MψA≤ 1− M{ψA∪{a,o}}
+⇔ 1− MψA≤ 1− mψ,a,o
+⇔ mψ,a,o≤ MψA
+⇔ ∑
+φ∈Φ
+pψ (φ )ωo(aφ′)≤ ∑
+φ∈Φ
+pψ (φ )
+As noted before, both of the weighting functions deﬁned in Section IV-C never have a value greater than one. Thus each
+term in the sum from the LHS is smaller than the equivalent term in the RHS.
+Lemma 2: Let X⊆ Y⊆ A, which result in partial realizations ψX⊆ ψY . Our objective function deﬁned above is adaptive
+submodular.
+Proof: For the utility function f to be adaptive submodular, it is required that the following holds over expected
+marginal utilities:
+∆(a|ψY )≤ ∆(a|ψX )
+∑
+o∈Oa
+mψY ,a,o
+∑o′∈Oa mψY ,a,o′
+[
+MψY− mψY ,a,o
+]
+≤ ∑
+o∈Oa
+mψX ,a,o
+∑o′∈Oa mψX ,a,o′
+[
+MψX− mψX ,a,o
+]
+We simplify notation a bit for the purposes of this proof. As the action is ﬁxed, we will replace Oa with O. For a ﬁxed
+partial realization ψX and action a, let mψX ,a,o = mo. Let ko = mψX ,a,o−mψY ,a,o, which represents the difference of probability
+mass remaining between partial realizations ψY and ψX if we performed action a and received observation o. We note that
+ko≥ 0∀o, which follows from the strong adaptive monotonicity, and ko≤ mψX ,a,o, which follows from mψY ,a,o≥ 0. Rewriting
+
+the equation above:
+∑
+o∈O
+mo− ko
+∑o′∈O mo′− ko′
+[
+MψY− mo + ko
+]
+≤ ∑
+o∈O
+mo
+∑o′∈O mo′
+[
+MψX− mo
+]
+⇔
+(
+∑
+o∈O
+MψY mo− m2
+o + moko− MψY ko + moko− k2
+o
+)(
+∑
+o′∈O
+mo′
+)
+≤
+(
+∑
+o∈O
+MψX mo− m2
+o
+)(
+∑
+o′∈O
+mo′− ko′
+)
+⇔ ∑
+o∈O
+∑
+o′∈O
+MψY momo′− m2
+omo′ + momo′ko− MψY mo′ko + momo′ko− mo′k2
+o≤ ∑
+o∈O
+∑
+o′∈O
+MψX momo′− MψX moko′− m2
+omo′ + m2
+oko′
+⇔ ∑
+o∈O
+∑
+o′∈O
+MψY (momo′− mo′ko) +2momo′ko− mo′k2
+o≤ ∑
+o∈O
+∑
+o′∈O
+MψX (momo′− moko′) +m2
+oko′
+We also note that MψX− MψY≥ max
+ˆo∈O
+(k ˆo). That is, the total difference in probability mass is greater than or equal to the
+difference of probability mass remaining if we received any single observation, for any observation.
+⇔ ∑
+o∈O
+∑
+o′∈O
+2momo′ko− mo′k2
+o≤ ∑
+o∈O
+∑
+o′∈O
+(MψX− MψY )(momo′− moko′ ) +m2
+oko′
+⇐ ∑
+o∈O
+∑
+o′∈O
+2momo′ko− mo′k2
+o≤ ∑
+o∈O
+∑
+o′∈O
+max
+ˆo∈O
+(k ˆo)(momo′− moko′) +m2
+oko′
+⇐ ∑
+o∈O
+∑
+o′∈O
+2momo′ko− mo′k2
+o≤ ∑
+o∈O
+∑
+o′∈O
+max(ko,ko′)(momo′− moko′) +m2
+oko′
+In order to show the inequality for the sum, we will show it holds for any pair o,o′. First, if o = o′, than we have an
+equality and it holds trivially. For the case when o⁄= o′, we assume that ko > ko′ WLOG, and show the inequality for the
+sum:
+2momo′(ko + ko′ )− mo′k2
+o− mok2
+o′≤ 2momo′ko− moko′ko− mo′k2
+o + m2
+oko′ + m2
+o′ko
+⇔ 2momo′ko′− mok2
+o′≤ m2
+oko′ + m2
+o′ko− mokoko′
+⇔ 0≤ ko′(mo− mo′)2− (ko− ko′)ko′(mo− mo′) + (ko− ko′)mo′(mo′− ko′)
+⇐ 0≤ ko′(mo− mo′)2− (ko− ko′)ko′(mo− mo′) + (ko− ko′)ko′(mo′− ko′)
+We split into 3 cases:
+D. k o′ = 0
+This holds trivially, since the RHS is zero
+E. k o′⁄= 0,mo≤ 2mo′− ko′
+Since ko′⁄= 0, we can rewrite:
+0≤ (mo− mo′)2− (ko− ko′)(mo− mo′) + (ko− ko′)(mo′− ko′)
+⇐ 0≤− (ko− ko′)(mo− mo′) + (ko− ko′)(mo′− ko′)
+⇐ (mo− mo′)≤ (mo′− ko′)
+Which follows from the assumption for this case.
+F . mo≥ 2mo′− ko′
+We show this step by induction. Let mo = 2mo′− ko′ + x,x≥ 0
+Base Case: x = 0, which we showed in the previous case.
+Induction Assume this inequality holds for mo = 2mo′− ko′ + x . Let ˆmo = mo + 1. We now show that this holds for ˆmo:
+
+0≤ (ˆmo− mo′)2− (ko− ko′ )(ˆmo− mo′) + (ko− ko′)(mo′− ko′)
+⇔ 0≤ (mo− mo′ + 1)2− (ko− ko′)(mo− mo′ + 1) + (ko− ko′ )(mo′− ko′)
+⇔ 0≤ (mo− mo′)2− (ko− ko′ )(mo− mo′) + (ko− ko′)(mo′− ko′) +2mo− 2mo′ + 1 + ko− ko′
+⇐ 0≤ 2mo− 2mo′ + 1− ko + ko′ by inductive hypothesis
+⇐ 0≤ mo + 1− ko by assumption from case
+⇐ 0≤ 1
+And thus, we have shown the inequality holds for any pair o,o′.
+Finally, it is easy to see that the sum can be decomposed into pairs of o,o′. Therefore, we can see the inequality over the
+sum also holds.
+Lemma 3: Let A⊆ A, which result in partial realizations ψA. The utility function f deﬁned above is self-certifying.
+Proof: An instance is self-certifying if whenever the maximum value is achieved for the utility function f , it is achieved
+for all realizations consistent with the observation. See [23] for a more rigorous deﬁnition. Golovin and Krause point out
+that any instance which only depends on the state of items in A is automatically self-certifying (Proposition 5 .6 in [23].)
+That is the case here, since the objective function f = min
+{
+Q,1− MψA
+}
+only depends on the outcome of actions in A.
+Therefore, our instance is self-certifying.
+As we have shown our objective is adaptive submodular, strongly adaptive monotone, and self-certifying, Theorem 1
+follows from Theorems 5.8 and 5.9 from [23]. Following their notation, we let η be any value such that f (ψ) > Q− η
+implies f (ψ)≥ Q for all ψ. For Hypothesis Pruning, for example, we have η = minφ p(φ ). Additionally, the bound on the
+worst case cost includes δ = min ˆφ p( ˆφ ) ˆφ∈ˆΦ. The speciﬁc values of these constants are related to the weighting function
+and how discretization is done. Nonetheless, for either weighting function and any way we discretize, we can guarantee the
+greedy algorithm selects a near-optimal sequence.

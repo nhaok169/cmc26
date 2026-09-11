@@ -1,0 +1,908 @@
+Source Localization and Tracking for Dynamic
+Radio Cartography using Directional Antennas
+Mohsen Joneidi∗, Hassan Yazdani∗, Azadeh V osoughi, Senior Member , IEEE and Nazanin Rahnavard, Senior Member , IEEE
+Department of Electrical and Computer Engineering
+University of Central Florida
+Emails: {mohsen.joneidi@, h.yazdani@knights., azadeh@, and nazanin@eecs. }ucf.edu
+Abstract—Utilization of directional antennas is a promising
+solution for efﬁcient spectrum sensing and accurate source local-
+ization and tracking. Spectrum sensors equipped with directional
+antennas should constantly scan the space in order to track
+emitting sources and discover new activities in the area of
+interest. In this paper, we propose a new formulation that uniﬁes
+received-signal-strength (RSS) and direction of arrival (DoA)
+in a compressive sensing (CS) framework. The underlying CS
+measurement matrix is a function of beamforming vectors of
+sensors and is referred to as the propagation matrix. Comparing
+to the omni-directional antenna case, our employed propagation
+matrix provides more incoherent projections, an essential factor
+in the compressive sensing theory. Based on the new formulation,
+we optimize the antenna beams, enhance spectrum sensing
+efﬁciency, track active primary users accurately and monitor
+spectrum activities in an area of interest. In many practical
+scenarios there is no fusion center to integrate received data
+from spectrum sensors. We propose the distributed version of our
+algorithm for such cases. Experimental results show a signiﬁcant
+improvement in source localization accuracy, compared with
+the scenario when sensors are equipped with omni-directional
+antennas. Applicability of the proposed framework for dynamic
+radio cartography is shown. Moreover, comparing the estimated
+dynamic RF map over time with the ground truth demonstrates
+the effectiveness of our proposed method for accurate signal
+estimation and recovery.
+Index Terms—Spectrum sensing, source localization and track-
+ing, directional antennas, radio cartography.
+I. I NTRODUCTION
+The cognitive radio (CR) paradigm is a promising solu-
+tion to alleviate today’s spectrum deﬁciency caused by an
+increasing demand for ubiquitous wireless access [1], [2], [3],
+[4]. In the static spectrum allocation strategies, the licensed
+holders of the spectrum (a.k.a. primary users or PUs) often
+under-utilize this valuable resource [1]. The CR paradigm
+allows the unlicensed or secondary users (SUs) to coexist
+with PUs and to access the spectrum as long as they do not
+interfere with PUs. The under-utilized spectrum bands that
+can be used by the SUs are called spectrum holes [5]. One
+approach to monitoring (sensing) spectrum and identifying
+the spectrum holes is through the localization of emission
+sources (PUs). Given the locations of PUs and the signal
+* Indicates shared ﬁrst authorship. This material is based upon work
+supported by the National Science Foundation under grants CCF-1718195,
+CCF-1341966, and ECCS-1443942.
+propagation parameters one can estimate spectrum power of an
+area of interest. Collaborative source localization techniques
+are divided into two main categories, i) centralized techniques,
+and ii) distributed techniques. Centralized techniques are based
+on the assumption that signals from all SUs are collected at a
+fusion center (FC), that is tasked with fusing the received sig-
+nals and localizing the sources. On the other hand, distributed
+techniques are based on the assumption that there is no FC.
+In this case, each SU receives signals from its neighbors and
+performs source localization locally [6].
+Source localization can generally be performed by estimat-
+ing time-difference of arrival (TDoA), received-signal-strength
+(RSS), or direction of arrival (DoA). The ﬁrst approach implies
+synchronization of SUs, which is infeasible in many scenarios.
+Most of the previous works on spectrum sensing exploit omni-
+directional antennas for SUs [7], [8]. Thus, DoA cannot be
+used for source localization in these works. The most popular
+DoA estimation methods include MUSIC, Capon and ESPRIT
+[9]. However, the performance of these methods are limited
+in low SNRs or when the sources are placed close to each
+other. In [10], [11] the RSS and DoA of a PU is estimated
+using energy measurements from a sectorized antenna and the
+performance and theoretical bounds of DoA/RSS estimation
+are studied. The orientation of a PU with respect to SU’s
+location is determined in [12], [13] based on the RSS where
+an SU is equipped with a reconﬁgurable antenna. The signal
+received at an antenna array is sparse in the spatial domain
+and compressive sensing can be employed for DoA estimation
+using less number of radio frequency (RF) chains [14]. In [15]
+the problem of DoA estimation using electronically steerable
+parasitic array radiator (ESPAR) antenna based on compressive
+sensing is exploited for a sensor equipped with a single RF
+chain. However, in the present paper directional antennas are
+employed and their scanning pattern are updated adaptively.
+Moreover, compressive sensing formulation is employed for
+improving the accuracy of source parameters estimation.
+In the present paper, we assume some sensors (or SUs) are
+randomly deployed in the area of interest to sense spectrum
+and the goal is to estimate locations of PUs and generating
+power spectrum map for the whole area of interest. Each
+sensor is equipped with an antenna with uniform linear array
+(ULA). The weighting (beamforming) vector corresponding to
+arXiv:1905.08869v1  [eess.SP]  21 May 2019
+each ULA can be adapted/updated to steer/direct the antenna
+beam and thus localize PUs within the area and track them
+accurately (if they are mobile). We develop both centralized
+and distributed collaborative source localization algorithms, in
+which RSS and DoA information are integrated in a uniﬁed
+formulation. In our formulation, we assume an area of interest
+is divided into P grid points. PUs (emitting sources) may
+only reside in these grid point (Figure 1). PUs locations and
+powers are modeled by a sparse vector, in which a non-zero
+element indicates the presence of a PU in the corresponding
+grid point. The received signal at each SU is a superposi-
+tion of the emitted signals by sources (whose locations and
+signal powers are unknown). In the centralized setup, we
+establish a compressive sensing problem at the FC, where
+the compression operator is modeled in terms of the signal
+propagation parameters and the sensing patterns of the SUs
+directional antennas (encompassing ULA structure and DoA
+information as well as weighting/beamforming vectors). In
+the distributed setup, each SU shares its received signal with
+its neighbors (determined by the connectivity graphs), and
+hence each SU can establish a compressive sensing problem,
+based on the collected received signals from its neighbors.
+For both centralized and distributed setups, we provide source
+localization and tracking algorithms that exploit the inherent
+sparsity and adaptive beamforming to accomplish accurate
+source localization and tracking within the area. The main
+contributions of our paper are summarized as follows:
+• RSS and DoA information are integrated in a uniﬁed
+formulation based on compressive sensing.
+• Sensing patterns (or weighting vectors) of directional
+antennas at SUs are optimized, in order to quickly and
+accurately discover the PUs’ activities and efﬁciently
+track them if they move within the area.
+• In the distributed setup, neighboring SUs localize sources
+collaboratively and track them via adapting their weight-
+ing vectors and steering/directing their beams.
+• As a by-product we can estimate the power spectrum map
+of the area (so-called radio cartography).
+Notation: Throughout this paper, vectors and matrices are
+written as bold lowercase and uppercase letters, respectively.
+Norm 𝓁2 of a vector is denoted by ‖.‖2 and t mod B is equal
+to the remainder of the division t/B.
+The rest of the paper is organized as follows. Section II
+states the problem and explains the employed system model.
+Sections III and IV present our proposed centralized and
+distributed source localization and tracking algorithms. Section
+V elaborates how we can leverage on our source estimation
+ﬁndings in the previous sections to obtain the power map of
+the entire area. Section VI exhibits our experimental results.
+II. S YSTEM MODEL AND PROBLEM STATEMENT
+Our system model can be viewed as the extension of the
+system model in [7], for the case when SUs are equipped with
+directional antennas (instead of omni-directional antennas).
+Suppose an area of interest is divided into P grid points as
+shown in Fig. 1 and PU transmitters are assumed to be located
+Potential sources (PUs)
+Sensors with directional antennas (SUs)
+Active PUs
+Fig. 1: The grid of P = 100 grid points. The PUs are active in 2
+locations out of 100 grid points shown by ﬁlled black squares and 3
+SUs sense the environment using their directional antennas. The goal
+is to localize and track the sources and to estimate a dynamic power
+map, leveraging on SUs’ capabilities of adaptive beamforming.
+in a subset of these grid points, unknown to SUs (i.e., the
+number and the locations of PU transmitters as well as their
+transmission power are unknown to SUs). Moreover, there are
+N SUs (or spectrum sensors) with known locations, where
+each sensor receives a superposition of the PUs’ signals subject
+to a zero mean measurement noise. We suppose antenna of
+each SU is a ULA consisting of M elements with adjacent
+element spacing of d. Assuming θn, p is the orientation of grid
+point p with respect to sensor n, the manifold matrix for sensor
+n is given by An =[an,m, p], where
+an,m, p = 1
+Rη
+n, p
+e−j 2π d(m−1)
+λc sin(θn, p), (1)
+in which λc is the wave-length corresponding to the oper-
+ating frequency of each SU. Moreover, Rn, p is the distance
+between grid point p and sensor n, and η is the path-loss
+exponent [9]. We note that in general, the received signal at
+sensor n would be affected by channel fading gains between
+PU transmitters and sensor n. These gains can be obtained
+by training sequences, which is beyond the scope of this
+paper. For simplicity, similar to [7], [8], we only consider
+path loss effect in our signal modeling in (1), to indicate that
+the received signal will be attenuated inversely proportional to
+Rn, p1. We write the received signal at sensor n as
+rn = w H
+n An s + w H
+n zn, (2)
+where wn =[wn,1 ... wn, M]T is the weighting (or beamform-
+ing) vector at sensor n, and we assume that ‖wn‖2
+2 = C1, ∀n
+where C1 is the antenna gain. In (2) s =[s1 ... sP]T is the
+transmitted signal vector from PUs, and zn =[zn,1 ... zn, M]T
+is the received noise vector at sensor n corresponding to
+its ULA, where zn,m ∼ CN(0,σ 2
+zn) are zero-mean complex
+Gaussian independent and identically distributed (i.i.d). Fig.
+1 illustrates an example of antenna spatial gain (or sensing
+pattern) of sensors at a single time slot. However, the sensing
+pattern can be a different one at the next time slot. The beam
+1The propagation model can be extended for fading channels by assuming
+an uncertainty on the channel gains.
+of antennas in a set of consecutive time slots should (i) cover
+the whole area in order to discover a new appearing PU and
+(ii) scan the location of previously estimated active PUs to
+track their changes.
+We assume that the signals of PUs’ transmitters are inde-
+pendent and let yn(t) =|rn(t)| 2 = rn(t)r∗
+n(t) denote the RSS of
+sensor n at time t. We can write yn(t) as the following:
+yn(t) =
+PÕ
+p=1
+w H
+n(t)AnC p AH
+n wn(t)
+|                      {z                      }
+=γp n(t)
+xp(t)
++ w H
+n(t)zn(t)z H
+n(t)wn(t)
+|                       {z                       }
+=vn(t)
+=γT
+n(t)x(t) + vn(t), (3)
+where the vector γn(t) =[γ1n(t) γ2n(t) ... γPn(t)]T , and
+xp(t) =|sp(t)| 2 represents the propagation power at the grid
+point p and time instant t, x(t) =[x1(t) x2(t) ... xP(t)]T is
+the propagation power vector, wn(t) is the beamforming vector
+that sensor n uses at time t, and vn(t) is distributed as an expo-
+nential random variable with mean mvn =‖wn‖2
+2σ2
+zn = C1σ2
+zn.
+Matrix C p is a P× P matrix with all entries equal to 0 except
+the diagonal entry of index (p, p). Note that γn, p includes the
+pathloss effect as well as the beamforming vector wn. We can
+write vn(t) in (3) as
+vn(t) =εn(t) + mvn, (4)
+whereεn(t) is a zero-mean random variable with variance m2
+vn.
+We assume that sensor n can adjust its antenna sensing pattern
+and steer its beam, via optimizing its beamforming vector
+wn. Examining (3) we note that vector γn depends on the
+optimization variable wn. Moreover, vector x(t) is unknown
+and sparse. Assuming the RSS yn(t) for some n values (in
+the centralized setup, n∈{ 1,..., N}, and for the distributed
+setup, n∈N n, where Nn is the set of neighboring sensors
+of sensor n) are available, our main goal is to exploit the
+steering capability of SUs’ antennas in order to improve the
+accuracy and efﬁciency of spectrum sensing, for the general
+scenario when the number and the locations of PU transmitters
+are unknown and time varying. This means that we aim at
+ﬁnding an accurate estimate of the sparse vector x(t) as time
+changes, as we allow SU sensors to adjust their antenna
+sensing patterns. By allowing SUs to steer their beams and
+optimize their beamforming vectors, we enable discovering of
+new PU signals and tracking those that have been discovered
+previously. Having an accurate estimate of x(t) we can build
+the dynamic radio power map of the ﬁeld, via estimating the
+RSS at each grid point and time instant t. We note that as
+we solely use RSS for estimating x(t) and the power map, no
+synchronization is required among SU sensors.
+Considering centralized estimation of x(t), let y(t) =
+[y1(t) y2(t) ... yN(t)]T denote the vector containing the
+RSS of all N sensors. Moreover, let Γ denote an N× P
+matrix, whose n-th row is γT
+n . Matrix Γ is referred to as the
+measurement matrix in the literature of compressive sensing
+and we refer to it as propagation matrix here. The vector of
+RSS at the FC can be written as
+y(t) = Γ(t)x(t) + mv +ε(t), (5)
+where mv =[mv1 mv2 ... mvN]T is the vector of averaged
+RSS and vector ε(t) is the zero-mean residual of all sensors at
+time instant t . The centralized estimation of the sparse signal
+x(t) can be viewed as the solution to the following constrained
+optimization problem
+< ˆx(t), ˆW(t)> = argmin
+x,W
+‖ y(t)− Γ(t)x− mv‖2
+2
+s.t. Γ(t) = h(W(t)), ‖ x‖1≤ C0 and‖wn‖2
+2 = C1 ∀n, (6)
+where W =[w1 ... w N] is an M× N matrix containing
+beamforming vectors and h(·) is a function of beamforming
+matrix W which can be derived using (3). Parameter C0 tunes
+the impact of 𝓁1 regularization and parameter C1 restricts
+antenna gain of SUs. Fig. 1 shows a sensor network with 3
+SUs and 100 candidate points for PUs where only 3 of them
+are active and propagate signals. SUs continuously scan the
+space to discover signals of new PUs and track the previously
+detected ones.
+Previous works have focused on estimation of variable x
+subject to a given propagation matrix. The following mini-
+mization problem has been proposed for estimating x(t) for
+each time independently [7], [16]:
+ˆx(t) = argmin
+x
+‖ y(t)− Γx− mv‖2
+2 +λ‖ x‖1. (7)
+In Problem (7), propagation matrix is a function of distance
+of SUs and PUs and it can not be optimized. However,
+in the present work we employ directional antennas and
+beamforming is needed to track existing PUs and discover
+any appearing PUs. Next, we will discuss the centralized and
+distributed solutions of our constrained optimization problem.
+III. C ENTRALIZED SOURCE LOCALIZATION AND
+TRACKING
+In this section, we address Problem (6). To achieve this, we
+need to link between the entries of matrix Γ and dynamic of
+network through beamforming matrix W, and the last estimate
+of the propagation power vector x(t− 1). Each SU sweeps
+a different pattern at each time slot. Assume at time slot t
+we jointly estimate the propagation power vector x(t), and
+optimize the beamforming vector wn(t). We exploit B recent
+measurements from B distinguished sensing patterns. Each B
+consecutive time slots make a time block of size B. Let us
+break Problem (6) into two alternating subproblems as the
+following
+ˆx(t) = argmin
+x
+‖ y B(t)− ΓB(t) ˆx− mB
+v‖2
+2 +λ‖ x‖1, (8a)
+ˆW(t +1) = argmin
+W
+‖ y B(t)− ΓB(t +1) ˆx(t)− mB
+v‖2
+2, (8b)
+s.t. ΓB(t +1) = h(W(t)).
+The ﬁrst subproblem estimates x(t) using B recent measure-
+ments of N sensors and the second subproblem updates the
+next beamforming vector for the next time slot. In (8a),
+y B(t) =
+[
+yT(t− B + 1) yT(t− B + 2) ... yT(t)
+]T , is a vector
+containing N B sensed RSS measurements and ΓB(t) =[ΓT(t−
+B+1) ΓT(t−B+2) ... ΓT(t)
+]T is an N B× P matrix. Note that
+in each time slot N new beamforming vectors are updated for
+N sensors. In other words, N new rows are added to matrix
+ΓB and N obsolete rows are removed. Moreover, in ΓB(t +1)
+the ﬁrst(B−1)× N rows are shared with ΓB(t). However, the
+last N rows of ΓB(t+1) are subject to optimization. In the rest
+of this section we explain how to solve this problem.
+Solving Problem (8a) w.r.t. x is a straightforward problem
+which is discussed in the context of sparse regression and
+compressive sensing. However, Problem (8b) is a challenging
+problem and the main contribution of this paper is solving (8b)
+efﬁciently, i.e., updating beamforming vectors efﬁciently.
+A. Recovery of sparse sources
+Subproblem (8a) is a classic regression problem. Usually
+number of sensors ( N) are much smaller than the number
+of grid points ( P), which results in a compressive sensing
+problem. 𝓁1 regularization promotes sparsity that plays a key
+role for sparse recovery. There have been extensive efforts for
+solving this problem efﬁciently. Some of the state-of-the-art
+algorithms are least absolute shrinkage and selection operator
+(LASSO) [8] and iterative re-weighted least squares (IRLS)
+[15], [17]. There are two essential factors in compressive
+sensing theory (i) sparsity of the underlying process and (ii)
+incoherent projections from the process [18]. In the next
+subsection we study the second factor in order to provide a
+set of incoherent projections of x in (8).
+B. Successive optimization of beamforming vectors
+Problem (8b) can be regarded as updating matrix Γ in order
+to project the most information from x into y in each time
+slot. There are two phases for updating entries of Γ: phase
+i) A part of Γ is optimized for sensing a general unknown x
+(discovering), phase ii) A part of Γ is allocated and optimized
+for tracking a known previously estimated x (tracking). In the
+ﬁrst phase unseen spectrum activities are discovered. While
+in the second phase an estimate for x is available and small
+changes are tracked via optimizing beamforming vectors of
+sensors.
+• Phase 1: Discovery of unknown sources : First we write
+the problem in terms of optimization of Γ.
+Γ = argmin
+Γ
+Ex
+{
+‖ y(t)− mB
+v − Γx‖2
+2
+}
+. (9)
+In the case of Gaussian and independent noise for each sensor
+it is easy to show that this problem is equal to solving the
+following problem,
+Γ = argmin
+Γ
+trace
+(Õ
+n
+γnγT
+n
+)−1
+. (10)
+This problem enforces rows of Γ to be linearly independent.
+In the case of linearly dependent set of rows of Γ the cost
+function in (10) will be inﬁnity. Intuitively, as we measure
+less correlated projections of an unknown vector we can
+recover it more accurately 2. Equation (10) indicates that we
+should regularize Problem (8b) accordingly. On the other hand,
+Problem (8b) is expressed in terms of the beamforming matrix
+W. According to (3), row space of Γ is spanned by w H
+n An
+for all n. Problem (10) should be cast in terms of these bases.
+Let uT
+n(t) = wn(t)H An be an auxiliary row vector and matrix
+U(t) be a matrix whose N rows are uT
+n(t) for n = 1,..., N.
+The beam update rule, inspired by (10), is formulated as
+un(t + 1) = argmin
+u
+det(U BUT
+B)−1 s.t.‖ u‖2
+2 = 1, (11)
+where U B is the concatenation of all scanned beams in the
+recent B− 1 time slots and a new row u. In this problem, u
+is the last row of U B which is the subject of optimization.
+This problem will be repeated N times to ﬁnd a new scanning
+beam for all N sensors. Problem (10) is referred as A-optimal
+solution in the literature of optimization [19]. However, (11) is
+modiﬁed to use D-optimality by minimizing determinant [19].
+D-optimality provides attractive properties which is helpful
+for efﬁcient optimization. D-optimal optimization is a sub-
+modular problem which can be solved optimally in a greedy
+manner. In other words, at time slot t when the beams of
+N SUs is updated, we can use greedy approach to update
+each beam independently and add the new found beam to
+U B. In (11), the collection of un vectors in U B constructs
+a polygonal in RP in which each vertex corresponds to a
+previously scanned beam. The proposed optimization problem
+ﬁnds a new vertex on the unit sphere such that the volume
+of the new polygonal is maximized. This criterion has many
+applications in sensor selection, sensor placement, and data
+reduction [20], [21], [22]. We refer to the solution of this
+problem as the discovery-based beamforming vectors. These
+beamforming vectors are uncorrelated to each other and each
+one tries to discover a new direction which is not covered by
+the span of other beams. Finally, wn(t +1) must be computed
+using estimated un(t +1) in (11) as follows.
+˜wn(t + 1) =(An AT
+n)−1 An un(t +1), (12a)
+ˆwn(t + 1) =
+√
+C1 ˜wn(t +1)/‖ ˜wn(t +1)‖2. (12b)
+The number of grid points for potential PUs ( P) should be
+greater than M to have an invertible An AT
+n . The solution to
+(12) provides a set of incoherent vectors as the measurement
+matrix in the compressive sensing formulation. Incoherency of
+measurement vectors plays a key role in compressive sensing
+of a general unknown x [18]. However, the current estimation
+of x gives us valuable information about eventful parts of the
+area of interest which is discussed next.
+• Phase 2: Tracking of sources with a priori knowledge : We
+can obtain an initial (rough) estimate of propagation power
+vector x using any randomly chosen set of beamforming
+vectors. This rough estimate of x is considered as the initial
+result of source localization and is used for tracking the
+2We say two vectors are less correlated when their inner vector product
+has a smaller absolute value.
+discovered sources more efﬁciently at the next time slot. To
+achieve this, it is sufﬁcient to update wn according to the
+equations given by
+˜wn(t + 1) = An ˆx(t), (13a)
+ˆwn(t + 1) =
+√
+C1 ˜wn(t +1)/‖ ˜wn(t +1)‖2. (13b)
+This update rule performs similar to a matched ﬁlter
+(matched to the received signal) which maximizes the RSS.
+In each time block of operation, i.e., B time slots, one beam
+is dedicated to be matched with the dynamic of network. The
+task of B−1 beams is to discover unseen areas of network to
+discover any new activity. Once a new activity is detected by
+estimation of x, it will be reﬁned and tracked via the dedicated
+beam. Assuming N B≤ M, then discovery-based beams can
+be updated via selection from the null space of beams in the
+recent B−1 time slots. Null space of these beams associates
+with a space that is not covered yet and the next beam is
+restricted to be selected from this space. Fig. 2 illustrates a
+time block of sensing operation. Assume we have a rough
+estimation of propagation power vector x and at the ﬁrst time
+slot a sensing beam is optimized such that the previously
+detected source can be tracked. The second beam (at the
+second time slot) is a vector which is orthogonal to w1(1) and
+at the third time slot w1(3) is optimized to be orthogonal to
+the two-dimensional subspace spanned by w1(1) and w1(2). In
+general, we use the recent B beams for estimation in each time.
+In any B consecutive time slots there is one beam for tracking
+and B−1 orthogonal/uncorrelated beams3. Each of these beams
+is orthogonal to the recent tracking beam and orthogonal to
+the rest of beams. In the case that N B > M after M time
+slots the null space will be empty and w(M + 1) can not be
+selected from the null space. In this case we can not employ
+3In the case of N B ≤ M the optimum beams will be orthogonal and
+otherwise we can just optimize them to be uncorrelated.
+Algorithm 1 Centralized spectrum sensing and beamforming.
+Input: Location of SUs and RSS.
+Output: x(t) (Location and powers of PUs for each t).
+1: Random initialization of wn(t) ∀n.
+2: Construct Γ using Eq. (3).
+for a new time slot t
+3: Collect vector y B from recent B time slots
+4: Construct matrix ΓB for recent B time slots
+5: ˆx← Solve Problem (8a)
+if t mod B = 0
+6: ˆwn(t +1)← Eq. (13).
+else
+7: Construct matrix U B for recent B time slots.
+8: ˆwn(t +1)← Problem (11) and Eq. (12a).
+end
+end
+t=1 t=2 t=6
+𝐵 = 6
+t=3 t=4 t=5 𝒘1(1)
+Discovering
+.
+𝒘1(2)𝒘1(3)
+𝒘1(4)
+𝒘1(5)
+𝒘1(6)
+Tracking
+𝐒𝐔𝟏
+𝒘1(1) 𝒘1(2) 𝒘1(3) 𝒘1(4) 𝒘1(5) 𝒘1(6)
+PU
+𝒘1(2) is uncorrelated with 𝒘1(1)
+𝒘1(3) is uncorrelated with 𝒘1(1) and 𝒘1(2)
+.
+.
+𝒘1(1) is optimized for tracking
+Fig. 2: A time block of sensing operation which contains 6 time
+slots. In each time block one beam is dedicated for tracking and the
+rest discover network’s area for upcoming PUs. The main problem
+introduced in (8) is solved using recent B time slots.
+the solution suggested by null space selection and Problem
+(11) must be solved for each time. Alg. 1 summarizes the
+steps of the proposed algorithm. First beamforming vectors are
+initialized randomly and the corresponding propagation matrix
+Γ is constructed. Then, for each time slot measurements are
+sensed and the joint x estimation and beamforming problem
+is solved.
+IV. D ISTRIBUTED IMPLEMENTATION
+In some practical scenarios there is no FC to aggregate
+measurements and to perform the centralized algorithm. Still,
+we can leverage on limited communication between neigh-
+boring SUs to enable collaborative spectrum sensing in a
+distributed fashion, using the beam steering capabilities of the
+antennas. Each sensor processes its received signal separately.
+As neighboring SUs communicate over inter-sensor links
+(governed by the connectivity graphs), each sensor learns and
+collects signals of its neighbors. Consequently SUs can reach
+a consensus over the result of spectrum sensing and their
+estimates of propagation power vector x. Fig. 3 shows a simple
+distributed network in which 10 SUs estimate the locations and
+the signal powers of 4 active PUs. Sensor n is connected to
+a subset of SUs which is determined by set Nn. Distributed
+Fig. 3: A network of 10 SUs. They collaboratively estimate the location
+and power of PUs. Each SU is linked to only a subset of SUs which
+is determined by the connectivity graph.
+Algorithm 2 Distributed spectrum sensing and beamforming.
+Input: Location of SUs, Neighborhood of SUs and RSS.
+Output: x(n)(t) (estimated x at sensor n and time t)
+1: Randomly initiate of wn(t) ∀n.
+2: Construct Γ(n) using Eq. (3).
+for a new time slot t
+for sensor n
+3: Collect vector y(n) fromNn in recent B time slots
+4: Construct matrix Γ(n) for sensors indicated by Nn
+5: ˆx(n)← Solve Problem (14)
+if t mod B = 0
+6: ˆwn(t +1)← Eq. (13).
+else
+7: Construct matrix U(n) forNn in recent B time slots.
+8: ˆwn(t +1)← Problem (11) using U(n) and Eq. (12a).
+end
+end
+end
+version of Problem (8a) is proposed as the following:
+ˆx(n)(t) = argmin
+x
+‖ y(n)(t)− Γ(n) x− mv‖2
+2
++λ‖ x‖1 +α
+Õ
+i∈Nn
+‖ ˆx(i)(t−1)− x‖2
+2. (14)
+In this problem ˆx(n) is the obtained estimation of propagation
+power vector at the nth SU. Vector y(n) in the collection of
+sensing measurements fromNn sensors for recent B time slots
+and Γ(n) is the corresponding propagation matrix. The last
+term of optimization applies consensus among connected SUs
+for each estimation. Parameter α regularizes the impact of
+the consensus term in the main cost function. Alg. 2 shows
+the steps of the distributed implementation of our proposed
+algorithm.
+Beamforming optimization is similar to the centralized
+solution. However, each SU only has access to the scanned
+beams of itself and its neighbors to construct matrix U B in
+problem (11). We deﬁne matrix U(n)(t) for each time which
+corresponds to the already scanned beams in recent B time
+slots via sensor n and its neighbors. Mathematically, the set
+of rows of matrix U(n)(t) can be expressed by,
+{u j(τ)} where, u j(τ) = w H
+j(τ)Aj
+∀ j∈N n andτ = t− B + 1,··· , t− 1.
+The goal is to add a new row such that the criterion in Problem
+(11) is optimized.
+V. R ADIO CARTOGRAPHY
+An important side product of estimating x(t) in Alg. 2 and
+Alg. 1 is generating the RF power map for any arbitrary point
+in the network. This is also referred to as radio cartography.
+Consider a point g with coordinate(g1, g2) in the network. To
+Sensing 
+Results
+Spectrum Sensors with 
+Directional Antennas Sparse 
+Recovery
+PU Localization & 
+Power Estimation
+Propagation 
+Matrix 
+Construction
+Beamforming
+Cognitive 
+Radio Network
+ Radio Cartography
+Fig. 4: Block diagram of the dynamic spectrum sensing scheme which
+uses our proposed localization and beamforming algorithm.
+estimate the RSS at point (g1, g2), it is sufﬁcient to consider
+the estimated sources at their corresponding locations and
+apply the underlying propagation model. Propagation pattern
+of sources is considered to be omni-directional. The estimated
+RSS at location g and time instant t can be interpolated as
+follows:
+RSS(g) =
+PÕ
+p=1
+ˆxp(t)
+Rη
+g, p
+. (15)
+where Rg, p is the distance between location g and the p-th
+PU. Fig. 4 shows the block diagram of dynamic spectrum
+cartography via our proposed localization and beamforming
+algorithm.
+VI. E XPERIMENTAL RESULTS
+In this section, experiment results for synthetic data in a
+cognitive radio network are presented. Simulations are per-
+formed using CVX toolbox in Matlab. The area of interest is
+100m×100m. The locations of PUs on this grid are unknown
+and SUs are placed randomly on this grid. Fig. 5 shows the
+impact of directional antennas on the localization accuracy.
+There are 8 active PUs in the network and 10 SUs are sensing
+the environment. In this ﬁgure there is no noise on the RSS
+and our proposed method reaches almost exact reconstruction
+after few time slots. Fig. 5a shows the ground truth power map
+and location of 10 SUs in the network. The estimated power
+map using omni-directional antennas is depicted in Fig. 5b.
+Employing Directional antennas by randomly chosen beam-
+forming weights provides a signiﬁcant improvement compared
+to omni-directional antennas which is shown in Fig. 5c. Our
+proposed method reaches exact reconstruction after 50 time
+slots. Fig. 5d shows the reconstructed power map using our
+algorithm that is identical to the ground truth.
+Fig. 6 exhibits the numerical comparison corresponding to
+the simulation of Fig. 5. This graph shows the performance
+(a)
+ (b)
+(c)
+ (d)
+Fig. 5: Comparison of estimated power map with the ground truth. (a)
+Ground truth that synthesized data are generated accordingly. (b) The
+estimated map using omni-directional SUs [7]. (c) The estimated map
+utilizing directional antennas with randomly chosen initial patterns.
+(d) Retrieved spectrum map using the proposed algorithm after 20
+time slots.
+10 20 30 40 5 0
+0
+0.2
+0.4
+0.6
+0.8
+Fig. 6: Normalized error of source localization of 8 PUs.
+of localization in terms of normalized error of estimation as
+follows:
+normalized error(t) =‖ x(t)− ˆx(t)‖2
+‖ x(t)‖2
+, (16)
+in which ˆx(t) is the estimated vector that contains location
+and power of each PU at time t. As it can be seen, after
+20 time slots our algorithm retrieves the true locations for
+PUs. The effect of additive noise is studied in Fig. 7 over
+time. As it can be seen, the performance of localization when
+SNR = 10 dB is close to the noiseless regime. The noise
+is added according to (2). A Monte Carlo simulation with
+50 different noise realization is performed for three level of
+noise. In this ﬁgure mean square error (MSE) is evaluated
+over time which is equal to average of normalized errors. Fig.
+8 indicates the normalized error after 20 time slots of the
+algorithm versus different SNRs. In Fig. 9a we investigate
+the impact of the number of elements M in each antenna
+array on the normalized error of localization. As this ﬁgure
+suggests, M = 8 is sufﬁcient for accurate localization within
+the area. Fig. 9b shows performance of localization in presence
+of different number of active PUs in a network with 100 grid
+points and 10 sensors each one is equipped with 8 elements.
+Fig. 10 considers the situation where there are 8 PUs in
+the area and the location of one PU is changing every 20
+time slots. Each location change is discovered and tracked.
+5 1 01 52 02 53 03 54 04 55 0
+0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+0.7
+0.8
+Fig. 7: Normalized error of source localization for two SNRs and the
+noiseless regime over time.
+0 5 10 15 2 0
+0.1
+0.2
+0.3
+0.4
+0.5
+Fig. 8: Normalized error of our centralized algorithm versus SNR.
+14 8 1 6 3 2
+0
+0.2
+0.4
+0.6
+0.8
+(a)
+123456789 1 0
+0
+0.02
+0.04
+0.06
+0.08
+(b)
+Fig. 9: (a) Normalized error of source localization in terms of M, (b)
+Normalized error versus number of active PUs.
+However, the location change occurred at time slot 40 takes a
+longer time to be detected and tracked. The performance of our
+distributed localization algorithm for detecting and tracking
+8 PUs is compared with the case where sensors have omni-
+directional antennas. Our algorithm tracks the location changes
+and reﬁnes the estimated power map over time.
+The connectivity of nodes plays a key role in the perfor-
+mance of our distributed algorithm. Fig. 11a and Fig. 11b
+compare two graphs of connectivity for 10 spectrum sensors
+0 2 04 06 08 0 1 0 0
+0
+0.2
+0.4
+0.6
+0.8
+Fig. 10: Normalized error of source localization in the presence of 8
+PUs. Each 20 time slots the location of one PU changes.
+(a) Connectivity graph 1.
+ (b) Connectivity graph 2.
+20 40 60 80 10 0
+0
+0.2
+0.4
+0.6
+0.8
+(c) Normalized error for two connectivity graphs.
+Fig. 11: Effect of connectivity graphs on the performance of source
+localization.
+in which nodes are more connected to each other in Fig. 11b.
+The normalized error of localization for these two distributed
+networks are compared with the centralized solution in Fig.
+11c. As the network is more connected, sensors reach consen-
+sus faster. However, the centralized solution converges to the
+ﬁnal solution in much less number of time slots.
+Fig. 12 shows performance of our proposed distributed
+algorithm for localization of PUs versus parameter α which
+regularizes the impact of consensus. The location of PUs are
+assumed to be constant over time and the distributed algorithm
+reaches consensus about location of PUs over time. This plot
+is drawn in terms of averaged normalized error of all sensors.
+At the ﬁrst time slot different sensors may have very different
+estimation of PUs’ locations. However, after several time slots
+the accuracy of their estimations increases and their solutions
+converge to each other. Fig. 13 compares the estimated power
+map of two distant SUs. The ground truth power map is shown
+and the estimated power map using SU1 and SU2 are compared
+at time slots 1 and 100. At time slot 100, all sensors have used
+information of all other sensors and a consensus has been
+10-5 10-4 10-3 10-2
+0.2
+0.22
+0.24
+0.26
+0.28
+0.3
+Fig. 12: The impact of parameter α to reach consensus over time.
+(a) The ground truth solution.
+SU1
+(b) Estimated power map by
+SU1 at time slot 1.
+SU2
+(c) Estimated power map by SU 2 at
+time slot 1.
+SU1
+(d) Estimated power map by
+SU1 at time slot 100.
+SU2
+(e) Estimated power map by SU 2 at
+time slot 100.
+Fig. 13: The accuracy of solution using the proposed distributed algorithm over time.
+reached on the PUs’ locations estimates.
+VII. C ONCLUSION
+The impact of directional antennas on the performance of
+source localization and tracking is studied. Omni-directional
+antennas provides redundant measurements over time. While,
+directional antennas are able to capture a set of incoherent
+projections from the underlying spectrum activity pattern. It
+improves the accuracy of source localization signiﬁcantly. As
+the number of elements in an ULA increase, the quality of
+power spectrum map increases. However, employing 8 or 16
+elements in each ULA is sufﬁcient for practical scenarios.
+The proposed localization is used in a dynamic spectrum
+cartography system. Moreover, the distributed implementation
+of our proposed method is presented and evaluated.
+REFERENCES
+[1] I. F. Akyildiz, W.-Y . Lee, M. C. Vuran, and S. Mohanty, “Next
+generation/dynamic spectrum access/cognitive radio wireless networks:
+A survey,” Computer Networks , vol. 50, no. 13, pp. 2127 – 2159, May
+2006.
+[2] Q. Zhao and B. Sadler, “A survey of dynamic spectrum access,” Signal
+Processing Magazine, IEEE , vol. 24, no. 3, pp. 79–89, May 2007.
+[3] H. Yazdani and A. V osough, “On the combined effect of directional
+antennas and imperfect spectrum sensing upon ergodic capacity of
+cognitive radio systems,” in 2017 51st Asilomar Conference on Signals,
+Systems, and Computers , Oct 2017, pp. 1702–1706.
+[4] H. Yazdani and A. V osoughi, “On optimal sensing and capacity trade-
+off in cognitive radio systems with directional antennas,” in 2018 IEEE
+Global Conference on Signal and Information Processing (GlobalSIP) ,
+Nov 2018, pp. 1015–1019.
+[5] S. Haykin, “Cognitive radio: brain-empowered wireless communica-
+tions,” IEEE Journal on Selected Areas in Communications , vol. 23,
+no. 2, pp. 201–220, Feb. 2005.
+[6] M. Shirazi and A. V osoughi, “Fisher information maximization for
+distributed vector estimation in wireless sensor networks,” 2017.
+[Online]. Available: http://arxiv.org/abs/1705.00803
+[7] J. Bazerque and G. Giannakis, “Distributed spectrum sensing for cogni-
+tive radio networks by exploiting sparsity,” IEEE Transactions on Signal
+Processing, vol. 58, no. 3, pp. 1847–1862, March 2010.
+[8] J. A. Bazerque, G. Mateos, and G. B. Giannakis, “Group-lasso on splines
+for spectrum cartography,” IEEE Transactions on Signal Processing ,
+vol. 59, no. 10, pp. 4648–4663, 2011.
+[9] H. Krim and M. Viberg, “Two decades of array signal processing
+research: the parametric approach,” IEEE Signal Processing Magazine ,
+vol. 13, no. 4, pp. 67–94, July 1996.
+[10] J. Werner, J. Wang, A. Hakkarainen, D. Cabric, and M. Valkama,
+“Performance and Cram ´er–Rao bounds for DoA/RSS estimation and
+transmitter localization using sectorized antennas,” IEEE Transactions
+on V ehicular Technology, vol. 65, no. 5, pp. 3255–3270, May 2016.
+[11] J. Wang, J. Werner, M. Valkama, and D. Cabric, “Performance analysis
+of primary user RSS/DoA estimation and localization in cognitive radio
+networks using sectorized antennas,” IEEE Wireless Communications
+Letters, vol. 3, no. 2, pp. 237–240, April 2014.
+[12] H. Yazdani, X. Gong, and A. V osoughi, “Beam selection and discrete
+power allocation in opportunistic cognitive radio systems with limited
+feedback using ESPAR antennas,” arXiv e-prints , p. arXiv:1903.10482,
+Mar 2019.
+[13] H. Yazdani and A. V osoughi, “On the spectrum sensing, beam selection
+and power allocation in cognitive radio networks using reconﬁgurable
+antennas,” in 2019 53nd Annual Conference on Information Sciences
+and Systems (CISS) , March 2019.
+[14] M. Guo, Y . D. Zhang, and T. Chen, “DOA estimation using compressed
+sparse array,” IEEE Transactions on Signal Processing , vol. 66, no. 15,
+pp. 4133–4146, Aug 2018.
+[15] H. Yazdani, A. V osoughi, and N. Rahnavard, “Compressive sensing
+based direction-of-arrival estimation using reweighted greedy block
+coordinate descent algorithm for ESPAR antennas,” in MILCOM 2017 -
+2017 IEEE Military Communications Conference (MILCOM) , Oct 2017,
+pp. 169–173.
+[16] M. Joneidi, A. Zaeemzadeh, and N. Rahnavard, “Dynamic sensor
+selection for reliable spectrum sensing via e-optimal criterion,” in 2017
+IEEE 14th International Conference on Mobile Ad Hoc and Sensor
+Systems (MASS) . IEEE, 2017, pp. 452–460.
+[17] A. Zaeemzadeh, M. Joneidi, B. Shahrasbi, and N. Rahnavard, “Robust
+target localization based on squared range iterative reweighted least
+squares,” in 2017 IEEE 14th International Conference on Mobile Ad
+Hoc and Sensor Systems (MASS) . IEEE, 2017, pp. 380–388.
+[18] E. Candes and J. Romberg, “Sparsity and incoherence in compressive
+sampling,” Inverse problems, vol. 23, no. 3, p. 969, 2007.
+[19] S. Boyd and L. Vandenberghe, Convex Optimization. New York, NY ,
+USA: Cambridge University Press, 2004.
+[20] S. Joshi and S. Boyd, “Sensor selection via convex optimization,” Signal
+Processing, IEEE Transactions on , vol. 57, no. 2, pp. 451–462, Feb
+2009.
+[21] A. Krause, A. Singh, and C. Guestrin, “Near-optimal sensor placements
+in gaussian processes: Theory, efﬁcient algorithms and empirical stud-
+ies,” Journal of Machine Learning Research , vol. 9, no. Feb, pp. 235–
+284, 2008.
+[22] C. Li, S. Jegelka, and S. Sra, “Polynomial time algorithms for dual vol-
+ume sampling,” in Advances in Neural Information Processing Systems ,
+2017, pp. 5038–5047.

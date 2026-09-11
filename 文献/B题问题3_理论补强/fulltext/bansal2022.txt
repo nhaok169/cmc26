@@ -1,0 +1,176 @@
+SOURCE: https://arxiv.org/pdf/2209.08427
+
+arXiv:2209.08427v1  [cs.DS]  17 Sep 2022
+A Nearly Tight Lower Bound for the d-Dimensional Cow-Path
+Problem
+Nikhil Bansal* John Kuszmaul† William Kuszmaul‡
+Abstract
+In the d-dimensional cow-path problem, a cow living in Rd must locate a (d − 1)-dimensional hy-
+perplane H whose location is unknown. The only way that the cow can ﬁnd H is to roam Rd until it
+intersects H . If the cow travels a total distance s to locate a hyperplane H whose distance from the
+origin was r ≥ 1, then the cow is said to achieve competitive ratio s/r.
+It is a classic result that, in R2, the optimal (deterministic) competitive ratio is 9. In R3, the optimal
+competitive ratio is known to be at most ≈ 13.811. But in higher dimensions, the asymptotic relationship
+between d and the optimal competitive ratio remains an open question. The best upper and lower bounds,
+due to Antoniadis et al., are O(d3/2) and Ω(d), leaving a gap of roughly
+√
+d. In this note, we achieve a
+stronger lower bound of ˜Ω(d3/2).
+*University of Michigan, bansal@gmail.com. Supported in part by the NWO VICI grant 639.023.812
+†Yale University, john.kuszmaul@yale.edu. Supported by NSF CCF-2106827.
+‡MIT CSAIL, kuszmaul@mit.edu. Funded by a Fannie and John Hertz Fellowship and an NSF GRFP F ellowship. This re-
+search was also partially sponsored by the United States Air Force Research Laboratory and the United States Air Force Ar tiﬁcial
+Intelligence Accelerator and was accomplished under Coope rative Agreement Number FA8750-19-2-1000. The views and co nclu-
+sions contained in this document are those of the authors and should not be interpreted as representing the ofﬁcial polic ies, either
+expressed or implied, of the United States Air Force or the U. S. Government. The U.S. Government is authorized to reprodu ce and
+distribute reprints for Government purposes notwithstand ing any copyright notation herein.
+1 Introduction
+The cow-path problem is one of the simplest algorithmic prob lems taught to undergraduates: A cow begins
+at the origin on the number line, and must ﬁnd a hay-stack loca ted at some unknown point p ∈ R satisfying
+|p| ≥ 1. How should the cow go about locating point p, if the cow wishes to optimize its worst-case
+competitive ratio, which is given by s/|p| where s is the total distance traveled by the cow?
+The optimal solution is to perform a repeated doubling argum ent: the cow travels between the points
+(−2)0, (−2)1, (−2)2, . . .. This path can be shown to have a competitive ratio of 9, which is optimal for
+any deterministic solution [5] – more generally, the class o f paths that achieve competitive ratio 9 has
+been studied in great detail [1]. Randomized solutions can d o even better, achieving a competitive ratio of
+≈ 4.591. [5].
+In the decades since it was ﬁrst introduced, the cow path prob lem has been generalized in many natural
+ways: to consider paths in a multi-lane highway [10, 11], pat hs that search for various type of objects [3],
+etc. For a (slightly out of date) survey on these types of prob lems, see [7].
+Perhaps surprisingly, however, one of the most natural gene ralizations still remains quite enigmatic. In
+the d-dimensional cow-path problem , the cow begins at the origin in Rd, and must travel in search of a
+(d − 1)-dimensional hyperplane. Once the cow has intersected the h yperplane, their path is complete. Even
+in d = 2 dimensions, the optimal competitive ratio remains an open question – it is conjectured to ≈ 13.811,
+and to be achieved by a logarithmic spiral [3, 6]. In higher di mensions, even the asymptotic behavior of the
+optimal competitive ratio remains open. The best upper and l ower bounds, due to Antoniadis et al. [2], are
+O(d3/2) and Ω(d), leaving a gap of roughly
+√
+d.
+In this note, we settle the optimal d-dimensional competitive ratio up to low-order terms, pres enting a
+simple argument for a lower bound of ˜Ω(d3/2), or, more precisely, Ω(d3/2/√log d).
+Concurrent work by Ghomi and Wenk [9], posted on arXiv a few da ys before this note, establishes a
+d-dimensional competitive ratio of Ω(d3/2) (communicated by Nazarov). The earlier work of Ghomi and
+Wenk [8] considered the special case of d = 3.
+2 Preliminaries
+In the d-dimensional cow-path problem , a cow starts at 0 in Rd, and wishes to ﬁnd a (d − 1)-dimensional
+hyperplane H whose distance r ≥ 1 from 0 is unknown. The cow travels along a path until the cow i ntersects
+H. At this point, if the cow has traveled a total distance of s, then the cow is said to have achieved a
+competitive ratio of s
+r . In general, a cow path is said to achieve competitive ratio α if its competitive ratio is
+bounded above by α for all (d − 1)-dimensional hyperplanes H that are of distance at least 1 from the origin.
+Up to a constant factor in the optimal competitive ratio, usi ng the standard doubling argument, one
+can assume without loss of generality that H has distance 1 from 0 [2]. Deﬁning H to be the set of such
+hyperplanes, the competitive ratio of the cow path is simply the total distance traveled until the cow path has
+hit every H ∈ H .
+As shown in [2], using the polar duality between points and hy perplanes, this latter problem becomes
+equivalent to the following sphere-inspection problem. Let U be the unit sphere in Rd centered at the origin.
+We say that a point p ∈ Rd, satisfying |p| ≥ 1 where | · | denotes the standard Euclidean norm, views a point
+q ∈ U if the segment pq intersects U only at q. (If |p| < 1, it does not view any points in U .) One can show
+that a path P intersects every hyperplane H ∈ H if and only if each point q ∈ U is visible from some point
+p ∈ P [2]. This is because in order for the path P (starting from the origin) to view a point q ∈ U , the path
+must intersect the hyperplane H ∈ H that is orthogonal to q.
+Thus, the main result of this note can be reformulated as foll ows: any path P that starts at the origin
+and views every point in U must have length at least Ω(d3/2/√log d). This then implies a Ω(d3/2/√log d)
+1
+U V0 p 2p
+Figure 1: A visual illustration of how the points q ∈ U visible from V are also visible from point 2 p.
+lower bound for the optimal competitive ratio of the d-dimensional cow-path problem.
+It is worth commenting on several other ways to think about th e same problem [2]: A path P views all
+of U if and only if U is contained in the convex hull of P. Also, a point p ∈ P views a point q ∈ U if and
+only if the angle ∠(0, q, p) is greater than or equal to 90 ◦—this, in turn, is equivalent to ⟨p − q, 0 − q⟩ ≤ 0,
+which can be rewritten as ⟨p, q⟩ ≥ |q|2 = 1. Both the interpretations of sphere visibility (the conve x-hull
+interpretation and the ⟨p, q⟩ ≥ 1 interpretation) will useful throughout our proofs.
+We remark that, although the sphere-inspection problem and the d-dimensional cow path problem are
+asymptotically equivalent, their optimal competitive rat ios differ within constant factors. Indeed, the exact
+optimal competitive ratio for the sphere-inspection problem is known for d ≤ 3 [8], while the optimal bound
+for the cow path problem remains open even for d = 2 [2, 3, 6].
+3 The Lower Bound
+We will use d as a global variable, indicating that we are in Rd. And we will use U = {x ∈ Rd | |x| = 1} to
+denote the unit sphere. We begin by recalling a standard resu lt on the distribution of U ’s mass.
+Lemma 1 (Lemma 2.2 of [4]) . Let v be any point satisfying |v| = 1. The fraction of points u ∈ U satisfying
+⟨u, v⟩ ≥ ε is at most e−dε2/2.
+Lemma 1 directly gives the following bound on the fraction of U that is visible from any given point p.
+Lemma 2. Let p be any point of size |p| ≥ 1. The fraction of points on the surface of U that are visible
+from point p is at most e−d/(2|p|2).
+Proof. Recall that a point q is visible from p iff ⟨p, q⟩ ≥ 1. Thus ⟨q, ˆp⟩ ≥ 1/|p| where ˆp is the unit vector
+along p. Applying Lemma 1 with v = ˆp and ε = 1/|p| gives the result.
+Next we consider the fraction of U that is visible from a given sphere V of radius 1 /2. An important
+observation here, which has also appeared implicitly in pas t work [2], is that if V has center p, then the
+portion of U that is visible from V is also visible from the point 2 p. For an accompanying illustration, see
+Figure 1.
+Lemma 3. Let p be a point with |p| ≥ 1. Let V be a sphere of radius 1/2 centered around point p. Let
+Q1 denote the set of points q ∈ U such that q is visible from some point r ∈ V , and let Q2 denote the set of
+points visible from point 2p. Then Q1 ⊆ Q2.
+Proof. Consider any point q ∈ Q1. As q is visible from r, we have ⟨q, r⟩ ≥ 1. As r ∈ V , we can write
+r = p + v for some v with |v| ≤ 1/2. Thus we have,
+1 ≤ ⟨q, r⟩ = ⟨q, p + v⟩ = ⟨q, p⟩+ ⟨q, v⟩ ≤ ⟨q, p⟩+ |q||v| ≤ ⟨q, p⟩+ 1/2,
+2
+where the last step uses that |q| = 1 and |v| ≤ 1/2. Thus ⟨q, p⟩ ≥ 1/2, or equivalently, ⟨2p, q⟩ ≥ 1, which
+implies that q is visible from the point 2 p. This completes the proof that Q1 ⊆ Q2.
+Combining the previous lemmas, we conclude that the only way for a path to see the entire sphere U is
+if either (1) the path is very long, or (2) the path is, at some p oint, quite far away from the origin.
+Lemma 4. Consider a path P that never surpasses distance r from the origin, but that views all of U . We
+must have
+|P| ≥ ed/(8r2) − 1.
+Proof. Break P into ⌈|P|⌉ sub-paths P1, P2, . . ., all but one of which have length 1. Each Pi is contained in
+a sphere Si of radius 1 /2 centered at the midpoint pi of Pi. By Lemma 3, every point in U visible from the
+subpath Pi is also visible from the point 2 pi. Since 2 pi is distance at most 2 r from the origin, it follows by
+Lemma 2 that the fraction of U visible from Pi is at most e−d/(8r2). Since the Pis collectively view all of U ,
+we can conclude that ⌈|P|⌉ ≥ ed/(8r2), and thus that |P| ≥ ed/(8r2) − 1.
+Corollary 5. Consider any path P that views all of U . The path P must either reach distance
+√
+d/(16 logd)
+from the origin or have length |P| ≥ e2 logd − 1 ≥ Ω(d2).
+We can now prove our main result.
+Theorem 6. Any path P that start at the origin and views all of U must have length |P| ≥ Ω(d3/2/√log d).
+Proof. Let τ =
+√
+d
+2 /(16 log d
+2 ). Suppose that |P| has length O(d3/2). By Corollary 5, P must reach distance
+τ from the origin – let P(t1) be the ﬁrst point at which this happens. Let P2 be the path P projected onto
+the (d − 1)-dimensional hyperplane orthogonal to P(t1) (and going through the origin). Since |P2| ≤ |P|, we
+know that |P2| ≤ O(d3/2), so by Corollary 5, P2 must reach distance τ from the origin – let P2(t2) be the
+ﬁrst point at which this happens. Let P3 be the path P2 projected onto the (d − 2)-dimensional hyperplane
+orthogonal to P(t2) (and going through the origin). Since |P3| ≤ | P2|, we know that |P3| ≤ O(d3/2), so by
+Corollary 5, P3 must reach distance τ from the origin – let P3(t3) be the ﬁrst point at which this happens.
+Continuing like this, we can deﬁne t1, . . .t⌊d/2⌋ and P1, . . . ,P⌊d/2⌋ so that each Pi(ti) is distance at least τ from
+the origin and so that each Pi+1 is the path P projected onto the (d − i + 1)-dimensional hyperplane (going
+through the origin) that is orthogonal to each of P(t1), P2(t2), . . . ,Pi(ti).
+An important observation is that t1 ≤ t2 ≤ t3 ≤ · · · ≤ t⌊d/2⌋. Indeed, if ti+1 < ti, then since |Pi(ti+1)| ≥
+|Pi+1(ti+1)| ≥ τ, we would have that ti was not the ﬁrst time at which Pi reached distance τ from the origin,
+a contradiction.
+Also observe that the distance traveled by P between time ti and time ti+1 is at least the distance traveled
+by Pi+1 during that time interval. Since Pi+1(ti) = 0 and |Pi+1(ti+1)| = τ, it follows that P travels distance at
+least τ between ti and ti+1. The total length of P is therefore at least
+⌊d/2⌋
+∑
+i=1
+|Pi| ≥ ⌊d/2⌋ ·τ ≥ Ω(d3/2/
+√
+log d).
+Corollary 7. The optimal competitive ratio for the d-dimensional cow-path problem is Ω(d3/2/√log d).
+References
+[1] Spyros Angelopoulos, Christoph D¨ urr, and Shendan Jin. Best-of-two-worlds analysis of online search.
+In 36th International Symposium on Theoretical Aspects of Com puter Science, 2019.
+3
+[2] Antonios Antoniadis, Ruben Hoeksma, S´ andor Kisfaludi-Bak, and Kevin Schewior. Online search for
+a hyperplane in high-dimensional euclidean space. Information processing letters, 177:106262, 2022.
+[3] Ricardo Baeza-Yates and Ren´ e Schott. Parallel searchi ng in the plane. Computational Geometry ,
+5(3):143–154, 1995.
+[4] Keith Ball et al. An elementary introduction to modern co nvex geometry. Flavors of geometry, 31(1-
+58):26, 1997.
+[5] Anatole Beck and Donald J Newman. Y et more on the linear se arch problem. Israel journal of
+mathematics, 8(4):419–429, 1970.
+[6] Steven R Finch and Li-Yan Zhu. Searching for a shoreline. arXiv preprint math/0501123, 2005.
+[7] Shmuel Gal. Search games. Wiley encyclopedia of operations research and management s cience,
+2010.
+[8] Mohammad Ghomi and James Wenk. Shortest closed curve to i nspect a sphere. Journal f ¨ur die reine
+und angewandte Mathematik (Crelles Journal), 2021(781):57–84, 2021.
+[9] Mohammad Ghomi and James Wenk. Shortest closed curve to c ontain a sphere in its convex hull.
+arXiv preprint arXiv:2209.05988, 2022.
+[10] Ming-Yang Kao, Y uan Ma, Michael Sipser, and Yiqun Yin. O ptimal constructions of hybrid algo-
+rithms. Journal of Algorithms, 29(1):142–164, 1998.
+[11] Ming-Yang Kao, John H Reif, and Stephen R Tate. Searchin g in an unknown environment: An optimal
+randomized algorithm for the cow-path problem. Information and Computation, 131(1):63–79, 1996.
+4

@@ -1,0 +1,1959 @@
+Beyond Adaptive Submodularity: Approximation Guarantees of
+Greedy Policy with Adaptive Submodularity Ratio
+Kaito Fujii 1 Shinsaku Sakaue 2
+Abstract
+We propose a new concept named adaptive sub-
+modularity ratio to study the greedy policy for
+sequential decision making. While the greedy
+policy is known to perform well for a wide variety
+of adaptive stochastic optimization problems in
+practice, its theoretical properties have been ana-
+lyzed only for a limited class of problems. We nar-
+row the gap between theory and practice by using
+adaptive submodularity ratio, which enables us
+to prove approximation guarantees of the greedy
+policy for a substantially wider class of problems.
+Examples of newly analyzed problems include
+important applications such as adaptive inﬂuence
+maximization and adaptive feature selection. Our
+adaptive submodularity ratio also provides bounds
+of adaptivity gaps. Experiments conﬁrm that the
+greedy policy performs well with the applications
+being considered compared to standard heuristics.
+1. Introduction
+Sequential decision making plays a crucial role in machine
+learning. In various scenarios, we must design an effective
+policy that repeatedly decides the next action to be taken by
+using the feedback obtained so far. The greedy policy is a
+simple but empirically effective approach to sequential deci-
+sion making. At each step, it myopically makes a decision
+that seems the most beneﬁcial among feasible choices.
+Adaptive submodularity (Golovin & Krause, 2011) is a
+well-established framework for analyzing greedy algorithms
+for sequential decision making. It extends submodularity,
+which is a diminishing returns property of set functions,
+to the setting of adaptive decision making. This frame-
+work has successfully provided theoretical guarantees for
+greedy algorithms for active learning (Golovin et al., 2010),
+1University of Tokyo 2NTT Communication Science Labo-
+ratories. Correspondence to: Kaito Fujii <kaito_fujii@mist.i.u-
+tokyo.ac.jp>.
+Proceedings of the 36th International Conference on Machine
+Learning, Long Beach, California, PMLR 97, 2019. Copyright
+2019 by the author(s).
+recommendation (Gabillon et al., 2013), and touch-based
+localization in robotics (Javdani et al., 2014).
+However, adaptive submodularity is not omnipotent. While
+the greedy policy works well for various sequential decision
+making problems, many of these problems do not have adap-
+tive submodularity. In fact, even if an objective function is
+submodular in the non-adaptive setting, its adaptive version
+does not always have adaptive submodularity. Adaptive in-
+ﬂuence maximization is one such example. In this problem,
+a decision maker aims at spreading information about a
+product by selecting several advertisements. She repeatedly
+alternates between selecting an advertisement and observing
+its effect. The objective function of this problem is known
+to have adaptive submodularity in the independent cascade
+model (Golovin & Krause, 2011), but not in a more general
+diffusion model called the triggering model (Kempe et al.,
+2003), which is extensively studied as an important class of
+diffusion models (Leskovec et al., 2007; Tang et al., 2014).
+Note that this objective function satisﬁes submodularity in
+the non-adaptive setting, while it does not satisfy adaptive
+submodularity in the adaptive setting. Examples of other
+problems lacking adaptive submodularity appear in many
+applications such as feature selection and active learning.
+Therefore, we are waiting for an analysis framework that
+goes beyond adaptive submodularity.
+In the non-adaptive setting, submodularity ratio (Das
+& Kempe, 2011) is a prevalent tool for handling non-
+submodular functions (Khanna et al., 2017; Elenberg et al.,
+2017). Intuitively, it is a parameter of monotone set func-
+tions that measures their distance to submodular functions.
+An adaptive variant of submodularity ratio would be a
+promising approach to handling functions that lack adaptive
+submodularity, but how to deﬁne it is quite non-trivial since
+there is a large discrepancy between the non-adaptive and
+adaptive settings as exempliﬁed above. In particular, suc-
+cess in deﬁning an adaptive version of submodularity ratio
+involves meeting the following two requirements: it must
+yield an approximation guarantee of the greedy policy, and
+it must be bounded in various important applications such
+as the adaptive inﬂuence maximization and adaptive feature
+selection. Previous works (Kusner, 2014; Yong et al., 2017)
+tried to deﬁne similar notions, but none of them meet the
+arXiv:1904.10748v1  [cs.LG]  24 Apr 2019
+
+Beyond Adaptive Submodularity: Approximation Guarantees of Greedy Policy with Adaptive Submodularity Ratio
+Table 1. Summary of our theoretical results about adaptive bipartite inﬂuence maximization and adaptive feature selection. We show lower
+bounds for the adaptive submodularity ratios, the approximation ratios of the adaptive greedy algorithm, and the adaptivity gaps. Let
+λmin,𝓁 = minφ minS⊆V :|S|≤𝓁λmin(A(φ)⊤
+S A(φ)S) andλmax,𝓁 = maxφ maxS⊆V :|S|≤𝓁λmax(A(φ)⊤
+S A(φ)S). Parametersq andd
+are determined by the diffusion model and the underlying graph structure. The results of (Golovin & Krause, 2011) are indicated by†.
+Problem Adaptive submodularity ratio Adaptive greedy Adaptivity gaps
+Linear threshold (k + 1)/2k 1− exp(−(k + 1)/2k) ( k + 1)/2k
+Independent cascade 1† 1− 1/e† (1−q)min{d,k}−1
+Triggering (k + 1)/2k 1− exp(−(k + 1)/2k)
+Feature selection λmin,k+𝓁 1− exp(−λmin,k+𝓁) λmin,k/λmax,k
+requirements.
+Our Contribution. We propose an analysis framework,
+adaptive submodularity ratio, that meets the aforementioned
+requirements. An advantage of our proposal is that it has
+the potential to yield various theoretical results as in Table 1.
+Below we summarize our main contributions.
+• We propose the deﬁnition of the adaptive submodular-
+ity ratio and, by using it, we prove an approximation
+guarantee of the adaptive greedy algorithm.
+• We give a bound on the adaptivity gap1, which rep-
+resents the superiority of adaptive policies over non-
+adaptive policies, through the lens of the adaptive sub-
+modularity ratio.
+• We provide lower-bounds of adaptive submodularity
+ratio for two important applications: adaptive inﬂu-
+ence maximization on bipartite graphs in the triggering
+model and adaptive feature selection. Regarding the
+former one, we show that our result is tight.
+• Experiments conﬁrm that the greedy policy performs
+well for the considered applications.
+Organization. The rest of this paper is organized as fol-
+lows. Section 2 provides the basic concepts and deﬁnitions.
+In Section 3, we formally deﬁne the adaptive submodularity
+ratio, which is the key concept of this study. In Sections 4
+and 5, we provide bounds on the approximation ratio of the
+adaptive greedy algorithm and adaptivity gaps, respectively,
+by using the adaptive submodularity ratio. In Sections 6
+and 7, we apply the frameworks developed in Sections 4
+and 5 to two applications: adaptive inﬂuence maximization
+and adaptive feature selection. In Section 8, we experimen-
+tally check the performance of the adaptive greedy algorithm
+in several applications. In Section 9 we review related work.
+1The adaptivity gap is a different concept from adaptive com-
+plexity (Balkanski & Singer, 2018).
+2. Preliminaries
+Adaptive Stochastic Optimization. Adaptive stochastic
+optimization is a general framework for handling problems
+of sequentially selecting elements, where we can observe
+the states of only the selected elements. LetV be the ground
+set consisting of a ﬁnite number of elements. Suppose every
+elementv∈V is assigned to some state inY, which is the
+set of all possible states. We let φ: V →Y be a map that
+associates each element,v∈V , with a state,φ(v)∈Y . We
+consider the Bayesian setting whereφ is generated from a
+known prior distributionp(φ). Let Φ be a random variable
+representing the randomness of the realizationφ.
+A decision maker can select one element v∈ V at each
+step. After selecting v, she can observe the state φ(v) of
+v. She repeatedly selects an element and then observes its
+state. The important point is that she can utilize the informa-
+tion about the states observed so far for selecting the next
+element. We denote byψ ={(v1,φ (v1)),..., (v𝓁,φ (v𝓁))}
+the partial realization observed so far, where{v1,...,v 𝓁} is
+the set of selected elements. The decision maker’s strategy
+can be described as a policy tree, or simply policy. A policy
+is a decision tree that determines the element to be selected
+next. Formally, a policy π is a partial map that returns an
+elementv∈V to be selected next given partial realization
+ψ observed so far.
+The goal of the decision maker is to maximize the expected
+value of the objective function f : 2V ×Y V → R. The
+objective function value f(S,φ ) depends on the set S of
+selected elements and the states φ of all elements. At the
+beginning, she does not know φ, but she can get partial
+information ofφ by observing stateφ(v) of selectedv. In
+parallel, she must select elements to construct S that has
+high utility under the realizationφ. LetE(π,φ )⊆V be the
+set selected by policyπ under realizationφ. The expected
+value achieved by policyπ is
+favg(π) = EΦ[f(E(π, Φ), Φ)],
+where the expectation is taken with regard to the random
+variable Φ generated fromp.
+
+Beyond Adaptive Submodularity: Approximation Guarantees of Greedy Policy with Adaptive Submodularity Ratio
+Adaptive Submodularity and Adaptive Monotonicity.
+Adaptive submodularity, which is an adaptive extension
+of submodularity, is a diminishing returns property of the
+expected marginal gain. The expected marginal gain of
+v∈V whenψ has been observed so far is deﬁned as
+∆(v|ψ)
+:= E[f(dom(ψ)∪{v}, Φ)−f(dom(ψ), Φ)|Φ∼ψ],
+where dom(ψ) :={v∈ V |∃ y∈Y , (v,y )∈ ψ}. We
+write Φ∼ψ if Φ is generated from the posterior distribution
+p(φ|ψ). Given current realizationψ, the expected marginal
+gain, ∆(v|ψ), represents the expected increase in the objec-
+tive value yielded by selectingv. Adaptive submodularity
+is deﬁned as follows:
+Deﬁnition 1 (Adaptive submodularity (Golovin & Krause,
+2011)). Letf : 2V×Y V → R be a set function and p a
+distribution of φ. We say f is adaptive submodular with
+respect to p if for any partial realization ψ⊆ ψ′ and any
+elementv∈V\ dom(ψ′), it holds that
+∆(v|ψ)≥ ∆(v|ψ′).
+The monotonicity can also be extended to the adaptive set-
+ting as follows:
+Deﬁnition 2 (Adaptive monotonicity (Golovin & Krause,
+2011)). Let f : 2V ×Y V → R be a set function and p
+a distribution of φ. We say f is adaptive monotone with
+respect top if for any partial realizationψ and any element
+v∈V\ dom(ψ), it holds that
+∆(v|ψ)≥ 0.
+Other Notations for Adaptive Stochastic Optimization.
+The expected marginal gain of policyπ with partial realiza-
+tionψ is deﬁned as
+∆(π|ψ)
+:= E[f(dom(ψ)∪E(π, Φ), Φ)−f(dom(ψ), Φ)|Φ∼ψ].
+Similarly, the expected marginal gain of set S⊆ V with
+partial realizationψ is deﬁned as
+∆(S|ψ) := E[f(dom(ψ)∪S, Φ)−f(dom(ψ), Φ)|Φ∼ψ].
+Let Πk :={π|∀φ,|E(π,φ )|≤ k} be the set of all policies
+whose heights do not exceedk.
+Submodularity Ratio and Supermodularity Ratio.
+The submodularity ratio of a monotone non-negative set
+function f : 2V → R≥0 with respect to set U ⊆ V and
+parameterk≥ 1 is deﬁned to be
+γU,k(f) := min
+L⊆U,S :|S|≤k
+∑
+v∈Sf(v|L)
+f(S|L) ,
+wheref(v|L) :=f(L∪{v})−f(L) andf(S|L) :=f(L∪
+S)−f(L). If the numerator and denominator are both 0,
+the submodularity ratio is considered to be 1. We have
+γU,k∈ [0, 1], and a monotone set functionf is submodular
+if and only ifγU,k = 1 for everyU⊆V andk≥ 1.
+As an opposite concept of the submodularity ratio, thesuper-
+modularity ratio, was considered in Bogunovic et al. (2018),
+which is deﬁned as follows:
+βU,k(f) := min
+L⊆U,S :|S|≤k
+f(S|L)∑
+v∈Sf(v|L),
+where we regard 0/0 = 1. We haveβU,k∈ [1/k, 1], andf
+is supermodular if and only if βU,k = 1 for everyU⊆V
+andk≥ 1. We omit f fromγU,k(f) andβU,k(f) if it is
+clear from the context.
+3. Adaptive Submodularity Ratio
+In this section, we provide a precise deﬁnition of the adap-
+tive submodularity ratio, which extends the submodularity
+ratio from the non-adaptive setting to the adaptive setting.
+We need to deﬁne it carefully so that it can yield an approxi-
+mation guarantee of the greedy policy. An important point
+is to generalize subset S of size at most k, used to deﬁne
+the submodularity ratio, to policyπ of height at mostk.
+Deﬁnition 3 (Adaptive submodularity ratio). Suppose that
+f : 2V×YV → R is adaptive monotone w.r.t. a distribution
+p. Adaptive submodularity ratio γψ,k∈ [0, 1] off andp
+with respect to partial realizationψ and parameterk∈ Z≥0
+is deﬁned to be
+γψ,k(f,p ) :=
+min
+ψ′⊆ψ,π∈Πk
+∑
+v∈V Pr(v∈E(π, Φ)|Φ∼ψ′)∆(v|ψ′)
+∆(π|ψ′) .
+We omitf andp if they are clear from the context. We also
+deﬁneγ𝓁,k := minψ:|ψ|≤𝓁γψ,k.
+Intuitively, the adaptive submodularity ratio indicates the
+distance between (f,p ) and the class of adaptive submodu-
+lar functions. As with the non-adaptive setting,γψ,k(f,p ) =
+1 implies the adaptive submodularity of f, which can for-
+mally be written as follows:
+Proposition 1. It holds thatγψ,k(f,p ) = 1 for any partial
+realization ψ and k ∈ Z≥0 if and only if f is adaptive
+submodular with respect top.
+The proof is given in Appendix A.
+4. Adaptive Greedy Algorithm
+In this section, we present a new approximation ratio guaran-
+tee for the adaptive greedy algorithm based on the adaptive
+
+Beyond Adaptive Submodularity: Approximation Guarantees of Greedy Policy with Adaptive Submodularity Ratio
+Algorithm 1 Adaptive greedy algorithm (Golovin & Krause,
+2011)
+Input The value oracle for the expected marginal gain
+∆(·|·) associated with f : 2V ×Y V and p ∈ ∆Y V
+,
+a cardinality constraint𝓁∈ Z≥0.
+Output ψ𝓁 a set of observations of size𝓁.
+1: ψ0←∅ .
+2: fori = 1,...,𝓁 do
+3: v← argmaxv∈V ∆(v|ψi−1).
+4: Observeφ(v) and letψi←ψi−1∪{ (v,φ (v))}.
+5: end for
+6: returnψ𝓁.
+submodularity ratio. Thanks to this result, once the adaptive
+submodularity ratio is bounded, we can obtain approxima-
+tion guarantees of the adaptive greedy algorithm for various
+applications. The adaptive greedy algorithm is an algorithm
+that starts with an empty set and repeatedly selects the ele-
+ment with the largest expected marginal gain. The detailed
+description is given in Algorithm 1. Golovin & Krause
+(2011) have shown that this algorithm achieves(1− 1/e)-
+approximation to the expected objective value of an optimal
+policy iff is adaptive submodular w.r.t.p. Here we extend
+their result and show that the adaptive greedy algorithm
+achieves (1− exp(−γ𝓁,𝓁))-approximation, where 𝓁 is the
+number of selected elements. More precisely, we can bound
+the approximation ratio relative to any policyπ∗ of height
+k as follows:
+Theorem 1. Suppose f : 2V ×Y V → R≥0 is adaptive
+monotone with respect top. Letπ be a policy representing
+the adaptive greedy algorithm until 𝓁 step. Then, for any
+policyπ∗∈ Πk, it holds that
+favg(π)≥
+(
+1− exp
+(
+−γ𝓁,k𝓁
+k
+))
+favg(π∗),
+whereγ𝓁,k is the adaptive submodularity ratio off w.r.t.p.
+We provide the proof in Appendix B.
+5. Non-adaptive Policies and Adaptivity Gaps
+We show that the adaptive submodularity ratio is also useful
+for theoretically comparing the performances of adaptive
+and non-adaptive policies. More precisely, we present a
+lower-bound of the adaptivity gap, which represents the
+performance gap between adaptive and non-adaptive polices,
+by using the adaptive submodularity ratio. The adaptivity
+gap is deﬁned as follows:
+Deﬁnition 4 (Adaptivity gaps) . The adaptivity gap
+GAPk(f,p ) of an objective functionf : 2V×Y V → R≥0
+and a probability distributionp ofφ: V →Y is deﬁned as
+the ratio between an optimal adaptive policy and an optimal
+non-adaptive policy, i.e.,
+GAPk(f,p ) = maxM :|M|≤k EΦ[f(M, Φ)]
+maxπ∗∈Πkfavg(π∗) ,
+wherek is the height of adaptive and non-adaptive policies.
+Theorem 2. Let f : 2V ×Y V → R≥0 be an objective
+function and p a probability distribution of φ: V → Y.
+Letγ∅,k be the adaptive submodularity ratio of f w.r.t.p.
+Let β∅,k be the supermodularity ratio of the set function
+EΦ[f(·, Φ)] of non-adaptive policies. We have
+GAPk(f,p )≥β∅,kγ∅,k.
+Therefore, given any non-adaptiveα-approximation algo-
+rithm, we can evaluate its performance relative to an optimal
+adaptive policy as follows:
+Corollary 1. Letπnon∈ Πk be a non-adaptive policy that
+achievesα-approximation to an optimal non-adaptive pol-
+icyπ∗
+non. Let γ∅,k be the adaptive submodularity ratio of
+f w.r.t.p. Let β∅,k be the supermodularity ratio of the
+non-adaptive objective function EΦ[f(·, Φ)]. Letπ∗ be an
+optimal adaptive policy. We have
+favg(πnon)≥αβ∅,kγ∅,kfavg(π∗).
+Proofs are given in Appendix C.
+6. Adaptive Inﬂuence Maximization
+In this section, we consider adaptive inﬂuence maximization
+on bipartite graphs. We provide a bound on the adaptive sub-
+modularity ratio in the case of the triggering model, and we
+show that this result is tight. We also present bounds on the
+adaptivity gaps in the case of the independent cascade and
+linear threshold models by using the adaptive submodularity
+ratio.
+LetG = (V∪U,A ) be a directed bipartite graph with source
+verticesV , sink verticesU, and directed edgesA⊆V×U.
+In the case of bipartite inﬂuence model (Alon et al., 2012),
+this graph represents the relationship between advertise-
+ments V and customers U. We consider the problem of
+selecting several advertisementsS⊆V to make as much
+inﬂuence as possible on the customers. Here, each edge is
+determined to be alive or dead according to a certain distri-
+bution, and inﬂuence can be spread only through live edges.
+Given vertex weightsw : U→ R≥0, the objective function
+to be maximized is f(X) = ∑
+u∈⋃
+v∈XR(v)w(u), where,
+for eachv∈V ,R(v)⊆U represents a set of vertices that
+are reachable fromv by going through only live edges. In
+the adaptive version of inﬂuence maximization, at each step,
+we select a vertexv∈V and observe the states of all outgo-
+ing edges (v,u )∈A, while, in the non-adaptive setting, we
+selectS⊆V before observing the states of any edges.
+
+Beyond Adaptive Submodularity: Approximation Guarantees of Greedy Policy with Adaptive Submodularity Ratio
+We consider a general diffusion model called the trigger-
+ing model (Kempe et al., 2003), which includes various
+important models such as the independent cascade model
+and the linear threshold model as special cases. In the trig-
+gering model, each vertexv∈V is associated with some
+known probability distribution over the power set of in-
+coming edges. According to this distribution, a subset of
+incoming live edges is determined. A vertex gets activated
+if and only if it is reachable from some selected vertex (or
+seed vertex) through only live edges. We aim to maximize
+the total weight of activated vertices by appropriately se-
+lecting seed vertices. Note that this objective function is
+submodular in the non-adaptive setting.
+For later use, we explain the linear threshold model, a spe-
+cial case of the triggering model. In this model, the proba-
+bility distribution on the incoming edges of each vertex is
+restricted so that each vertex has at most one live edge in
+any realization. In other words, there exists b: A→ R≥0
+such that, for each v∈ V , we have ∑
+a∈δ−(v)b(a)≤ 1,
+whereδ−(v) is the full set of edges pointing tov, anda∈A
+is alive with probability b(a) exclusively over δ−(v). In
+contrast to the linear threshold model, the triggering model
+accepts any distribution over the power set ofδ−(v).
+6.1. Bound of Adaptive Submodularity Ratio
+We ﬁrst present the bound of adaptive submodularity ratio.
+Here we provide a proof sketch, and the full proof is given
+in Appendices D.1 and D.2.
+Theorem 3. LetG be an arbitrary directed bipartite graph
+and w be any weight function. For any k ∈ Z≥0 and
+partial realizationψ, the adaptive submodularity ratioγψ,k
+of the objective function and the distribution of the adaptive
+inﬂuence maximization in the triggering model is lower-
+bounded as follows:
+γψ,k≥ k + 1
+2k .
+Proof sketch of Theorem 3. Since the objective function
+and the probability distribution of edge states can be de-
+composed into those deﬁned for each vertex u∈ U, it is
+sufﬁcient to consider the case where|U| = 1.
+Our goal is to prove
+∆(π|ψ′)
+≤ 2k
+k + 1
+∑
+v∈V
+Pr(v∈E(π, Φ)|Φ∼ψ′)∆(v|ψ′)
+for any observationψ′ and policyπ∈ Πk. By duplicating
+v∈V that appears multiple times in policy treeπ, we can
+write the above inequality as
+∑
+v∈V
+Pv,π
+( 2k
+k + 1∆(v|ψ′)− ∆(v|ψ′∪ψv)
+)
+≥ 0,
+v1
+v2
+vk−1
+vk
+u
+v1
+v2
+vk−1
+vk
+(v1,u )
+is alive
+(v2,u )
+is alive
+(vk−1,u )
+is alive
+(v1,u ) is dead
+(v2,u ) is dead
+(vk−1,u ) is dead
+graphG policyπ
+Figure 1. An example that implies the tightness of our bound.
+where Pv,π is a shorthand for Pr(v∈ E(π, Φ)|Φ∼ ψ′)
+and ψv is the observation just before v is selected. We
+decompose the policy tree into the path whereinu remains
+inactive and the rest, and prove the inequality for each part
+separately.
+We can see that the above bound is tight even for the linear
+threshold model by considering the following example.
+Example 1. LetG be a bipartite directed graph withV =
+{v1,...,v k},U ={u}, andA ={(vi,u )| i∈ [k]}. Let
+w be the vertex weight such that w(u) = 1 . We consider
+the linear threshold model in which an edge selected out
+ofA uniformly at random is alive and the other edges are
+dead. We consider a simple policyπ that selects all vertices
+one by one until u is activated. These graph and policy
+are illustrated in Figure 1. Since π ﬁnally activatesu, the
+expected gain ofπ is ∆(π|∅) = 1. The probability that π
+selects each vertex is Pr(vi∈ E(π, Φ)) = (k−i + 1)/k.
+The expected marginal gain of vi is ∆(vi|∅) = 1/k. The
+adaptive submodularity ratio can be upper-bounded as
+γ∅,k≤
+∑
+v∈V Pr(v∈E(π, Φ))∆(v|∅)
+∆(π|∅)
+≤
+k∑
+i=1
+k−i + 1
+k · 1
+k
+≤ k + 1
+2k .
+Hence the lower-bound in Theorem 3 is tight.
+The assumption thatG is bipartite, considered in Theorem 3,
+may seem excessively strong, but it is actually a vital as-
+sumption. We show that, if G is not a bipartite graph, the
+adaptive submodularity ratio can be arbitrarily small; in
+fact, such an example can be constructed with the linear
+threshold model on a very simple graphG. We describe the
+details in Appendix D.3.
+
+Beyond Adaptive Submodularity: Approximation Guarantees of Greedy Policy with Adaptive Submodularity Ratio
+6.2. Bound of Adaptivity Gap
+Next we provide a bound on the adaptivity gaps of bipartite
+inﬂuence maximization problems by using the adaptive sub-
+modularity ratio. First we consider the independent cascade
+model. Since the adaptive submodularity holds for the in-
+dependent cascade model (Golovin & Krause, 2011), the
+adaptive submodularity ratio of its objective function is 1
+by Proposition 1. In addition, by using a bound of the cur-
+vature (Maehara et al., 2017) and an inequality between the
+supermodularity ratio and the curvature (Bogunovic et al.,
+2018), we obtainβ∅,k≥ (1−q)min{k,d}−1, whereq is an
+upper bound of the probability that each edge is alive and
+d is the largest degree of the vertex inV . From Theorem 2,
+we obtain the following result.
+Proposition 2. Letf be the objective function and p the
+probability distribution of bipartite inﬂuence maximization
+in the independent cascade model. We have
+GAPk(f,p )≥ (1−q)min{k,d}−1.
+We can derive a similar bound for the linear threshold model.
+Since the expected objective function is a linear function,
+its supermodularity ratio is 1. As a special case of Theo-
+rem 3, we haveγ∅,k≥ k+1
+2k . Combining these bounds with
+Theorem 2, we obtain the following result.
+Proposition 3. Letf be the objective function and p the
+probability distribution of bipartite inﬂuence maximization
+in the linear threshold model. We have
+GAPk(f,p )≥ k + 1
+2k .
+7. Adaptive Feature Selection
+In this section, we consider an adaptive variant of feature
+selection for sparse regression. All proofs related to this
+section are presented in Appendix E.
+Let us consider the following scenario. A learner has all
+feature vectors in advance, but they are not accurate due to
+sensing noise. Here each sensor corresponds to a single fea-
+ture vector. The learner can obtain accurate feature vectors
+by replacing inaccurate sensors with high-quality sensors,
+but the number of high-quality sensors is limited tok. The
+learner selectsk features for observing their accurate feature
+vectors.
+We formalize this scenario as the following problem. At
+the beginning, a learner knows a response vector b∈ Rm
+and a prior distribution over the features, but does not know
+the features themselves. Namely, we regard the inaccurate
+feature vectors obtained with noisy sensors as prior distri-
+butions on accurate feature vectors. A random variable Φ
+indicates the uncertainty over the observed feature vectors.
+From the noisy sensors, we can know only a prior distri-
+bution of Φ but not the true φ. Let V = [n] be the set of
+features. At each step, the learner can query a featurev∈V
+and observe its feature vectorφ(v)∈ Rm. We assume the
+noise of sensors are independent of each other; i.e., there
+exists a distributionpv(φ(v)) for eachv∈ V and we can
+factorizep asp(φ) =∏
+v∈V pv(φ(v)).
+Let A(φ) = (φ(1)··· φ(n)) be the realized feature matrix
+under realizationφ. The objective function to be maximized
+is deﬁned asf(S,φ ) =‖b‖2
+2−minw∈RS‖b−A(φ)Sw‖2
+2.
+7.1. Bound of Adaptive Submodularity Ratio
+To bound the adaptive submodularity ratio of adaptive fea-
+ture selection, we give a general lower bound of the adaptive
+submodularity ratio by using (non-adaptive) submodularity
+ratios of all realizations.
+Theorem 4. Letf : 2V×Y V → R be adaptive monotone
+w.r.t. distributionp(φ). Assume the value off(S,φ ) depends
+only on (φ(v))v∈S not on (φ(v))v∈V\S, i.e., f(S,φ ) =
+f(S,φ′) for all φ and φ′ such that φ(v) = φ(v) for all
+v∈ S. We also assume p(φ) can be factorized to distri-
+butions pv(φ(v)) of states of each v ∈ V , i.e., p(φ) =∏
+v∈V pv(φ(v)). Let γφ
+X,k be the submodularity ratio of
+f(·,φ ) for each realization φ. For any distribution pv of
+φ(v), the adaptive submodularity ratioγψ,k can be bounded
+as
+γψ,k≥ min
+φ∼ψ
+γφ
+dom(ψ),k.
+By using Theorem 4 and the result of (Das & Kempe, 2011),
+we obtain the following lower bound of the adaptive sub-
+modularity ratio.
+Corollary 2. Assume each column of A(φ) is normalized.
+For any b∈ Rn and any distributionpv of eachφ(v), the
+adaptive submodularity ratioγ𝓁,k can be bounded as
+γ𝓁,k≥ min
+φ
+min
+S⊆V :|S|≤k+𝓁
+λmin(A(φ)⊤
+S A(φ)S),
+whereλmin(·) represents the smallest eigenvalue.
+7.2. Bound of Adaptivity Gap
+We can also obtain a bound on the adaptivity gap of adaptive
+feature selection as follows:
+Proposition 4. Let f(S,φ ) = ‖b‖2
+2− minw∈RS‖b−
+A(φ)Sw‖2
+2 and suppose that p(φ) can be factorized as
+p(φ) =∏
+v∈V pv(φ(v)). We have
+GAPk≥ minφ minS⊆V :|S|≤kλmin(A(φ)⊤
+S A(φ)S)
+maxφ maxS⊆V :|S|≤kλmax(A(φ)⊤
+S A(φ)S).
+Remark 1. These results on the adaptive submodularity
+ratio and adaptivity gap can be extended to more general
+loss functions with restricted strong concavity and restricted
+smoothness as in Elenberg et al. (2018).
+
+Beyond Adaptive Submodularity: Approximation Guarantees of Greedy Policy with Adaptive Submodularity Ratio
+0 2000 4000 6000 8000 10000
+Number of selected vertices
+0
+1000
+2000
+3000
+4000
+5000In/uniFB02uence spread adaptive
+non-adaptive
+degree
+random
+(a) infmax, synth., linear threshold
+0 2000 4000 6000 8000 10000
+Number of selected vertices
+0
+1000
+2000
+3000
+4000
+5000In/uniFB02uence spread adaptive
+non-adaptive
+degree
+random (b) infmax, synth., extended linear thre.
+0 20000 40000 60000 80000 100000
+Number of selected vertices
+0
+10000
+20000
+30000
+40000
+50000
+60000
+70000In/uniFB02uence spread
+adaptive
+non-adaptive
+degree
+random (c) infmax, yahoo, linear threshold
+0 20000 40000 60000 80000 100000
+Number of selected vertices
+0
+20000
+40000
+60000
+80000In/uniFB02uence spread
+adaptive
+non-adaptive
+degree
+random
+(d) infmax, yahoo, extended linear thre.
+0 5 10 15 20 25 30
+Number of selected features
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0Training error
+adaptive greedy
+non-adaptive greedy
+noise oblivious greedy (e) feature, σ = 0.1
+0 5 10 15 20 25 30
+Number of selected features
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0Training error
+adaptive greedy
+non-adaptive greedy
+noise oblivious greedy (f) feature, σ = 0.2
+Figure 2. Experimental results on adaptive inﬂuence maximization (a)–(d) and adaptive feature selection (e)–(f). (a) and (b) are the results
+on synthetic datasets with the linear threshold model and extended linear threshold model, respectively. (c) and (d) are the results on
+Yahoo! dataset (Yah) with the linear threshold model and extended linear threshold model, respectively. (e) and (f) are the results on
+synthetic datasets with uniform noise distribution on [−σ,σ ] withσ = 0.1, 0.2, respectively.
+8. Experiments
+We conduct experiments on two applications: adaptive inﬂu-
+ence maximization and adaptive feature selection. For each
+setting, we conduct 20 trials and plot their mean values.
+8.1. Adaptive Inﬂuence Maximization
+Datasets. We conduct experiments on two datasets of
+adaptive inﬂuence maximization. The ﬁrst dataset is a
+synthetic bipartite graph generated randomly according to
+Erdös–Renyi rule. We set the number of source and sink
+vertices to 10000, i.e.,|V| =|U| = 10000. For each pair
+(v,u )∈V×U, we add an edge betweenv andu with prob-
+ability 0.001. The second dataset is Yahoo! Search Market-
+ing Advertiser–Phrase Bipartite Graph (Yah), which is a bi-
+partite graph representing relationships between advertisers
+and search phrases; we have|V| = 459678,|U| = 193582,
+and|A| = 2278448. For both datasets, the weight of each
+vertex inU is drawn from the uniform distribution on [0, 1].
+Diffusion Model. We consider two diffusion models. The
+ﬁrst one is the linear threshold model. The probability that
+each edge (v,u )∈A is alive is set to the reciprocal of the
+degree of the sink vertex, that is, 1/|δ−(v)|. As the second
+diffusion model, we consider an extended version of the
+linear threshold model, which is also a special case of the
+triggering model. In this model, for each sink vertexv, the
+subset of incoming live edges is determined as follows. We
+samplet edges with replacement fromδ−(v) uniformly at
+random, and an edge turns alive if it is sampled at least once.
+In our experiments, parametert is set to 3.
+Benchmarks. We compare the adaptive greedy algorithm
+with three non-adaptive benchmarks. The ﬁrst benchmark
+is the non-adaptive greedy algorithm, called non-adaptive,
+which is a standard greedy algorithm (Nemhauser et al.,
+1978) for maximizing the expected value of the objective
+function EΦ[f(·, Φ)]. The second benchmark is Degree,
+which selects the set of vertices with the top-k largest degree.
+The third benchmark is Random, which selects a random
+subset of sizek.
+Results. Objective values achieved by the algorithms are
+shown in Figures 2(a) to 2(d). In all settings, the adaptive
+greedy algorithm outperforms all the benchmarks.
+8.2. Adaptive Feature Selection
+Datasets. We use synthetic datasets generated randomly
+as follows. First we determine the mean EΦ[A(Φ)] ∈
+Rm×n according to the uniform distribution on [0, 1]. Af-
+ter that, each column is normalized so that its mean is 0
+and its standard deviation is 1. We obtain A(φ) by adding
+
+Beyond Adaptive Submodularity: Approximation Guarantees of Greedy Policy with Adaptive Submodularity Ratio
+ϵ∈ Rm×n to EΦ[A(Φ)], where each element ofϵ is drawn
+from the uniform distribution on [−σ,σ ]. We consider two
+settings: σ = 0.1 and 0.2. We select a random sparse
+subset S∗ of features such that |S∗| = 30 , and we let
+y = A(φ)S∗ w be the response vector, where each element
+of w∈ RS is drawn from the standard normal distribution.
+In all settings, we setn = 1000 andm = 100.
+Benchmarks. We compare the adaptive greedy algorithm
+with two benchmarks. The ﬁrst benchmark is the non-
+adaptive greedy algorithm. Regarding the adaptive and
+non-adaptive greedy algorithms, it is hard to evaluate the
+exact values of the objective functions, and so we approxi-
+mately evaluate them by sampling A(Φ) randomly accord-
+ing to posterior distributions. The second benchmark is the
+noise-oblivious greedy algorithm, a non-adaptive algorithm
+that greedily selects a subset based on the mean, EΦ[A(Φ)].
+Results. The results are shown in Figures 2(e) and 2(f).
+In both settings, the adaptive greedy algorithm outperforms
+the two benchmarks.
+9. Related Work
+Comparison with (Kusner, 2014). To our knowledge,
+the ﬁrst attempt to generalize submodularity ratio to the
+adaptive setting is (Kusner, 2014). They deﬁned approxi-
+mate adaptive submodularity, a notion that is similar to ours,
+as follows:
+γ = min
+S⊆V,ψ
+∑
+v∈S ∆(v|ψ)
+∆(S|ψ) .
+The key difference is that they did not replace subsetS with
+policyπ. In Appendix F, we show that the approximate
+adaptive submodularity is not sufﬁcient for providing an
+approximation guarantee of the adaptive greedy algorithm.
+Comparison with (Yong et al., 2017). Another attempt
+to relax adaptive submodularity is presented in (Yong et al.,
+2017). They introduced ζ-weakly adaptive submodular
+functions as follows:
+Deﬁnition 5 (ζ-weak adaptive submodularity). Letf : 2V×
+YV → R be a set function andp be a distribution ofφ. For
+anyζ≥ 1, we say f is adaptive submodular with respect
+top if for any partial realization ψ⊆ ψ′ and any element
+v∈V\ dom(ψ′), it holdsζ∆(v|ψ)≥ ∆(v|ψ′). Letζ∗ be
+the inﬁmum ofζ satisfying the above inequality.
+Analogous to our adaptive submodularity ratio, one can
+readily see that 1-weak adaptive submodularity is equiv-
+alent to the adaptive submodularity. In general, however,
+there is a difference between the two notions; the adaptive
+submodularity ratio can be bounded from below by 1/ζ∗,
+implying that it is more demanding to bound the value ofζ∗
+than that of the adaptive submodularity ratio.
+Proposition 5. For any set functionf : 2V×YV → R and
+distributionp, we have 1
+ζ∗≤ mink∈Z≥0,ψγψ,k.
+We provide a proof in Appendix G.1. Yong et al. (2017)
+studied a problem called group-based active diagnosis and
+gave a bound of ζ, but some vital assumptions seem to
+have been missed. In Appendix G.2, we provide a problem
+instance in which their bound does not hold. We also present
+instances of adaptive inﬂuence maximization and adaptive
+feature selection for which our framework provides strictly
+better approximation ratios than those obtained with the
+weak adaptive submodularity in Appendices G.3 and G.4.
+Adaptive Submodularity. Adaptive submodularity was
+proposed by Golovin & Krause (2011). There are several
+attempts to adaptively maximize set functions that do not
+satisfy adaptive submodularity (e.g., (Kusner, 2014; Yong
+et al., 2017)). Chen et al. (2015) analyzed the greedy policy
+focusing on the maximization of mutual information, which
+does not have adaptive submodularity.
+Submodularity Ratio. Submodularity ratio was pro-
+posed by Das & Kempe (2011) for sparse regression with
+squared𝓁2 loss. Recently, Elenberg et al. (2018) extended
+this result to more general loss functions with restricted
+strong convexity and restricted smoothness. Bogunovic
+et al. (2018) proposed the notion of supermodularity ratio.
+Bian et al. (2017) provided a guarantee of the non-adaptive
+greedy algorithm for the case where the total curvature and
+submodularity ratio of objective functions are bounded.
+Inﬂuence Maximization. Inﬂuence maximization was
+proposed by Kempe et al. (2003). An adaptive version
+of inﬂuence maximization was ﬁrst considered by Golovin
+& Krause (2011). They showed that this objective function
+satisﬁes adaptive submodularity under the independent cas-
+cade model in general graphs. Inﬂuence maximization on
+a bipartite graph has been studied for applications to adver-
+tisement selection (Alon et al., 2012; Soma et al., 2014).
+This problem setting was extended to the adaptive setting
+by Hatano et al. (2016), but only the independent cascade
+model was considered. The curvature of its objective func-
+tion was studied by Maehara et al. (2017).
+Feature Selection. Kale et al. (2017) considered the prob-
+lem called adaptive feature selection, but their problem set-
+ting is different from ours. In their setting, the learner solves
+feature selection problems multiple times. They studied the
+adaptivity among the multiple rounds, while we studied the
+adaptivity inside of a single round.
+
+Beyond Adaptive Submodularity: Approximation Guarantees of Greedy Policy with Adaptive Submodularity Ratio
+Acknowledgements
+K.F. was supported by JSPS KAKENHI Grant Number JP
+18J12405.
+References
+Yahoo! webscope dataset: G1 - Yahoo! Search Marketing
+Advertiser-Phrase Bipartite Graph, Version 1.0. URL
+https://webscope.sandbox.yahoo.com/.
+Alon, N., Gamzu, I., and Tennenholtz, M. Optimizing
+budget allocation among channels and inﬂuencers. In
+Proceedings of the 21st World Wide Web Conference 2012,
+WWW 2012, pp. 381–388, 2012.
+Balkanski, E. and Singer, Y . The adaptive complexity of
+maximizing a submodular function. In Proceedings of
+the 50th Annual ACM SIGACT Symposium on Theory of
+Computing, STOC 2018, pp. 1138–1151, 2018.
+Bian, A. A., Buhmann, J. M., Krause, A., and Tschi-
+atschek, S. Guarantees for greedy maximization of non-
+submodular functions with applications. In Proceedings
+of the 34th International Conference on Machine Learn-
+ing, ICML 2017, pp. 498–507, 2017.
+Bogunovic, I., Zhao, J., and Cevher, V . Robust maximiza-
+tion of non-submodular objectives. In Proceedings of the
+21st International Conference on Artiﬁcial Intelligence
+and Statistics, AISTATS 2018, pp. 890–899, 2018.
+Chen, Y ., Hassani, S. H., Karbasi, A., and Krause, A. Se-
+quential information maximization: When is greedy near-
+optimal? In Proceedings of The 28th Conference on
+Learning Theory, COLT 2015, pp. 338–363, 2015.
+Das, A. and Kempe, D. Submodular meets spectral: Greedy
+algorithms for subset selection, sparse approximation
+and dictionary selection. In Proceedings of the 28th
+International Conference on Machine Learning, ICML
+2011, pp. 1057–1064, 2011.
+Elenberg, E. R., Dimakis, A. G., Feldman, M., and Karbasi,
+A. Streaming weak submodularity: Interpreting neural
+networks on the ﬂy. In Advances in Neural Information
+Processing Systems 30, pp. 4047–4057, 2017.
+Elenberg, E. R., Khanna, R., Dimakis, A. G., and Negahban,
+S. Restricted strong convexity implies weak submodular-
+ity. Ann. Statist., 46(6B):3539–3568, 2018.
+Gabillon, V ., Kveton, B., Wen, Z., Eriksson, B., and
+Muthukrishnan, S. Adaptive submodular maximization
+in bandit setting. In Advances in Neural Information
+Processing Systems 26, pp. 2697–2705, 2013.
+Golovin, D. and Krause, A. Adaptive submodularity: The-
+ory and applications in active learning and stochastic
+optimization. J. Artif. Intell. Res., 42:427–486, 2011.
+Golovin, D., Krause, A., and Ray, D. Near-optimal bayesian
+active learning with noisy observations. In Advances in
+Neural Information Processing Systems 23, pp. 766–774,
+2010.
+Hatano, D., Fukunaga, T., and Kawarabayashi, K. Adaptive
+budget allocation for maximizing inﬂuence of advertise-
+ments. In Proceedings of the 25th International Joint
+Conference on Artiﬁcial Intelligence, IJCAI 2016 , pp.
+3600–3608, 2016.
+Javdani, S., Chen, Y ., Karbasi, A., Krause, A., Bagnell,
+D., and Srinivasa, S. S. Near optimal bayesian active
+learning for decision making. In Proceedings of the 17th
+International Conference on Artiﬁcial Intelligence and
+Statistics, AISTATS 2014, pp. 430–438, 2014.
+Kale, S., Karnin, Z., Liang, T., and Pál, D. Adaptive feature
+selection: Computationally efﬁcient online sparse linear
+regression under RIP. In Proceedings of the 34th Interna-
+tional Conference on Machine Learning, ICML 2017, pp.
+1780–1788, 2017.
+Kempe, D., Kleinberg, J. M., and Tardos, É. Maximizing the
+spread of inﬂuence through a social network. In Proceed-
+ings of the 9th ACM SIGKDD International Conference
+on Knowledge Discovery and Data Mining, KDD 2003,
+pp. 137–146, 2003.
+Khanna, R., Elenberg, E. R., Dimakis, A. G., Negahban,
+S., and Ghosh, J. Scalable greedy feature selection via
+weak submodularity. In Proceedings of the 20th Interna-
+tional Conference on Artiﬁcial Intelligence and Statistics,
+AISTATS 2017, pp. 1560–1568, 2017.
+Kusner, M. J. Approximately adaptive submodular maxi-
+mization. In NIPS Workshop on Discrete and Combinato-
+rial Problems in Machine Learning, 2014.
+Leskovec, J., Krause, A., Guestrin, C., Faloutsos, C., Van-
+Briesen, J. M., and Glance, N. S. Cost-effective outbreak
+detection in networks. In Proceedings of the 13th ACM
+SIGKDD International Conference on Knowledge Dis-
+covery and Data Mining, KDD 2007, pp. 420–429, 2007.
+Maehara, T., Kawase, Y ., Sumita, H., Tono, K., and
+Kawarabayashi, K. Optimal pricing for submodular valu-
+ations with bounded curvature. In Proceedings of the 31st
+AAAI Conference on Artiﬁcial Intelligence, AAAI 2017,
+pp. 622–628, 2017.
+Nemhauser, G. L., Wolsey, L. A., and Fisher, M. L. An
+analysis of approximations for maximizing submodular
+set functions - I. Math. Program., 14(1):265–294, 1978.
+
+Beyond Adaptive Submodularity: Approximation Guarantees of Greedy Policy with Adaptive Submodularity Ratio
+Soma, T., Kakimura, N., Inaba, K., and Kawarabayashi,
+K. Optimal budget allocation: Theoretical guarantee and
+efﬁcient algorithm. In Proceedings of the 31th Interna-
+tional Conference on Machine Learning, ICML 2014, pp.
+351–359, 2014.
+Tang, Y ., Xiao, X., and Shi, Y . Inﬂuence maximization:
+near-optimal time complexity meets practical efﬁciency.
+In Proceedings of the 2014 ACM SIGMOD International
+Conference on Management of Data, SIGMOD 2014, pp.
+75–86, 2014.
+Yong, S. Z., Gao, L., and Ozay, N. Weak adaptive submodu-
+larity and group-based active diagnosis with applications
+to state estimation with persistent sensor faults. In 2017
+American Control Conference (ACC) , pp. 2574–2581,
+2017.
+
+Beyond Adaptive Submodularity: Approximation Guarantees of Greedy Policy with Adaptive Submodularity Ratio
+Appendices
+A. Proof for Adaptive Submodularity Ratio
+Proof of Proposition 1. First we deal with the “if” part. Letψv be the partial realization just beforev is selected inπ. If
+there are multiple partial realizations ψ such thatπ(ψ) = v, we can duplicate v and take them to be different elements.
+From adaptive submodularity, for any partial realizationψ and policyπ, we have
+∆(π|ψ) =
+∑
+v∈V
+Pr(v∈E(π, Φ)|Φ∼ψ)∆(v|ψ∪ψv)
+≤
+∑
+v∈V
+Pr(v∈E(π, Φ)|Φ∼ψ)∆(v|ψ).
+Thus we can seeγψ,k≥ 1. Moreover, ifπ is a policy that selects a single element, the above inequality holds with equality.
+These two facts implyγψ,k = 1.
+Next we deal with the “only if” part. Letψ⊆ψ′ be any partial realization such that|ψ| + 1 =|ψ′| andv∈V\ dom(ψ′) be
+any element. We deﬁneu∈ dom(ψ′)\ dom(ψ) to be the additional element andy its state inψ′, i.e.,ψ′ =ψ∪{ (u,y )}.
+Let us consider a policyπ that ﬁrst selectsu and, ifφ(u) =y, proceeds to selectv. From the assumption, we haveγψ,2 = 1,
+and thus ∆(π|ψ)≤∑
+v∈V Pr(v∈E(π, Φ))∆(v|ψ). We can calculate the left and right hand sides as follows:
+(LHS) = ∆(u|ψ) + Pr(Φ(u) =y|Φ∼ψ)∆(v|ψ′),
+(RHS) = ∆(u|ψ) + Pr(Φ(u) =y|Φ∼ψ)∆(v|ψ).
+Therefore, we obtain ∆(v|ψ′)≤ ∆(v|ψ). By sequentially concatenating inequalities of this type, we can show that the
+statement holds for anyψ⊆ψ′.
+B. Proof for the Adaptive Greedy Algorithm
+To prove Theorem 1, we introduce a lemma provided by Golovin & Krause (2011). Let π′@π be a concatenated policy,
+i.e., a policy that executesπ′ as if from scratch after executingπ. Adaptive monotonicity is known to be equivalent to the
+following condition:
+Lemma 1 (Adopted from (Golovin & Krause, 2011, Lemma A.8)). Fixf : 2V×Y V → R≥0. Then we have ∆(v|ψ)≥ 0
+for allψ withp(ψ)> 0 and allv∈V if and only if for all policiesπ andπ′, we havefavg(π)≤favg(π′@π).
+Proof of Theorem 1. Letψ be any possible partial realization that can appear while executing the adaptive greedy policyπ.
+Sinceπ stops after𝓁 steps, we have|ψ|≤ 𝓁. According to the deﬁnition of adaptive submodularity ratio, we have
+γ𝓁,k∆(π∗|ψ)≤
+∑
+v∈V
+Pr(v∈E(π∗, Φ)|Φ∼ψ)∆(v|ψ)≤k max
+v∈V
+∆(v|ψ) (A1)
+since∑
+v∈V Pr(v∈E(π∗, Φ)|Φ∼ψ) = E[|E(π∗, Φ)|]≤k. Let Ψ be a random partial realization observed by executing
+π[i], whereπ[i] is a policy obtained by runningπ until it terminates or it selectsi elements. Formally, Ψ conforms to the
+distributionpΨ(ψ) := Pr(Ψ =ψ|∃φ, ψ={(v,φ (v))|v∈E(π[i],φ )}). Then we can lower-bound the expected single
+step gain as follows:
+favg(π[i+1])−favg(π[i]) = E
+[
+max
+v∈V
+∆(v|Ψ)
+]
+(due to the property of the adaptive greedy algorithm)
+≥ E
+[γ𝓁,k
+k ∆(π∗|Ψ)
+]
+(due to (A1))
+= γ𝓁,k
+k
+(
+favg(π[i]@π∗)−favg(π[i])
+)
+≥ γ𝓁,k
+k
+(
+favg(π∗)−favg(π[i])
+)
+. (due to adaptive monotonicity and Lemma 1)
+Let ∆i := favg(π∗)−favg(π[i]). The above inequality can be rewritten as ∆i− ∆i+1 ≥ γ𝓁,k∆i/k, which implies
+∆i+1≤ (1−γ𝓁,k/k)∆i. By repeatedly using this inequality, we obtain ∆𝓁≤ (1−γ𝓁,k/k)𝓁∆0≤ exp(−γ𝓁,k𝓁/k)favg(π∗).
+Consequently, we havefavg(π)≥ (1− exp(−γ𝓁,k𝓁/k))favg(π∗).
+
+Beyond Adaptive Submodularity: Approximation Guarantees of Greedy Policy with Adaptive Submodularity Ratio
+C. Proofs for Adaptivity Gaps
+Proof of Theorem 2. Let π∗
+non be an optimal non-adaptive policy and π∗ be an optimal adaptive policy. Since π∗
+non
+is a non-adaptive policy, it selects the same subset for all φ, i.e., E(π∗
+non,φ ) = E(π∗
+non,φ′) for all φ and φ′. Let
+M∈ argmax∑
+v∈M :|M|≤k ∆(v|∅) andπM
+non the non-adaptive policy that selects M. From the optimality of π∗
+non, we
+have
+favg(π∗
+non)≥favg(πM
+non).
+By the deﬁnition of the supermodularity ratio, we have
+∆(πM
+non|∅)≥β∅,k
+∑
+v∈M
+∆(v|∅).
+Note that∑
+v∈V Pr(v∈E(π∗, Φ))≤k and Pr(v∈E(π∗, Φ))≤ 1 for eachv∈V . Due to the deﬁnition of M, we have
+∑
+v∈M
+∆(v|∅)≥
+∑
+v∈V
+Pr(v∈E(π∗, Φ))∆(v|∅).
+From the deﬁnition of adaptive submodularity ratio, we have
+∑
+v∈V
+Pr(v∈E(π∗, Φ))∆(v|∅)≥γ∅,k∆(π∗|∅).
+Combining these inequalities, we have
+favg(π∗
+non)≥ EΦ[f(∅, Φ)] + ∆(πM
+non|∅)
+≥β∅,kγ∅,k(EΦ[f(∅, Φ)] + ∆(π∗|∅))
+=β∅,kγ∅,kfavg(π∗).
+Proof of Corollary 1. From the approximation ratio, we have
+favg(πnon)≥αfavg(π∗
+non).
+From Theorem 2, we have
+favg(π∗
+non)≥β∅,kγ∅,kfavg(π∗).
+The above two inequalities imply the statement.
+From the following example, we can see that Theorem 2 is tight, i.e., for any rationalsβ andγ in (0, 1], there existf andp
+such that the equality holds.
+Example 2. LetV ={u}∪ ⋃M
+i=1Vi be the ground set, whereVi ={v1
+i,··· ,vk
+i}. Let V0 =∅. LetY ={0, 1,··· ,M}.
+We deﬁne the probability distributionp such thatφ(u) =y∈Y with probabilityp∈ [0, 1/M] for eachy⁄= 0 andφ(u) = 0
+with probability 1−pM. Other elements always in state 0, i.e.,φ(v) = 0 with probability 1 for allv∈V\{u}. We deﬁne
+the objective functionf as
+f(S,φ ) =
+
+
+
+1 +a|S∩Vφ(u)| (u∈S)
+1 +ap(|S|− 1) ( u⁄∈S and|S|≥ 1)
+0 ( S =∅),
+wherea∈ R≥0 is the parameter speciﬁed later. We have ∆(v|∅) = 1 for allv∈ V . The supermodularity ratio β∅,k of
+E[f(·, Φ)] is
+β∅,k = 1 + (k− 1)ap
+k .
+The adaptive submodularity ratioγ∅,k is
+γ∅,k = k
+1 + (k− 1)apM.
+The adaptivity gap is
+GAPk(f,p ) = 1 + (k− 1)ap
+1 + (k− 1)apM.
+For any rationalsβ∈ (0, 1] andγ∈ (0, 1], there exist somek,a,M such thatγ∅,k =γ andβ∅,k =β.
+
+Beyond Adaptive Submodularity: Approximation Guarantees of Greedy Policy with Adaptive Submodularity Ratio
+D. Proof for Adaptive Inﬂuence Maximization
+In this section, we provide the full proof for Theorem 3. For the readability, we ﬁrst give a proof for the case of the linear
+threshold model, which is a special case of the triggering model. After that, we give a proof for the case of the triggering
+model.
+D.1. Proof for the Linear Threshold Model
+Proof of Theorem 3 in the case of the linear threshold model. LetV be the source vertices,U the sink vertices, andA⊆
+V ×U the directed edges. For notational simplicity, assume that G = (V ∪U,A ) is a complete bipartite graph, i.e.,
+A = V×U. By setting b(a) = 0 for all edges a∈ A that originally do not exist, we can assume this without loss of
+generality. Fix anyψ′⊆ψ andπ∈ Πk. It sufﬁces to prove
+∆(π|ψ′)≤ 2k
+k + 1
+∑
+v∈V
+Pr(v∈E(π, Φ)|Φ∼ψ′)∆(v|ψ′).
+Let ∆u(·|ψ′) be the expected marginal gain obtained by activatingu∈U. Below we explain that the above inequality can
+be separated for eachu∈U; i.e., it is enough to prove the above inequality for the case wherew(u)> 0 for just one vertex
+u∈U and 0 for the others. The objective function is the linear sum of the one for each u∈U: ∆(·|ψ′) =∑
+u∈U ∆u(·|ψ′).
+Therefore, the above inequality is decomposed into the sum of
+∆u(π|ψ′)≤ 2k
+k + 1
+∑
+v∈V
+Pr(v∈E(π, Φ)|Φ∼ψ′)∆u(v|ψ′) (A2)
+for eachu∈ U. Note that the states of any (v,u )∈ A and (v′,u′)∈ A are independent of each other if u⁄= u′. Since
+the feedback about anyu′∈U such thatu′⁄=u is never correlated with the states of edges pointing tou, we can regard
+the feedback about u′ as an independent random factor when considering (A2). Thus we can see that it is sufﬁcient to
+consider the case of one sink vertex. Note that a randomized policy can be expressed as a linear sum of deterministic policies.
+Therefore, it is enough to consider the case whereπ is a deterministic policy. Below we ﬁxu∈U and use ∆ instead of ∆u
+for notational ease. We can assumew(u) = 1 without loss of generality. Ifu has been already activated inψ′, both sides of
+(A2) are equal to zero; thus it holds trivially. We then consider the case whereu is not activated inψ′.
+Letψv be the partial realization just beforev is selected inπ. If there are multiple partial realizations ψ such thatπ(ψ) =v,
+we can duplicatev and consider them to be different elements. We can decompose ∆(π|ψ′) as
+∆(π|ψ′) =
+∑
+v∈V
+Pr(v∈E(π, Φ)|Φ∼ψ′)∆(v|ψ′∪ψv).
+The inequality that we aim to prove can be written as
+∑
+v∈V
+Pr(v∈E(π, Φ)|Φ∼ψ′)
+{ 2k
+k + 1∆(v|ψ′)− ∆(v|ψ′∪ψv)
+}
+≥ 0.
+Sinceπ is a deterministic policy that observes only states of edges pointing tou, there exists a path in policy treeπ whereinu
+remains inactive; in Figure 3 such a path is colored in thin gray. LetP ={v1,··· ,vm}⊆ V be the path, wherem≤k and
+policyπ selects the verticesv1,··· ,vm in this order. We consider proving the above inequality forP andV\P separately.
+We can easily see that ∆(v|ψ′∪ψv) = 0 holds for allv∈V\P sinceu is already activated there. Therefore, it is enough
+to prove
+∑
+v∈P
+Pr(v∈E(π, Φ)|Φ∼ψ′)
+{ 2k
+k + 1∆(v|ψ′)− ∆(v|ψ′∪ψv)
+}
+≥ 0. (A3)
+Now we calculate the left hand side of this inequality, which we denote by C. Since u has not been activated yet in
+ψ′, all edges (s,u ) are dead for all s∈ dom(ψ′). In the linear threshold model, we can deﬁne pi := b(viu)/(1−∑
+t∈V\dom(ψ′)b(tu)) to be the posterior probability that edge (v,u ) is alive under observationsψ′ for eachi = 1,...,m .
+Now we havePr(vi∈E(π, Φ)|Φ∼ψ′) = Pr(Φ∼ψ′∪ψvi|Φ∼ψ′) = 1−∑i−1
+j=1pj. In addition, we have ∆(vi|ψ′) =pi
+
+Beyond Adaptive Submodularity: Approximation Guarantees of Greedy Policy with Adaptive Submodularity Ratio
+v1
+v2
+v3
+u is activated
+u is activated
+u is activated
+u is not
+activated
+u is not
+activated
+u is not
+activated
+2k
+k+1∆(v|ψ′)− ∆(v|ψ′∪ψv)≥ 0 holds
+since ∆(v|ψ′∪ψv) = 0.
+Figure 3. A description of our proof method. We can decompose the policy tree into the path whereinu is not activated and the rest.
+and ∆(vi|ψ′∪ψvi) =pi/(1−∑i−1
+j=1pj), and hence
+C =
+m∑
+i=1
+
+1−
+i−1∑
+j=1
+pj
+
+
+{
+2k
+k + 1pi− pi
+1−∑i−1
+j=1pj
+}
+.
+In the case ofm = 1, we haveC = (k− 1)/(k + 1)pi≥ 0. Form≥ 2, we obtain
+C =
+m∑
+i=1
+2k
+k + 1pi
+
+1−
+i−1∑
+j=1
+pj
+
+−
+m∑
+i=1
+pi
+= k− 1
+k + 1
+m∑
+i=1
+pi− 2k
+k + 1
+m∑
+i=1
+
+pi
+i−1∑
+j=1
+pj
+
+
+= k− 1
+k + 1
+
+
+
+m∑
+i=1
+pi− 2k
+k− 1
+m∑
+i=1
+
+pi
+i−1∑
+j=1
+pj
+
+
+
+
+.
+The right hand side can be bounded from below as
+k− 1
+k + 1
+
+
+
+m∑
+i=1
+pi− 2k
+k− 1
+m∑
+i=1
+
+pi
+i−1∑
+j=1
+pj
+
+
+
+
+
+= k− 1
+k + 1
+{
+1⊤p− k
+k− 1 p⊤(11⊤− I)p
+}
+≥ k− 1
+k + 1
+{
+1⊤p− m
+m− 1 p⊤(11⊤− I)p
+}
+,
+where p = (p1,...,p m)⊤ and I∈ Rm×m is the identity matrix. The inequality comes from 2≤m≤k and p⊤(11⊤−
+I)p≥ 0. Since each entry of p represents a probability, we have 0≤ p≤ 1 and 0≤ 1⊤p≤ 1. From Lemma 2 proved
+below, we can see that this is non-negative. Therefore, we conclude that (A3) holds.
+In the above proof, we used the following lemma.
+Lemma 2. Letm≥ 2 and p∈ Rm be an arbitrary vector such that 0≤ p≤ 1 and 0≤ 1⊤p≤ 1, then we have
+1⊤p− m
+m− 1 p⊤(11⊤− I)p≥ 0.
+
+Beyond Adaptive Submodularity: Approximation Guarantees of Greedy Policy with Adaptive Submodularity Ratio
+Proof. Let U = (u1··· um)∈ Rm×m be an orthonormal matrix whose ﬁrst column is deﬁned as u1 = 1/√m; we can
+write p = Uq with some vector q = (q1,...,q m)⊤. Since u⊤
+1 ui = 0 for alli⁄= 1, we obtain U⊤1 = (√m, 0,..., 0)⊤.
+Hence the left hand side of the target inequality can be rewritten as
+1⊤p− m
+m− 1 p⊤(11⊤− I)p = 1⊤Uq− m
+m− 1 q⊤U⊤(11⊤− I)Uq
+= m
+m− 1(‖q‖2
+2−mq2
+1) +√mq1
+=√mq1(1−√mq1) + m
+m− 1(q2
+2 +··· +q2
+m).
+Since we have 0≤ 1⊤p =√mq1≤ 1, this value is non-negative.
+D.2. Proof for the Triggering Model
+Proof of Theorem 3. The outline of the proof for the triggering model is the same as the one for the linear threshold model.
+In the case of the triggering model, we can writeC as follows:
+C =
+m∑
+i=1
+Pr
+
+
+i−1⋀
+j=1
+Xj = 0
+⏐⏐⏐⏐⏐⏐
+Φ∼ψ′
+
+
+
+
+
+2k
+k + 1 Pr (Xi = 1|Φ∼ψ′)− Pr
+
+Xi = 1
+⏐⏐⏐⏐⏐⏐
+Φ∼ψ′,
+i−1⋀
+j=1
+Xj = 0
+
+
+
+
+,
+whereXi is an event in which edge(vi,u ) is alive. Different from the linear threshold model, we cannot expressC explicitly
+with parameters. Hence we deﬁne
+pi := Pr(Xi = 1|Φ∼ψ′) fori = 1,··· ,m,
+ai := Pr
+(
+Xi = 1∧
+{⋀i−1
+j=1Xi = 0
+}⏐⏐⏐Φ∼ψ′
+)
+fori = 1,··· ,m,
+and hi := Pr
+({⋀i
+j=1Xi = 0
+}⏐⏐⏐Φ∼ψ′
+)
+fori = 0,··· ,m.
+With these deﬁnitions, we can calculateC as
+C =
+m∑
+i=1
+hi−1
+( 2k
+k + 1pi− ai
+hi−1
+)
+= 2k
+k + 1
+m∑
+i=1
+pihi−1−
+m∑
+i=1
+ai.
+Our goal is to prove that
+2k
+k + 1
+m∑
+i=1
+pihi−1−
+m∑
+i=1
+ai≥ 0.
+Note that we have
+0≤ai≤pi≤ 1 and 0≤hi≤ 1 fori = 1,...,m,
+wherea1 =p1 andh0 = 1. Therefore, ifm = 1, we have
+2k
+k + 1
+m∑
+i=1
+pihi−1−
+m∑
+i=1
+ai = 2k
+k + 1p1h0−a1
+= k− 1
+k + 1p1
+≥ 0.
+Furthermore, it holds that
+hi +∑i
+j=1aj = Pr
+({⋀i
+j=1Xi = 0
+})
++∑i
+j=1 Pr
+(
+Xi = 1∧
+{⋀i−1
+j=1Xi = 0
+})
+= 1
+
+Beyond Adaptive Submodularity: Approximation Guarantees of Greedy Policy with Adaptive Submodularity Ratio
+fori = 0,...,m , where∑0
+j=1aj = 0. By combining this equality with 0≤hi≤ 1, we obtain
+0≤
+i∑
+j=1
+aj≤ 1
+fori = 0,...,m . With these inequalities, the LHS of the target inequality can be lower-bounded as
+2k
+k + 1
+m∑
+i=1
+pihi−1−
+m∑
+i=1
+ai = 2k
+k + 1
+m∑
+i=1
+pi
+
+1−
+i−1∑
+j=1
+aj
+
+−
+m∑
+i=1
+ai
+≥ 2k
+k + 1
+m∑
+i=1
+ai
+
+1−
+i−1∑
+j=1
+aj
+
+−
+m∑
+i=1
+ai
+= k− 1
+k + 1
+m∑
+i=1
+ai− 2k
+k + 1
+∑
+i>j
+aiaj
+= k− 1
+k + 1
+(
+1⊤a− k
+k− 1 a⊤(11⊤− I)a
+)
+≥ k− 1
+k + 1
+(
+1⊤a− m
+m− 1 a⊤(11⊤− I)a
+)
+,
+which is non-negative from Lemma 2; this completes the proof as with the case of the linear threshold model.
+D.3. Example for the Case of General Graphs
+In this subsection, we provide a problem instance of a general graph in which the adaptive submodularity ratio can be very
+small.
+Before that, we brieﬂy describe the problem setting of adaptive inﬂuence maximization in general graphs. Let G = (V′,A )
+be a general directed graph andV ⊆V′ be a set of vertices that can be selected. At each step, the algorithm selects one
+vertexv∈V , then the inﬂuence spreads from v according to some stochastic diffusion process such as the independent
+cascade model or the linear threshold model. After that, the algorithm observes the diffusion from this vertexv under some
+feedback model. This problem includes the bipartite inﬂuence maximization as a special case where G = (V∪U,A ) is a
+directed bipartite graph withA⊆V×U andw(v) = 0 for allv∈V .
+There are two standard feedback models, both of which are proposed by Golovin & Krause (2011). Note that these two
+feedback models are equivalent in bipartite graphs. In the ﬁrst feedback model called the myopic feedback model, the
+algorithm observes the states of all edges outgoing fromv. Golovin & Krause (2011) proved that the adaptive submodularity
+does not hold in this case by giving a simple example. This analysis can be applied to both the independent cascade and
+linear threshold models. With this example instance, we can readily see that the adaptive submodularity ratio can be very
+small under the myopic feedback model. These facts imply that the myopic feedback model is typically too harsh to deal
+with.
+In the second feedback model called thefull-adoption feedback model, the algorithm observes the states of all edges outgoing
+from any vertexu∈R(v) when selectingv, whereR(v) is the set of all vertices reachable fromv only through live edges.
+Golovin & Krause (2011) showed that, even if graphs are general (non-bipartite), the objective function satisﬁes adaptive
+submodularity under the independent cascade model with the full-adaption feedback.
+Below we show that, even under the linear threshold model with the full-adoption feedback, the adaptive submodularity
+ratio can be arbitrarily small if the graph is non-bipartite. This fact implies that the assumption of bipartiteness, which we
+imposed to obtain the bound on the adaptive submodularity ratio, is almost inevitable.
+Example 3. Let G be a directed graph with vertices V = {v1,...,v 𝓁}∪{ u0,u 1,...,u 𝓁} and directed edges A =
+{(ui−1,ui)|i = 1,...,𝓁 }∪{ (vi,ui)|i = 1,...,𝓁 }. Let w be the vertex weight such thatw(v) = 1 for allv∈V . We
+consider the following linear threshold model: for eachi∈ [𝓁], only one of the two edges, (vi,ui) and (ui−1,ui), entering
+ui is alive with probabilityϵ and 1−ϵ, respectively.
+
+Beyond Adaptive Submodularity: Approximation Guarantees of Greedy Policy with Adaptive Submodularity Ratio
+u0 u1 u2 u𝓁−1 u𝓁
+v1 v2 v𝓁−1 v𝓁
+(a) graphG = (V,A )
+u0 v1 v2 v𝓁−1 v𝓁
+(u0,u 1)
+is dead
+(u1,u 2)
+is dead
+(u𝓁−1,u 𝓁)
+is dead
+(u0,u 1)
+is alive
+(u1,u 2)
+is alive
+(u𝓁−1,u 𝓁)
+is alive
+(u1,u 2)
+is dead
+(u𝓁−1,u 𝓁)
+is dead
+(u1,u 2)
+is alive
+(u𝓁−1,u 𝓁)
+is alive
+(b) policyπ
+Figure 4. An instance with a non-bipartite graph such that the adaptive submodularity ratio can be arbitrarily small. Since the space is
+limited, nodes ofπ that have the same subtree are indicated by a single node.
+Letπ be a policy deﬁned as follows. π ﬁrst selects u0. Then the realized states of some edges are revealed under the
+full-adoption feedback model and we can observe which vertices are activated. Ifu𝓁 is activated,π stops. Otherwise, there
+exists somei∈ [𝓁] such thatui−1 is activated butui is not. Thenπ proceeds to selectvi. Repeat this procedure untilu𝓁 is
+activated. The graph and policy are illustrated in Figure 4.
+First we consider the probability Pr(vi∈E(π, Φ)) for eachi∈ [𝓁]. We can see that π selectsvi if and only if the edge
+(ui−1,ui) is dead, which yields Pr(vi∈ E(π, Φ)) = ϵ. We can easily conﬁrm that π ﬁnally activates all u0,...,u 𝓁 for
+every realization and eachvi is selected with probabilityϵ, therefore ∆(π|∅) =𝓁 + 1 +ϵ𝓁. On the other hand, the numerator
+of the deﬁnition of the adaptive submodularity ratio can be calculated as follows. The expected marginal gain ofvi is
+∆(vi|∅) = 1 +
+𝓁∑
+j=i
+ϵ(1−ϵ)j−i = 2− (1−ϵ)𝓁−i+1.
+Similarly, we have ∆(u0|∅) = 1
+ϵ{1− (1−ϵ)𝓁+1}. Finally, we can compute the adaptive submodularity ratio as
+γ∅,𝓁≤
+∑
+v∈V Pr(v∈E(π, Φ))∆(v|∅)
+∆(π|∅)
+=
+1
+ϵ{1− (1−ϵ)𝓁+1} +ϵ∑𝓁
+i=1(2− (1−ϵ)𝓁−i+1)
+𝓁 +ϵ𝓁 + 1
+≤
+1
+ϵ + 2ϵ𝓁
+𝓁 +ϵ𝓁 + 1
+By settingϵ = 1/
+√
+𝓁 and taking𝓁→∞ , we can seeγ∅,𝓁→ 0. To conclude, the adaptive submodularity ratio can become
+arbitrarily small if the graph is non-bipartite.
+E. Proof for Adaptive Feature Selection
+Proof of Theorem 4. Letψ be any partial realization andπ∈ Πk be any policy of height at mostk. Fix an arbitrary subset
+ψ′⊆ψ. Note that we havef(dom(ψ),φ ) =f(dom(ψ),φ′) for anyφ,φ′⊇ψ due to the assumption thatf(S,φ ) depends
+only on (φ(v))v∈S; considering this, we abuse the notation and deﬁne f(ψ) :=f(dom(ψ),φ ) for anyφ⊇ψ. Let ψv be
+the partial realization just beforev is selected inπ. If there are multiple partial realizationsψ such thatπ(ψ) =v, we can
+duplicatev and consider them to be different elements. Now we can transform the numerator of the adaptive submodularity
+ratio as
+∑
+v∈V
+Pr(v∈E(π, Φ)|Φ∼ψ′)∆(v|ψ′)
+=
+∑
+v∈V
+Pr(v∈E(π, Φ)|Φ∼ψ′)E [f(ψ′∪{ (v, Φ(v))})−f(ψ′)|Φ∼ψ′]
+=
+∑
+v∈V
+Pr(v∈E(π, Φ)|Φ∼ψ′)
+∑
+y∈Y
+Pr(Φ(v) =y|Φ∼ψ′)
+{
+f(ψ′∪{ (v,y )})−f(ψ′)
+}
+
+Beyond Adaptive Submodularity: Approximation Guarantees of Greedy Policy with Adaptive Submodularity Ratio
+=
+∑
+v∈V
+Pr(v∈E(π, Φ)|Φ∼ψ′)
+∑
+y∈Y
+Pr(Φ(v) =y|Φ∼ψ′∪ψv)
+{
+f(ψ′∪{ (v,y )})−f(ψ′)
+}
+(due to the independence ofφ(v) from (φ(u))u∈dom(ψv))
+=
+∑
+v∈V
+Pr(v∈E(π, Φ)|Φ∼ψ′)E [f(ψ′∪{ (v, Φ(v))})−f(ψ′)|Φ∼ψ′∪ψv]
+=
+∑
+v∈V
+Pr(Φ∼ψ′∪ψv|Φ∼ψ′)E [f(dom(ψ′)∪{v}, Φ})−f(dom(ψ′), Φ)|Φ∼ψ′∪ψv]
+= E
+
+ ∑
+v∈E(π,Φ)
+{
+f(dom(ψ′)∪{v}, Φ)−f(dom(ψ′), Φ)
+}
+⏐⏐⏐⏐⏐⏐
+Φ∼ψ′
+
+.
+From the above equality, we get
+min
+φ∼ψ
+γφ
+dom(ψ),k∆(π|ψ′)
+= min
+φ∼ψ
+γφ
+dom(ψ),kE [f(dom(ψ′)∪E(π, Φ), Φ)−f(dom(ψ′), Φ)|Φ∼ψ′]
+≤ E
+[
+γΦ
+dom(ψ),k
+{
+f(dom(ψ′)∪E(π, Φ), Φ)−f(dom(ψ′), Φ)
+}⏐⏐⏐Φ∼ψ′
+]
+≤ E
+
+ ∑
+v∈E(π,Φ)
+{
+f(dom(ψ′)∪{v}, Φ)−f(dom(ψ′), Φ)
+}
+⏐⏐⏐⏐⏐⏐
+Φ∼ψ′
+
+ (From the deﬁnition of submodularity ratio)
+=
+∑
+v∈V
+Pr(v∈E(π,φ )|Φ∼ψ′)∆(v|ψ′).
+This inequality holds for anyψ andπ∈ Πk. To conclude, we obtainγψ,k≥ minφ∼ψγφ
+dom(ψ),k.
+To prove Corollary 2, we use the following bound on the submodularity ratio provided by Das & Kempe (2011).
+Theorem 5 (Adopted from (Das & Kempe, 2011, Lemma 2.4)). Assume each column of A(φ) is normalized. Then
+γU,k≥ min
+S⊆V :|S|≤k+|U|
+λmin(A(φ)⊤
+S A(φ)S).
+Proof of Corollary 2. From the deﬁnition, we can seef(S,φ ) depends only on selected columns (φ(v))v∈S and not on the
+other columns (φ(v))v∈V\S.
+We can show
+f(S,φ ) =‖b− 0‖2− min
+supp(w)⊆S
+‖b− A(φ)w‖2
+≤‖ b− 0‖2− min
+supp(w)⊆T
+‖b− A(φ)w‖2 =f(T,φ )
+for allS⊆T . From this property, called strong adaptive monotonicity, for any partial realizationψ andv∈V\ dom(ψ),
+we obtain
+∆(v|ψ) = E[f(dom(ψ)∪{v}, Φ)−f(dom(ψ), Φ)|Φ∼ψ]
+≥ 0,
+from which the adaptive monotonicity off w.r.t.p follows.
+By applying Theorem 4, we obtain
+γψ,k≥ min
+φ∼ψ
+γφ
+dom(ψ),k,
+whereγφ
+X,k is the submodularity ratio off(·,φ ) for realizationφ. From Theorem 5, we obtain the following lower bound:
+γφ
+dom(ψ),k≥ min
+S⊆V :|S|≤k+|ψ|
+λmin(A(φ)⊤
+S A(φ)S).
+
+Beyond Adaptive Submodularity: Approximation Guarantees of Greedy Policy with Adaptive Submodularity Ratio
+Finally, we have
+γ𝓁,k = min
+ψ :|ψ|≤𝓁
+γψ,k
+≥ min
+ψ :|ψ|≤𝓁
+min
+φ
+γφ
+dom(ψ),k
+≥ min
+ψ :|ψ|≤𝓁
+min
+φ
+min
+S⊆V :|S|≤k+|ψ|
+λmin(A(φ)⊤
+S A(φ)S)
+= min
+φ
+min
+S⊆V :|S|≤k+𝓁
+λmin(A(φ)⊤
+S A(φ)S).
+E.1. Proof for the Adaptivity Gap
+Proof of Proposition 4. We can readily conﬁrm that the objective function can be rewritten as follows:
+f(S,φ ) = (A(φ)⊤
+S b)⊤(A(φ)⊤
+S A(φ)S)+(A(φ)⊤
+S b).
+For anyS⊆V such that|S|≤ k, we have
+E[f(S, Φ)] = E
+[
+(A(Φ)⊤
+S b)⊤(A(Φ)⊤
+S A(Φ)S)+(A(Φ)⊤
+S b)
+]
+≥ E
+[
+λmin((A(Φ)⊤
+S A(Φ)S)+)‖A(Φ)⊤
+S b‖2
+2
+]
+≥ E
+[ ‖A(Φ)⊤
+S b‖2
+2
+maxφ maxT⊆V :|T|≤kλmax(A(φ)⊤
+T A(φ)T )
+]
+= E
+[
+‖A(Φ)⊤
+S b‖2
+2
+]
+maxφ maxT⊆V :|T|≤kλmax(A(φ)⊤
+T A(φ)T )
+=
+∑
+v∈S E
+[
+(A(Φ)⊤
+v b)2]
+maxφ maxT⊆V :|T|≤kλmax(A(φ)⊤
+T A(φ)T )
+=
+∑
+v∈S E[f({v}, Φ)]
+maxφ maxT⊆V :|T|≤kλmax(A(φ)⊤
+T A(φ)T ).
+From this inequality, we can bound the supermodularity ratioβ∅,k of EΦ[f(·, Φ)] as
+β∅,k≥ 1
+maxφ maxS⊆V :|S|≤kλmax(A(φ)⊤
+S A(φ)S).
+Plugging it and the inequality of Corollary 2 into Theorem 2, we obtain
+GAPk≥ minφ minS⊆V :|S|≤kλmin(A(φ)⊤
+S A(φ)S)
+maxφ maxS⊆V :|S|≤kλmax(A(φ)⊤
+S A(φ)S).
+F. Counterexample to the Statement of (Kusner, 2014)
+Kusner (2014) has deﬁned approximate adaptive submodularity as follows:
+Deﬁnition 6 (Adopted from (Kusner, 2014, Deﬁnition 2)). A set functionf : 2V×Y V → R and a distributionp onYV is
+approximately adaptive submodular if for any subrealizationψ such thatp(ψ)> 0 and anyS⊆V\ range(ψ), we have
+∑
+v∈S
+∆(v|ψ)≥γ∆(S|ψ),
+whereγ∈ [0, 1] represents the submodularity ratio of the non-adaptive function.
+
+Beyond Adaptive Submodularity: Approximation Guarantees of Greedy Policy with Adaptive Submodularity Ratio
+Below we present a counterexample to the statement of (Kusner, 2014), which says that a bounded γ yields a bounded
+approximation ratio of the adaptive greedy algorithm.
+LetY ={0, 1,...,M − 1} be the set of all possible states andV ={u}∪{ zi|i∈ [k]}∪{ vy
+i |i∈ [k− 1], y∈Y} be
+the ground set. We deﬁnef : 2V×Y V → R as follows:
+f(S,φ ) =|S∩{u}| + (1 +ϵ)|S∩{z1,...,z k}| +M
+∑
+y∈Y,i∈[k−1]
+1{φ(vy
+i )=1 andvy
+i∈S},
+whereϵ> 0 is any small constant. Note that this function is normalized and adaptive monotone. For each y∈Y , we deﬁne
+φy asφy(u) =y,φy(zi) = 0 for eachi∈ [k],φy(vy
+i ) = 1 for eachi∈ [k− 1], andφy(vy′
+i ) = 0 for eachy′∈Y\{ y} and
+i∈ [k− 1]. Letp be a distribution deﬁned as
+p(φ) =
+{
+1
+|Y| ifφ =φy for somey∈Y
+0 otherwise.
+It is easy to see thatf is approximately adaptive submodular withγ = 1 w.r.t.p because ∆(·|ψ) is a linear function for any
+subrealizationψ. Note thatf is not adaptive submodular w.r.t.p because ∆(v1
+1|∅) = 1<M = ∆(v1
+1|{(u, 1)}).
+Kusner (2014) stated that the adaptive greedy algorithm achieves(1− e−γ)-approximation for any normalized, adaptive
+monotone, and approximately adaptive submodular function. However, the adaptive greedy algorithm achieves only
+(1 +ϵ)/M-approximation for the abovef andp as is explained below. The adaptive greedy algorithm selectsz1,...,z k
+since their expected marginal gain is 1 +ϵ and the expected marginal gain of other elements is 1. On the other hand,
+the optimal policy ﬁrst selectsu and proceeds to select{vφ(u)
+1 ,...,v φ(u)
+k−1} according to the observedφ(u). The adaptive
+greedy policy achievesk(1 +ϵ) and the optimal policy achieves 1 + (k− 1)M. Thus the approximation ratio gets close to
+(1 +ϵ)/M ask increases, and it can be arbitrarily small since the number of possible states,M, is not bounded. Namely,
+even ifγ is bounded by a constant, the approximation guarantee of the adaptive greedy algorithm can become arbitrarily bad
+in general, which contradicts the statement of (Kusner, 2014).
+G. About Comparison with (Yong et al., 2017)
+G.1. Proof for Comparison with (Yong et al., 2017)
+Proof of Proposition 5. From the deﬁnition of ζ∗, we haveζ∗∆(v|ψ)≥ ∆(v|ψ′) for anyψ⊆ψ′ andv∈V\ dom(ψ′).
+It is enough to show 1
+ζ∗ ∆(π|ψ)≤ ∑
+v∈V Pr(v∈ E(π,φ ))∆(v|ψ) for arbitrary ψ⊆ ψ′ andπ. Let ψv be the partial
+realization just beforev is selected inπ. If there are multiple partial realizationsψ such thatπ(ψ) =v, we can duplicatev
+and take them to be different elements. Then we can write ∆(π|ψ) =∑
+v∈V Pr(v∈E(π,φ ))∆(v|ψv). By applying the
+bound of weak adaptive submodularity, we have
+∆(π|ψ) =
+∑
+v∈V
+Pr(v∈E(π,φ ))∆(v|ψ∪ψv)
+≤ζ∗∑
+v∈V
+Pr(v∈E(π,φ ))∆(v|ψ),
+which implies the statement.
+From this proposition, we can see that Theorem 1 is stronger than the result of (Yong et al., 2017) as follows. They showed
+that the adaptive greedy algorithm is guaranteed to achieve (1− exp(−𝓁/(ζ∗k)))-approximation in (Yong et al., 2017,
+Theorem 1). From Proposition 5, we always have (1− exp(−𝓁/(ζ∗k)))≤ (1− exp(−γψ,k𝓁/k)).
+G.2. Counterexample to (Yong et al., 2017, Proposition 2)
+In this subsection we provide an instance of group-based active diagnosis in which the weak adaptive submodularity cannot
+give a bound of the approximation ratio of the adaptive greedy algorithm.
+The formal problem statement of group-based active diagnosis can be described as follows. We have setV of tests and setY
+of their possible outcomes. There are two random variables that uniquely specify the outcome of each test: the state x and
+
+Beyond Adaptive Submodularity: Approximation Guarantees of Greedy Policy with Adaptive Submodularity Ratio
+the modeq. LetX be the set of all possible states andQ the set of all possible modes. We know the prior joint distribution
+p(x,q ) ofx andq, but does not know their true values. Letµ(v,x,q )∈Y be the unique outcome of testv when the true
+state isx and the true mode isq. We aim to determinex by sequentially conducting several tests out ofV .
+Yong et al. (2017) formulated this problem as the problem of maximizing the following objective function:
+f(S, (x,q )) = 1−
+∑
+x′∈X :∃q′∈Q,∀v∈S,µ (v,x′,q′)=µ(v,x,q′)
+∑
+q′′∈Q
+p(x′,q′′),
+where the ﬁrst summation is about all possiblex′∈X under the outcomes of testsS made so far. Proposition 2 of (Yong
+et al., 2017) claims that this objective function isζ-weakly adaptive submodular for
+ζ≤ |Q|
+minx∈X,q∈Qp(x,q ).
+However, it does not hold in the following example.
+Example 4. LetX ={x1,x 2} be the set of states andQ ={q1,q 2,q 3} the set of modes. For eachx∈X andq∈Q , we
+assumep(x,q ) = 1
+6. We consider two actionsv1 andv2, which yield the unique outcome out ofY ={+1,−1} indicated in
+Table 2 for each statex∈X and modeq∈Q .
+Table 2. Outcome
+(x,q ) µ(v1,x,q ) µ(v2,x,q )
+(x1,q 1) +1 +1
+(x1,q 2) +1 −1
+(x1,q 3) −1 +1
+(x2,q 1) +1 +1
+(x2,q 2) +1 −1
+(x2,q 3) −1 −1
+We ﬁrst consider the expected marginal gain obtained by performing actionv2 at the beginning. In this situation, performing
+v2 yields outcome +1 or−1 with probability 1/2. If the outcome is +1, we can reject neitherx1 norx2. This is the case for
+outcome−1. Thus we have ∆(v2|∅) = 0.
+Next we assume the algorithm performsv1 at the beginning and obtains the outcome of−1, i.e.,ψ ={(v1,−1)}. Now the
+possible pairs of the state and the mode are only(x1,q 3) and (x2,q 3). By performing actionv2, we obtain the outcome+1 or
+−1 with probability 1
+2 and rejectx2 orx1, respectively. Thus the expected marginal gain is∆(v2|ψ) = 1
+2 P[x2]+ 1
+2 P[x1] = 1
+2.
+From the deﬁnition of ζ, we must have ∆(v2|ψ)≤ ζ∆(v2|∅), but no ﬁnite ζ satisﬁes this inequality. This contradicts
+Proposition 2 in (Yong et al., 2017), which claimsζ is ﬁnite.
+G.3. Comparison in Adaptive Inﬂuence Maximization
+We provide an instance of adaptive inﬂuence maximization such that the adaptive submodularity ratio yields an approximation
+ratio signiﬁcantly better than that obtained with the weak adaptive submodularity (Yong et al., 2017).
+Example 5. We use the same problem instance as Example 1. At the beginning, the expected marginal gain of vk is
+∆(vk|∅) = 1/k. Let ψ be the observations obtained when v1,...,v k−1 are selected and all edges are turned out to be
+dead. In this case, since the edge (vk,u ) must be alive, the expected marginal gain is ∆(vk|ψ) = 1. The weak adaptive
+submodularity constant is lower-bounded asζ≥ ∆(vk|ψ)/∆(vk|∅) =k. This implies that the weak adaptive submodularity
+constant cannot yield a lower bound of the approximation ratio better than 1− exp(− 1
+k) = O( 1
+k), while the adaptive
+submodularity ratio provides a lower bound 1− exp(−(k + 1)/2k) = Ω(1).
+G.4. Comparison in Adaptive Feature Selection
+Regarding adaptive feature selection, we describe an advantage of the adaptive submodularity ratio in comparison with the
+weak adaptive submodularity (Yong et al., 2017). As detailed below, there exists an instance with the following condition:
+the approximation ratio obtained with the adaptive submodularity ratio is bounded, while that obtained with the weak
+adaptive submodularity is 0.
+
+Beyond Adaptive Submodularity: Approximation Guarantees of Greedy Policy with Adaptive Submodularity Ratio
+Example 6. We can make such an instance even ifφ is deterministic. Let A(φ) = (φ(1)··· φ(n)) be the realized feature
+matrix under realizationφ. The objective function is deﬁned as
+f(S,φ ) =‖b‖2
+2− min
+w∈RS
+‖b− A(φ)Sw‖2
+2.
+We here let
+A(φ) =
+
+
+1 1 /
+√
+2 0 ··· 0
+0 1 /
+√
+2 0 ··· 0
+0 0 1
+... ... ...
+0 0 1
+
+
+and b =
+
+
+0
+a
+a
+...
+a
+
+
+,
+wherea> 0 is an any positive real value. LetS ={3,...,n } andT ={2,...,n }, which satisfyS⊆T . Then, we have
+min
+w∈RS
+‖b− A(φ)Sw‖2
+2 = min
+w∈RS∪{1}
+‖b− A(φ)S∪{1}w‖2
+2 =a2
+and
+min
+w∈RT
+‖b− A(φ)Sw‖2
+2 = a2
+2 > min
+w∈RT∪{1}
+‖b− A(φ)T∪{1}w‖2
+2 = 0.
+Therefore, we obtain
+f(S∪{ 1},φ )−f(S,φ ) =a2−a2 = 0 and f(T∪{ 1},φ )−f(T,φ ) = a2
+2 − 0 = a2
+2 ,
+which implies thatζ cannot be bounded from above in general. On the other hand, the largest and smallest eigenvalues of
+the Hessian, A(φ)⊤A(φ), are 1 + 1/
+√
+2 and 1− 1/
+√
+2, respectively. Therefore, the condition number is bounded from
+above by 3 + 2
+√
+2, which means the adaptive submodularity ratio is bounded from below by 1/(3 + 2
+√
+2).

@@ -1,0 +1,624 @@
+Optimal input design for parameter estimation in a bounded-error context for nonlinear dynamical systems
+Carine Jauberthie, Lilianne Denis-Vidal, Qiaochu Li, Zohra Cherfi
+To cite this version:
+Carine Jauberthie, Lilianne Denis-Vidal, Qiaochu Li, Zohra Cherfi. Optimal input design for parameter estimation in a bounded-error context for nonlinear dynamical systems. Automatica, 2018, 92, pp.86 - 91. 10.1016/j.automatica.2018.03.003. hal-02025747
+
+HAL Id: hal-02025747 https://hal.science/hal-02025747v1
+Submitted on 19 Feb 2019
+
+HAL is a multi-disciplinary open access archive for the deposit and dissemination of scientific research documents, whether they are published or not. The documents may come from teaching and research institutions in France or abroad, or from public or private research centers.
+
+L'archive ouverte pluridisciplinaire HAL, est destinée au dépôt et à la diffusion de documents scientifiques de niveau recherche, publiés ou non, émanant des établissements d'enseignement et de recherche français ou étrangers, des laboratoires publics ou privés.
+
+HAL Authorization
+
+Optimal input design for parameter estimation in a bounded-error context for nonlinear dynamical systems
+
+Carine Jauberthie b, Lilianne Denis-Vidal a, Qiaochu Li a, Zohra Cherfi c
+aSorbonne University, Universite´ de technologie de Compie`gne, LMAC Laboratory of Applied Mathematics of Compie`gne - CS 60 319 - 60 203 Compie`gne cedex
+bLAAS-CNRS, Universite´ de Toulouse, UPS, Toulouse, France cSorbonne University, Universite´ de technologie de Compie`gne, CNRS, UMR 7337 Roberval,
+Centre de recherche Royallieu - CS 60 319 - 60 203 Compie`gne cedex
+
+Abstract
+This paper deals with optimal input design for parameter estimation in a bounded-error context. Uncertain controlled nonlinear dynamical models, when the input can be parametrized by a finite number of parameters, are considered. The main contribution of this paper concerns criteria for obtaining optimal inputs in this context. Two input design criteria are proposed and analysed. They involve sensitivity functions. The first criterion requires the inversion of the Gram matrix of sensitivity functions. The second one does not require this inversion and is then applied for parameter estimation of a model taken from the aeronautical domain. The estimation results obtained using an optimal input are compared with those obtained with an input optimized in a more classical context (Gaussian measurement noise and parameters a priori known to belong to some boxes). These results highlight the potential of optimal input design in a bounded-error context.
+Key words: Experiment design; Optimal input; Parameter estimation; State estimation; Continuous-time systems; Sensitivity functions; Nonlinear systems; Bounded noise; Interval analysis; Aerospace models.
+
+1 Introduction
+In this paper, we are interested in parameter estimation of models describing industrial systems. Such systems are often prone to uncertainties that complicate the modeling task. Usually, uncertainties are described as realizations of random variables with known distributions, which is difficult to justify in practice. In the presented work, perturbations are only assumed to be bounded with known bounds. Thus, the set-membership framework is considered. In this framework, the set of all parameters consistent with the model structure, the measurements and the bounds on the perturbations can be defined as the set estimate for the parameters. Various techniques are then available to characterize this set estimate (see for example [7] or [11]). Set-membership estimation is an interesting alternative to classical least squares or maximum likelihood estimation. These methods have received a lot of attention in the last years, for example [10], [6], [21].
+Email addresses: cjaubert@laas.fr (Carine Jauberthie), lilianne.denis-vidal@utc.fr (Lilianne Denis-Vidal), qiaochu.li@utc.fr (Qiaochu Li), zohra.cherfi@utc.fr (Zohra Cherfi).
+
+Set-membership parameter estimation was first considered for models which output is linear in their parameters, then models nonlinear in their parameters were considered. During the last decade, models described by nonlinear state equations have been considered in this context [9], [20].
+Experiment design is important to identify more precisely mathematical models of complex systems. The overall goal is to design an experiment that produces data from which model parameters can be estimated accurately. The conventional approach for experiment design assumes stochastic models for uncertain parameters and measurement errors (see for example [23]). Several criteria for experiment design have been proposed involving a scalar function of the Fisher information matrix (FIM). For example the A-optimal experiment minimizes the trace of inverse of the FIM, which minimizes, in linear case, the average variance of the estimates. Another criterion widely used is the D-optimality. The Doptimal experiment minimizes the volume of a confidence ellipsoid. However, some sources of uncertainty are better modeled as bounded uncertainty. This is the case of parameter uncertainties that generally arise from design tolerances and from aging (see for example [24]). In a bounded-error context, the experiment design is much less studied. First
+
+Preprint submitted to Automatica
+
+4 January 2018
+
+result consists in designing experiments which minimize the volume of the estimate of parameter domain. Some works such as [19] or [1] for models linear with respect to the input, consist in optimizing the worst possible performance of the experiment over the prior domain for the parameters. In [19], a minimax approach to synthetize the optimal experiment is described, using the Gram matrix of sensitivity functions and specific criteria are developed. These approaches take into account the bounds of the prior domain for the parameters into the search of the optimal experiment but do not take into account the set-membership estimation process which leads to the set estimate. In this paper, to minimize the set of estimate of parameters, we exhibit an explicit expression linking this set of parameters with the Gram matrix of sensitivites. This work follows a study on the optimization of the initial conditions in the same context but with a different approach [12]. To obtain an explicit expression of the set of parameters to be estimated, in [11], the authors have used a centered inclusion function (which is a set-membership extension of the equality obtained by the Mean Value Theorem) for the model output and they have built an operator of contraction for the set of parameter to be estimated based on sensitivity functions. Starting from this idea, we build explicitly some criteria to find an optimal experiment in the bounded-error context. In our work, we consider only the optimal input design. The proposed methodology requires a parametrization of the input using elementary functions with a reasonable number of parameters. This paper is organized as follows. In Section 2, the problem statement is presented. Section 3 describes some basic tools of interval analysis. Section 4 introduces the proposed criteria for optimal input design. An aerospace application is given in Section 5. In Section 6, some conclusions and future research directions are discussed.
+2 Problem formulation and notations
+2.1 Notations
+In what follows, boxes, i.e., cartesian products of intervals are denoted as [x] = [x, x] (see [7]). This paper deals with optimal input design for estimating the unknown parameters of a nonlinear dynamical model described by the following form:
+x(t, p, u) = f(x(t, p, u), u(t), p), (1)
+ym(t, p, u) = h(x(t, p, u), p),
+where x(t, p, u)  Rnx and ym(t, p, u)  Rny denote respectively the vectors of state variables and the model output. The initial conditions for x(.) at t = 0 are supposed to belong to an initial bounded box [x0]. u(t) represents the input, it is supposed to belong to an admissible set of inputs Uad and the input is supposed to be composed of elementary functions. The vector p  Rnp is the vector of parameters to be estimated, which is supposed to belong to an a priori box [p0]. The time t is assumed to belong to [0,tmax]. The functions f and h are nonlinear functions.
+
+f is supposed analytic on M for every p  [p0], where M is an open set of Rnx such that x(t, p, u)  M for every p  [p0] and t  [0,tmax]. The model output at the sample time tk, with k from 1 to N is denoted ykm(p, u) = ym(tk, p, u). ymk (p, u) is a vector with components ykm,i(p, u) = ym,i(tk, p, u) for i = 1, ..., ny, k = 1, . . . , N. Let y(tk, u) be the vector of the measurements at the sample time tk. Suppose that there exists a "true" value of parameters p such we have:
+y(tk, u) = ym(tk, p, u) + v(tk), k = 1, ..., N, (2)
+where the measurement noise v(tk) is supposed bounded by v(tk) and v(tk) which are known as lower and upper bounds. Such bounds may, for instance, correspond to a bounded measurement noise or tolerance on sensors.
+
+2.2 Parameter estimation in a bounded error context
+
+In a bounded-error estimation context, one is interested in estimating the set P  [p0] of all parameters p consistent with the model structure and the bounds on the measurement noise. In order to obtain the most accurate estimates, we choose to minimize a cost function, for example the volume, of the set P (or of an enclosure of P). It may generally depend on the values of the input, the initial time, the sample times, among others. In this work, only the input is considered. Our aim is to design an input that minimizes the cost function. More formally, one has to find an input u such that:
+
+u = arg min (P).
+
+(3)
+
+uUad
+
+Obtaining P is difficult in practice. Nevertheless there are efficient algorithms to obtain an outer-approximation [p] of P. The Problem (3) is thus relaxed as follows:
+
+u = arg min ([p]),
+uUad
+
+where [p] is an outer-approximation of P obtained by a bounded-error estimation algorithm from interval analysis.
+
+The next section briefly describes the tools from interval analysis used to perform the set-membership estimation.
+
+3 Basic tools of interval analysis
+Interval analysis provides tools for computing with sets which are described using outer-approximations formed by union of non-overlapping boxes. The following results are mainly taken from [7] and [14]. A real interval [u] = [u, u] is a closed and connected subset of R. The width of an interval [u] is defined by w([u]) = u - u, and its midpoint by m([u]) = (u + u)/2. An interval vector (or box) [x] is a vector with interval components and may equivalently be seen as a cartesian product
+
+2
+
+of scalar intervals [x] = [x1] × [x2]... × [xn]. An interval matrix is a matrix with interval components. The set of n × m real interval matrices is denoted by IRn×m. The width of an interval vector (or of an interval matrix) is the maximum of the widths of its interval components. The midpoint of an interval vector (resp. an interval matrix) is a vector (resp. a matrix) composed of the midpoints of its interval components. Classical operations for interval vectors (resp. interval matrices) are direct extensions of the same operations for scalar vectors (resp. scalar matrices) [14]. The magnitude of an interval [x], noted |[x]| is given by the largest absolute value of [x] that means the absolute value of the real with the largest value in [x]. The mignitude of an interval [x], noted mig([x]) is the smallest absolute value of the elements of [x] that means the absolute value of the real with the smallest value in [x]. In this work, the notions of magnitude and mignitude of an interval are extended to each component of an interval matrix. The corresponding matrices are respectively denoted |[A]| and mig([A]). For example if [x] = [-20, -10] then |[x]| = 20 and mig([x]) = 10. The determinant det(.) of a square interval matrix is defined as in the case of real square matrices except that the determinant of an interval matrix is an interval. A square interval matrix [B] is regular if 0  det([B]). Let [B]-1 the inverse interval matrix of [B] which means the narrowest interval matrix enclosing the set of inverse matrices {B-1/B  [B]}. Considering the matrix [I] whose entries are [1 - , 1 + ] on the main diagonal and outside [0 - , 0 + ]. Then there exists   R+ such that [B]-1[B]  [I]. An interval matrix [A] is said to be positive definite if each A  [A] is positive definite (in the classical sense). Positive definiteness of symmetric interval matrix is closely related to regularity. A symmetric interval matrix is positive definite if and only if it is regular and contains at least one positive definite matrix [22]. For an interval vector [z] with components [zi], the real ||[z]|| is given by [z] = max(|[zi]|).
+i
+The Frobenius norm for an interval matrix [A] is denoted
+by ||[A]||F and ||[A]||F = | tr([A]T [A]) | = i, j | [ai j] |2
+where tr([B]) is the trace of the interval matrix [B].
+4 Criteria for optimal input
+4.1 Problem formulation
+In this section, we exhibit criteria involving the input u to be used, to minimize the volume of [p] for an appropriate choice for u. In [11], the authors have used a centered inclusion function at m  Rnp for the model output. The use of sensitivity functions leads to reduce more quickly the size of outer approximations of the sets of interest. Thus we start from this idea which leads to obtain an explicit expression of [p] - m. Considering [p] such that P  [p]  [p0], m  [p] and a mean
+
+value form for ym(tk, [p], u), [p] has to satisfy:
+
+np
+ymk (m, u) + ([p j] - m j)
+j=1
+
+ykm pj
+
+([p], u)  [yk],
+
+(4)
+
+where [yk] = [y(tk, u)]. Then:
+
+np
+([p j] - m j)
+j=1
+
+ykm pj
+
+([p], u)  [yk] - ymk (m, u).
+
+(5)
+
+Denoting [Sik] the row vector whose entries are:
+
+[Ski j] =
+
+ykm,i pj
+
+([p], u), [Ski ]  IR1×np , j = 1, ..., np.
+
+The interval matrix [Sk]  IRny×np is built with the ny rows [Sik] and [vk] = [yk] - ymk (m, u). In the following, the interval matrix [Sk]T [Sk] is assumed
+
+to be positive definite and we note ([Sk]T [Sk])-1[Sk]T [Sk] =
+
+[Ik]. One has to find u such that ||[p] - m|| is as small as
+
+possible. By noting [vk] = [v(tk)], (5) becomes:
+
+[Sk]([p] - m)  [vk].
+
+(6)
+
+From (6), we obtain [Sk]T [Sk]([p] - m)  [Sk]T [vk], then by using ([Sk]T [Sk])-1 the following inclusion is obtained:
+
+[Ik]([p] - m)  ([Sk]T [Sk])-1[Sk]T [vk].
+
+(7)
+
+The following proposition gives two upper bounds for [Ik]([p] - m).
+
+Proposition 4.1 For all k  {1, ..., N} ||[Ik]([p] - m)||2  ||([Sk]T [Sk])-1[Sk]T ||2F ||v~k||22, and ||[Ik]([p] - m)||2  ||tr([Ik]([Sk]T [Sk])-1)|| ||v~k||22 with v~k = |[vk]| .
+
+Proof: Let [A] = ([Sk]T [Sk])-1[Sk]T and [ai j] be the entries of [A]:
+
+[Ik]([p] - m)  [A][vk],
+
+(8)
+
+and:
+
+np
+
+2
+
+ ||[Ik]([p] - m)||2  ||[A][vk]||2 
+
+max
+i
+
+j=1
+
+|[ai j]|
+
+|[vkj ]|
+
+.
+
+(9)
+
+Since
+
+np
+ j=1
+
+|[ai j]|
+
+|[vkj ]|
+
+2
+
+
+
+np
+ j=1
+
+|[ai
+
+j ]|2
+
+np
+ j=1
+
+|[vkj ]|2 .
+
+One obtains:
+
+np
+
+2
+
+np
+
+  max i
+
+|[ai j]| |[vkj]|
+j=1
+
+ max |[ai j]|2||v~k||2,
+i j=1
+
+(10)
+
+ ||[A]||2F ||v~k||2.
+
+3
+
+Then ||[A]||2F = |tr([Ik]([Sk]T [Sk])-1)| because tr([A][A]T ) = tr([A]T [A]) and: [A][A]T = ([Sk]T [Sk])-1[Sk]T [Sk]([Sk]T [Sk])-1,
+= [Ik]([Sk]T [Sk])-1.
+This leads to Proposition (4.1). An upper bound of |tr([Ik]([Sk]T [Sk])-1)|, depending on |tr(([Sk]T [Sk])-1)|, is given in Proposition 4.2.
+
+Proposition 4.2 For all k  {1, ..., N}
+|tr([Ik]([Sk]T [Sk])-1)|  max(|[I]|) |tr(([Sk]T [Sk])-1)|, where max(|[I]|) = 1 + np is the maximum eigenvalue of |[I]|.
+Proof: For each k  1, ..., N there exists k such that [Ik]  [Ik ], [Ik]([Sk]T [Sk])-1  [Ik ]([Sk]T [Sk])-1. Let  = maxk{1,...,N} k then [Ik ]  [I]. Let [C] = ([Sk]T [Sk])-1, the following inequalities are obtained:
+
+|tr([Ik] [C])|  |tr([I] [C])|  tr(|[I]| |[C]|)  max (|[I ]|)t r(|[C]|),
+
+because the matrices |[I]| and |[C]| are symmetric matrices. This leads to the announced result.
+Then ||[Ik]([p] - m)|| depends on |tr(([Sk]T [Sk])-1)|. Previous Propositions 4.1 and 4.2 lead to for all k  {1, ..., N}:
+||[Ik]([p] - m)||2  max(|[I]|) | tr(([Sk]T [Sk])-1)| ||v~k||22, which gives a possible criterion J1 for optimal input. It may be defined as follows:
+ J1(u) = |tr(([Sk]T [Sk])-1)|.
+k
+Then this leads to the following definitions.
+
+Definition 4.1 The criterion J1 is called the set-membershipA-optimality criterion.
+
+This criterion consists in considering the largest absolue value of tr ([Sk]T [Sk])-1 .
+
+Definition 4.2 An input u is said to be set-membership-A-
+
+optimal when:
+
+u = arg min J1(u).
+uUad
+
+In order to avoid the inverse matrix computation ([Sk]T [Sk])-1,
+
+the following criterion is proposed:
+
+J2(u) =  mig tr [Sk]T [Sk] .
+
+(11)
+
+k
+
+This criterion consists in considering the smallest absolue value of tr [Sk]T [Sk] .
+
+Definition 4.3 The criterion J2 is called the set-membershipT-optimality criterion.
+
+Definition 4.4 An input u is said to be set-membership-T-
+
+optimal when:
+
+u = arg max J2(u).
+uUad
+
+In this case it is necessary to verify the invertibility of the matrix [Sk]T [Sk] by verifying that 0 / det([Sk]T [Sk]).
+Remark 4.1 If the matrix [Sk]T [Sk] is not invertible, possible solutions are available: the reduction of the a priori domain of the parameters, a sensitivity analysis to limit the number of influential parameters or the elimination of inputs leading to singular matrices. If these attempts fail, another criterion must be chosen: the MIGMAG criterion based on interval sensitivity analysis [12] or another based on the interval determinant of the gram matrix of sensitivities are available [13].
+Next section is devoted to optimal input design and parameter estimation of the case study.
+
+5 Application
+
+5.1 A model from aerospace
+
+Consider a model describing the longitudinal motion of a glider [4]. This model has no undermodelling:
+
+
+
+ 
+
+V
+
+
+
+
+
+=
+
+-g sin(~) -
+
+1 2m
+
+SV
+
+2(Cx0
+
++Cx~ +Cxm ~m),
+
+
+
+
+
+  
+
+
+
+=
+
+
+
+
+
+
+
+2 2mV + SlVCz
+
+mV
+
+q
+
++
+
+mg
+
+cos(~ )
+
+-
+
+1 2
+
+SV
+
+2CzD
+
+,
+
+
+
+
+
+ 
+
+q =
+
+1 2B
+
+SlV
+
+2
+
+Cm0
+
++
+
+Cm~
+
++
+
+Cmq
+
+ql V
+
+      
+
+2l +Cm 2mV 2 + SlV 2Cz
+
+mV q + mg cos(~)
+
+      
+
+-
+
+1 2
+
+SV
+
+2CzD
+
++ Cmm ~m
+
+,
+
+ 
+
+ =
+
+q,
+
+~m = m - m0 ,
+
+~ =  - 0,
+
+in
+
+which
+
+CzD
+
+=
+
+Cz0
+
++ Cz ~
+
++ Czq
+
+ql V
+
++Czm ~m
+
+and
+
+~
+
+=
+
+(12)  - .
+
+The projection of the general equations of motion onto
+
+the aerodynamic reference frame of the aircraft and the
+
+linearization of aerodynamic coefficients give the previous
+
+system. In these equations, the state vector x is given by
+
+(V, , q, ) , the observation ym is full (i.e., ym = x), the
+
+input u is m given in degree (m0 represents the initial condition). The variable V (m/s) denotes the speed of the
+
+aircraft,  (deg) the angle of attack, 0 the trim value of ,  (deg) the pitch angle, q (deg/s) the pitch rate. The
+
+4
+
+other constants represent m the elevator deflection angle,  the air density, g the acceleration of gravity, l a reference length and S the area of a reference surface. B represents a moment of inertia. The parameters to be estimated are p = (Cz ,Czq,Cm ,Cmq)T , which are assumed to be uncertain. The other coefficients correspond to the dynamic stability derivatives and are supposed to be known. The initial conditions are supposed to belong to [28.48, 28.52] for V , [6.2682, 6.7265] for , [-0.2292, 0.2292] for q and [2.2002, 2.6585] for . The prior domain for the parameters is given by [p0] = [1.71, 1.89] × [4.75, 5.25] × [-5.25, -4.75] × [-23.1, -20.9]. The measurement noise (2) is supposed to be bounded by [-0.0447, 0.0447] for V and [-0.2521, 0.2521] for , q and . The measurements have been simulated by using the parameters equal to p = [1.8 5 - 5 - 22]T . The test duration is fixed at one second. The stop criterion for the algorithm SIVIA (Set Inversion Via Interval Analysis [8]) used in the estimation parameter process is  = [0.01 0.05 0.05 0.1]T that means that the stop threshold for the first parameter is 0.01, the second and third are 0.05 and the last one is 0.1. The package VNODE-LP ([17], [18]) has been used to calculate the solutions of (12) and the sensitivities.
+5.2 Optimal input
+In this application, the admissible input has been limited to full amplitude square waves only. In fact, analytic works for similar problems demonstrate that inputs similar to square waves were superior to sinusoidal inputs for parameter estimation [2]. In our application, the test time is divided into discrete steps called stages. The inputs tested by our procedure are given by:
+r
+ u(t) = u0 + (aii - ai-1i-1)H(t - i-1), 0 = 0 , (13) i=1
+where u0 is an input trim value (given by m0 ) and H is the Heaviside function. The variables i are the switching times with 0 the initial test time. Indeed, the variables ai are chosen to be equal to the square wave positive amplitude [16]. The given variables i satisfy 0 < 1 < ... < r-1 and i  {-1, 0, 1} for i = 1, ..., r. This step gives the optimal number of square waves r and the optimal values of i (with fixed time and fixed amplitude) to be realized. The variables i are not optimized during this step. In order to obtain an optimal input, the set-membership-T-optimality criterion J2 is considered.
+The criterion J2 has been maximized for different total numbers of stages r. The values are given in Table 1. The variable T represents the computing time (in seconds). The fourth column of this Table represents the optimal value of u(t) on each stage, for the value of r given in the first column. The time length of each stage is linked to the number of stages; the test time being fixed at one second. For example, if the test time is divided in four stages: each stage duration is fixed at 0.25 seconds. The total number of sample times is N = 10. Through this Table, we show that the optimal num-
+
+Table 1 Values of the optimal input u = arg max J2(u).
+uUad
+Number of stages J2(u) T
+
+u (t )
+
+2
+
+249 49
+
+[-4.2 -4.2]
+
+3
+
+264 151
+
+[-4.2 -1 -4.2]
+
+4
+
+252 442
+
+[-4.2 -4.2 -1 -4.2]
+
+5
+
+272 1340 [-4.2 -4.2 -1 -4.2 -4.2]
+
+6
+
+263 4036 [-4.2 -4.2 -1 -1 -4.2 -4.2]
+
+ber of stages is five. With an other total number of sample times N = 120, we obtain the same optimal number of stages and the same optimal input with five stages but the computing time is multiplicated by approximatively 4. Therefore, in the next section, we use N = 10 points to estimate the parameters of interest.
+
+Remark 5.1 The proposed approach can be applied to a
+
+large class of dynamical systems; particularly when the in-
+
+put is piecewise continuous, parametrized by a finite num-
+
+ber of parameters including a number of stages. It can be
+
+applied, for example, in the aeronautical domain, in marine
+
+systems [3], in pharmakokinetics [12]. In the methodology
+
+described in [15] concerning aircraft parameter estimation
+
+experiments, the maximum number of stages for practical
+
+input
+
+optimization
+
+is
+
+given
+
+by
+
+T Tstage
+
+where
+
+T
+
+is
+
+the
+
+fixed
+
+test
+
+time chosen a priori and Tstage is the constant value of the
+
+stage time (depending on the dynamics of system and instru-
+
+mentation).
+
+5.3 Parameter estimation
+To highlight the efficiency of the proposed optimal input design, we compare the estimation results obtained by using two different inputs: the first one is an optimal input proposed in [5] for the same case study (with Gaussian noise and parameters in an a priori known box) and the second one is the optimal input obtained above (with five stages) u(t) = m0 + a 5i=1(i - i-1)H(t - i-1) with a = 1.6 degrees and 0 = 0 s, 1 = 0.2 s, 2 = 0.4 s, 3 = 0.6 s, 4 = 0.8 s.
+
+Input (degrees)
+
+-1 -1.5
+-2 -2.5
+-3 -3.5
+-4
+
+0
+
+0.2
+
+0.4
+
+0.6
+
+0.8
+
+1
+
+Time (s)
+
+Fig. 1. Non optimal input (left); optimal input (right).
+
+In Table 2, we give the eliminated percentage of initial parameter box, where the eliminated percentage %p is calcu-
+
+5
+
+lated
+
+by
+
+%p
+
+=
+
+1-
+
+w([paccepted]) w([p0])
+
+,
+
+in
+
+which
+
+[paccepted]
+
+means
+
+the boxes which have been proved to be solution.
+
+Table 2 Eliminated percentage of initial box.
+
+Parameter %pnon-optimal
+
+Cz
+
+0
+
+Czq
+
+75.00
+
+Cm
+
+80.00
+
+Cmq
+
+65.62
+
+%po pt imal 81.50 93.75 93.75 96.87
+
+Through this Table, we see that Cz is not well estimated by using the non-optimal input contrary to the case with optimal input. For the other parameters, the use of optimal input clearly improves the estimation.
+6 Conclusion
+In this contribution, two set-membership optimal input criteria have been proposed to improve parameter estimation: the set-membership-T-(and A)-optimality criteria. They concern a class of nonlinear dynamical models requiring a parametrization of the input with a finite number of parameters. The set-membership-T-optimality criterion has been successfully used to improve parameter estimation of a case study providing from the aeronautical domain. Moreover, with the set-membership-T-optimal input, the computing time for parameter estimation process of the model is reduced compared to the computing time obtained with a nonoptimal input. Other optimality criteria could be considered. One of our future research directions is to reduce the computational time of the parameter estimation process by minimizing the total number of sample times to obtain a given accuracy on parameter estimation.
+Acknowledgments The authors gratefully thank Luc Jaulin and Michel Kieffer for their constructive comments and recommendations which have improved the readability and quality of the paper.
+References
+[1] G. Belforte and P. Gay. Optimal worst case estimation for LPVFIR models with bounded errors. In Proceedings of the 39th IEEE Conference on Decision and Control, 2000., volume 5, pages 4573­ 4577. IEEE, 2000.
+[2] R.T.N. Chen. Input design for aircraft parameter identification : using time optimal control formulation. In Methods for Aircraft State and Parameter Identification. AGARD-CP-172, paper 13, 1975.
+[3] T.I Fossen. Marine control systems: guidance, navigation and control of ships, rigs and underwater vehicles. Marine Cybernetics AS, 2002.
+[4] C. Jauberthie, F. Bournonville, P. Coton, and F. Rendell. Optimal input design for aircraft parameter estimation. Aerospace Science and Technology, 10(4):331 ­ 337, 2006.
+
+[5] C. Jauberthie and E. Chanthery. Optimal input design for a nonlinear dynamical uncertain aerospace system. In Proceedings of the 9th IFAC Symposium on Nonlinear Control Systems, pages 469­474, Toulouse, France, 2013.
+[6] L. Jaulin. A nonlinear set membership approach for the localization and map building of underwater robots. IEEE Transactions on Robotics, 25(1):88­98, 2009.
+[7] L. Jaulin, M. Kieffer, O. Dirit, and E. Walter. Applied interval analysis: with examples in parameter and state estimation, robust control and robotics. Springer Verlag London, 2001.
+[8] L. Jaulin and E. Walter. Set inversion via interval analysis for nonlinear bounded-error estimation. Automatica, 29(4):1053­1064, 1993.
+[9] T. Johnson and W. Tucker. Rigorous parameter reconstruction for differential equations with noisy data. Automatica, 44(9):2422­2426, 2008.
+[10] M. Kieffer, L. Jaulin, and E. Walter. Guaranteed recursive nonlinear state bounding using interval analysis. International Journal of Adaptative Control and Signal Processing, 6:191 ­ 218, 2002.
+[11] M. Kieffer and E. Walter. Guaranteed estimation of the parameters of nonlinear continuous-time models: Contributions of interval analysis. International Journal of Adaptive Control and Signal Processing, 25(3):191­207, 2011.
+[12] Q. Li, C. Jauberthie, L. Denis-Vidal, and Z. Cherfi. Optimal initial state for fast parameter estimation in nonlinear dynamical systems. Computer Methods and Programs in Biomedicine, pages 1­10, 2016.
+[13] Q. Li, C. Jauberthie, L. Denis-Vidal, and Z. Cherfi. Parameter estimation enhanced by optimal input design in a bounded-error context. In Proceedings of the 20th IFAC World Congress, pages 6451­6456. IFAC, 2017.
+[14] R.E. Moore. Interval analysis. Prentice-Hall series in automatic computation. Prentice-Hall, 1966.
+[15] E.A. Morelli. Practical Input Optimization for Aircraft Parameter Estimation Experiments. Technical report CR 191462, NASA, 1993.
+[16] E.A. Morelli. Flight test of optimal inputs and comparison with conventional inputs. Journal of aircraft, 36(2):389 ­397, 1999.
+[17] N.S. Nedialkov. VNODE-LP a validated solver for initial value problems in ordinary differential equations. Technical Report CAS06-06-NN, Department of Computing and Software, McMaster University, Canada, 2006.
+[18] S.A. Nedialkov, R. Kenneth, and A. Jackson. An effective highorder interval method for validating existence and uniqueness of the solution of an IVP for an ODE. Reliable Computing, 17, 2001.
+[19] L. Pronzato and E. Walter. Robust experiment design via maximin optimization. Mathematical Biosciences, 89(2):161­176, 1988.
+[20] T. Ra¨issi, N. Ramdani, and Y. Candau. Set membership state and parameter estimation for systems described by nonlinear differential equations. Automatica, 40:1771 ­ 1777, 2004.
+[21] A. Rauh and E. Auer. Modeling, Design and Simulation of Systems with Uncertainties, volume 3. Springer Science & Business Media, 2011.
+[22] J. Rohn. Positive Definiteness and Stability of Interval Matrices. SIAM Journal on Matrix Analysis and Applications, 15(1):175­184, 1994.
+[23] C.R. Rojas, J.S. Welsh, G.C. Goodwin, and A. Feuer. Robust optimal experiment design for system identification. Automatica, 43(6):993­ 1008, 2007.
+[24] L. Trave´-Massuye`s, R. Pons, P. Ribot, Y. Pencole´, and C. Jauberthie. Condition-based monitoring and prognosis in an error-bounded framework. In Proceedings of the 26th International Workshop on Principles of Diagnosis DX-15, pages 83­90, Paris, France, September 2015.
+
+6
+
+

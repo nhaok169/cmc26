@@ -1,0 +1,2182 @@
+           Noname manuscript No.
+           (will be inserted by the editor)
+
+       Submodular Optimization Problems and Greedy
+       Strategies: A Survey
+
+          Yajing Liu 1 · Edwin K. P. Chong2 ·
+          Ali Pezeshki2 · Zhenliang Zhang3
+
+            Received: date / Accepted: date
+
+          Abstract The greedy strategy is an approximation algorithm to solve op-
+          timization problems arising in decision making with multiple actions. How
+          good is the greedy strategy compared to the optimal solution? In this survey,
+          we mainly consider two classes of optimization problems where the objective
+          function is submodular. The first is set submodular optimization, which is to
+          choose a set of actions to optimize a set submodular objective function, and
+          the second is string submodular optimization, which is to choose an ordered
+          set of actions to optimize a string submodular function. Our emphasis here
+          is on performance bounds for the greedy strategy in submodular optimization
+          problems. Specifically, we review performance bounds for the greedy strategy,
+          more general and improved bounds in terms of curvature, performance bounds
+          for the batched greedy strategy, and performance bounds for Nash equilibria.
+
+          Keywords Curvature · greedy strategy · Nash equilibrium · optimization ·
+          performance · submodular
+
+            Yajing Liu
+            yajing.liu@nrel.gov
+            Edwin K. P. Chong
+            edwin.chong@colostate.edu
+            Ali Pezeshki
+            ali.pezeshki@colostate.edu
+            Zhenliang Zhang
+            zhenliang.zhang@alibaba-inc.com
+            1 National Renewable Energy Laboratory (NREL), Golden, CO
+            2 Department of Electrical and Computer Engineering, and Department of Mathematics,
+            Colorado State University, Fort Collins, CO
+            3 Alibaba iDST, Seattle, WA
+
+Pursuant to the DOE Public Access Plan, this document represents the authors' peer-reviewed, accepted manuscript.
+                            The published version of the article is available from the relevant publisher.
+2               Yajing Liu 1 et al.
+
+1 Introduction
+
+We are often faced with choosing a set of actions from a ground set of actions
+to optimize an objective function. Such problems arise in a multitude of ap-
+plications of interest to discrete-event dynamic system researchers. A specific
+example is the task assignment problem (Streeter and Golovin, 2008; Zhang
+et al., 2016; Liu et al., 2018d), one of the fundamental combinatorial opti-
+mization problems in the study of optimization or operations research. This
+problem involves a number of agents and a number of tasks. Each agent suc-
+cessfully accomplishes a task with a certain probability and the aim is to assign
+the available tasks to a given number of agents such that the probability of
+accomplishing the tasks is maximized.
+
+    When the number of agents is relatively small, we can use brute-force
+search (Paar and Pelzl, 2010) to enumerate all possible candidate solutions to
+find the optimal solution. However, when the number of agents is large, it is
+impractical to enumerate all the possible candidate solutions. At this point,
+we have to resort to approximation methods. One of the most well-studied
+approximation methods is the greedy strategy (Nemhauser et al., 1978), which
+starts with the empty set and iteratively adds to the current solution set
+an element that results in the largest gain in the objective function while
+satisfying the constraints. The greedy strategy yields an approximation to an
+optimal solution in a reasonable amount of time. The downside is that there is
+often no theoretical guarantee for the greedy strategy. But when the problem
+has a special property called submodularity, the greedy strategy is provably
+guaranteed to produce a solution with an objective value at least a constant
+scalar times the optimum value. Celebrated results by Fisher et al. (1978)
+and Nemhauser et al. (1978) prove that when the objective function f is a
+monotone submodular set function with f () = 0, the greedy strategy yields a
+1/2-approximation1 for a general matroid and a (1 - e-1)-approximation for
+a uniform matroid.
+
+    For set optimization problems, the objective function is not influenced by
+the order of actions. However, a great number of problems in engineering and
+applied science aim to optimally choose a string (finite sequence) of actions
+over a finite horizon to maximize an objective function whose value depends
+on the order of actions. The problem arises in sequential decision making in
+engineering, economics, management science, and medicine. A motivating ex-
+ample is the problem of scheduling sensors to detect targets (Li et al., 2009).
+Suppose that a given number of sensors are distributed in a sensor field to
+detect a certain number of targets. The goal is to activate sensors sequentially
+to maximize the total coverage area. If the coverage region of each sensor re-
+mains constant over time, the total coverage area is not influenced by the order
+of the sensors activated, and the problem becomes a set optimization prob-
+lem. However, if the sensors are moving, then the total coverage area depends
+
+  1 The term -approximation means that f (G)/f (O)  , where G and O denote a greedy
+solution and an optimal solution, respectively.
+
+Pursuant to the DOE Public Access Plan, this document represents the authors' peer-reviewed, accepted manuscript.
+                            The published version of the article is available from the relevant publisher.
+Submodular Optimization Problems and Greedy Strategies: A Survey  3
+
+on the order of the sensors activated, which makes the problem fall into the
+framework of string optimization problems. The optimal solution to a string
+optimization problem is characterized by dynamic programming via Bellman's
+principle (Powell, 2007). However, the approach suffers from the curse of di-
+mensionality and is therefore impractical for many problems of interest. This
+motivates the study of approximation algorithms, among which the greedy
+strategy is easy to implement and has guaranteed performance bounds under
+certain conditions. For example, Streeter and Golovin (2008) prove that when
+the objective function is prefix and postfix monotone and has the diminishing-
+return property (as defined later in the paper), the greedy strategy yields a
+(1 - e-1)-approximation.
+
+    In this paper, we review the performance guarantees for greedy strate-
+gies in submodular maximization problems. The paper is organized as fol-
+lows. In Section 2, we review results that are related to choosing sets of ac-
+tions. This involves introducing set functions, set optimization problem, perfor-
+mance bounds for the greedy strategy, examples, curvature, improved bounds,
+batched actions, and noncooperative games. In Section 3, we review results
+related to choosing strings of actions. This involves introducing new nota-
+tion and terminology, string optimization problem, performance of the greedy
+strategy, and applications. In Section 4, we conclude by listing a number of
+related papers that consider extensions and/or variation of greedy strategies
+and their performance bounds in combinatorial optimization problems.
+
+2 Sets of Actions
+
+In this section, we first introduce our notation for sets, properties of set func-
+tions, and set optimization problems. Then, we review various performance
+bounds for the greedy strategy.
+
+2.1 Set Functions
+
+Before we introduce functions defined on sets, we would like to introduce
+some similar and familiar properties for functions defined on real numbers.
+Consider a real function f : R  R. The function f is said to be monotone
+and submodular if it satisfies properties 1 and 2 below, respectively:
+
+1. Monotone: x  y  R, f (x)  f (y).
+2. Submodular: x  y  R, z  R, f (x + z) - f (x)  f (y + z) - f (y)
+
+    The `monotone' property here simply means being `nondecreasing'. The
+function in Fig. 1 satisfies the monotone property. From Fig. 1, we can see that
+the function is a concave function ­ adding z to x gains more than adding z
+to y, which tells us that the additional value accrued by adding a number to a
+smaller number is larger than adding it to a bigger number. This is consistent
+with the inequality f (x + z) - f (x)  f (y + z) - f (y) for x  y, so we say that
+`submodularity' here boils down to `concavity' in some sense.
+
+Pursuant to the DOE Public Access Plan, this document represents the authors' peer-reviewed, accepted manuscript.
+                            The published version of the article is available from the relevant publisher.
+4  Yajing Liu 1 et al.
+
+            Fig. 1 Illustration of submodularity
+
+              In this paper, we want to go beyond the real line to a more general setting.
+          Specifically, we will consider objective functions with multiple decision "ac-
+          tions" as arguments. The first setting is sets of actions, and the second one is
+          strings (ordered sets) of actions. We introduce functions defined on sets first.
+
+              Let X denote a ground set, which includes all possible actions. Let 2X
+          denote the power set of X, which includes all possible subsets of X. The size
+          or cardinality of a set S  2X is denoted by |S|, and the empty set is denoted
+          by . Define a set function f : 2X - R. The set function f is said to be
+          monotone and submodular if it satisfies properties i and ii below, respectively:
+           i. Monotone: A  B  X, f (A)  f (B).
+          ii. Submodular: A  B  X and j  X \ B, f (A  {j}) - f (A)  f (B 
+
+              {j}) - f (B).
+          Notice the similarity between these properties and those involving functions
+          on the real line introduced earlier.
+
+              For convenience, we denote the incremental value of adding a set T to the
+          set A  X as %T (A) = f (A  T ) - f (A) (following the notation in Conforti
+          and Cornu´ejols (1984)).
+
+              A set function f : 2X - R is called a polymatroid set function (Boros
+          et al., 2003) if it is monotone, submodular, and f () = 0. Submodularity
+          in property ii means that the additional value accruing from an extra ac-
+          tion decreases as the size of the input set increases, and is also called the
+          diminishing-return property in economics. Submodularity has many equiva-
+          lent definitions; for example, f : 2X - R is submodular if A, B  X,
+          f (A) + f (B)  f (A  B) + f (A  B). For more equivalent definitions, see
+          Nemhauser et al. (1978).
+
+Pursuant to the DOE Public Access Plan, this document represents the authors' peer-reviewed, accepted manuscript.
+                            The published version of the article is available from the relevant publisher.
+Submodular Optimization Problems and Greedy Strategies: A Survey                               5
+
+The set function f is called supermodular if -f is submodular. Moreover,
+
+f is called modular if it is both submodular and supermodular, i.e., for any
+
+A  B  X,
+
+                  f (A) + f (B) = f (A  B) + f (A  B).                                   (1)
+
+By induction, (1) implies that for any S  X,
+
+                                           X
+
+                         f (S) - f () = (f ({s}) - f ()).                                (2)
+
+                                           sS
+
+By (2), f - f () is additive when f is modular. If f () = 0, then f (S) =
+
+P       f ({s}),  which  implies  that  f  is  additive.  It  is  also  easy  to  check  that  f
+
+    sS
+
+is modular iff for any subset S  X,
+
+                                               X
+
+                         f (S) = () + (s)                                                (3)
+
+                                               sS
+
+for some weight function  : X  R (Krause and Golovin, 2012).
+    There are many non-trivial examples of submodular or supermodular set
+
+functions. We only consider submodular maximization problems in this paper,
+so we only give submodular function examples. For supermodular examples,
+see Lov´asz (1983). To easily understand submodularity, we provide a simple
+example as follows.
+
+Example 1 Sensor Coverage. Let X be a family of locations in space where
+we can place sensors. If a sensor is placed at a particular location in space, it
+covers a circular area around it as illustrated in Fig. 2. Let f (S) denote the
+total area covered if we place sensors at locations S  X (see Fig. 2). The set
+function f is submodular. An instance of submodularity is illustrated in the
+figure. As can be seen, the gain in adding sensor 3 after placing sensor 1 is
+larger than the gain in adding sensor 3 after placing sensors 1, 2. tu
+
+Submodular functions arise in many applications, such as the rank function
+of the matrix formed by its columns, weighted coverage functions, the rank
+function of a matroid, Shannon entropy, mutual information, cut capacity
+functions, some measurements on the graph, etc. (Lov´asz, 1983; Krause and
+Golovin, 2012)
+
+2.2 Submodular Set Optimization Problem
+
+Submodular set optimization plays an important role in combinatorial opti-
+mization. It has a wide range of applications, including generalized assign-
+ment (Shmoys and Tardos, 1993; Cohen et al., 2006; Nauss, 2003; Fleischer
+et al., 2006; Bator, 1957; Korula et al., 2015; Vondra´k, 2008), matroid partition
+(Edmonds and Fulkerson, 1965; Cunningham, 1986; Knuth, 1973), maximum
+cut (Goemans and Williamson, 1995; Sahni and Gonzalez, 1976), maximum
+coverage location (Church and Velle, 1974; Khuller et al., 1999; Cornu´ejols
+et al., 1977), multi-agent coverage problem (Sun et al., 2017), leader-selection
+
+Pursuant to the DOE Public Access Plan, this document represents the authors' peer-reviewed, accepted manuscript.
+                            The published version of the article is available from the relevant publisher.
+6                                                              Yajing Liu 1 et al.
+
+                          Location 2
+
+   Location 1
+
+                                      Location 3
+
+    ,  -     , ,  - ( ,  )
+
+   black area + red area  black area
+
+Fig. 2 Sensor coverage as an example of a submodular function
+
+problem in multi-agent systems (Clark and Poovendran, 2011), welfare max-
+imization (Korula et al., 2015; Vondr´ak, 2008; Kapralov et al., 2013), and
+data summarization (Lin and Bilmes, 2011; Badanidiyuru et al., 2014; Mirza-
+soleiman et al., 2017). The aim is to find a set of actions satisfying some
+constraints to maximize the objective function. The set optimization problem
+can be formulated as follows:
+
+               maximize f (M ), subject to M  I,               (4)
+
+where I is a non-empty collection of subsets of a finite set X, and f is a
+real-valued submodular set function defined on the power set 2X of X. Before
+proceeding any further with discussing optimization problem (4), we will need
+to introduce some concepts related to the constraint set I.
+
+    Let X be a finite set, and I be a non-empty collection of subsets of X. The
+collection I is said to be hereditary if it satisfies property i below and has the
+augmentation property if it satisfies property ii below:
+
+ i. Hereditary: For all B  I, any set A  B is also in I.
+ii. Augmentation: For any A, B  I, if |B| > |A|, then there exists j  B \ A
+
+    such that A  {j}  I.
+
+The pair (X, I) is called an independence system if it satisfies property i. In
+this case, the sets in I are called independent sets. A maximal independent
+set is an independent set that is not a subset of any other independent set
+(Conforti and Cornu´ejols, 1984). The independence system (X, I) is called a
+matroid if it satisfies property ii (Edmonds, 1970). The pair (X, I) is called a
+
+Pursuant to the DOE Public Access Plan, this document represents the authors' peer-reviewed, accepted manuscript.
+                            The published version of the article is available from the relevant publisher.
+Submodular Optimization Problems and Greedy Strategies: A Survey    7
+
+uniform matroid if I = {S  X : |S|  K} for a given K (Nemhauser et al.,
+1978). All maximal independent sets in a matroid have the same cardinality.
+We call this cardinality the rank of the matroid. In the uniform matroid above,
+the rank is K.
+
+Example 2 We now give three example collections to illustrate the no-
+tions of independence systems and matriods. Let X = {a, b, c}, I1 =
+{{a}, {b}, {a, c}, {c}, }, I2 = {{a}, {a, b}}, and I3 = {, {a}, {b}, {a, b}}. It
+is easy to check that I1 satisfies the hereditary property but not augmenta-
+tion, I2 satisfies augmentation but not the hereditary property, and I3 satisfies
+both hereditary and augmentation properties. Hence, (X, I1) is an indepen-
+dence system, (X, I3) is a matroid, and (X, I2) is neither an independence
+system nor a matroid. The maximal independent sets in (X, I1) are {b} and
+{a, c}, and (X, I3) only has one maximal independent set {a, b}. tu
+
+    Let (X, I) be an independence system where I is nonempty, and let S  X
+be an arbitrary subset of X. A basis of S is a subset B of S that satisfies
+the following two conditions: 1. It is an independent set; i.e., B  I. 2. It
+is maximal; i.e., B is not a subset of any other independent subset of S.
+The subset B satisfying the above two conditions is also called a maximal
+independent subset of S. Define
+
+              lower rank of S = lr(S) = min{|B| : B is a basis of S},
+
+upper rank of S = ur(S) = max{|B| : B is a basis of S}.
+
+Note that lr(S) and ur(S) might not be well defined, depending on S. Note
+also that in the definition above, S is not necessarily in I. The number
+
+                lr(S)                                             
+
+q(X, I) = min  ur(S)   : S  X and ur(S) > 0                         (5)
+
+is called the rank quotient of (X, I) (Hausmann et al., 1980).
+
+Example 3 To illustrate the concept of rank quotient, again consider the in-
+dependence system (X, I1) given in Example 2. We now consider all the sub-
+sets of X and calculate their lower and upper ranks. If S is a singleton (i.e.,
+{a}, {b}, or {c}), then S has only one basis, which is S itself. In this case,
+lr(S) = ur(S) = 1, which means that lr(S)/ur(S) = 1.
+
+    If S = {a, b}, its bases are {a} and {b}. Again, lr(S) = ur(S) = 1, which
+means that lr(S)/ur(S) = 1. Note that {a, b} is not a basis of S because it
+does not belong to I1. If S = {a, c}, it has only one basis, which is itself, and
+again lr(S)/ur(S) = 1. If S = {b, c}, its bases are {b} and {c}, in which case
+lr(S)/ur(S) = 1 again.
+
+    If S = {a, b, c} = X, the bases are {b} and {a, c}. So, lr(S) = 1 and
+ur(S) = 2, which implies that lr(S)/ur(S) = 1/2.
+
+    Because the rank quotient is the smallest among the ratios calculated
+above, we deduce that q(X, I1) = 1/2. tu
+
+Pursuant to the DOE Public Access Plan, this document represents the authors' peer-reviewed, accepted manuscript.
+                            The published version of the article is available from the relevant publisher.
+8  Yajing Liu 1 et al.
+
+Example 4 As in Example 3, we can similarly check that q(X, I3) = 1. In fact,
+the rank quotient of any matroid (X, I) is equal to 1, because for any susbset
+S  X, lr(S) = ur(S) (Edmonds, 1966). The rank quotient of an independence
+system (X, I) can be regarded as a measure of how much (X, I) differs from
+being a matroid. tu
+
+    For any independence system (X, I), if there exist matroids (X, Ii) (1 
+i  p) such that I = I1 · · ·Ip, then the pair (X, I) is called the intersection
+of the matroids (X, Ii) (Hausmann et al., 1980).
+
+    Finding the optimal solution to (4) in general is NP-hard. The greedy strat-
+egy provides a tractable way to approximately solve the problem, which starts
+with the empty set, and incrementally adds an element to the current solu-
+tion set giving the largest gain in the objective function under the constraints.
+Although the greedy strategy yields an approximate solution, its performance
+might be arbitrarily poor. However, when the optimization problem has the
+further special structure of being polymatroid, the greedy strategy has prov-
+able guarantees. The celebrated results by Fisher et al. (1978) and Nemhauser
+et al. (1978) show that the greedy strategy provides a good approximation to
+the optimal solution when the objective function is a polymatroid set func-
+tion under both general matroid constraints and uniform matroid constraints.
+We will review the performance of the greedy strategy for (4) under different
+constraints in the following section.
+
+2.3 Performance Bounds for Greedy Strategy
+
+First we introduce definitions of the optimal strategy and the greedy strategy.
+Optimal Set: Any set O is called an optimal solution of Problem (4) if
+
+                                      O  argmax f (M ),
+
+                                                                   M I
+
+where argmax denotes the set of actions that maximize f (·).
+Greedy Algorithm:
+Input: A pair (X, I), a set function f : 2X  R
+Output: A subset G  I
+G0  
+For i = 1, 2, . . .,
+gi  argmax f (Gi-1  a). If gi =6 , set Gi = Gi-1  {gi}; otherwise, stop
+
+            aX \Gi-1
+          Gi-1 {a}I
+
+and set G = Gi-1.
+    Any output of the above algorithm is called a greedy solution. Note that
+
+there may exist more than one optimal solution or more than one greedy solu-
+tion. How good is a greedy solution compared to an optimal solution in terms
+of the objective function? In the following theorems, we review performance
+bounds for the greedy strategy under different constraints. These bounds are
+worst-case performance bounds, which means that the greedy strategy per-
+forms much better than those bounds in many cases.
+
+Pursuant to the DOE Public Access Plan, this document represents the authors' peer-reviewed, accepted manuscript.
+                            The published version of the article is available from the relevant publisher.
+Submodular Optimization Problems and Greedy Strategies: A Survey                              9
+
+Theorem 1 (Hausmann et al., 1980) Let (X, I) be an independence system.
+
+If  f  is  additive  on  X,  i.e.,  f (S)  =  P       f  ({s})  for  any  subset  S    X,  then
+
+                                                  sS
+
+any greedy solution G satisfies
+
+                                    f (G)      q(X, I),                                       (6)
+
+                                    f (O)
+
+where q(X, I) is the rank quotient defined in Section 2.2. Furthermore, for
+some function f , (6) holds with equality.
+
+Remark 1 When (X, I) is a matroid, q(X, I) = 1. By Theorem 1, the greedy
+strategy is optimal when (X, I) is a matroid and the objective function is
+additive.
+
+Remark 2 When (X, I) is the intersection of p matroids, then q(X, I)  1/p
+(Hausmann et al., 1980). So when p = 1, i.e., (X, I) is a matroid, the greedy
+strategy is optimal, which is consistent with Remark 1.
+
+Example 5 We provide an example2 to demonstrate the performance bound
+in Theorem 1. Let X = {s, t, u, v, w, x}, and consider the collection of subsets
+
+I = {, {s}, {t}, {s, t}, {u}, {v}, {w}, {x}, {u, v}, {u, w}, {u, x}, {v, w}, {v, x},
+       {w, x}, {u, v, w}, {u, v, x}, {u, w, x}, {v, w, x}, {u, v, w, x}}.
+
+Define a function f          such that f (A)          =     P        f  ({a}).  Let  f ({s})  =
+
+                                                                aA
+
+1.01, f ({u}) = f ({v}) = f ({w}) = f ({x}) = 1, and f ({t}) = 0.
+
+    It is easy to check that (X, I) is an independence system. If S =
+
+{s, u, v, w, x}, it has bases {s} and {u, v, w, x}, which results in lr(S)/ur(S) =
+
+1/4. Because the maximum cardinality of the maximal independent subsets
+
+of any S  X is 4, lr(S)/ur(S)  1/4 for any set S  X with ur(S) > 0.
+
+Therefore, q(X, I) = 1/4. The greedy solution is G = {s, t} with f (G) = 1.01
+
+and the optimal solution is O = {u, v, w, x} with f (O) = 4, which satisfy the
+
+bound f (G)/f (O)  q(X, I). In fact, the bound holds with equality if we lower
+
+f ({s}) to exactly 1. tu
+
+    The following theorem bounds the performance of the greedy strategy when
+(X, I) is the intersection of p matroids and f is a polymatroid set function.
+
+Theorem 2 (Fisher et al., 1978) Let (X, I) be the intersection of p matroids
+
+and f : 2X  R a polymatroid set function. Then any greedy solution G
+
+satisfies
+
+                                    f (G) 1                                                   (7)
+                                                         .
+                                    f (O) 1 + p
+
+Remark 3 The condition that f is additive in Theorem 1 is stronger than the
+condition that f is a polymatroid set function in Theorem 2, so the bound 1/p
+in Theorem 1 is stronger than the bound 1/(1 + p) in Theorem 2.
+
+  2 We thank the anonymous reviewer for this example.
+
+Pursuant to the DOE Public Access Plan, this document represents the authors' peer-reviewed, accepted manuscript.
+                            The published version of the article is available from the relevant publisher.
+10                                                     Yajing Liu 1 et al.
+
+Remark 4 The bound 1/(1 + p) can be achieved for any positive integer p.
+When p = 1, (X, I) is a matroid, and the bound becomes 1/2, which means
+that the greedy strategy yields 1/2-approximation for general matroid con-
+straints.
+
+Remark 5 Theorem 2 requires that f () = 0. If f () =6 0, the following per-
+
+formance bound holds
+
+                             f (G) - f () 1
+                                                 .
+                             f (O) - f () 1 + p
+
+    The following theorem provides a performance bound for the greedy strat-
+egy when (X, I) is a uniform matroid and f is a polymatroid set function.
+
+Theorem 3 (Nemhauser et al., 1978) Let (X, I) be a uniform matroid and
+f : 2X  R a polymatroid set function. Then any greedy solution GK satisfies
+
+                      f (G)   1 K                   1  (8)
+                             1- 1-           >1- ,
+                      f (O)         K               e
+
+where K is the rank of the uniform matroid and e is the base of the natural
+logarithm.
+
+Remark 6 The bound 1 - (1 - 1/K)K is stronger than the bound 1/(1 + p)
+when p = 1 in Theorem 2, because the uniform matroid is a special matroid.
+
+Remark 7 The bound 1 - (1 - 1/K)K is decreasing in K and tends to 1 -
+1/e when K goes to infinity. When K = 1, the bound becomes 1, which is
+consistent with the fact that the greedy strategy chooses the best action at
+each stage.
+
+Remark 8 The bound 1 - (1 - 1/K)K is tight, which means that it can be
+achieved for each K (Nemhauser et al., 1978).
+
+Remark 9 By Theorem 2, the greedy strategy only achieves a 1/2-
+approximation under general matroid constraints. However, Calinescu et al.
+(2011) proved that a variant of the greedy strategy yields a (1 - 1/e)-
+approximation under general matroid constraints.
+
+2.4 Examples
+
+We introduce two examples ­ a task scheduling problem and an adaptive
+sensing problem ­ to illustrate polymatroid set functions. In both problems,
+(X, I) is a uniform matroid and hence the greedy strategy satisfies a (1 - e-1)-
+approximation.
+
+    Task Assignment Problem: The task scheduling problem was posed by
+Streeter and Golovin (2008), and was also analyzed in Zhang et al. (2016)
+and Liu et al. (2018d). In this problem, there are n subtasks and a set X of
+
+Pursuant to the DOE Public Access Plan, this document represents the authors' peer-reviewed, accepted manuscript.
+                            The published version of the article is available from the relevant publisher.
+Submodular Optimization Problems and Greedy Strategies: A Survey                                            11
+
+N agents. At each stage, a subtask i is assigned to an agent a, who accom-
+
+plishes the task with probability pi(a). Let Xi({a1, a2, . . . , ak}) denote the
+
+Bernoulli random variable that signifies whether or not subtask i has been
+
+accomplished after assigning the set of agents {a1, a2, . . . , ak} over k stages.
+          Pn
+Then   1           Xi  ({a1,  a2  ,  .  .  .  ,  ak  })  is  the  fraction    of  subtasks  accomplished  af-
+       n      i=1
+
+ter k stages by employing agents {a1, a2, . . . , ak}. The objective function f for
+
+this problem is the expected value of this fraction, which can be written as
+
+                                                                                   
+
+                                                     1     n            k
+
+                                                         X             Y
+
+                   f ({a1, . . . , ak}) = n 1 - (1 - pi(aj)) .                                            (9)
+
+                                                         i=1           j=1
+
+The aim is to choose a set of agents to maximize this objective function.
+    Assume that pi(a) > 0 for any a  X. Then it is easy to check that f is
+
+monotone, submodular, and f () = 0, which implies that f is a polymatroid
+set function.
+
+    Adaptive Sensing: As our second example application, we consider the
+adaptive sensing design problem posed in Zhang et al. (2016) and Liu et al.
+(2018d). Consider a signal of interest x  IR2 with normal prior distribution
+N (0, I), where I is the 2 × 2 identity matrix; our analysis easily generalizes
+to dimensions larger than 2. Let B = {Diag( b, 1 - b) : b  {b1, . . . , bN }},
+where bi  [0, 1] for 1  i  N . At each stage i, we make a measurement yi of
+the form
+
+                                         yi = Bix + wi,
+
+where Bi  B and wi represents i.i.d. Gaussian measurement noise with mean
+zero and covariance 2I, independent of x.
+
+    The objective function f for this problem is the information gain, which
+can be written as
+
+                                  f ({B1, . . . , Bk}) = H0 - Hk.
+
+Here,  H0  =  N    log(2e)    is     the         entropy     of   the  prior  distribution  of  x  and  Hk  is
+              2
+the entropy of the posterior distribution of x given {yi}ki=1; that is,
+
+                                              1      det(Pk)      +    N
+                              Hk =             log                       log(2e),
+                                              2                        2
+
+where for 1  j  k
+
+                                                                  1           -1
+                                                   P j--1 1       2
+                                     Pj       =              +       BjT  Bj
+
+is the posterior covariance of x given {yi}ji=1. The objective is to choose a set of
+measurements to maximize the information gain f ({B1, . . . , BK }) = H0 -HK .
+
+    It is easy to check that f is monotone, submodular, and f () = 0; i.e., f
+
+is a polymatroid set function.
+
+Pursuant to the DOE Public Access Plan, this document represents the authors' peer-reviewed, accepted manuscript.
+                            The published version of the article is available from the relevant publisher.
+12                                                                   Yajing Liu 1 et al.
+
+2.5 Curvature
+
+As we saw in Section 2.1, submodularity is a second-order property by analogy
+to concavity. If we can quantify this second order property, then we can get
+tighter bounds. One way to quantify the second order property is to use the
+total curvature, defined by Conforti and Cornu´ejols (1984):
+
+               c(f ) :=         max        -  %j (X  \  {j})   .
+                                        1
+                                                  %j ()
+                         jX:%j ()6=0
+
+To see that this is a second-order property, rewrite it in terms of differences
+of differences:
+
+    c(f ) := max                 (f ({j}) - f ()) - (f (X) - f (X \ {j}))   .
+
+              jX:f ({j})6=f ()             f ({j}) - f ()
+
+For convenience, we use c to denote c(f ) when there is no ambiguity. Note
+that 0  c  1 when f is a polymatroid set function, and c = 0 when f is
+modular. When f is modular, f -f () is additive. If we consider f -f () as the
+objective function, then the greedy strategy achieves optimality. Therefore, in
+the rest of the paper, when we assume that f is a polymatroid set function,
+we only consider c  (0, 1].
+
+    Conforti and Cornu´ejols (1984) provided performance bounds in terms of
+the total curvature for the greedy strategy under independence system, general
+matroid, and uniform matroid constraints, which will be reviewed as follows.
+
+Theorem 4 (Conforti and Cornu´ejols, 1984) If (X, I) is an independence
+system with ur(X) = K and lr(X) = k, and f is is a polymatroid set function
+with total curvature c, then any greedy solution GK satisfies
+
+                  f (GK )          1              c k
+                                 1- 1-                   ,
+                  f (O) c                     K
+
+and this bound is tight for all 0 < c  1.
+
+Theorem 5 (Conforti and Cornu´ejols, 1984) If (X, I) is a matroid and f is
+
+a polymatroid set function with total curvature c, then any greedy solution GK
+satisfies
+
+                                f (GK )    1
+                                               .
+                                f (O) 1 + c
+
+Moreover, if (X, I) is a uniform matroid with rank K, then any greedy solution
+
+GK satisfies
+
+               f (GK )     1               c K  1 - e-c           .
+                         1- 1-                    >
+               f (O) c                     K                c
+
+Remark 10 When (X, I) is a matroid, the bound 1/(1 + c) is stronger than
+the bound 1/2 in Theorem 2 because c  (0, 1] when f is a polymatroid set
+function and 1/(1 + c) is nonincreasing in c.
+
+Pursuant to the DOE Public Access Plan, this document represents the authors' peer-reviewed, accepted manuscript.
+                            The published version of the article is available from the relevant publisher.
+Submodular Optimization Problems and Greedy Strategies: A Survey          13
+
+Remark 11 The function (1 - e-c)/c is nonincreasing in c, and therefore (1 -
+e-c)/c  [1 - e-1, 1) when f is a polymatroid set function. Also it is easy to
+check that (1 - e-c)/c  1/(1 + c) for c  (0, 1], which implies that the bound
+(1 - e-c)/c for the uniform matroid constraints is stronger than the bound
+
+1/(1 + c) for the general matroid constraints.
+
+Remark 12 The two bounds in terms of the total curvature c are both tight;
+for proofs, see Conforti and Cornu´ejols (1984).
+
+Remark 13 There are other notions of curvatures that can be used to char-
+acterize the second-order property of the set function f , such as the greedy
+curvature defined by Conforti and Cornu´ejols (1984) and the elemental cur-
+vature defined by Wang et al. (2014). Performance bounds in terms of the
+corresponding curvatures were also derived by Conforti and Cornu´ejols (1984)
+and Wang et al. (2014) under different constraints.
+
+    Example: Consider again the task assignment example from Section 2.4.
+For convenience, we only consider the special case n = 1; our analysis can be
+generalized to any n  2. For n = 1, we have
+
+                                               k
+
+                                 Y
+    f ({a1, . . . , ak}) = 1 - (1 - p(aj)) ,
+
+                                             j=1
+
+where p(·) = p1(·).
+    Let us order the elements of X as a[1], a[2], . . . , a[N] such that
+
+                        0 < p(a[1])  p(a[2])  . . .  p(a[N])  1.
+
+Then by the definition of the total curvature c, we have
+
+     f (X) - f (X \ {j})      N
+
+                             Y
+
+c = max 1 -  f ({j}) - f ()  = 1 - (1 - p(a[l])) < 1,
+jX
+                             l=2
+
+which is consistent with our conclusion that c  [0, 1].
+
+2.6 Improved Bounds
+
+The performance bounds of Conforti and Cornu´ejols (1984) reviewed in Sec-
+tion 2.5, are the best bounds in terms of the total curvature c for general
+matroid constraints and uniform matroid constraints, respectively. However,
+the total curvature c depends on function values on sets outside the constraint
+matroid. If we are given a function defined only on the matroid, problem (4)
+still makes sense, but the bounds involving c do not apply. Liu et al. (2018a,
+2019) investigated modified bounds that overcome this drawback. The idea
+is first to extend a polymatroid set function defined on the matroid to one
+defined on the entire power set, and then apply the results from Conforti and
+
+Pursuant to the DOE Public Access Plan, this document represents the authors' peer-reviewed, accepted manuscript.
+                            The published version of the article is available from the relevant publisher.
+14                                                  Yajing Liu 1 et al.
+
+Cornu´ejols (1984). However, not every polymatroid function defined on the
+matroid can be extended to one defined on the entire power set.
+
+    In Liu et al. (2019), they first provide necessary and sufficient conditions for
+the existence of an incremental extension of a polymatroid set function defined
+on the uniform matroid of rank k to one defined on the uniform matroid of
+rank k + 1. Whenever a polymatroid objective function defined on a matroid
+can be extended to the entire power set, the greedy approximation bounds
+involving the total curvature of the extension apply. However, the bounds still
+depend on sets outside the matroid. Motivated by this, Liu et al. (2019) defined
+a new notion of curvature called partial curvature, involving only sets in the
+matroid. They derived necessary and sufficient conditions for an extension of
+the function to have a total curvature that is equal to the partial curvature.
+Moreover, they proved that the bounds in terms of the partial curvature are
+in general improved over the previous ones.
+
+    The following theorems state the necessary and sufficient conditions for the
+existence of an extension of a polymatroid set function defined on the uniform
+matroid of rank k to one defined on the uniform matroid of rank k + 1.
+
+Theorem 6 (Liu et al., 2019) Let f : I  R be a polymatroid function defined
+on the uniform matroid of rank k. Then f can be extended to a polymatroid
+function g defined on the uniform matroid of rank k + 1 if and only if for any
+A  X with |A| = k + 1, any B  A with |B| = k, and any a  B,
+
+    f (B) - f (B \ {a})  f (B) - f (A \ {a}),       (10)
+
+where B  argmax f (B).
+
+                       B:BA,|B|=k
+
+Construction: If f is extendable, then an extension g can be constructed as
+follows: For any A with |A|  k, g(A) = f (A); For any A with |A| = k + 1,
+
+    g(A) = g(B) + dA,                               (11)
+
+where dA satisfies
+
+     0  dA  min {f (B) - f (B) + f (A \ {a}) - f (B \ {a})}. (12)
+
+                          B:BA,|B|=k
+                                a:aB
+
+Note that f : 2X  R is itself an extension of f from I to the entire 2X , and
+the extended f : 2X  R is a polymatroid function on 2X . Therefore, we have
+that c(f )  d = infgEf c(g), where Ef is the set of all polymatroid functions
+g on 2X that agree with f on I. So if a polymatroid set function defined on
+the matroid can be extended to one defined on the whole power set, applying
+the performance bounds in Theorem 5 results in the following theorem.
+
+Theorem 7 (Liu et al., 2019) Let (X, I) be a matroid of rank K and f : I 
+R a polymatroid function. If there exists an extension of f to the entire power
+set, then any greedy solution GK to problem (4) satisfies
+
+                                   f (GK )   1      (13)
+                                                 ,
+                                   f (O) 1 + d
+
+Pursuant to the DOE Public Access Plan, this document represents the authors' peer-reviewed, accepted manuscript.
+                            The published version of the article is available from the relevant publisher.
+Submodular Optimization Problems and Greedy Strategies: A Survey       15
+
+where d = infgEf c(g). In particular, when (X, I) is a uniform matroid, any
+greedy solution GK to problem (4) satisfies
+
+                  "            d K #
+                                        >
+f (GK )        1                           1 1 - e-d .
+
+                  1- 1-                    d                           (14)
+f (O) d                        K
+
+Remark 14 The bounds 1/(1 + d) and (1 - e-d)/d apply to problems where
+the objective function is a polymatroid function defined only for sets in the
+matroid and can be extended to one defined on the entire power set. However,
+these bounds still depend on sets not in the matroid, because of the way d is
+defined.
+
+    Then Liu et al. (2019) defined a new curvature called the partial curvature
+b(h) as follows:
+
+                            h(A) - h(A \ {j})                     ,    (15)
+b(h) := max 1 -
+             j,A:jAI              h({j}) - h()
+
+             h({j})=6 h()
+
+and the partial curvature satisfies that b(f )  c(g) when g is an extension
+of f from I to 2X . The following theorem provides necessary and sufficient
+conditions for the existence of an extension g to have c(g) = b(f ).
+
+Theorem 8 (Liu et al., 2019) Let (X, I) be a matroid and f : I  R a
+polymatroid function. Let g : 2X  R be a polymatroid function that agrees
+with f on I. Then c(g) = b(f ) if and only if
+
+          g(X) - g(X \ {a})  (1 - b(f ))g({a})                         (16)
+
+for any a  X, and equality holds for some a  X.
+
+    Liu et al. (2019) provided the following improved bounds for the greedy
+strategy if there exists an extension g of f such that c(g) = b(f ).
+
+Theorem 9 (Liu et al., 2019) Let (X, I) be a matroid of rank K. Let g :
+2X  R be a polymatroid function that agrees with f on I such that g(X) -
+g(X \ {a})  (1 - b(f ))g({a}) for any a  X with equality holding for some
+
+a  X. Then, any greedy solution GK to problem (4) satisfies
+
+                     f (GK )      1                                    (17)
+                                        .
+                     f (O) 1 + b(f )
+
+In particular, when (X, I) is a uniform matroid, any greedy solution GK to
+problem (4) satisfies
+
+f (GK )   1    "  b(f ) K #                1                         
+                                                  1 - e-b(f) .
+f (O) b(f )    1- 1-       K      >        b(f )                       (18)
+
+Pursuant to the DOE Public Access Plan, this document represents the authors' peer-reviewed, accepted manuscript.
+                            The published version of the article is available from the relevant publisher.
+16                                                                       Yajing Liu 1 et al.
+
+Remark 15 The bounds 1/(1 + b(f )) and (1 - (1 - b(f )/K)K)/b(f ) do not
+depend on sets outside the matroid, so they apply to problems where the
+objective function is only defined on the matroid, provided that an extension
+that satisfies the assumptions in Theorem 8 exists. When f is defined on the
+entire power set, b(f )  c(f ), which implies that the bounds are stronger than
+those from Conforti and Cornu´ejols (1984).
+
+    Next consider again the task assignment problem from Section 2.4. Liu
+et al. (2019) gave an extension g of f defined on the uniform matroid of rank
+2 to the whole power set with c(g) = b(f ), which is reviewed as follows.
+
+    Example: Let X = {a1, a2, a3, a4}, p(a1) = 0.4, p(a2) = 0.6, p(a3) = 0.8,
+and p(a4) = 0.9. Then, f (A) is defined as in (9) for any A = {ai, . . . , ak}  X.
+Let K = 2, then I = {S  X : |S|  2}. It is easy to show that f : I  R is
+a polymatroid function.
+
+    The polymatroid function g constructed using (11) while satisfying (12)
+and (16) from Liu et al. (2019) is of the following form:
+
+    g({a1, a2, a3}) = f ({a2, a3}) + d{a1,a2,a3} = 0.96.
+    g({a1, a2, a4}) = f ({a2, a4}) + d{a1,a2,a4} = 1,
+    g({a1, a3, a4}) = f ({a3, a4}) + d{a1,a3,a4} = 1.02,
+    g({a2, a3, a4}) = f ({a3, a4}) + d{a2,a3,a4} = 1.04,
+    g(X) = g({a2, a3, a4}) + dX = 1.08.
+    The total curvature c of g : 2X  R is
+
+    c(g2)  =  max        -  g(X) - g(X    \ {ai})   =  0.9  =  b(f )  <  c(f )  =  0.992.
+                      1        g({ai}) -  g()
+              ai X
+
+    By Theorem 9, the greedy strategy for the task scheduling problem satisfies
+the bound (1 - (1 - b(f )/2)2)/b(f ) = 0.775, which is better than the previous
+bound (1 - (1 - c(f )/2)2)/c(f ) = 0.752.
+
+2.7 Batch Actions
+
+Suppose we batch the selected actions into batches of size k. What results
+is the k-batch greedy strategy, which starts with the empty set and iteratively
+adds to the current solution set a batch of elements with the largest gain in the
+objective function under the constraints. The greedy strategy we considered
+in Sections 2.3­2.5 is a special case of the batched greedy with batch size
+equal to 1. Intuitively, larger k should result in better performance, albeit at
+the expense of increasing computational complexity. But how do the previous
+bounds improve as a function of k? In this section, we review performance
+bounds for the k-batch greedy strategy.
+
+    We start by introducing the k-batch greedy strategy as follows. Consider
+again problem (4) and write the maximal cardinality of the sets in I as K =
+k(l - 1) + m, where l, m are nonnegative integers and 0 < m  k. Note that
+m is not necessarily the remainder of K/k, because m could be equal to k.
+
+Pursuant to the DOE Public Access Plan, this document represents the authors' peer-reviewed, accepted manuscript.
+                            The published version of the article is available from the relevant publisher.
+Submodular Optimization Problems and Greedy Strategies: A Survey      17
+
+This happens when k divides K. The k-batch greedy strategy is as follows
+
+(Liu et al., 2018c,d):
+Step 1: Let S0 =  and t = 0.
+Step 2: Select Jt+1  X \ St such that |Jt+1| = k, St  Jt+1  I, and
+
+                f (St  Jt+1) =            max        f (St  J );
+                                JX\St and |J|=k
+
+then set St+1 = St  Jt+1.
+
+Step 3: If t + 1 < l - 1, set t = t + 1, and repeat Step 2.
+
+Step 4: If t + 1 = l - 1, select Jl  X \ Sl-1 such that |Jl| = m, Sl-1  Jl  I,
+
+and
+
+                f (Sl-1  Jl) =          max          f (Sl-1  J ).
+                                JX\Sl-1 and |J |=m
+
+Step 5: Return the set S = Sl-1  Jl and terminate.
+    Any set generated by the above procedure is called a k-batch greedy solu-
+
+tion. For the above strategy, there are l steps in total, and exactly k actions are
+
+selected at each of the first l-1 steps but the final step may select fewer than k
+
+actions. A similar batched greedy strategy is investigated by Hausmann et al.
+
+(1980) called the ( k)-greedy strategy, where at most k actions are selected
+
+at each stage.
+
+The performance of the k-batch greedy strategy under uniform matroid
+
+constraints was first investigated by Nemhauser et al. (1978), stated as follows.
+
+Theorem 10 (Nemhauser et al., 1978) If (X, I) is a uniform matroid of
+
+rank K and f is a polymatroid set function, then any k-batch greedy solution
+
+S satisfies
+
+                f (S)               m   1 l-1               .
+                           1- 1-                 1-
+                f (O)                     kl         l
+
+Remark 16 When m = k, i.e., the batch size k divides the rank K, the bound
+is tight; see Nemhauser et al. (1978) for proof.
+
+By introducing the total k-batch curvature
+
+                       ck  :=           -  %I (X \ I)   ,             (19)
+                                max 1        %I ()
+
+                                I X^
+
+where X^ = {I  X : %I () 6= 0 and |I| = k}, Liu et al. (2018d) derived
+performance bounds in terms of ck for the k-batch greedy strategy under
+both general matroid and uniform matroid constraints, and investigated the
+monotoneity of the performance bounds with respect to the batch size k.
+
+Theorem 11 (Liu et al., 2018d) Assume that f is a polymatroid set function.
+When (X, I) is a general matroid, then any k-batch greedy solution satisfies
+
+                                f (S)         1  .
+
+                                f (O) 1 + ck
+
+When (X, I) is a uniform matroid, then any k-batch greedy solution satisfies
+
+                f (S)    1      -      -  ck  m      -  ck  l-1
+                             1      1             1                .
+                f (O) ck                   lk           l
+
+Pursuant to the DOE Public Access Plan, this document represents the authors' peer-reviewed, accepted manuscript.
+                            The published version of the article is available from the relevant publisher.
+18                                                                                        Yajing Liu 1 et al.
+
+Remark 17 When k = 1, the bound for general matroid constraint becomes
+
+1/(1 + c) and the bound for uniform matroid constraints becomes (1 - (1 -
+c/K)K)/c, which is consistent with the results in Theorem 5.
+
+Remark 18 The total k-batch curvature is nonincreasing in k, i.e., ck2  ck1
+whenever k2  k1 (Liu et al., 2018d).
+
+Remark 19 Based on Remark 18, we can discuss the monotoneity of the
+bounds for both general matroid and uniform matroid constraints. The bound
+1/(1 + ck) for general matroid constraints is monotone in k. For uniform ma-
+troid constraints, when the batch size k divides K, the bound becomes
+
+                                 1                             ck l ,
+                                            
+                                 ck                            l
+                                       1- 1-
+
+which is monotone in k. Moreover,
+
+                         1            ck l >         1 - e-ck                     1
+                                                                                       ,
+                         ck           l                           ck        1 + ck
+                               1- 1-
+
+which means that the bound for uniform matroid constraints is better than
+the bound for general matroid constraints. However, if k does not divide K,
+the exponential bound might be worse than the harmonic bound. For example,
+when K = 100, k = 80, and ck = 0.6, the exponential bound is 0.5875, which
+is worse than the harmonic bound 0.6250 (Liu et al., 2018d).
+
+    Examples: Now consider again the task assignment and adaptive sensing
+problems from Section 2.4 to demonstrate that the total curvature ck decreases
+in k and the performance bound for a uniform matroid increases in k under
+the condition that the batch size k divides the rank K.
+
+    Task Assignment Problem: We still order the elements of X as
+a[1], a[2], . . . , a[N] such that
+
+                         0 < p(a[1])  p(a[2])  . . .  p(a[N])  1.
+
+Then by the definition of the total curvature ck, we have
+
+    ck  =    max              -  f (X) - f (X        \ {i1, .  . . , ik})   =  1  -     N       -  p(a[l])).
+                           1        f ({i1, . . . ,  ik}) -    f ()
+           i1 ,...,ik X                                                               Y
+                                                                                            (1
+
+                                                                                     l=k+1
+
+From the expression of ck, we can see that ck is nonincreasing in k, but when
+N is large, ck is close to 1 for each k.
+
+    To numerically evaluate the relevant quantities here, Liu et al. (2018d)
+randomly generated a set {p(ai)}3i=0 1. In Fig. 3, they considered K = 20,
+and batch sizes k = 1, 2, . . . , 10. Fig. 3 shows that the exponential bound for
+
+k = 3, 6, 8, 9 is worse than that for k = 1, 2, which illustrates our earlier remark
+
+that the exponential bound for the uniform matroid case is not necessarily
+
+monotone in k even though ck is monotone in k. Fig. 3 also shows that the
+exponential bound (1 - (1 - ck/l · m/k)(1 - ck/l)l-1/ck coincides with (1 - (1 -
+
+Pursuant to the DOE Public Access Plan, this document represents the authors' peer-reviewed, accepted manuscript.
+                            The published version of the article is available from the relevant publisher.
+Submodular Optimization Problems and Greedy Strategies: A Survey                                                                      19
+
+                                                   1
+
+                                                                                           Total curvature ck
+
+                                                                                           Exponential bound
+
+             Performance Bound or Total Curvature                                          Value of 1 (1 ! (1 ! ck )l+1)
+                                                                                                      ck           l+1
+
+                                                   0.75
+                                                   0.65
+
+                                                         1     2      3     4     5     k  6       7         8     9     10
+
+Fig. 3 Total curvature/performance bounds for greedy strategy in task assignment problem
+
+ck/l)l)/ck for k = 1, 2, 4, 5, 10 and it is nondecreasing in k, which illustrates our
+remark that the exponential bound is nondecreasing in k under the condition
+that k divides K. Owing to the nature of the total curvature for this example,
+it is not easy to see that ck is nonincreasing in k (all ck values here are very
+close to 1).
+
+    Adaptive Sensing: For convenience, set  = 1. Then, we have
+
+ck  =      max                                              -  f (X)  - f (X   \  Jk) 
+                                                     1                f (Jk)
+       Jk X,|Jk |=k
+
+                                                                                                          !                           !
+
+                                                               log(st) - log s - P ei                           t-       P (1 - ei)   
+                                                                                                                                      
+                                                                                                                                      
+
+                                                                                           i:ei Jk                    i:ei Jk         
+
+                                                                                               !                                 !    
+    = max 1 -                                                                                                                            ,
+
+       JkX,|Jk|=k                                                     log 1 + P ei 1 + P (1 - ei)                                     
+
+                                                                                                                                      
+                                                                                                                                      
+                                                                                                                                      
+
+                                                                               i:ei Jk                          i:ei Jk               
+
+where  X  =  {B1,  .                               ..  ,    BN },  s  =  1  +  PN       ei,   and   t     =  1  +  PiN=1 (1  -  ei).
+
+                                                                                   i=1
+
+    We already saw that the exponential bound for the uniform matroid case
+
+is not necessarily monotone in k from the task assignment problem, so we will
+
+only consider the case when the batch size k divides K. Liu et al. (2018d)
+
+considered K = 24 for k = 1, 2, 3, 4, 6, 8 in Fig. 4. The figure shows that the
+
+curvature decreases in k and the exponential bound increases in k since k
+
+divides K for k = 1, 2, 3, 4, 6, 8, which again demonstrates the claim that ck
+decreases in k and the exponential bound increases in k under the condition
+
+that k divides K.
+
+Pursuant to the DOE Public Access Plan, this document represents the authors' peer-reviewed, accepted manuscript.
+                            The published version of the article is available from the relevant publisher.
+20  Yajing Liu 1 et al.
+
+            Fig. 4 Total curvature/performance bound for greedy strategy in adaptive sensing problem
+
+          2.8 Noncooperative Games
+
+          In the previous sections, we reviewed performance bounds for greedy-type
+          strategies in set submodular optimization problems. It turns out that simi-
+          lar techniques can be used to bound the performance of Nash equilibria in
+          noncooperative games­utility maximization problems. The connection to the
+          game setting is easy to imagine by associating the objective function in set
+          optimization with a social utility function in games, greedy strategies with
+          Nash equilibria, and batching with cooperation of subgroups in games. We
+          first introduce some background on utility maximization problems and Nash
+          equilibria.
+
+              A great number of interesting practical problems can be posed as utility
+          maximization problems: these include facility location (Ahmed and Atamtu¨rk,
+          2011), traffic routing and congestion management (Arslan et al., 2007; He
+          et al., 2007), sensor selection (Rowaihy et al., 2007; Liu et al., 2014), and
+          network resource allocation (La and Anantharam, 2002; Palomar and Chiang,
+          2007). In a utility maximization problem, a set of users make decisions ac-
+          cording to their own set of feasible strategies, resulting in an overall social
+          utility value, such as profit, coverage, achieved data rate, and quality of ser-
+          vice. The goal is to maximize the social utility function. Often, the users do
+          not cooperate in selecting their strategies.
+
+              In general, it is impractical to find the optimal strategy maximizing the
+          social utility function. However, it is feasible to consider scenarios where indi-
+          vidual users or groups of users separately maximize their own private objective
+          functions. The usual framework for studying such scenarios is game theory to-
+
+Pursuant to the DOE Public Access Plan, this document represents the authors' peer-reviewed, accepted manuscript.
+                            The published version of the article is available from the relevant publisher.
+Submodular Optimization Problems and Greedy Strategies: A Survey                                           21
+
+gether with its celebrated notion of Nash equilibria. A Nash equilibrium is a set
+
+of strategies (deterministic or randomized) for which no user can improve its
+
+own private utility by changing its strategy unilaterally. Nash (1951) proved
+
+that any finite and non-cooperative game has at least one Nash equilibrium.
+
+   The performance of Nash equilibria compared with the optimal solution in
+
+submodular utility maximization problems was investigated by Vetta (2002).
+
+Based on the existing results, Liu et al. (2018b) established bounds for Nash
+
+equilibria when there is "grouping" among users, which is useful in under-
+
+standing the role of cooperation and social ties in games. Before we review
+
+these results, we introduce some notation and terminology from Vetta (2002)
+
+and Liu et al. (2018b).
+
+   Suppose we have a set N = {1, 2, . . . , N } of N users. Each element in
+
+Vi (i = 1, . . . , N ) represents an act that user i can take. We call a set of
+acts an action, and if an action xi  Vi is available to user i we call it a
+feasible action. We denote by Xi the set of all feasible actions for user i, i.e.,
+Xi = {xi  Vi : xi is a feasible action}, with ni = |Xi| the cardinality of
+Xi. We call Xi the action space for user i. A pure strategy is one in which
+the user takes a specific action. A mixed strategy is one in which the user
+
+takes actions according to some probability distribution. The set of mixed
+
+strategies is called the strategy space. We represent the strategy space for user
+
+i  by  Si  =  {si    Rni  :  Pni      sji  =  1, sji    0},  where  si  =  (si1, . . . , sni i )  is  called  a
+
+                                 j=1
+
+strategy taken by user i and sji  0 is the probability with which user i takes
+action j. When sij = 1 for some j and sil = 0 for all l =6 j, user i is said to take
+                                                                                                  QN
+a  pure    strategy.  Otherwise,      user    i  takes  a  mixed  strategy.  Write  S  =                   Si  .
+                                                                                                      i=1
+
+The indexed set S = (s1, . . . , sN ), with si  Si and i = 1, . . . , N , is called a
+
+strategy set of size N in S.
+
+    Given a strategy set S = (s1, . . . , sN )  S, the set S-i =
+
+(s1, . . . , si-1, si+1, . . . , sN ) is the subset of S that contains strategies taken
+by all users except user i, and (S-i, s0i) = (s1, . . . , si-1, si0 , si+1, . . . , sN ) is the
+strategy set that results from S when user i changes its strategy from si to si0 .
+
+    The expected social utility function and expected private utility function
+
+for user i from strategies in S to real numbers are denoted by ¯ and ¯i,
+respectively. Define ¯si (S-i) = ¯(S) - ¯(S-i) for any set S = (s1, . . . , sN )  S
+and si (i = 1, . . . , N ).
+
+    Now we introduce the definition of a Nash equilibrium and a valid system,
+
+then review performance bounds for Nash equilibria under some conditions
+
+from Vetta (2002).
+
+Definition 1 A strategy set S  S is a Nash equilibrium if no user has an
+incentive to unilaterally change its strategy, i.e., for any user i,
+
+                             ¯i(S)  ¯i((S-i, si0 )), si0  Si.                                         (20)
+
+Assumption 1 (Vetta, 2002) The private utility of user i (i = 1, . . . , N ) is
+at least as large as the loss in the social utility resulting from user i dropping
+
+Pursuant to the DOE Public Access Plan, this document represents the authors' peer-reviewed, accepted manuscript.
+                            The published version of the article is available from the relevant publisher.
+22                                                          Yajing Liu 1 et al.
+
+out of the game. That is, the system (¯, {¯i}Ni=1) has the property that for any
+strategy set S = (s1, . . . , sN )  S,
+
+              ¯i(S)  ¯si (S-i), i = 1, . . . , N.                       (21)
+
+Assumption 2 (Vetta, 2002) The sum of the private utilities of the system is
+not larger than the social utility, i.e., for any strategy set S = (s1, . . . , sN )  S,
+
+                             N
+
+                             X
+
+                                  ¯i(S)  ¯(S).                          (22)
+
+                             i=1
+
+    A utility system (¯, {¯i}Ni=1) satisfying Assumptions 1 and 2 is called a
+valid system. We denote by  = (1, . . . , N ) the optimal strategy set in
+maximizing an expected utility function ¯, and assume that  is composed of
+
+pure strategies i  Si, i = 1, . . . , N . For convenience, we also use i to denote
+the optimal action that user i takes. Consider a strategy set S = (s1, . . . , si)
+where i = 1, . . . , N . Suppose that user j (j = 1, . . . , i) uses a mixed strategy
+sj that takes actions xj1, . . . , xjnj with probabilities sj1, . . . , snj j . We use the
+notation   S to represent the strategy in which user j (j = 1, . . . , i) takes
+the actions j  xj1, . . . , j  xjnj with probabilities sj1, . . . , snj j , and user j
+(j = i + 1, . . . , N ) takes the action j, so   S is well defined.
+
+Theorem 12 (Vetta, 2002) For a valid utility system (¯, {¯i}Ni=1), if the ex-
+pected social utility function ¯ is submodular, then for any Nash equilibrium
+
+S  S we have
+
+                                        N           !
+
+                          1            X
+
+              ¯(S)  ¯() +                   ¯si (  S-i) .               (23)
+                        2
+                                       i=1
+
+Remark 20 If ¯ is monotone, then ¯si (  S-i)  0 and the above inequality
+shows that any Nash equilibrium achieves at least 1/2 of the optimal social
+
+utility function value.
+
+By defining the curvature c of the expected social utility function ¯,
+
+              c :=        max          -  ¯si (    S-i)  ,
+                                    1
+                                            ¯si ()
+                    i:¯si ()6=0
+
+Vetta (2002) derived the following tighter performance bound in terms of the
+curvature for Nash equilibria.
+
+Theorem 13 (Vetta, 2002) For a valid utility system (¯, {¯i}Ni=1), if the ex-
+pected social utility function ¯ is monotone and submodular, then for any Nash
+
+equilibrium S  S we have
+
+                             ¯(S) 1                                     (24)
+                                            .
+                             ¯() 1 + c
+
+Remark 21 When the expected social utility function ¯ is monotone and sub-
+modular, we have c  [0, 1], which implies that ¯(S)  ¯()/2.
+
+Pursuant to the DOE Public Access Plan, this document represents the authors' peer-reviewed, accepted manuscript.
+                            The published version of the article is available from the relevant publisher.
+Submodular Optimization Problems and Greedy Strategies: A Survey                                23
+
+    Next we review performance bounds for group Nash equilibria defined by
+
+Liu et al. (2018b). They considered the case where the set of all users in the
+
+utility maximization system are divided into disjoint groups, and the users
+
+in the same group choose their strategies by maximizing their group utility
+
+function jointly.
+
+    Assume that the set of users N = {1, . . . , N } is divided into l disjoint
+
+groups, in which group i (i = 1, . . . , l) has users {mi + 1, . . . , mi + ki}, where
+
+mi  =  Pi-1     kj  ,  kj  is  the  number   of  users  in  group  j,  and  Pl       kj  =  N.  Let
+
+           j=1                                                                  j=1
+
+si = (smi+1, . . . , smi+ki ) denote the group strategy for group i, where si  Si
+
+is the strategy for user i. This includes the strategies taken by all the users in
+
+group i (i = 1, . . . , l). Let S-i denote the set of group strategies taken by all
+
+groups except for group i and (S-i, ti) denote the group strategy set obtained
+
+when group i changes its group strategy from si to ti. Let ¯i denote the
+
+expected group utility function for group i. Define ¯si (S-i) = ¯(S) - ¯(S-i)
+for any S = (s1, . . . , sl)  S and si (i = 1, . . . , l).
+
+Definition 2 A strategy set S = (s1, . . . , sl)  S is a group Nash equilibrium
+of a utility system if no group can improve its group utility by unilaterally
+changing its group strategy, i.e., for any i = 1, . . . , l,
+
+                  ¯i(S)  ¯i((S-i, ti)), ti = (tmi+1, . . . , tmi+ki ),
+
+where tj  Sj for j = mi + 1, . . . , mi + ki.
+
+    The utility system (¯, {¯i}il=1) is valid if it satisfies the following two as-
+sumptions (Liu et al., 2018b).
+
+Assumption 3 The group utility of group i is at least as large as the loss
+
+in the social utility resulting from all the users in group i dropping out of the
+game. That is, the system (¯, {¯i}il=1) has the property that for any strategy
+set S = (s1, . . . , sl)  S,
+
+                               ¯i(S)  ¯si (S-i), i = 1, . . . , l.                              (25)
+
+Assumption 4 The sum of the group utilities of the system is not larger than
+the social utility, i.e., for any strategy set S = (s1, . . . , sl)  S,
+
+                                        l
+
+                                        X
+
+                                             ¯i(S)  ¯(S).                                       (26)
+
+                                        i=1
+
+Theorem 14 (Liu et al., 2018b) For a valid utility system (¯, {¯i}il=1), if the
+expected social utility function ¯ is submodular, then any group Nash equilib-
+rium S = (s1, . . . , sl)  S satisfies
+
+                                                 l                     !
+
+                                     1  ¯() + X ¯si (  S-i) .                                   (27)
+                           ¯(S) 
+                                                 i=1
+                                     2
+
+Pursuant to the DOE Public Access Plan, this document represents the authors' peer-reviewed, accepted manuscript.
+                            The published version of the article is available from the relevant publisher.
+24                                                        Yajing Liu 1 et al.
+
+To better characterize the relation of the social utility value of any group Nash
+equilibrium and that of the optimal solution , Liu et al. (2018b) defined the
+group curvature cki of the social utility function for group i as
+
+    cki  :=                            -  ¯si (  S-i)  .
+                                              ¯si ()
+                          max 1
+
+                      SS,¯si ()6=0
+
+Theorem 15 (Liu et al., 2018b) For a valid utility system (¯, {¯i}il=1), if the
+expected social utility function ¯ is monotone and submodular, then any group
+Nash equilibrium S = (s1, . . . , sl)  S satisfies
+
+                      ¯(S)         1           ¯().
+
+                             1  +  max    cki
+
+                                   1il
+
+In particular, if X1 = X2 = · · · = XN , we have
+
+                      ¯(S)         1      ¯(),
+
+                                1 + ck
+
+where k = min1il ki.
+
+Remark 22 When the expected group utility function ¯ is monotone and sub-
+modular, it is easy to check that cki  [0, 1], which implies that 1/(1 +
+max1il cki )  1/2.
+
+Remark 23 When the expected group utility function ¯ is monotone and sub-
+modular, we have ¯(S)  ¯()/(1 + max1il cki )  ¯()/(1 + c). This shows
+that the bound for the case with grouping is tighter than that for the case
+without grouping. Of course, this is unsurprising, because grouping entails co-
+operation. Moreover, under the condition that each user has the same strategy
+space, the larger the value of ki, the higher the degree of cooperation, and the
+tighter the lower bound.
+
+3 Strings of Actions
+
+In Section 2, we considered the optimization problem where the argument
+of the objective function is a set of actions. Suppose the objective function
+depends not only on the set of actions but also on the order of actions. We
+call the argument of the objective function a string of actions. In this sec-
+tion, we introduce notation and terminology for strings and string functions,
+string optimization problem, performance bounds for the greedy strategy, and
+applications.
+
+Pursuant to the DOE Public Access Plan, this document represents the authors' peer-reviewed, accepted manuscript.
+                            The published version of the article is available from the relevant publisher.
+Submodular Optimization Problems and Greedy Strategies: A Survey                                           25
+
+3.1 Notation and Terminology
+
+Let X be a set of all possible actions. We use A = (a1, a2, . . . , ak) (ai  X) to
+
+denote a string of actions taken over k consecutive stages. We define its length
+
+as k, denoted by |A| = k. Note that k = 0 corresponds to the empty string,
+
+denoted by A = .
+
+Let X denote the set of all possible strings of actions. If two strings in X
+
+are expressed  by M =    (a1m  , a2m,  .  ..,  am k1 )  and  N=       (a1n, a2n, . . . , akn2 ),     we   write
+M = N iff k1   = k2 and  aim   = ani      for  each     i=   1, 2, .  . . , k1. Moreover,            we  define
+
+string concatenation as  M  N = (am 1          , a2m, .  ..  , am k1 , a1n, a2n,  ..  .X, a.kn2I)n.  this  case,
+    We write M  N if     we have N =           M         L   for some L           
+
+we also say that M is a prefix of N . We write M  N if there exists a set of
+
+strings Li  X such that N = L1 (a1m, . . . , am i1 )L2 (aim1+1, . . . , am i2 )· · ·
+(am ik-1+1, . . . , am k1 )  Lk. Note that  is weaker than , which means M  N
+implies M  N , but the converse is not necessarily true.
+
+Similar to the definition of a polymatroid set function in Section 2.1, we
+
+define a function from strings to real numbers, f : X  R, a polymatroid
+
+string function if
+
+ i. f () = 0.
+ii. f has the prefix-monotone property: M, N  X, f (M  N )  f (M ).
+iii. f has the diminishing-return property: M  N  X, a  X, f (M 
+
+    (a)) - f (M )  f (N  (a)) - f (N ).
+
+A function f : X  R is postfix monotone if
+
+                    M, N  X, f (M  N )  f (N ).
+
+Notice the difference between the prefix-monotone property and postfix-
+monotone property.
+
+    Let I denote a collection of strings from X. The pair (X, I) is called a
+string matroid (Zhang et al., 2016) if I satisfies the following properties:
+
+ i. I is non-empty;
+ii. Hereditary: M  I, N  M implies that n  I;
+iii. Augmentation: M, N  I and |M | < |N |, there exists an element x  X
+
+    in the string N such that M  (x)  I.
+
+The length of the longest string in I is called the rank of (X, I). When I =
+{A  X : |A|  K}, the pair (X, I) is called a uniform string matroid of rank
+K.
+
+3.2 String Optimization Problem
+
+In this section, we first formulate the string optimization problem and de-
+fine the greedy strategy. Then we review performance bounds for the greedy
+strategy under uniform string matroid constraints and general string matroid
+constraints.
+
+Pursuant to the DOE Public Access Plan, this document represents the authors' peer-reviewed, accepted manuscript.
+                            The published version of the article is available from the relevant publisher.
+26                                     Yajing Liu 1 et al.
+
+    In a variety of problems in engineering and applied science such as sequen-
+tial decision making (Littman, 1996; Roijers et al., 2013), adaptive sensing (Liu
+et al., 2014; Krause et al., 2008), and adaptive control (Jarvis, 1975; Schlegel
+et al., 2005), we are faced with optimally choosing a string (ordered set) of
+actions over a finite horizon to maximize an objective function under some
+constraints. We call this class of optimization problems string optimization.
+For set optimization problems, the objective function is not influenced by the
+order of actions. However, for string optimization problems, the objective func-
+tion depends on the order of actions. Let f : X  R be an objective function.
+The goal is to find a string M , with the constraint M  I, to maximize the
+objective function:
+
+    maximize f (M ), subject to M  I,  (28)
+
+where X denotes the set of all possible strings of actions and I is a collection
+of strings from X.
+
+    The solution to the string optimization problems can be characterized us-
+ing dynamic programming via Bellman's principle (Bertsekas, 2005; Powell,
+2007). However, dynamic programming suffers from the curse of dimensional-
+ity and is therefore impractical for many problems of interest. Hence, we often
+turn to approximation techniques. One approximation technique is the greedy
+strategy, which is to find an action at each stage to maximize the step-wise
+gain in the objective function. The performance for the greedy strategy in
+string optimization problems has been investigated by Streeter and Golovin
+(2008), Zhang et al. (2016), and Liu et al. (2015). And these specific results
+will be reviewed in this section.
+
+    Assume that the rank of (X, I) is K. We now define optimal and greedy
+strategies for problem (28) and some related notation.
+Optimal String: Any string O is called an optimal solution of Problem (28)
+if
+
+                                      O  argmax f (M ).
+
+                                                                   M I
+
+If f is prefix monotone, then there exists at least one optimal string of length
+K, denoted by OK = (o1, . . . , oK ).
+
+Pursuant to the DOE Public Access Plan, this document represents the authors' peer-reviewed, accepted manuscript.
+                            The published version of the article is available from the relevant publisher.
+Submodular Optimization Problems and Greedy Strategies: A Survey     27
+
+Greedy Algorithm:
+Input: A string matroid (X, I) of rank K, a set function f : X  R, collec-
+tion I, size K
+
+Output: A string GK  I
+G0  
+For i = 1, . . . , K,
+
+1. gi  argmax f (Gi-1  (a))
+
+               aX,Gi-1 (a)I
+
+2. Gi  Gi-1  (gi)
+    Any output of the above algorithm is called a greedy solution. There may
+
+exist more than one greedy solution.
+
+3.3 Performance Bounds for Greedy Strategy
+
+Streeter and Golovin (2008) first derived performance bounds for the greedy
+strategy under uniform string matroid constraints, stated as follows.
+
+Theorem 16 (Streeter and Golovin, 2008) Let (X, I) be a uniform string
+matroid. If f : X  R is a polymatroid string function and postfix monotone,
+then any greedy string GK satisfies
+
+       f (GK )                 1 K > 1 - e-1.                        (29)
+                1- 1-
+       f (OK )                 K
+
+Remark 24 The same bound holds if f satisfies f (Gi  OK )  f (OK ) for
+i = 1, . . . , K - 1, which is weaker than being postfix monotone.
+
+Zhang et al. (2016) investigated performance bounds for the greedy strategy
+under both uniform string matroid and general string matroid constraints by
+defining the following curvatures.
+
+    The total backward curvature of f is defined as (Zhang et al., 2016)
+
+                           f ((a)  M ) - f (M )                   .  (30)
+ := max 1 -
+           aX,M X              f ((a)) - f ()
+
+           f ((a))6=f ()
+
+When f is postfix monotone and diminishing return, we have 0    1. The
+total backward curvature is an upper bound on the second-order difference,
+over all possible actions a and strings M . Next, Zhang et al. (2016) defined
+the total backward curvature of f with respect to the optimal string OK by
+
+(OK )  :=        max           -  f (N  OK ) - f (OK )  .            (31)
+                            1          f (N ) - f ()
+           N X,0<|N |K
+
+           f (N )6=f ()
+
+When f is postfix monotone and string submodular, it is easy to prove that
+0  (O)    1.
+
+Pursuant to the DOE Public Access Plan, this document represents the authors' peer-reviewed, accepted manuscript.
+                            The published version of the article is available from the relevant publisher.
+28                                                                   Yajing Liu 1 et al.
+
+Theorem 17 (Zhang et al., 2016) Let (X, I) be a uniform string matroid of
+rank K. If f : X  R is a polymatroid string function, then any greedy string
+GK satisfies
+
+    f (GK )   1      "              (OK ) K #            1           
+                      1       1                             1 - e-(OK) . (32)
+    f (OK ) (OK )        -       -  K          >     (OK )
+
+Moreover, if f is postfix monotone, then any greedy string GK satisfies
+
+              f (GK )       1                 K        1  1 - e- .       (33)
+                                                    >
+              f (OK )                    K             
+                                1- 1-
+
+Remark 25 When f is polymatroid and postfix monotone, we have 0    1
+by (30). So we have (1-(1 - /K)K )/  1-(1-1/K)K and (1-e-)/ > 1-
+
+e-1, which implies that Theorem 17 provides better bounds than Theorem 16.
+
+Theorem 18 (Zhang et al., 2016) Let (X, I) be a string matroid. If f : X 
+R is a polymatroid string function, then any greedy string GK satisfies
+
+                               f (GK )        1                          (34)
+                                                      .
+                               f (OK ) 1 + (OK )
+
+Moreover, if f is postfix monotone, then any greedy string GK satisfies
+
+                                 f (GK )      1                          (35)
+                                                  .
+                                 f (OK ) 1 + 
+
+    From Theorems 16 and 17, we can see that all the sufficient conditions
+obtained so far involve strings of length greater than K, even though (28)
+involves only strings up to length K. Liu et al. (2015) derived sufficient con-
+ditions, which only involve strings of length at most K, to have the same
+bounds hold for uniform string matroid constraints, by defining the following
+conditions.
+
+    A function f : X  R is K-polymatroid if
+
+ i. f () = 0.
+ii. f is K-monotone: M, N  X, and |M | + |N |  K, f (M  N )  f (M ).
+iii. f is K-diminishing: M  N  X and |N |  K - 1, a  X, f (M 
+
+    (a)) - f (M )  f (N  (a)) - f (N ).
+
+    Let GK = (g1, . . . , gK ) and O¯K-i = (oi+1, . . . , oK ) for i = 1, . . . , K. Then,
+f is K-GO-concave (Liu et al., 2015) if for 1  i  K - 1,
+
+              f (Gi   O¯K-i)        i                    i
+                                    K f (Gi)  + 1-       K f (OK ).
+
+Theorem 19 (Liu et al., 2015) Let (X, I) be a uniform string matroid. If f
+is K-polymatroid, then any greedy string satisfies
+
+                 f (GK )       "         1 K # > (1 - e-1).
+                                      
+                 f (OK )                 K
+                             1- 1-
+
+Pursuant to the DOE Public Access Plan, this document represents the authors' peer-reviewed, accepted manuscript.
+                            The published version of the article is available from the relevant publisher.
+Submodular Optimization Problems and Greedy Strategies: A Survey                        29
+
+By defining the curvature ,
+
+        = max  Kf (Gi) - (Kf (Gi  O¯K-i) - (K - i)f (OK ))  ,
+       1iK -1                                      (K - i)f (Gi)
+
+Liu et al. (2015) derived more general performance bounds in terms of the
+curvature.
+
+Theorem 20 (Liu et al., 2015) Let (X, I) be a uniform string matroid. If f
+is K-polymatroid and K-GO-concave, then any greedy string satisfies
+
+                  f (GK )    1                           K          1 (1 - e-).
+                                 1- 1-                         >
+                  f (OK )                             K             
+
+Remark 26 If f is K-GO-concave, then we have 0    1.
+
+    Examples: We again consider the task assignment problem and adaptive
+
+sensing problem from Section 2.4 to give some sufficient conditions on the
+parameters of the problems to achieve the performance bound (1-(1-1/K)K).
+
+    Task Assignment Problem: We use pji (a) to denote the probability of
+accomplishing subtask i at stage j when it is assigned to agent a  X. Let aj
+
+be the index of the agent selected at stage j, the objective function f becomes
+
+                                                                                  
+
+                                         1    n              k          pij        
+                                         n                        1               )
+                                            X               Y
+                                                1
+       f ((a1, . . . , ak))           =                  -           -       (aj     .
+
+                                            i=1             j=1
+
+For simplicity, we consider the case of n = 1 (our results can easily be gener-
+
+alized to the case where n > 1). For n = 1, the objective function f reduces
+
+to
+
+                                                         k
+
+                  f  ((a1,   .  .  .  ,  ak ))  =  1  -  Y       -  pj1(aj )),          (36)
+                                                             (1
+
+                                                         j=1
+
+and from here on we simply use pj(aj) in place of p1j (aj).
+    Note that the value of f depends on the order of the agents selected over
+
+time when the probabilities vary from stage to stage. In other words, sup-
+
+pose that we have two agents, Alice and Bob. Then, in general, p1(Alice) =6
+
+p2(Alice), p1(Bob) 6= p2(Bob), p1(Alice) =6 p1(Bob), and p2(Alice) 6= p2(Bob).
+
+Therefore, f ((Alice, Bob)) =6 f ((Bob, Alice)).
+
+    It is easy to check that f is K-monotone and f () = 0.
+
+    Assume that pj(a)  [L(a), U (a)], where L(a) = minj pj(a) and U (a) =
+maxj pj(a). By Zhang et al. (2016), a sufficient condition for f to be dimin-
+
+ishing return is
+
+                                         p1(g1)  1 - cK ,                               (37)
+
+where
+
+                                      c = min      1 - U (a)     .
+
+                                            aA 1 - L(a)
+
+Pursuant to the DOE Public Access Plan, this document represents the authors' peer-reviewed, accepted manuscript.
+                            The published version of the article is available from the relevant publisher.
+30                                                                                 Yajing Liu 1 et al.
+
+Let U^ = maxa U (a) and L^ = mina L(a). By Liu et al. (2015), a sufficient
+condition for f to be K-diminishing is
+
+                                      L^  (1 - L^)U^ ,                                  (38)
+
+and a sufficient condition for K-GO-concavity is
+
+                                            L^     1                                    (39)
+                                                    .
+                                                   2
+
+When all pj (aj )  1/2, then (39) and (38) automatically hold, but (37) is
+
+not necessarily satisfied. In that sense, the K-monotone, K-diminishing, and
+
+K-Go concavity conditions of Theorem 19 are weaker sufficient conditions for
+
+achieving  the  bound  (1   -  (1  -  1  )K  )  than   the    prefix      monotone,     diminishing-
+                                      K
+
+return, and postfix monotone conditions of Theorem 16.
+
+    Adaptive Sensing: Consider the situation where the additive noise set
+
+is independent but not identically distributed. Assume that wi is a Gaussian
+
+vector with mean zero and covariance iI, where I denotes the identity matrix.
+
+Recall the problem formulation in Section 2.4. The objective function f for
+
+this problem is as follows:
+
+                                         1
+                f ((B1, . . . , Bk))  =   (log     det(P0)       -  log   det(Pk)).
+                                         2
+
+where P0 = I and for 1  j  k - 1,
+
+                                                                 !-1
+
+                            Pj =      P j--1 1  +  1   BjT  Bj         .
+                                                   j2
+
+From the expression above, it is easy to check that the order of B1, . . . , Bk
+influences the objective function value under the assumption that 1, . . . , k
+take different values. For example,
+
+                f ((A, B))  =  1                   +   1    AT   A  +    1   B  T    
+                                log      det I         12                22        B
+
+                               2
+
+and                            1                       1               1           
+                                log     det I          12              22        A
+                f ((B, A))  =                      +       B  T  B  +        AT      .
+                               2
+
+If 1 6= 2, then f ((A, B)) =6 f ((B, A)).
+
+    By Liu et al. (2015), some sufficient conditions for f to be K-polymatroid
+
+and K-GO-concave are
+
+                                         i2+1  i2                                       (40)
+
+for i = 1, . . . , K - 1.
+    By Zhang et al. (2016), to achieve the bound (1 - (1 - 1/K)K), it requires
+
+both (40) and
+
+                    b-2                  (K     - 1)2(a-2     + b-2) + 1,
+                a-2 - b-2
+
+where [a, b] is the interval that contains all the i's.
+    Comparing the sufficient conditions for achieving the same bound (1 -
+
+(1 - 1/K)K) from Liu et al. (2015) and Zhang et al. (2016), we see that the
+
+conditions from Liu et al. (2015) are weaker.
+
+Pursuant to the DOE Public Access Plan, this document represents the authors' peer-reviewed, accepted manuscript.
+                            The published version of the article is available from the relevant publisher.
+Submodular Optimization Problems and Greedy Strategies: A Survey  31
+
+4 Final Remarks
+
+In this survey, we considered two classes of submodular maximization prob-
+lems: set submodular maximization and string submodular maximization. For
+set submodular optimization, we reviewed performance bounds for the greedy
+strategy under matroid constraints, improved performance bounds, and per-
+formance bounds for the batched greedy strategy. There are many important
+results about performance of the greedy strategy under some other constraints
+and conditions. Wolsey (1982), Sviridenko (2004), and Kulik et al. (2009) de-
+rived performance bounds for the greedy strategy in submodular maximiza-
+tion problems subject to a knapsack constraint and multiple linear constraints.
+Bian et al. (2017) established performance bounds for the greedy strategy in
+monotone but nonsubmodular maximization problems under uniform matroid
+constraints. People also investigated performance bounds for some variations
+of greedy strategies. Calinescu et al. (2011) and Feldman et al. (2011) derived
+performance bounds for a randomized continuous greedy algorithm and a uni-
+fied continuous greedy algorithm in monotone submodular maximization prob-
+lems, respectively. Buchbinder et al. (2012) established performance bounds
+for an adaptive greedy algorithm in unconstrained submodular maximization
+problems. They also derived performance bounds for randomized greedy al-
+gorithms in nonmonotone submodular maximization problems (Buchbinder
+et al., 2014). Mirzasoleiman et al. (2016) considered submodular maximiza-
+tion problems in a distributed fashion, and they derived performance bounds
+for a two-stage greedy algorithm under matroid or knapsack constraints. Qu
+et al. (2015) proposed a distributed greedy strategy and showed that it has
+the same guarantee as the centralized greedy strategy.
+
+    For string submodular optimization problems, we reviewed performance
+bounds for the greedy strategy under matroid constraints. There are some
+related results on performance bounds for greedy strategies in string submod-
+ular maximization problems that were not reviewed in this paper. For example,
+Golovin and Krause (2001) considered a particular class of partially observ-
+able adaptive stochastic optimization problems, and established performance
+bounds for the greedy strategy by introducing the notion of adaptive submod-
+ularity. Tschiatschek et al. (2017) derived performance bounds for a modified
+greedy strategy in submodular string optimization problems under uniform
+string matroid constraints.
+
+    The scope of this study is limited to the performance of the greedy strate-
+gies in deterministic optimization problems where the objective function only
+involves actions. Potentially fruitful areas for further research include per-
+formance bounds for the greedy strategy in stochastic optimization problems,
+where the objective function involves states and control actions, and real-world
+applications of the performance bounds in the deterministic and stochastic set-
+tings.
+
+Pursuant to the DOE Public Access Plan, this document represents the authors' peer-reviewed, accepted manuscript.
+                            The published version of the article is available from the relevant publisher.
+32          Yajing Liu 1 et al.
+
+References
+
+Ahmed, S., and A. Atamtu¨rk, 2011: Maximizing a class of submodular utility
+   functions. Math Program, 128, 149­169.
+
+Arslan, G., J. R. Marden, and J. S. Shamma, 2007: Autonomous vehicle-target
+   assignment: a game-theoretical formulation. J Dyn Syst Meas Control, 129,
+   584­596.
+
+Badanidiyuru, A., B. Mirzasoleiman, A. Karbasi, and A. Krause, 2014: Stream-
+   ing submodular maximization: massive data summarization on the fly. In:
+   Proceedings of the 20th ACM SIGKDD International Conference on Knowl-
+   edge Discovery and Data Mining, 671­680.
+
+Bator, F. M., 1957: The simple analytics of welfare maximization.
+   Am Econ Rev, 47, 22­59.
+
+Bertsekas, D. P., 2005: Dynamic programming and optimal control. 3rd ed.,
+   Athena Scientific.
+
+Bian, A. A., J. M. Buhmann, A. Krause, and S. Tschiatschek, 2017: Guarantee
+   for greedy maximization of non-submodular functions with applications. In:
+   Proceedings of the 34th International Conference on Machine Learning, 498­
+   507.
+
+Boros, E., K. Elbassioni, and L. Khachiyan, 2003: An inequality for polyma-
+   troid functions and its applications. Discrete Appl Math, 131, 255­281.
+
+Buchbinder, N., M. Feldman, J. Naor, and R. Schwartz, 2012: A tight lin-
+   ear time (1/2)-approximation for unconstrained submodular maximization.
+   SIAM J Comput, 44, 255­281.
+
+Buchbinder, N., M. Feldman, J. Naor, and R. Schwartz, 2014: Submodular
+   maximization with cardinality constraints. In: Proceedings of the 25th an-
+   nual ACM-SIAM symposium on Discrete Algorithms, 1433­1452.
+
+Calinescu, G., C. Chekuri, M. Pa´l, and J. Vondr´ak, 2011: Maximizing a sub-
+   modular set function subject to a matroid constraint. SIAM J Comput, 40,
+   1740­1766.
+
+Church, R., and C. R. Velle, 1974: The maximal covering location problem.
+   Pap Reg Sci, 32, 101­118.
+
+Clark, A., and R. Poovendran, 2011: A submodular optimization framework
+   for leader selection in linear multi-agent systems. In: Proceedings of the 50th
+   IEEE Conference on Control and Decision and European Control Confer-
+   ence, 3614­3621.
+
+Cohen, R., L. Katzir, and D. Raz, 2006: An efficient approximation for the
+   generalized assignment problem. Inf Process Lett, 100, 162­166.
+
+Conforti, M., and G. Cornu´ejols, 1984: Submodular set functions, matroids and
+   the greedy algorithm: tight worst-case bounds and some generalizations of
+   the Rado-Edmonds theorem. Discrete Appl Math, 7, 251­274.
+
+Cornu´ejols, G., M. L. Fisher, and G. L. Nemhauser, 1977: Location of bank
+   accounts to optimize float: an analytic study of exact and approximate al-
+   gorithms. Manag Sci, 23, 789­810.
+
+Cunningham, W. H., 1986: Improved bounds for matroid partition and inter-
+   section algorithms. SIAM J Comput, 15, 948­957.
+
+Pursuant to the DOE Public Access Plan, this document represents the authors' peer-reviewed, accepted manuscript.
+                            The published version of the article is available from the relevant publisher.
+Submodular Optimization Problems and Greedy Strategies: A Survey  33
+
+Edmonds, J., 1966: Matroids and the greedy algorithm. In: Proceedings of the
+   International Symposium on Mathematical Programming, 93­117.
+
+Edmonds, J., 1970: Submodular functions, matroids, and certain polyhedra.
+   Combin Structures and Their Appl, 69­87.
+
+Edmonds, J., and D. R. Fulkerson, 1965: Transversals and matroid partition.
+   J Res Nat Bur Stand, 69B, 147­153.
+
+Feldman, M., J. Naor, and R. Schwartz, 2011: A unified continuous greedy
+   algorithm for submodular maximization. In: Proceedings of the 52nd IEEE
+   Annual Symposium on Foundations of Computer Science, 570­579.
+
+Fisher, M. L., G. L. Nemhauser, and L. A. Wolsey, 1978: An analysis of ap-
+   proximations for maximizing submodular set functions­II. Math Prog Study,
+   8, 73­87.
+
+Fleischer, L., M. X. Goemans, V. S. Mirrokni, and M. Sviridenko, 2006: Tight
+   approximation algorithms for maximum general assignment problems. In:
+   Proceedings of the 17th Annual ACM-SIAM Symposium on Discrete Algo-
+   rithm, 611­620.
+
+Goemans, M. X., and D. P. Williamson, 1995: Improved approximation al-
+   gorithms for maximum cut and satisfiability problems using semidefinite
+   programming. J ACM, 42, 1115­1145.
+
+Golovin, D., and A. Krause, 2001: Adaptive submodularity: theory and ap-
+   plications in active learning and stochastic optimization. J Artif Intell Res,
+   42, 427­486.
+
+Hausmann, D., B. Korte, and T. A. Jenkyns, 1980: Worst case analysis of
+   greedy type algorithms for independence systems. Math Program Stud, 12,
+   120­131.
+
+He, J., M. Bresler, M. Chiang, and J. Rexford, 2007: Towards robust multi-
+   layer traffic engineering: optimization of congestion control and routing.
+   IEEE J Sel Area Comm, 25, 868­880.
+
+Jarvis, R. A., 1975: Optimization strategies in adaptive control: a selective
+   survey. IEEE Trans Syst Man Cybern, SMC-5, 83­94.
+
+Kapralov, M., I. Post, and J. Vondr´ak, 2013: Online submodular welfare maxi-
+   mization: greedy is optimal. In: Proceedings of the 24th Annual ACM-SIAM
+   Symposium on Discrete Algorithms, 1216­1225.
+
+Khuller, S., A. Moss, and J. Naor, 1999: The budgeted maximum coverage
+   problem. Inf Process Lett, 70, 39­45.
+
+Knuth, D. E., 1973: Matroid partitioning. Technical Report, STAN-CS-73-342,
+   Stanford University.
+
+Korula, N., V. S. Mirrokni, and M. Zadimoghaddam, 2015: Online submodular
+   welfare maximization: greedy beats 1/2 in random order. In: Proceedings of
+   the 47th Annual Symposium on Theory of Computing, 889­898.
+
+Krause, A., and D. Golovin, 2012: Submodular function maximization.
+   Tractability: Practical Approaches to Hard Problems, 3, 19.
+
+Krause, A., A. Singh, and C. Guestrin, 2008: Near-optimal sensor placements
+   in Gaussian processes: theory, efficient algorithms and empirical studies. J
+   Mach Learn Res, 9, 235­284.
+
+Pursuant to the DOE Public Access Plan, this document represents the authors' peer-reviewed, accepted manuscript.
+                            The published version of the article is available from the relevant publisher.
+34  Yajing Liu 1 et al.
+
+Kulik, A., H. Shachnai, and T. Tamir, 2009: Maximizing submodular set func-
+   tions subject to multiple linear constraints. In: Proceedings of the 20th An-
+   nual ACM-SIAM Symposium on Discrete Algorithms, 545­554.
+
+La, R. J., and V. Anantharam, 2002: Utility-based rate control in the internet
+   for elastic traffic. IEEE/ACM Trans Netw, 10, 272­286.
+
+Li, Y., K. L. W., E. K. P. Chong, and K. N. Groom, 2009: Approximate
+   stochastic dynamic programming for sensor scheduling to track multiple
+   targets. Digit Signal Process, 19, 533­545.
+
+Lin, H., and J. Bilmes, 2011: A class of submodular functions for document
+   summarization. In: Proceedings of the 49th Annual Meeting of the Associ-
+   ation for Computational Linguistics: Human Language Technologies, 510­
+   520.
+
+Littman, M. L., 1996: Algorithms for sequential decision making. Technical
+   Report, CS­96­09.
+
+Liu, E., E. K. P. Chong, and L. L. Scharf, 2014: Greedy adaptive linear com-
+   pression in signal-plus-noise models. IEEE Trans Inf Theory, 60, 2269­2280.
+
+Liu, Y., E. K. P. Chong, and A. Pezeshki, 2015: Bounding the greedy strat-
+   egy in finite-horizon string optimization. In: Proceedings of the 54th IEEE
+   Conference on Decision and Control, 3900­3905.
+
+Liu, Y., E. K. P. Chong, and A. Pezeshki, 2018a: Extending polymatroid set
+   functions with curvature and bounding the greedy strategy. In: 2018 IEEE
+   Statistical Signal Processing Workshop, 318­322.
+
+Liu, Y., E. K. P. Chong, and A. Pezeshki, 2018b: Performance bounds for
+   Nash equilibria in submodular utility systems with user groups. J Control
+   Decision, 5, 1­18.
+
+Liu, Y., E. K. P. Chong, and A. Pezeshki, 2019: Improved bounds for the
+   greedy strategy in optimization problems with curvature. J Comb Optim,
+   37, 1126­1149.
+
+Liu, Y., Z. Zhang, E. K. P. Chong, and A. Pezeshki, 2018c: Performance
+   bounds for the k-batch greedy strategy in optimization problems with cur-
+   vature. In: Proceedings of 2016 American Control Conference, 7177­7182.
+
+Liu, Y., Z. Zhang, E. K. P. Chong, and A. Pezeshki, 2018d: Performance
+   bounds with curvature for batched greedy optimization. J Optim Theory
+   Appl, 177, 535­562.
+
+Lova´sz, L., 1983: Submodular functions and convexity. Math Program, 235­
+   257.
+
+Mirzasoleiman, B., A. Karbasi, and A. Krause, 2017: Deletion-robust submod-
+   ular maximization: data summarization with "the right to be forgotten". In:
+   Proceedings of the 34th International Conference on Machine Learning, 70,
+   2449­2458.
+
+Mirzasoleiman, B., A. Karbasi, A. Sarkar, and A. Krause, 2016: Distributed
+   submodular maximization. J Mach Learn Res, 17 (238), 1­44.
+
+Nash, J., 1951: Non-cooperative games. Ann Math, 54, 286­295.
+Nauss, R. M., 2003: Solving the generalized assignment problem: an optimizing
+
+   and heuristic approach. INFORMS J Comput, 15, 249­266.
+
+Pursuant to the DOE Public Access Plan, this document represents the authors' peer-reviewed, accepted manuscript.
+                            The published version of the article is available from the relevant publisher.
+Submodular Optimization Problems and Greedy Strategies: A Survey  35
+
+Nemhauser, G. L., L. A. Wolsey, and M. L. Fisher, 1978: An analysis of ap-
+   proximations for maximizing submodular set functions­I. Math Program,
+   14, 265­294.
+
+Paar, C., and J. Pelzl, 2010: Understanding cryptography: a textbook for stu-
+   dents and practitioners. Springer.
+
+Palomar, D. P., and M. Chiang, 2007: Alternative distributed algorithms for
+   network utility maximization: framework and applications. IEEE Trans Au-
+   tom Control, 52, 2254­2269.
+
+Powell, W. B., 2007: Approximate dynamic programming: solving the curses
+   of dimensionality. New York: Wiley.
+
+Qu, G., D. Brown, and N. Li, 2015: Distributed greedy algorithm for satellite
+   assignment problem with submodular utility function. IFAC-PapersOnLine,
+   48, 258­263.
+
+Roijers, D. M., P. Vamplew, S. Whiteson, and R. Dazeley, 2013: A survey of
+   multi-objective sequential decision-making. J Artif Intell Res, 48, 67­113.
+
+Rowaihy, H., S. Eswaran, M. Johnson, D. Verma, A. Bar-Noy, T. Brown, and
+   T. L. Porta, 2007: A survey of sensor selection schemes in wireless sensor
+   networks. In: Proceedings of SPIE 6562, Unattended Ground, Sea, and Air
+   Sensor Technologies and Applications.
+
+Sahni, S., and T. Gonzalez, 1976: P -complete approximation problems. J
+   ACM, 23, 555­565.
+
+Schlegel, M., K. Stockmann, T. Binder, and W. Marquardt, 2005: Dynamic
+   optimization using adaptive control vector parameterization. Comput Chem
+   Eng, 29, 1731­1751.
+
+Shmoys, D. B., and E´ . Tardos, 1993: An approximation algorithm for the
+   generalized assignment problem. Math Program, 62, 461­474.
+
+Streeter, M., and D. Golovin, 2008: An online algorithm for maximizing sub-
+   modular functions. In: Proceedings of Advances in Neural Information Pro-
+   cessing Systems 21, 1577­1584.
+
+Sun, X., C. G. Cassandras, and X. Meng, 2017: A submodularity-based ap-
+   proach for multi-agent optimal coverage problem. In: Proceedings of the 56th
+   IEEE Conference on Control and Decision, 4082­4087.
+
+Sviridenko, M., 2004: A note on maximizing a submodular set function subject
+   to a knapsack constraint. Oper Res Lett, 32 (1), 41 ­ 43.
+
+Tschiatschek, S., A. Singla, and A. Krause, 2017: Selecting sequences of items
+   via submodular maximization. In: Proceedings of the 31st AAAI Conference
+   on Artificial Intelligence, 2667­2673.
+
+Vetta, A., 2002: Nash equilibrium in competitive societies, with applications
+   to facility location, traffic routing and auctions. In: Proceedings of the 43rd
+   Annual IEEE Symposium on Foundations of Computer Science, 416­425.
+
+Vondr´ak, J., 2008: Optimal approximation for the submodular welfare prob-
+   lem in the value oracle model. In: Proceedings of the 40th Annual ACM
+   Symposium on Theory of Computing, 67­74.
+
+Wang, Z., B. Moran, X. Wang, and Q. Pan, 2014: Approximation for maximiz-
+   ing monotone non-decreasing set functions with a greedy method. J Comb
+   Optim, 31, 29­43.
+
+Pursuant to the DOE Public Access Plan, this document represents the authors' peer-reviewed, accepted manuscript.
+                            The published version of the article is available from the relevant publisher.
+36  Yajing Liu 1 et al.
+
+Wolsey, L. A., 1982: Maximising real-valued submodular functions: primal and
+   dual heuristics for location problems. Math Oper Res, 7, 410­425.
+
+Zhang, Z., E. K. P. Chong, A. Pezeshki, and W. Moran, 2016: String submod-
+   ular functions with curvature constraints. IEEE Trans Autom Control, 61,
+   601­616.
+
+Pursuant to the DOE Public Access Plan, this document represents the authors' peer-reviewed, accepted manuscript.
+                            The published version of the article is available from the relevant publisher.
+

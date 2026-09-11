@@ -1,0 +1,1026 @@
+Submitted to
+manuscript 2015
+Worst-Case Adaptive Submodular Cover
+Jing Yuan
+Department of Computer Science and Engineering, The University of North Texas
+Shaojie Tang
+Naveen Jindal School of Management, The University of Texas at Dallas
+In this paper, we study the adaptive submodular cover problem under the worst-case setting. This problem
+generalizes many previously studied problems, namely, the pool-based active learning and the stochastic
+submodular set cover. The input of our problem is a set of items (e.g., medical tests) and each item has
+a random state (e.g., the outcome of a medical test), whose realization is initially unknown. One must
+select an item at a ﬁxed cost in order to observe its realization. There is an utility function which maps
+a subset of items and their states to a non-negative real number. We aim to sequentially select a group
+of items to achieve a “target value” while minimizing the maximum cost across realizations (a.k.a. worst-
+case cost). To facilitate our study, we assume that the utility function is worst-case submodular, a property
+that is commonly found in many machine learning applications. With this assumption, we develop a tight
+(log(Q/η) + 1)-approximation policy, whereQ is the “target value” and η is the smallest diﬀerence between
+Q and any achievable utility value ˆQ<Q . We also study a worst-case maximum-coverage problem, a dual
+problem of the minimum-cost-cover problem, whose goal is to select a group of items to maximize its worst-
+case utility subject to a budget constraint. To solve this problem, we develop a (1 − 1/e)/2-approximation
+solution.
+1. Introduction
+In this paper, we study a fundamental problem of minimum cost adaptive submodular
+cover under the worst-case setting. The problem can be formulated as follows: Given a set
+of items, each item has a state whose value is random and unknown initially, one must
+select an item at a ﬁxed cost before observing its realized state. In addition, there is an
+utility function that depends on both the set of selected items and their realized states.
+Our goal is to sequentially select a group of items based on feedback, in the form of the
+realized states of the selected items, to achieve a threshold function value at the minimum
+worst-case cost. Here the worst-case cost of a solution (a.k.a. policy) refers to the maximum
+incurred cost across realizations. This formulation captures many real-world applications,
+namely, active learning, viral marketing and sensor placement (Golovin and Krause 2017).
+As a motivating example, consider the application of medical diagnosis. Here each item
+1
+arXiv:2210.13694v3  [cs.DS]  11 Feb 2023
+
+Y uan and T ang: Worst-Case Adaptive Submodular Cover
+2 Article submitted to ; manuscript no. 2015
+represents a medical test and the state of an item refers to the outcome from corresponding
+medical test. Clearly, we can not observe the outcome of a test before performing that test.
+We deﬁne the utility function, in terms of a set of performed tests and their outcomes, as
+the number of false hypotheses (e.g., diseases) ruled out by these tests. Suppose each test
+has a ﬁxed cost, we aim to perform a sequence of tests (based on the outcomes from past
+tests) to eliminate all false hypotheses at the minimum worst-case cost.
+The minimum-cost adaptive submodular cover problem has received signiﬁcant attention
+in the literature, however, most of the existing studies focus on minimizing the expected
+cost of a policy (Golovin and Krause 2017, Esfandiari et al. 2021, Cui and Nagarajan 2022).
+In particular, they often assume that there is a known prior distribution over realizations,
+hence, they aim to ﬁnd a policy that achieves a threshold function value while minimizing
+the expected cost with respect to this distribution. In contrast, we focus on minimizing
+the worst-case cost of a policy, this is because in many real-world applications, it is often
+diﬃcult or impossible to get an accurate prediction of how likely certain outcomes are.
+Moreover, in many time-critical diagnostic applications, such as emergency response, one
+must rapidly identify a cause through a series of queries. In these applications, violation
+of a cost-constraint (such as time-constraint) may lead to fatal consequences; therefore, it
+is preferable to have a policy that has a small worst-case cost.
+To solve this problem, we ﬁrst introduce the concept of worst-case submodularity Tang
+(2022), extending the classic notation of submodularity from sets to policies. We say a
+function is worst-case submodular if the worst-case marginal utility of an item satisﬁes
+the diminishing returns property (Deﬁnition 1). This property is prevalent across a diverse
+range of applications such as the pool-based active learning and the stochastic submodular
+set cover. Our main contribution is to develop a best possible (log(Q/η)+1)-approximation
+policy for the worst-case adaptive submodular cover problem, whereQ is the “target value”
+and η is the smallest diﬀerence between Q and any achievable utility value ˆQ<Q . In
+addition, we study a worst-case maximum-coverage problem, whose goal is to sequentially
+select a group of items to maximize its worst-case utility subject to a budget constraint.
+We develop a (1− 1/e)/2-approximation solution for this problem.
+Additional related works. There is some work on minimizing the worst-case cost in active
+learning; see e.g., (Cicalese et al. 2017, Moshkov 2010). Our results can be viewed as
+
+Y uan and T ang: Worst-Case Adaptive Submodular Cover
+Article submitted to ; manuscript no. 2015 3
+a generalization of their results because we can show that the utility function of pool-
+based active learning (or optimal decision tree design in general) is worst-case submodular.
+Recently, Golovin and Krause (2017) introduced the concept of adaptive submodularity.
+Similar to our notation of worst-case submodularity, adaptive submodularity is another
+way of extending submodularity from sets to policies. However, their property depends
+on the prior distribution of realizations, whereas there is no such dependence in deﬁn-
+ing worst-case submodularity. More importantly, our proposed notation allows for better
+approximation bounds in many real-world applications. In particular, Golovin and Krause
+(2017) developed a (1 + log Q
+ηpmin
+)-approximation policy for the minimum-cost coverage
+problem under the worst-case setting if the utility function is adaptive submodular, where
+pmin is the minimum probability of any realization. In contrast, our policy achieves the
+(1 + log(Q/η))-approximation bound; 1/pmin can be exponentially larger than Q. It is also
+worth noting that one must know the prior distribution over realizations in order to imple-
+ment Golovin and Krause (2017)’s policy whereas ours does not need such information.
+Finally, (Guillory and Bilmes 2010, 2011) studied the simultaneous learning and covering
+problem, whereas we focus on the covering problem. The problem of constrained adaptive
+submodular maximization has been widely researched in the literature. Most of the exist-
+ing studies center on maximizing the average-case utility (Golovin and Krause 2017, Tang
+2021a,b, Tang and Yuan 2021a, 2023, 2021b, 2022b,a) whereas our focus is on maximizing
+worst-case utility. The concept of worst-case submodularity was recently introduced by
+Tang (2022) where they studied the worst-case submodular maximization problem subject
+to matroid constraints, we examine the same problem subject to a diﬀerent constraint,
+such as budget constraints, instead.
+2. Preliminaries
+In the rest of this paper, we use [ m] as shorthand notation for the set {1, 2,··· ,m}.
+2.1. Items and States.
+The input is a setE consisting ofn items. Each iteme∈E is in an undetermined state from
+a set O of possible states. We use a function φ :E→O, called a realization, to represent
+the item states, where function φ maps each item in the ground set E to a state in O.
+Therefore, we can say that φ(e) represents the state of e under the realization φ. In the
+example of diagnosis, each item e represents a medical test and φ(e) is the outcome of e.
+
+Y uan and T ang: Worst-Case Adaptive Submodular Cover
+4 Article submitted to ; manuscript no. 2015
+We use Φ to represent a randomly determined realization. One must select one item in
+order to uncover its realized state. We assume that selecting an item e incurs a ﬁxed cost
+c(e). For convenience, let c(S) =∑
+e∈Sc(e).
+For any subset of items S⊆E, we use the notation ψ :S→O to represent a partial
+realization of S. Let dom(ψ) =S denote the domain of ψ. Consider a realization φ and
+a partial realization ψ, we say that φ is consistent with ψ (denoted as φ∼ψ) if φ and ψ
+are equal everywhere in dom(ψ). We say that a partial realization ψ is a subrealization of
+another partial realization ψ′ (denoted as ψ⊆ψ′) if the two realizations are identical in
+the domain of ψ (i.e., dom(ψ)) and dom(ψ) is a subset of dom(ψ′).
+2.2. Policy and Worst-Case Submodularity
+Under the adaptive setting, we aim to ﬁnd an adaptive solution which selects items sequen-
+tially and adaptively, with each selection being based on the previously obtained feedback.
+Formally, any adaptive solution can be represented as a policy π that maps the current
+observation to the next item to be selected: π : 2E×OE→E. For example, suppose we
+observe a partial realization ∪e∈S{(e, Φ(e))} after selecting a set S of items and assume
+π(∪e∈S{(e, Φ(e))}) =w. Thenπ selectsw as the next item. It is certainly possible to deﬁne
+a randomized policy by mapping the current observation to some distribution of items.
+However, because every randomized policy can be considered as a distribution of a set of
+deterministic policies, we focus on deterministic policies without loss of generality.
+There is a utility function f : 2E× 2O→ R≥0 which maps a subset of items and their
+states to a non-negative real number. Let E(π,φ ) denote the subset of items selected by
+the policy π under the realization φ. Let U + denote the set of all realizations that have
+a positive probability of occurring. The worst-case utility, fwc(π), of a policy π is deﬁned
+as the minimum utility that can be achieved by π over all possible realizations, it can be
+written as
+fwc(π) = min
+φ∈U +
+f(E(π,φ ),φ ).
+For ease of presentation, we extend the deﬁnition of f by letting f(ψ) =
+EΦ[f(dom(ψ), Φ)| Φ∼ψ] denote the expected utility of dom( ψ) conditioned on the par-
+tial realization ψ. We now present the concept of worst-case marginal utility ∆ wc(e|ψ) of
+
+Y uan and T ang: Worst-Case Adaptive Submodular Cover
+Article submitted to ; manuscript no. 2015 5
+item e when added to a partial realization ψ. Let p(φ|ψ) = Pr[Φ =φ| Φ∼ψ] denote the
+conditional distribution over realizations conditioned on a partial realization ψ. Deﬁne
+∆wc(e|ψ) = min
+o∈O(e,ψ)
+{f(ψ∪{ (e,o )})−f(ψ)},
+whereO(e,ψ ) ={o∈O|∃φ :p(φ|ψ)> 0,φ (e) =o} denotes the set of possible states that e
+can take on, given the partial realization ψ.
+Now we are ready to introduce the notations of worst-case submodularity and worst-case
+monotonicity Tang (2022).
+Definition 1. [Worst-case Submodularity and Worst-case Monotonicity] A function f
+is worst-case submodular if
+∆wc(e|ψ)≥ ∆wc(e|ψ′) (1)
+for any two partial realizationsψ andψ′ such thatψ⊆ψ′ and for any iteme∈E\dom(ψ′).
+A function f is worst-case monotone if for every partial realization ψ and any e∈E\
+dom(ψ), ∆wc(e|ψ)≥ 0.
+Lastly, we introduce the concept of minimal dependency (Cuong et al. 2014), which
+states that the utility of any collection of items is only dependent on the state of the items
+within that group.
+Definition 2. [Minimal Dependency] We say a function f is minimal dependent with
+respect to p(φ) if for any partial realization ψ and any realization φ such that φ∼ψ, we
+havef(dom(ψ)) =f(dom(ψ),φ ).
+The properties of worst-case submodular, worst-case monotone and minimal depen-
+dent can be observed in a wide range of applications, such as pool-based active learn-
+ing, stochastic submodular set cover, and adaptive inﬂuence maximization. Therefore, all
+results derived in this paper are applicable to these types of applications.
+3. Problem Formulation
+Given a policy π, let cwc(π) denote the worst-case cost of π, formally, cwc(π) =
+maxφ∈U +c(E(π,φ )). We assume there is a “target value” Q such that f(E,φ ) =Q for all
+φ. The worst-case adaptive submodular cover problem is formally deﬁned as follows:
+min
+π:fwc(π)≥Q
+cwc(π).
+
+Y uan and T ang: Worst-Case Adaptive Submodular Cover
+6 Article submitted to ; manuscript no. 2015
+For the case if f(E,φ ) varies across φ, we can deﬁne a new function ˆf(S,φ ) =
+min{Q′,f (S,φ )}, where Q′ is some threshold that is no larger than min φf(E,φ ); that is,
+Q′ is achievable under all realizations. Fortunately, this variation does not add additional
+diﬃculty to our problem because Lemma 1 shows that if f is worst-case monotone, worst-
+case submodular and minimal dependent with respect to p(φ), then ˆf is also worst-case
+monotone, worst-case submodular and minimal dependent with respect to p(φ), indicating
+that our results still hold if we replace the original utility functionf and the “target value”
+Q with ˆf and Q′, respectively.
+Lemma 1. Let ˆf(S,φ ) = min{Q′,f (S,φ )} for some constantQ′. Iff is worst-case mono-
+tone, worst-case submodular and minimal dependent with respect to p(φ), then ˆf is also
+worst-case monotone, worst-case submodular and minimal dependent with respect to p(φ).
+Proof: It is trivial to show that if f is worst-case monotone and minimal dependent, then
+ˆf is also worst-case monotone and minimal dependent. We next focus on proving that if f
+is worst-case submodular, then ˆf is also worst-case submodular. We start by presenting a
+useful technical lemma in Lemma 2. Its proof is provided in appendix.
+Lemma 2. Consider any ﬁve constants c1,c 2,c 3,c 4 and x such that c1≥c2 and c3≥c4,
+c1−c2≥c3−c4 and c2≤c4, we have min{c1,x}− min{c2,x}≥ min{c3,x}− min{c4,x}.
+Consider any two partial realizationsψ andψ′ such thatψ⊆ψ′ and anye∈E\dom(ψ′),
+min
+o∈O(e,ψ)
+{
+ˆf(ψ∪{ (e,o )})− ˆf(ψ)
+}
+− min
+o∈O(e,ψ′)
+{
+ˆf(ψ′∪{ (e,o )})− ˆf(ψ′)
+}
+= min
+o∈O(e,ψ)
+{min{Q′,f (ψ∪{ (e,o )})}− min{Q′,f (ψ)}}
+− min
+o∈O(e,ψ′)
+{min{Q′,f (ψ′∪{ (e,o )})}− min{Q′,f (ψ′)}}
+=
+(
+min{Q′, min
+o∈O(e,ψ)
+f(ψ∪{ (e,o )})}− min{Q′,f (ψ)}
+)
+−
+(
+min{Q′, min
+o∈O(e,ψ′)
+f(ψ′∪{ (e,o )})}− min{Q′,f (ψ′)}
+)
+.
+To prove the worst-case submodularity of ˆf, it suﬃces to show that
+(
+min{Q′, min
+o∈O(e,ψ)
+f(ψ∪{ (e,o )})}− min{Q′,f (ψ)}
+)
+(2)
+−
+(
+min{Q′, min
+o∈O(e,ψ′)
+f(ψ′∪{ (e,o )})}− min{Q′,f (ψ′)}
+)
+≥ 0.
+
+Y uan and T ang: Worst-Case Adaptive Submodular Cover
+Article submitted to ; manuscript no. 2015 7
+Let c1 = mino∈O(e,ψ)f(ψ∪{ (e,o )}), c2 =f(ψ), c3 = mino∈O(e,ψ′)f(ψ′∪{ (e,o )}) and c4 =
+f(ψ′), we havec1≥c2 (by worst-case monotonicity), c3≥c4 (by worst-case monotonicity),
+c1−c2≥c3−c4 (by worst-case submodularity) and c2≤c4 (by worst-case monotonicity).
+Hence, apply Lemma 2 with these parameters gives inequality (2). □
+4. Algorithm Design and Analysis
+Algorithm 1 Worst-Case Density-Greedy Policyπg
+1: t = 1;ψ0 =∅.
+2: while f(ψt)<Q do
+3: select et∈ arg maxe∈E
+∆wc(e|ψt−1)
+c(e) ;
+4: observe Φ(et) and update ψt←ψt−1∪{ (et, Φ(et))};
+5: t←t + 1;
+We ﬁrst introduce a Worst-Case Density-Greedy Policy (labeled as πg) for the worst-
+case adaptive submodular cover problem. In each step t of πg, it selects an item et that
+maximizes the worst-case “beneﬁt-to-cost” ratio on top of the current observation, i.e.,
+et∈ arg max
+e∈E
+∆wc(e|ψt−1)
+c(e) , (3)
+where ψt−1 denotes the partial realization observed at step t. Then it updates the obser-
+vation using ψt←ψt−1∪{ (et, Φ(et))}. We follow this density-greedy rule to select items
+recursively until the utility of selected items achieves the quality threshold Q, i.e., f(ψt)≥
+Q. With the assumption that f is minimal dependent, it is easy to verify that fwc(πg)≥Q.
+A detailed description of πg is listed in Algorithm 1.
+We conduct our analysis based on the concept of virtual slot, which was originally pro-
+posed in Golovin and Krause (2017). Assume after a policy π selects an item e, it starts to
+“run” e, and terminates after c(e) virtual slots. It is worth noting that virtual slot is only
+deﬁned for analytical purposes and does not consume actual time. Based on this notation,
+we introduce the level-l-truncation πl of a policy π over virtual time as follows.
+Definition 3 (Level- l-truncation of π over virtual time). Runπ forl virtual
+slots, and for every item e∈E, if e has been running for γ virtual slots, selecting e
+independently with probability γ/c(e).
+
+Y uan and T ang: Worst-Case Adaptive Submodular Cover
+8 Article submitted to ; manuscript no. 2015
+For example, assume a policy π selects three items e1, e2, e3 in the end with c(e1) = 2,
+c(e2) = 2 and c(e3) = 3. Then its level-5-truncation π5 selects e1 and e2 deterministically,
+and selects e3 with probability 1/3; its level-3-truncation π3 selects e1 deterministically,
+and selects e2 with probability 1/2.
+Given a realization φ and a policy π, for any l∈ Z+, let t[l,φ,π ] denote the number
+of items that have a positive probability of being selected by πl conditioned on φ. For
+convenience, we use t[l] to denote t[l,φ,π ] if it is clear from the context. In the previous
+example, we have t[3] = 2 because both e1 and e2 have a positive probability of being
+selected byπ3; we havet[5] = 3 because all three items have a positive probability of being
+selected by π5.
+We denote withh(πl|φ) the expected utility ofπl conditioned on a realizationφ. Assume
+ψ0 =∅. With the above notations and the deﬁnition of πl, h(πl|φ) is formally deﬁned as
+follows:
+h(πl|φ) =f(ψt[l]−1) + (4)
+min{l−c(dom(ψt[l]−1)),c (et[l])}
+c(et[l])
+(
+f(ψt[l])−f(ψt[l]−1)
+)
+,
+wheref(ψt[l]−1) is the utility of the ﬁrstt[l]−1 items (i.e., dom(ψt[l]−1)) that are selected by
+πl deterministically,
+min{l−c(dom(ψt[l]−1)),c(et[l])}
+c(et[l]) is the selection probability of the t[l]-th item,
+and f(ψt[l])−f(ψt[l]−1) is the utility of the t[l]-th item.
+Before providing the main theorem, we ﬁrst present two technical results.
+Lemma 3. Given any realization φ and a policy π, for any l≤c(E(π,φ )), we have
+h(πl|φ)−h(πl−1|φ) = 1
+c(et[l])
+(
+f(ψt[l])−f(ψt[l]−1)
+)
+.
+Proof: Observe that if l≤c(E(π,φ )), then
+c(dom(ψt[l]−1)) +c(et[l]) =c(dom(ψt[l]))≥l. (5)
+Hence, min{l−c(dom(ψt[l]−1)),c (et[l])} =l−c(dom(ψt[l]−1)). It follows that (4) can be sim-
+pliﬁed to
+h(πl|φ) = (6)
+f(ψt[l]−1) +l−c(dom(ψt[l]−1))
+c(et[l])
+(
+f(ψt[l])−f(ψt[l]−1)
+)
+.
+To prove this lemma, we consider two cases:
+
+Y uan and T ang: Worst-Case Adaptive Submodular Cover
+Article submitted to ; manuscript no. 2015 9
+Case 1: We ﬁrst consider the case whent[l] =t[l−1]. Observe that for anyl≤c(E(π,φ )),
+it holds that
+h(πl|φ)−h(πl−1|φ) =(
+f(ψt[l]−1) +l−c(dom(ψt[l]−1))
+c(et[l])
+(
+f(ψt[l])−f(ψt[l]−1)
+))
+−
+(
+f(ψt[l−1]−1) +
+l− 1−c(dom(ψt[l−1]−1))
+c(et[l−1])
+(
+f(ψt[l−1])−f(ψt[l−1]−1)
+)
+)
+= 1
+c(et[l])
+(
+f(ψt[l])−f(ψt[l]−1)
+)
+,
+where the ﬁrst equality is from (6) and the second equality is from the assumption that
+t[l] =t[l− 1].
+Case 2: We next consider the case whent[l] =t[l−1] + 1, that is,l−1 is the last virtual
+slot in round t[l− 1] and l is the ﬁrst virtual slot in round t[l]. In this case, we can rewrite
+h(πl|φ) as
+h(πl|φ) =f(ψt[l]−1) + 1
+c(et[l])
+(
+f(ψt[l])−f(ψt[l]−1)
+)
+=f(ψt[l−1]) + 1
+c(et[l])
+(
+f(ψt[l])−f(ψt[l−1])
+)
+, (7)
+where the ﬁrst equality is by (6) and the observation thatl is the ﬁrst virtual slot in round
+t[l] and the second equality is by the assumption that t[l] =t[l− 1] + 1. Meanwhile,
+h(πl−1|φ) =
+f(ψt[l−1]−1) +
+l−c(dom(ψt[l−1]−1))
+c(et[l−1])
+(
+f(ψt[l−1])−f(ψt[l−1]−1)
+)
+=f(ψt[l−1]−1) +c(et[l−1])
+c(et[l−1])
+(
+f(ψt[l−1])−f(ψt[l−1]−1)
+)
+=f(ψt[l−1]), (8)
+where the second equality is becausel−1 is the last virtual slot in roundt[l−1], indicating
+that l−c(dom(ψt[l−1]−1)) = c(et[l−1]). Equalities (7) and (8) together imply that h(πl|
+φ)−h(πl−1|φ) = 1
+c(et[l])
+(
+f(ψt[l])−f(ψt[l]−1)
+)
+. □
+Throughout the rest of this paper, let c∗ =cwc(π∗) denote the worst-case cost of the
+optimal solution π∗.
+Theorem 1. If the utility functionf is worst-case monotone and worst-case submodular
+with respect to p(φ) , then for any L∈ Z+ and any realization φ, it holds that
+h(πg
+L|φ)> (1−e−L/c∗
+)Q, (9)
+
+Y uan and T ang: Worst-Case Adaptive Submodular Cover
+10 Article submitted to ; manuscript no. 2015
+whereπg
+L is the level-L-truncation of πg.
+Proof: We ﬁrst recall some notations. For eacht∈ [n], letψt represent the partial realization
+of the ﬁrst t items picked by πg conditioned on φ. We use t[l] to denote the number of
+items that have a positive probability of being selected by πg
+l conditioned on φ. Hence,
+ψt[l]−1 represents the partial realization of the ﬁrst t[l]− 1 items selected by πg
+l conditioned
+on φ.
+The case when L>c (E(πg,φ )) is trivial. If L>c (E(πg,φ )), then t[L] =|E(πg,φ )| by
+the deﬁnition of t[L]. It follows that h(πg
+L|φ) =f(ψt[L]) =Q, where the ﬁrst equality is by
+the deﬁnition of h and the assumption that L>c (E(πg,φ )); the second equality is by the
+observation thatπg achieves the target valueQ after selecting allt[L] items. Next we focus
+on the case when L≤c(E(πg,φ )).
+Given any ψt[l]−1, we create a realization φ∗ in the following way. First, we make sure
+that φ∗ is consistent with ψt[l]−1 by deﬁning φ∗(e) =φ(e) for each e∈ dom(ψt[l]−1). For the
+rest of the items, we decide their states in φ∗ incrementally by simulating the execution
+of the optimal policy π∗ conditioned on ψt[l]−1. Let ψ∗
+i denote the partial realization after
+running π∗ for i rounds. Starting with i = 1 and let ψ∗
+0 =∅, in each subsequent round i,
+assume π∗ selects e∗
+i as the i-th item after observing ψ∗
+i−1, we deﬁne the state of e∗
+i in φ∗
+as follows:
+φ∗(e∗
+i ) = arg min
+o∈O(e∗
+i,ψt[l]−1∪ψ∗
+i−1)
+f(ψt[l]−1∪ψ∗
+i−1∪{ (e∗
+i,o )}).
+The observation ψ∗
+i is updated by adding new information from ( e∗
+i,φ∗(e∗
+i )) and the pre-
+vious observation ψ∗
+i−1, and then π∗ proceeds to the next round. This continues until π∗
+terminates, at which point the states of all items selected by π∗ have been determined.
+The intuition behind creating such φ∗ is that in each round i, we pick a state that is the
+least favorable for e∗
+i , in order to decrease the marginal utility of adding e∗
+i to the partial
+realizationψt[l]−1∪ψ∗
+i−1 as much as possible. Without loss of generality, it can be assumed
+that π∗ ends up choosing k items. It is possible that there are multiple realizations that
+ﬁt this description, one of them is arbitrarily chosen as φ∗; in particular, φ∗ could be any
+realization that is consistent with ψt[l]−1∪ψ∗
+k.
+To prove this theorem, it suﬃces to show that for all l∈ [L], it holds that
+h(πg
+l|φ)−h(πg
+l−1|φ)≥Q−h(πg
+l−1|φ)
+c∗ . (10)
+
+Y uan and T ang: Worst-Case Adaptive Submodular Cover
+Article submitted to ; manuscript no. 2015 11
+This is because by induction on l, we have that for any L∈ Z+,
+h(πg
+L|φ) =
+∑
+l∈[L]
+(
+h(πg
+l|φ)−h(πg
+l−1|φ)
+)
+> (1−e−L/c∗
+)Q. (11)
+We will concentrate on demonstrating (10) for the remainder of the proof. Letet[l] denote
+the t[l]-th item selected by πg conditioned on φ, the following chains proves (10):
+h(πl|φ)−h(πl−1|φ) = 1
+c(et[l])
+(
+f(ψt[l])−f(ψt[l]−1)
+)
+= 1
+c(et[l])
+(
+f(ψt[l]−1∪{ (et[l],φ (et[l]))})−f(ψt[l]−1)
+)
+≥ min
+o∈O(et[l],ψt[l]−1)
+(
+f(ψt[l]−1∪{ (et[l],o )})−f(ψt[l]−1)
+)
+c(et[l])
+= max
+e∈E
+1
+c(e)∆wc(e|ψt[l]−1)≥ max
+i∈[k]
+∆wc(e∗
+i|ψt[l]−1)
+c(e∗
+i )
+≥
+∑
+i∈[k] ∆wc(e∗
+i|ψt[l]−1)∑
+i∈[k]c(e∗
+i )
+≥
+∑
+i∈[k] ∆wc(e∗
+i|ψt[l]−1)
+c∗
+≥
+∑
+i∈[k] ∆wc(e∗
+i|ψt[l]−1∪ψ∗
+i−1)
+c∗
+=f(ψt[l]−1∪ψ∗
+k)−f(ψt[l]−1)
+c∗ ≥f(ψ∗
+k)−f(ψt[l]−1)
+c∗
+=Q−f(ψt[l]−1)
+c∗ ≥Q−h(πl−1|φ)
+c∗ .
+The ﬁrst equality is from the assumption that L≤c(E(πg,φ )) and Lemma 3, the ﬁrst
+inequality is due to φ(et[l])∈O(et[l],ψt[l]−1), the fourth inequality is by the deﬁnition of c∗,
+the ﬁfth inequality is due to f being worst-case submodular, the sixth inequality is due to
+f being worst-case monotone, the last equality is because π∗ is a valid solution, indicating
+that f(ψ∗
+k) =Q, and the last inequality is by the deﬁnition of h(πl−1|φ) (Eq. (4)). □
+We next present the main theorem of this section.
+Theorem 2. Suppose the utility function f is worst-case monotone, worst-case submod-
+ular with respect to p(φ) and it satisﬁes the property of minimal dependency. Let η be any
+value such that f(ψ)>Q−η implies f(ψ) =Q for all partial realization ψ. Then πg is a
+feasible solution and cwc(πg)≤ (ln Q
+η + 1)c∗.
+
+Y uan and T ang: Worst-Case Adaptive Submodular Cover
+12 Article submitted to ; manuscript no. 2015
+Proof: Let φ′ denote the worst-case realization with respect to πg, that is, φ′∈
+arg maxφ∈U +c(E(πg,φ )). Apply Theorem 1 with L =c∗ ln(Q/η) and φ =φ′ to give
+h(πg
+L|φ′)> (1−e−L/c∗
+)Q = (1− η
+Q)Q =Q−η. (12)
+Deﬁne πg
+L→ as a policy that is identical to πg
+L except that πg
+L→ selects the t[L]-th item
+deterministically. Hence,
+h(πg
+L→|φ′)≥h(πg
+L|φ′)>Q−η, (13)
+where the ﬁrst inequality is because πg
+L→ selects thet[L]-th item deterministically whileπg
+L
+might select this item probabilistically, indicating that the utility of πg
+L→ is no less than
+that of πg
+L; the second inequality is from (12).
+By the deﬁnition of η, we have
+h(πg
+L→|φ′) =Q, (14)
+and moreover, πg must select t[L] items.
+Hence, the worst-case cost of πg is c(E(πg
+L→,φ′)). To prove this theorem, it suﬃces to
+show that c(E(πg
+L→,φ′)) is upper bounded by (ln Q
+η + 1)c∗.
+To prove this bound, we ﬁrst show that the cost of every item selected by πg is at most
+c∗. Consider any round t of πg, (10) and Lemma 3 jointly imply that
+f(ψ′
+t−1∪{ (e′
+t,φ′(e′
+t))})−f(ψ′
+t−1)
+c(e′
+t) ≥Q−f(ψ′
+t−1)
+c∗ , (15)
+where ψ′
+t represents the partial realization of the ﬁrst t items picked by πg conditioned on
+φ′; e′
+t is the t-th item selected by πg conditioned on φ′.
+Because f(ψ′
+t−1∪{ (e′
+t,φ′(e′
+t))})≤Q, we have f(ψ′
+t−1∪{ (e′
+t,φ′(e′
+t))})−f(ψ′
+t−1)≤Q−
+f(ψ′
+t−1). This, together with (15), implies that c(e′
+t)≤c∗ for all t. This implies that the
+cost of the t[L]-th item selected by πg is at most c∗, i.e., c(e′
+t[L])≤c∗. It follows that
+c(E(πg
+L→,φ′))≤L +c∗ =c∗ ln(Q/η) +c∗ = (lnQ
+η + 1)c∗, (16)
+where the ﬁrst equality is from the following observation: if L > c(E(πg,φ′)), then
+c(E(πg
+L→,φ′))≤c(E(πg,φ′))<L ; if L≤c(E(πg,φ′)), then c(E(πg
+L→,φ′))≤c(E(πg,φ′))≤
+L +c(e′
+t[L])≤L +c∗. □
+Tightness of Our Results: It is easy to verify that the classic deterministic sub-
+modular cover problem (Wolsey 1982) is a special case of our problem. Given that the
+best approximation ratio for the deterministic submodular cover problem is ln Q
+η + 1, the
+guarantee provided in Theorem 2 is the best possible.
+
+Y uan and T ang: Worst-Case Adaptive Submodular Cover
+Article submitted to ; manuscript no. 2015 13
+4.1. Pointwise submodularity is not suﬃcient
+A function f is called pointwise submodular if, f(·,φ ) : 2E→ R≥0 is submodular for all
+realizations φ∈U +. This property can be found in numerous applications. Unfortunately,
+we next construct an example to show that the ratio of cwc(πg) and c∗ could be arbi-
+trarily large even if f is pointwise submodular and Q/η = 1. In other words, pointwise
+submodularity is not suﬃcient to guarantee the performance bound from Theorem 2.
+Consider a set of three items E ={e1,e 2,e 3} with cost c(e1) =ϵa and c(e2) =c(e3) =
+ϵb. There are two possible states O ={o1,o 2}. Assume U + is composed of two possible
+realizations:
+φ1 ={(e1,o 1), (e2,o 1), (e3,o 2)}
+φ2 ={(e1,o 1), (e2,o 2), (e3,o 1)}
+Therefore, e1 has a deterministic state o1, whereas e2’s state is diﬀerent from e3’s state.
+We consider a modular utility function f such that f(S,φ ) =∑
+e∈Sve,φ(e), where ve,φ(e) is
+the value of e in state φ(e). We assume that e1 has a deterministic value of Q; and e2
+(resp. e3) has a value of Q (resp. 0) in state o1 and a value of 0 (resp. Q) in state o2, that
+is, ve2,o1 =ve3,o2 =Q and ve2,o2 =ve3,o1 = 0. First, because f is a linear function, it is also
+pointwise submodular. Moreover, it is easy to verify that f is worst-case monotone and
+minimal dependent. Second, η =Q in our example by the deﬁnition of f; hence, Q/η = 1.
+According to the design of πg, it always selects e1 because the worst-case “beneﬁt-to-cost”
+ratio of e1 (with respect to an empty set) is Q/ϵa> 0, however, the worst-case “beneﬁt-
+to-cost” ratios of e2 and e3 are both 0. By contrast, the optimal solution π∗ always picks
+e2 and e3 to achieve a value of Q. Hence, the worst-case cost of πg is ϵa, whereas the
+optimal solution has a cost of 2ϵb. Hence, cwc(πg) = ϵa
+2ϵb
+c∗; one can select ϵa andϵb to make
+ϵa
+ϵb
+arbitrarily large.
+5. Worst-Case Maximization Problem
+In this section, we study a dual problem of the worst-case cover problem. We call this
+problem the worst-case adaptive submodular maximization problem. Our goal is to ﬁnd a
+policy π to maximize the worst-case utility fwc(π) subject to a budget constraint B, that
+is,
+max
+π:cwc(π)≤B
+fwc(π).
+
+Y uan and T ang: Worst-Case Adaptive Submodular Cover
+14 Article submitted to ; manuscript no. 2015
+Algorithm 2 Worst-Case Density-Greedy Policyπg
+1: t = 1;ψ0 =∅.
+2: while true do
+3: let et∈ arg maxe∈E
+∆wc(e|ψt−1)
+c(e) ;
+4: B =B−c(et);
+5: if B≥ 0 then
+6: select et and observe Φ(et);
+7: update ψt←ψt−1∪{ (et, Φ(et))};
+8: else
+9: break;{Replace this line using “selectet; break;” in the relaxed greedy policyπg+.}
+10: t←t + 1;
+It is worth noting that the classic problem of maximizing a monotone submodular func-
+tion subject to a budget constraint (Khuller et al. 1999) is a special case of our problem.
+Our solution involves two candidate policies: one is a density-greedy based policy (labeled
+as πg by abuse of notation) and the other one selects a best singleton e
+′′
+(i.e., e
+′′
+∈
+arg maxe∈E ∆wc(e|∅ )). Our ﬁnal algorithm (labeled as πa) adopts the better one between
+these two candidates. Hence, the worst-case utility ofπa isfwc(πa) = max{fwc(πg), ∆wc(e
+′′
+|
+∅)}. To complete the design of πa, we next explain πg in detail.
+Design of πg. Starting with round t = 1 and observation ψ0 =∅. In each subsequent
+round t, πg selects an item et that has the largest “beneﬁt-to-cost” ratio, i.e.,
+et∈ arg max
+e∈E
+∆wc(e|ψt−1)
+c(e) .
+Next, we update the observation using ψt←ψt−1∪{(et, Φ(et))}. This process iterates until
+the budget constraint is violated. A detailed description of πg is listed in Algorithm 2.
+For the purpose of proof, we introduce a relaxed version of πg (labeled as πg+). πg+
+is identical to πg except that πg+ allows to keep the ﬁrst item that violates the budget
+constraint. Please refer to our comments added to Line 9 in Algorithm 2 for a detailed
+description of this diﬀerence.
+We next analyze the performance of πa. Before presenting the main theorem, we ﬁrst
+provide a technical result.
+
+Y uan and T ang: Worst-Case Adaptive Submodular Cover
+Article submitted to ; manuscript no. 2015 15
+Theorem 3. If the utility functionf is worst-case monotone and worst-case submodular
+with respect to p(φ), then for any φ and any L≤c(E(πg+,φ )),
+h(πg+
+L |φ)≥ (1−e−L/B)fwc(π∗), (17)
+whereπ∗ is the optimal policy.
+Proof: We ﬁrst recall some notations. Let t[l] be the number of items that have a positive
+probability of being selected by πg+
+l conditioned on φ. Let ψt[l]−1 denote the partial real-
+ization of the ﬁrst t[l]− 1 items selected by πg+ conditioned on φ. To prove this theorem,
+it suﬃces to show that for all l∈ [L],
+h(πg+
+l |φ)−h(πg+
+l−1|φ)≥fwc(π∗)−f(ψt[l]−1)
+B . (18)
+This is because by induction on l, we have that for any L≤c(E(πg+,φ )),
+h(πg+
+L |φ) =
+∑
+l∈[L]
+(
+h(πg+
+l |φ)−h(πg+
+l−1|φ)
+)
+≥ (1−e−L/B)fwc(π∗).
+Given ψt[l]−1, we adopt the same method as outlined in the proof of Theorem 1 to
+construct φ∗. Assuming π∗ selects k items conditioned on φ∗ such that e∗
+i represents the
+i-th item selected by π∗ conditioned on φ∗. The following chain proves (18)
+h(πg+
+l |φ)−h(πg+
+l−1|φ)≥fwc(π∗)−f(ψt[l]−1)∑
+i∈[k]c(e∗
+i )
+≥fwc(π∗)−f(ψt[l]−1)
+B ,
+where the ﬁrst inequality is derived from a similar proof as (10), with the only diﬀerence
+being that Q is replaced with fwc(π∗); the second inequality is because the worst-case cost
+of π∗ is no larger than B. □
+By the deﬁnition ofπg+, it always uses up the budget. This, together with the assumption
+that f is minimal dependent, implies that fwc(πg+)≥h(πg+
+B |φ′) where φ′ is the worst-
+case realization of πg+, i.e., φ′ = arg minφ∈U +f(E(πg+,φ ),φ ). This, in combination with
+Theorem 3, leads to Corollary 1.
+Corollary 1. If the utility function f is worst-case monotone, worst-case submodular
+with respect to p(φ) and it satisﬁes the property of minimal dependency, then
+fwc(πg+)≥ (1−e−1)fwc(π∗). (19)
+
+Y uan and T ang: Worst-Case Adaptive Submodular Cover
+16 Article submitted to ; manuscript no. 2015
+We next present the main theorem of this section.
+Theorem 4. If the utility function f is worst-case monotone, worst-case submodular
+with respect to p(φ) and it satisﬁes the property of minimal dependency, then fwc(πa)≥
+1−e−1
+2 fwc(π∗).
+Proof: By the design of πa, to prove this theorem, it suﬃces to show that
+max{fwc(πg), ∆wc(e
+′′
+|∅ )}≥ 1−e−1
+2 fwc(π∗). Suppose φ
+′′
+is the worst-case realization of πg,
+that is, φ
+′′
+= arg minφf(E(πg,φ ),φ ). Let ψ
+′′
+denote the partial realization of E(πg,φ
+′′
+)
+conditioned on φ
+′′
+. Hence, E(πg,φ
+′′
+) = dom(ψ
+′′
+) and φ
+′′
+∼ ψ
+′′
+. Assume e
+′′
+is the last
+item selected by the relaxed greedy policy πg+ after observing ψ
+′′
+, that is, E(πg+,φ
+′′
+) =
+E(πg,φ
+′′
+)∪{e
+′′
+}. Let φ⋆(e
+′′
+) be the least favorable state for e
+′′
+conditioned on ψ
+′′
+, i.e.,
+φ⋆(e
+′′
+) = arg min
+o∈O(e′′,ψ′′)
+f(ψ
+′′
+∪{ (e
+′′
+,o )}). (20)
+By the deﬁnition of fwc(πg+) and the assumption that f is minimal dependent, we have
+f
+(
+ψ
+′′
+∪{ (e
+′′
+,φ⋆(e
+′′
+))}
+)
+≥fwc(πg+). (21)
+By the deﬁnition of φ⋆(e
+′′
+), we have
+f
+(
+ψ
+′′
+∪{ (e
+′′
+,φ⋆(e
+′′
+))}
+)
+=f(ψ
+′′
+) + ∆wc(e
+′′
+|ψ
+′′
+). (22)
+It follows that
+f
+(
+ψ
+′′
+∪{ (e
+′′
+,φ⋆(e
+′′
+))}
+)
+=f(ψ
+′′
+) + ∆wc(e
+′′
+|ψ
+′′
+)
+=fwc(πg) + ∆wc(e
+′′
+|ψ
+′′
+)
+≤fwc(πg) + ∆wc(e
+′′
+|∅ ), (23)
+where the second equality is due to φ
+′′
+being the worst-case realization of πg and the
+assumption that f is minimal dependent; the inequality is due to f being worst-case
+submodular with respect to p(φ) and the fact that ∅⊆ ψ
+′′
+.
+Inequalities (21) and (23) jointly imply that
+fwc(πg) + ∆wc(e
+′′
+|∅ )≥fwc(πg+). (24)
+
+Y uan and T ang: Worst-Case Adaptive Submodular Cover
+Article submitted to ; manuscript no. 2015 17
+This, together with Corollary 1, implies that fwc(πg) + ∆wc(e
+′′
+|∅ )≥fwc(πg+)≥ (1−
+e−1)fwc(π∗). Hence,
+max{fwc(πg), ∆wc(e
+′′
+|∅ )}≥ 1−e−1
+2 fwc(π∗).
+□
+Note that the classic problem of maximizing a monotone submodular function subject
+to a budget constraint (Khuller et al. 1999) is a special case of our problem. The best
+approximation ratio for that problem, and therefore for ours, is 1 − 1/e.
+6. Performance Evaluation
+Figure 1 Worst-case weighted cost vs. size of the version space H
+Figure 2 Reduction in version space vs. budget B
+In this section, we conduct experiments to evaluate the performance of our proposed
+Worst-Case Greedy (WCG) algorithms in the context of active learning. Suppose we have
+a set of hypotheses H and a set of unlabeled data points E, where each e∈E is selected
+randomly from a distribution D. In pool-based active learning, in order to reduce the
+expense of acquiring labeled data from domain experts, we select a sequence of data points
+to be labeled iteratively until the labels of all unlabeled examples can be inferred from the
+obtained labels. The version space is deﬁned as the set of hypotheses that are consistent
+with the observed labels, and the cost of labeling a data point e is a ﬁxed value c(e).
+Intuitively our goal is to minimize the worst-case cost of reducing the probability mass of
+
+Y uan and T ang: Worst-Case Adaptive Submodular Cover
+18 Article submitted to ; manuscript no. 2015
+the version space until the target hypothesis h∗ is pinpointed. Reducing the version space
+is achieved by eliminating false hypotheses through stochastic queries. For example, query
+e∈E eliminates all hypotheses that do not agree with h∗ at e. For the budgeted version,
+our objective is to minimize the probability mass of the version space within a speciﬁc
+budget constraint.
+Our ﬁrst set of experiments evaluate the performance of our algorithm as measured
+by the worst-case cost with respect to the changes in the size of the version space H, as
+shown in Figure 1. Each data point e is assigned a value chosen randomly from its set of
+possible labels. The worst-case cost is calculated as the largest cost of pinpointing the target
+hypothesis h∗ after querying a sequence of data points. We consider three cost settings in
+our experiments. For the ﬁrst setting,c(e) is drawn from (1, 20) uniformly at random. The
+result is shown in the ﬁgure with label WCG U. For the other two settings, c(e) is drawn
+from N(µ,σ 2) with µ = 7,σ = 1.5 and µ = 7,σ = 2.5, respectively. Corresponding results
+are labeled as WCG N15 and WCG N25, respectively, in the ﬁgure. To implement our
+algorithm, in each round we select a query with the largest conditional marginal utility
+over the cost until the target hypothesis is pinpointed. The conditional marginal utility is
+determined by the worst-case reduction in version space, given the labels from past queries.
+A random algorithm is used as our baseline, which outputs a random sequence of queries
+until the target is pinpointed. For every set of experiments, we perform the simulation for
+1,000 iterations and report the average results.
+As shown in Figure 1, the x-axis refers to the size of the version space, ranging from 10
+to 3000. The y-axis refers to the worst-case cost yielded by the corresponding algorithms.
+We evaluate our algorithm by using 20 unlabeled data points and by varying the size of
+the label set. Figure 1(a) shows the results where each data point has binary labels. We
+observe that WCG signiﬁcantly outperforms the baseline in all test cases, yields a cost
+reduction of 30% for binary labels. Note that our algorithm considers the marginal utility
+as well as the cost associated with each query, leading to a lower worst-case cost of the
+output sequence. We also observe that for smaller version space, on average our algorithm
+identiﬁes the target hypothesis with fewer queries, and WCG U beneﬁts from taking more
+low-cost queries since the algorithm prefers a larger marginal utility to cost ratio. As the
+size of the version space increases, however, WCG U yields a much higher cost as taking
+
+Y uan and T ang: Worst-Case Adaptive Submodular Cover
+Article submitted to ; manuscript no. 2015 19
+low-cost queries alone is not enough to pinpoint the target and queries with potentially
+high cost are required to further reduce the version space.
+We observe a similar structure in Figure 1(b), (c) and (d), showing the results for three-
+label data points, four-label data points and a hybrid case, respectively. For the hybrid
+case, we randomly divide our 20 unlabeled data points into three groups. The ﬁrst group
+contains 10 binary-label data points, the second group contains 5 three-label data points,
+and the third group contains 5 four-label data points. We observe that our algorithm
+generates a lower worst-case cost when each data point has more possible labels. The
+reason is that queries with more possible labels tend to yield a higher marginal reduction in
+version space, therefore less queries are selected in the output, leading to a lower worst-case
+cost.
+Our second set of experiments investigate how the budget aﬀects the reduction in version
+space, as illustrated in Figure 2. The x-axis holds the value of the budget, and the y-
+axis holds the reduction in version space generated by the algorithms. We consider 3000
+hypothesis with 20 unlabeled data points, and tight budget constraint is enforced. Figure
+2(a), (b), (c) and (d) plot the results for binary-label data points, three-label data points,
+four-label data points and the hybrid case as aforementioned, respectively. As anticipated,
+the reduction in version space becomes greater as the budget increases. Again, for smaller
+budgets, WCG yields a higher reduction in version space under uniform cost model than it
+does under the other two cost models. As the budget goes up, more queries are included in
+the output sequence, and we observe that the reduction in version space among diﬀerent
+cost models converges.
+7. Appendix
+Proof of Lemma 2. For the case when c1≤c3, this result has been proved in Lemma 2 in
+Tang and Yuan (2016). We next focus on the case when c1>c 3. We prove this lemma in
+ﬁve subcases depending on relation between x and the other four constants. Notice that
+when c1>c 3, c1≥c2, c3≥c4, and c2≤c4, we have c1>c 3≥c4≥c2.
+• If x≥c1 >c 3≥c4≥c2, then min{c1,x} =c1, min{c2,x} =c2, min{c3,x} =c3 and
+min{c4,x} =c4. Thus, min{c1,x}− min{c2,x}≥ min{c3,x}− min{c4,x} due to the assump-
+tion that c1−c2≥c3−c4.
+• If c1 >x ≥c3≥c4≥c2, then min{c1,x} =x, min{c2,x} =c2, min{c3,x} =c3 and
+min{c4,x} =c4. Thus, min{c1,x}− min{c2,x} =x−c2 and min{c3,x}− min{c4,x} =c3−c4.
+
+Y uan and T ang: Worst-Case Adaptive Submodular Cover
+20 Article submitted to ; manuscript no. 2015
+Becausex≥c3 andc2≤c4, we havex−c2≥c3−c4. It follows that min{c1,x}− min{c2,x}≥
+min{c3,x}− min{c4,x}.
+• If c1 >c 3 >x ≥c4≥c2, then min{c1,x} =x, min{c2,x} =c2, min{c3,x} =x and
+min{c4,x} =c4. Thus, min{c1,x}− min{c2,x} =x−c2 and min{c3,x}− min{c4,x} =x−c4.
+Because c2≤c4, we have x−c2≥x−c4, thus, min{c1,x}− min{c2,x}≥ min{c3,x}−
+min{c4,x}.
+• If c1 >c 3≥c4 >x ≥c2, then min{c1,x} =x, min{c2,x} =c2, min{c3,x} =x and
+min{c4,x} =x. Thus, min{c1,x}− min{c2,x} =x−c2 and min{c3,x}− min{c4,x} =x−
+x = 0. Because x≥c2, we have x−c2≥ 0, thus, min{c1,x}− min{c2,x}≥ min{c3,x}−
+min{c4,x}.
+• If c1 > c3≥c4≥c2 > x, then min{c1,x} =x, min{c2,x} =x, min{c3,x} =x and
+min{c4,x} =x. Thus, min{c1,x}− min{c2,x} =x−x = 0 and min{c3,x}− min{c4,x} =
+x−x = 0. Thus, min{c1,x}− min{c2,x}≥ min{c3,x}− min{c4,x}.
+References
+Cicalese, Ferdinando, Eduardo Laber, Aline Saettler. 2017. Decision trees for function evaluation: simulta-
+neous optimization of worst and expected cost. Algorithmica 79 763–796.
+Cui, Yubing, Viswanath Nagarajan. 2022. Minimum cost adaptive submodular cover. arXiv preprint
+arXiv:2208.08351 .
+Cuong, Nguyen Viet, Wee Sun Lee, Nan Ye. 2014. Near-optimal adaptive pool-based active learning with
+general loss. UAI . Citeseer, 122–131.
+Esfandiari, Hossein, Amin Karbasi, Vahab Mirrokni. 2021. Adaptivity in adaptive submodularity.Conference
+on Learning Theory . PMLR, 1823–1846.
+Golovin, Daniel, Andreas Krause. 2017. Adaptive submodularity: Theory and applications in active learning
+and stochastic optimization. CoRR abs/1003.3967. URL http://arxiv.org/abs/1003.3967.
+Guillory, Andrew, Jeﬀ Bilmes. 2010. Interactive submodular set cover. Proceedings of the 27th International
+Conference on International Conference on Machine Learning . 415–422.
+Guillory, Andrew, Jeﬀ A Bilmes. 2011. Simultaneous learning and covering with adversarial noise. ICML.
+Khuller, Samir, Anna Moss, Joseph Seﬃ Naor. 1999. The budgeted maximum coverage problem.Information
+processing letters 70 39–45.
+Moshkov, Mikhail Ju. 2010. Greedy algorithm with weights for decision tree construction. Fundamenta
+Informaticae 104 285–292.
+Tang, Shaojie. 2021a. Beyond pointwise submodularity: Non-monotone adaptive submodular maximization
+in linear time. Theoretical Computer Science 850 249–261.
+
+Y uan and T ang: Worst-Case Adaptive Submodular Cover
+Article submitted to ; manuscript no. 2015 21
+Tang, Shaojie. 2021b. Beyond pointwise submodularity: Non-monotone adaptive submodular maximization
+subject to knapsack and k-system constraints. International Conference on Modelling, Computation
+and Optimization in Information Systems and Management Sciences . Springer, 16–27.
+Tang, Shaojie. 2022. Robust adaptive submodular maximization. INFORMS Journal on Computing .
+Tang, Shaojie, Jing Yuan. 2016. Optimizing ad allocation in social advertising. Proceedings of the 25th ACM
+International on Conference on Information and Knowledge Management . 1383–1392.
+Tang, Shaojie, Jing Yuan. 2021a. Adaptive regularized submodular maximization. 32nd International Sym-
+posium on Algorithms and Computation (ISAAC 2021) . Schloss Dagstuhl-Leibniz-Zentrum f¨ ur Infor-
+matik.
+Tang, Shaojie, Jing Yuan. 2021b. Non-monotone adaptive submodular meta-learning. SIAM Conference on
+Applied and Computational Discrete Algorithms (ACDA21) . SIAM, 57–65.
+Tang, Shaojie, Jing Yuan. 2022a. Group equility in adaptive submodular maximization. arXiv preprint
+arXiv:2207.03364 .
+Tang, Shaojie, Jing Yuan. 2022b. Optimal sampling gaps for adaptive submodular maximization.Proceedings
+of the AAAI Conference on Artiﬁcial Intelligence , vol. 36. 8450–8457.
+Tang, Shaojie, Jing Yuan. 2023. Partial-monotone adaptive submodular maximization. Journal of Combi-
+natorial Optimization 45 1–13.
+Wolsey, Laurence A. 1982. An analysis of the greedy algorithm for the submodular set covering problem.
+Combinatorica 2 385–393.

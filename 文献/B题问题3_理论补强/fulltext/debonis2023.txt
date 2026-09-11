@@ -1,0 +1,995 @@
+arXiv:2307.09608v2  [cs.DS]  27 Nov 2023
+Group Testing in Arbitrary Hypergraphs and
+Related Combinatorial Structures
+Annalisa De Bonis
+Dipartimento di Informatica, Universit` a di Salerno, Fisciano (SA), Italy
+adebonis@unisa.it
+Abstract. We consider a generalization of group testing where the po-
+tentially contaminated sets are the members of a given hyper graph F =
+(V, E). This generalization ﬁnds application in contexts where c ontami-
+nations can be conditioned by some kinds of social and geogra phical clus-
+terings. We study non-adaptive algorithms, two-stage algo rithms, and
+three-stage algorithms. Non-adaptive group testing algor ithms are algo-
+rithms in which all tests are decided beforehand and therefo re can be
+performed in parallel, whereas two-stage and three-stage g roup testing
+algorithms consist of two stages and three stages, respecti vely, with each
+stage being a completely non-adaptive algorithm. In classical group test-
+ing, the potentially infected sets are all subsets of up to a c ertain number
+of elements of the given input set. For classical group testi ng, it is known
+that there exists a correspondence between non-adaptive al gorithms and
+superimposed codes, and between two-stage group testing an d disjunc-
+tive list-decoding codes and selectors. Bounds on the numbe r of tests for
+those algorithms are derived from the bounds on the dimensio ns of the
+corresponding combinatorial structures. Obviously, the u pper bounds for
+the classical case apply also to our group testing model. In t he present
+paper, we aim at improving on those upper bounds by leveragin g on the
+characteristics of the particular hypergraph at hand. In or der to cope
+with our version of the problem, we introduce new combinator ial struc-
+tures that generalize the notions of classical selectors and superimposed
+codes.
+1 Introduction
+Group testing consists in detecting the defective members of a set of objects
+O by performing tests on properly chosen subsets ( pools) of the given set O. A
+test yields a “yes” response if the tested pool contains one or mor e defective
+elements, and a “no” response otherwise. The goal is to ﬁnd all def ectives by
+using as few tests as possible. Group testing origins date back to Wo rld War
+II when it was introduced as a possible technique for mass blood test ing [5].
+Since then, group testing has become a fundamental problem in com puter sci-
+ence and has been widely investigated in the literature both for its pr actical
+implications and for the many theoretical challenges it poses. Applica tions of
+group testing span a wide variety of situations ranging from conﬂict resolution
+algorithms for multiple-access systems [21], fault diagnosis in optical networks
+2 A. De Bonis
+[10], quality control in product testing [19], failure detection in wirele ss sensor
+networks [15], data compression [11], and many others. Among the modern ap-
+plications of group testing, some of the most important ones are re lated to the
+ﬁeld of molecular biology, where group testing is especially employed in t he de-
+sign of screening experiments. Du and Hwang [6] provide an extensiv e coverage
+of the most relevant applications of group testing in this area. In cla ssical group
+testing, the set of defectives is any of the possible subsets of size less than or
+equal to a certain parameter d. In the present paper, we consider a more general
+version of group testing parameterized by a hypergraph F = ( V, E), with the
+contaminated set being one of the hyperedges of E.
+Related work and our contribution. Classical group testing has been studied
+very thoroughly both with respect to adaptive strategies, i.e. algorithms that at
+each step decide which group to test by looking at the responses of previous
+tests, and with respect to non-adaptive strategies, i.e., strategies in which all
+tests are decided beforehand. It is well-know that the best adapt ive strategies
+achieve the information theoretic lower bound Ω(d log(n/d)), where n is the
+total number of elements and d is the upper bound on the number of defectives.
+Further, it is known that non-adaptive strategies for classical gr oup testing are
+much more costly than their adaptive counterparts. The minimum nu mber of
+tests used by the non-adaptive procedures is estimated by the min imum length of
+certain combinatorial structures known under the name of d-cover free families ,
+or equivalently, d-superimposed codes and strongly selective families [3], [7], [8],
+[14]. The known bounds for these combinatorial structures [1], [7], [1 8] imply
+that the number of tests of any non-adaptive group testing algor ithm is lower
+bounded by Ω((d2/ log d) log n) and that there exist non-adaptive group testing
+algorithms that use O(d2 log n) tests. Of particular practical interest in the ﬁeld
+of biological screening are two-stage group testing procedures, i.e., procedures
+consisting of two stages each of which is a completely non-adaptive a lgorithm.
+As far as it concerns classical group testing, the best two-stage algorithms [4]
+are asymptotically as eﬃcient as the best completely adaptive strat egy in that
+they achieve the information theoretic lower bound Ω(d log(n/d)).
+In this paper, we focus on non-adaptive group testing and two-st age group
+testing. In particular, we are interested in trivial two-stage group testing algo-
+rithms, i.e., two-stage algorithms that in the second stage are allowe d only to
+perform tests on individual elements. These algorithms are very us eful in prac-
+tice since in many applications conﬁrmatory tests on individual elemen ts are
+needed anyway to ensure that they are really defective. We also giv e existential
+results for three-stage group testing algorithms, i.e., algorithms t hat consist of
+three stages, each of which is a non-adaptive algorithm.
+The version of group testing considered in the present paper has b een ini-
+tiated only recently in [9] and continued in [20]. Similar search models wer e
+previously considered by the authors of [17] who assumed a known community
+structure in virtue of which the population is partitioned into separa te fami-
+lies and the defective hyperedges are those that contain elements from a certain
+number of families. While in that paper the information on the structu re of po-
+Group Testing in Arbitrary Hypergraphs 3
+tentially infected groups is used to improve on the eﬃciency of the gr oup testing
+algorithms, other papers, [12], [22], exploit this knowledge to improve on the
+eﬃciency of decoding the tests’ responses. A formal deﬁnition of group testing
+in general hypergraphs has been given in [9]. The authors of [9] con sider both
+adaptive and non-adaptive group testing. For the adaptive settin g, when hyper-
+edges in E are of size exactly d, they give an O(log |E| + d log2 d) algorithm
+that is close to the Ω(log |E| + d) lower bound they also prove in the paper. In
+the non-adaptive setting, they exploit a random coding technique t o prove an
+O( d
+p log |E|) bound on the number of tests, where d is the maximum size of a
+set e ∈ E and p is a lower bound on the size of the diﬀerence e′ \ e between any
+two hyperedges e, e′ ∈ E. In [20] the author presents a new adaptive algorithm
+for generalized group testing, which is asymptotically optimal if d = o(log2 |E|)
+and, for d = 2, gives an asymptotically optimal algorithm that works in three
+stages.
+In this paper, we formally deﬁne combinatorial structures that ar e substan-
+tially equivalent to non-adaptive algorithms for group testing in gene ral hyper-
+graphs. The combinatorial structures introduced in this paper ex tend the above-
+mentioned classical superimposed codes [14] in a way such that the d esired prop-
+erty is not enforced for all subsets of up to a certain number of co dewords but
+only for subsets of codewords associated to the hyperedges of t he given hyper-
+graph. Constructions for these generalized superimposed codes allow to achieve,
+in the non-adaptive setting, the same O( d
+p log |E|) upper bound obtained in [9].
+In order to design our algorithms, we introduce a notion of selector s, also pa-
+rameterized by the set of hyperedges E, that generalizes the notion of ( k, m, n)-
+selector introduced in [4]. For particular values of the involved param eters, our
+selectors correspond to non-adaptive algorithms for our group t esting problem,
+These selectors are also at the basis of our two-stage and three- stage algorithms.
+In particular, we give a trivial two-stage algorithm that uses O( qd
+χ log |E| + dq)
+tests, where χ is a lower bound on |⋃q
+i=1 e′
+i \ e|, for any q + 1 distinct hyperedges
+e, e′
+1 . . . , e′
+q. If for a given constant q ≥ 1, it holds that |⋃q
+i=1 e′
+i \ e| = Ω(d),
+then this algorithm asymptotically achieves the above-mentioned Ω(log |E| + d)
+lower bound. Further, we give an O(
+√
+d log |E| + d) three-stage group testing
+algorithm.
+2 Notations and terminology
+For any positive integer m, we denote by [ m] the set of integers {1, . . . , m}. A
+hypergraph is a pair F = ( V, E), where V is a ﬁnite set and E is a family of
+subsets of V . The elements of E will be called hyperedges. If all hyperedges of
+E have the same size d then the hypergraph is said to be d-uniform.
+In the present paper, the hypergraph specifying the set of pote ntially conta-
+minated sets is assumed to have V = [n]. Let F = ([n], E) be a given hypergraph,
+and let χ = min {|⋃q
+i=1 e′
+i \ e|, for any q + 1 distinct e, e′
+1, . . . , e′
+q ∈ E}. For any
+hyperedge e ∈ E and any q distinct hyperedges e′
+1, . . . , e′
+q ∈ E \ {e}, we denote
+by Se,(e′
+1,...,e′q) the set of d + χ integers in [ n] such that d of these integers are the
+4 A. De Bonis
+elements of e whereas the remaining are the χ smallest elements in ⋃q
+i=1 e′
+i \ e.
+In order to properly deﬁne the combinatorial structures related to our group
+testing problem, we extend the deﬁnition of Se,(e′
+1,...,e′q) to arbitrary hypergraphs
+without assuming any lower bound on the size of the unions ⋃q
+i=1 e′
+i \ e. To this
+aim, we augment the set of vertices [ n] with χ dummy vertices in+1, . . . in+χ,
+with χ this time being any positive integer smaller than or equal to n − d, and
+deﬁne Se,(e′
+1,...,e′q),χ as follows: Se,(e′
+1,...,e′q ),χ is deﬁned exactly as Se,(e′
+1,...,e′q) if
+|⋃q
+i=1 e′
+i \ e| ≥ χ; otherwise it is deﬁned as the subset of d + χ integers in [ n]
+such that d of these integers are the vertices of e and the remaining are the
+integers in (⋃q
+i=1 e′
+i \ e) ∪ {in+1, . . . , in+χ−| ⋃q
+i=1 e′
+i\e|}.
+For q = 1, we will denote Se,(e′
+1,...,e′q ) and Se,(e′
+1,...,e′q ),χ with Se,e′ and Se,e′,χ,
+respectively. Notice that given two hyperedges e, e′ ∈ E, the set Se,e′,χ contains
+one or more dummy vertices if and only if |e′ \ e| < χ.
+Notice that there are at most |E|
+{|E|−1
+q
+)
+distinct sets Se,(e′
+1,...,e′q) since for
+a given ( q + 1)-tuple of distinct hyperedges ( e, e′
+1, . . . , e′
+q+1) any permutation
+of e′
+1, . . . , e′
+q+1 does not aﬀect Se,(e′
+1,...,e′q ). Moreover, for any positive χ, this
+estimate holds also for the number of distinct sets Se,(e′
+1,...,e′q),χ since the indices
+of the dummy vertices that are eventually added to Se,(e′
+1,...,e′q), in order to obtain
+Se,(e′
+1,...,e′q,χ), are ﬁxed once the hyperedges e, e′
+1, . . . , e′
+q have been chosen. More
+precisely, they are the smallest χ − |⋃q
+i=1 e′
+i \ e| integers in {in+1, . . . in+χ}.
+We remark that in our group testing problem, given an input hypergr aph
+F = ([ n], E), every vertex of [ n] is contained in at least one hyperedge of E. If
+otherwise, one could remove the vertex from the hypergraph with out changing
+the collection of potentially defective hyperedges. As a consequen ce, for a given
+hypergraph F = ([ n], E) we need only to specify its set of hyperedges E to
+characterize both the input of the problems and the related combin atorial tools.
+3 Non-adaptive group testing for general hypergraphs
+In this section, we illustrate the correspondence between non-ad aptive group
+testing algorithms for an input set of size n and families of n subsets. In-
+deed, given a family F = {F1, . . . , Fn} with Fi ⊆ [t], we design a non-adaptive
+group testing strategy as follows. We denote the elements in the inp ut set by
+the integers in [ n] = {1, . . . , n}, and for i = 1 , . . . , t, we deﬁne the group
+Ti = {j : i ∈ Fj}. Obviously, T1, . . . , Tt can be tested in parallel and there-
+fore the resulting algorithm is non-adaptive. Conversely, given a no n-adaptive
+group testing strategy for an input set of size n that tests T1, . . . , Tt, we deﬁne
+a family F = {F1, . . . , Fn} by setting Fj = {i ∈ [t] : j ∈ Ti}, for j = 1 , . . . , n.
+Alternatively, any non-adaptive group testing algorithm for an inpu t set of size
+n that performs t tests can be represented by a binary code of size n with each
+codeword being a binary vector of length t. This is due to the fact that any
+family of size n on the ground set [ t] is associated with the binary code of length
+t whose codewords are the characteristic vectors of the members of the family.
+Given such a binary code C = {c1, . . . ,cn}, one has that j belongs to pool Ti if
+Group Testing in Arbitrary Hypergraphs 5
+and only if the i-th entry cj(i) of cj is equal to 1. Such a code can be represented
+by a t × n binary matrix M such that M [i, j] = 1 if and only if element j belongs
+to Ti. We represent the responses to tests on T1, . . . , Tt by a binary vector whose
+i-th entry is equal to 1 if and only if Ti tests positive. We call this vector the
+response vector. For any input set of hyperedges E on [ n], the response vector
+is the bitwise OR of the columns associated with the vertices of the defective
+hyperedge e ∈ E. It follows that a non-adaptive group testing strategy success-
+fully detects the defective hyperedge in E if and only if for any two distinct
+hyperedges e, e′ ∈ E we obtain two diﬀerent response vectors. In terms of the
+associated binary matrix M , this means that the bitwise OR of the columns with
+indices in e and the OR of the columns with indices in e′ are distinct. As for the
+two-stage algorithm, the non-adaptive algorithm used in the ﬁrst s tage should
+guarantee to “separate” at least a certain number of non-defec tive hyperedges
+from the defective one.
+4 Combinatorial structures for group testing in arbitrary
+hypergraphs
+The following deﬁnition provides a combinatorial tool which is essentia lly equiv-
+alent to a non-adaptive group testing algorithm in our search model.
+Deﬁnition 1. Given a hypergraph F = ( V, E) with V = [ n] with hyperedges
+of size at most d, we say that a t × n matrix M with entries in {0, 1} is an E-
+separable code if for any two distinct hyperedges e, e′ ∈ E, it holds that ⋁
+j∈e cj ⁄=⋁
+j∈e′ cj, where cj denotes the column of M with index j. The integer t is the
+length of the E-separable code.
+Having in mind the correspondence between binary codes and non-a daptive al-
+gorithms illustrated in Section 3, one can see that a non-adaptive alg orithm
+successfully determines the contaminated hyperedge in E if and only if the bi-
+nary code associated to the algorithm is E-separable. Therefore, the minimum
+number of tests of such an algorithm coincides with the minimum length of an
+E-separable code. Our existential results for E-separable codes are in fact based
+on existential results for the combinatorial structure deﬁned be low.
+Deﬁnition 2. Given a d-uniform hypergraph F = (V, E) with V = [n] and two
+integers p and m with 1 ≤ p ≤ n − d and 1 ≤ m ≤ d + p, we say that a t × n
+matrix M with entries in {0, 1} is an (E, p, m)-selector of size t if for any two
+distinct hyperedges e, e′ ∈ E, the submatrix of M consisting of the columns with
+indices in Se,e′,p contains at least m distinct rows of the identity matrix Id+p.
+We will see in Section 5.1 that for m = d + 1 and p = min {|e′ \ e| : e, e′ ∈
+E and e ⁄= e′}, an ( E, p, m)-selector is indeed an E-separable code.
+The following deﬁnition generalizes Deﬁnition 2 and is at the basis of our
+two-stage algorithm.
+Deﬁnition 3. Given a d-uniform hypergraph F = ( V, E) with V = [ n] and
+integers q, m and χ such that 1 ≤ q ≤ |E| − 1, , and 1 ≤ m ≤ χ + d ≤ n, we say
+6 A. De Bonis
+that a t × n matrix M with entries in {0, 1} is an (E, q, m, χ)-selector of size t if,
+for any e ∈ E and any other q distinct hyperedges e′
+1, . . . , e′
+q ∈ E, the submatrix
+of M consisting of the columns with indices in Se,(e′
+1,...,e′q),χ contains at least m
+distinct rows of the identity matrix Id+χ.
+For q = 1 and χ = p, an ( E, q, m, χ)-selector is indeed an ( E, p, m)-selector.
+We remark that even if the combinatorial objects in the present se ction are
+deﬁned for uniform hypergraphs, the algorithms we build upon them work also
+for non-uniform hypergraphs.
+5 Upper bound on the size of ( E, q, m, χ)-selectors
+Let E be a set of hyperedges, each consisting of d vertices in [ n] and, for a
+given q, 1 ≤ q ≤ | E| − 1, let χ and m be positive integers with χ ≤ n − d
+and m ≤ d + χ. We will show how to deﬁne a hypergraph H = ( X, B), with X
+being a set of vectors of length n, in such a way that the vectors of any cover
+of H = ( X, B) are the rows of an ( E, q, m, χ)-selector. We recall that, given a
+hypergraph H = ( X, B), a cover of H is a subset T ⊆ X such that for any
+hyperedge B ∈ B we have T ∩ B ⁄= ∅. In order to avoid confusion with the
+hyperedges of the input hypergraph E, here we denote the hyperedges of the
+above said hypergraph H = ( X, B) by using the letter B. The following upper
+bound on the minimum size τ (H) of a cover of a hypergraph H = (X, B) is due
+to Lov´ asz [16]:
+τ (H) < |X|
+minB∈B |B| (1 + ln ∆), (1)
+where ∆ = max x∈X |{B: B ∈ B and x ∈ B}|.
+In the following, for e, e′
+1, . . . , e′
+q ∈ E, we write ( i1, . . . , id+χ) = Se,(e′
+1,...,e′q ),χ
+to refer to the tuple of the elements in Se,(e′
+1,...,e′q),χ arranged in increasing order.
+We will show that ( E, q, m, χ)-selectors are covers of the hypergraph deﬁned be-
+low. Let X be the set of all binary vectors x = (x1, . . . , xn) of length n containing
+⌊ n
+d+χ ⌋ entries equal to 1. For any integer i, 1 ≤ i ≤ d + χ, let us denote by ai the
+binary vector of length d + χ having all components equal to zero but that in
+position i, that is, a1 = (1, 0, . . . ,0), a2 = (0, 1, . . . ,0), . . . , ad+χ = (0, 0, . . . ,1).
+For any ( q + 1)-tuple ( e, e′
+1, . . . , e′
+q) of q + 1 distinct hyperedges in E and, for
+any binary vector a = ( a1, . . . , ad+χ) ∈ { a1, . . . ,ad+χ}, let us deﬁne the set of
+binary vectors Ba,e,(e′
+1,...,e′q) = {x = ( x1, . . . , xn) ∈ X : xi1 = a1, . . . , xid+χ =
+ad+χ, with ( i1, . . . , id+χ) = Se,(e′
+1,...,e′q),χ}. For any set A ⊆ { a1, . . . ,ad+χ} of
+size s, 1 ≤ s ≤ d + χ, and any set Se,(e′
+1,...,e′
+q),χ, for e, e′
+1, . . . , e′
+q ∈ E, let us
+deﬁne BA,e,(e′
+1,...,e′q) =⋃
+a∈A Ba,e,(e′
+1,...,e′q ). For any s = 1 , . . . , d + χ, we deﬁne
+Bs = {BA,e,(e′
+1,...,e′q) : A ⊂ { a1, . . . ,ad+χ}, |A| = s, and e, e′
+1, . . . , e′
+q ∈ E}
+and the hypergraph Hs = ( X, Bs). We claim that any cover T of Hd+χ−m+1 is
+an ( E, q, m, χ)-selector, that is, for any e, e′
+1, . . . , e′
+q ∈ E, the submatrix of d + χ
+columns of T with indices in Se,(e′
+1,...,e′q),χ contains at least m distinct rows of the
+identity matrix Id+χ. The proof is by contradiction. Assume that there exist q+1
+Group Testing in Arbitrary Hypergraphs 7
+hyperedges e, e′
+1, . . . , e′
+q ∈ E such that the submatrix of the columns of T with
+indices in the ( d + χ)-tuple ( i1, . . . , id+χ) = Se,(e′
+1,...,e′
+q),χ contains at most m − 1
+distinct rows of Id+χ. Let such rows be aj1 , . . . ,ajg , with g ≤ m − 1, and let A be
+any subset of {a1, . . . ,ad+χ} \ {aj1 , . . . ,ajg } of cardinality |A| = d + χ − m + 1.
+By deﬁnition of Hd+χ−m+1, the hyperedge BA,e,(e′
+1,...,e′q ) of Hd+χ−m+1 is such
+that T ∩ BA,e,(e′
+1,...,e′
+q) = ∅, thus contradicting the fact that T is a cover for
+Hd+χ−m+1.
+To prove the following theorem, we exploit Lov´ asz’s result (1) to de rive an
+upper bound on the minimum size of a cover of the hypergraph Hd+χ−m+1.
+Theorem 1. Let E be a set of hyperedges of size d with vertices in [n]. Moreover,
+let q, m and χ be integers such that 1 ≤ q ≤ |E|− 1 and 1 ≤ m ≤ χ+d ≤ n.There
+exists an (E, q, m, χ)-selector of size t with
+t < 2e(d + χ)
+d + χ − m + 1
+(
+1 + ln
+(( d + χ − 1
+d + χ − m
+)
+α
+))
+, (2)
+where α = min
+{
+eq|E|
+(
+|E|−1
+q
+)q
+, ed+χ−1
+(
+n
+d+χ−1
+)d+χ}
+and e = 2 .7182... is the
+base of the natural logarithm.
+Proof. Let Hd+χ−m+1 = ( X, Bd+χ−m+1) be the hypergraph deﬁned in the dis-
+cussion preceding the statement of the theorem. Inequality (1) im plies that
+τ (H) < |X|
+min{|B| : B ∈ B d+χ−m+1} (1 + ln ∆). (3)
+In order to derive an upper bound on t, we estimate the quantities that appear
+on the right hand side of (3), that is, we evaluate the quantities
+|X|, min{|B| : B ∈ B d+χ−m+1}, and ∆,
+for the hypergraph Hd+χ−m+1. Since X is the set of all binary vectors of length n
+containing ⌊ n
+d+χ ⌋ entries equal to 1, it holds that |X| =
+{ n
+⌊ n
+d+χ ⌋
+)
+. Each Ba,e,(e′
+1,...,e′q)
+has size
+{n−d−χ
+⌊ n
+d+χ ⌋−1
+)
+since this is the number of vectors, with ⌊ n
+d+χ ⌋ entries equal to
+1, for which one has that the entries with indices in ( i1, . . . , id+χ) = Se,(e′
+1,...,e′
+q ),χ
+form the vector a. Moreover, each hyperedge BA,e,(e′
+1,...,e′q) of Hd+χ−m+1 is the
+union of d + χ − m + 1 disjoint sets Ba,e,(e′
+1,...,e′q ), and therefore it has cardinality
+|BA,e,(e′
+1,...,e′q)| = (d + χ − m + 1) · |Ba,e,(e′
+1,...,e′q)| = (d + χ − m + 1)
+(n − d − χ
+⌊ n
+d+χ ⌋ − 1
+)
+,
+and consequently, one has that
+|X|
+min{|B| : B ∈ B d+χ−m+1} =
+{ n
+⌊ n
+d+χ ⌋
+)
+(d + χ − m + 1)
+{n−d−χ
+⌊ n
+d+χ ⌋−1
+) .
+8 A. De Bonis
+Let us prove an upper bound on
+( n
+⌊ n
+d+χ ⌋)
+(d+χ−m+1)(
+n−d−χ
+⌊ n
+d+χ ⌋−1) . For d + χ > n/ 2, it is
+( n
+⌊ n
+d+χ ⌋)
+(
+n−d−χ
+⌊ n
+d+χ ⌋−1) = n < 2(d + χ), whereas for d + χ ≤ n/2 it is
+{ n
+⌊ n
+d+χ ⌋
+)
+{n−d−χ
+⌊ n
+d+χ ⌋−1
+) = n
+⌊ n
+d+χ ⌋ · n − 1
+n − ⌊ n
+d+χ ⌋ · n − 2
+n − ⌊ n
+d+χ ⌋ − 1 · . . . · n − d − χ + 1
+n − d − χ − ⌊ n
+d+χ ⌋ + 2
+≤ (d + χ) · n
+n − d − χ · n − 1
+n − ⌊ n
+d+χ ⌋ · n − 2
+n − ⌊ n
+d+χ ⌋ − 1 · . . . · n − d − χ + 1
+n − d − χ − ⌊ n
+d+χ ⌋ + 2
+≤ 2(d + χ) · n − 1
+n − ⌊ n
+d+χ ⌋ · n − 2
+n − ⌊ n
+d+χ ⌋ − 1 · . . . · n − d − χ + 1
+n − d − χ − ⌊ n
+d+χ ⌋ + 2
+≤ 2(d + χ)
+(
+n − d − χ + 1
+n − d − χ − ⌊ n
+d+χ ⌋ + 2
+)d+χ−1
+≤ 2(d + χ)
+(
+n − d − χ + 1
+n − d − χ − n
+d+χ + 2
+)d+χ−1
+= 2( d + χ)
+( (d + χ)(n − d − χ + 1)
+(d + χ)(n − d − χ + 1) − (n − d − χ)
+)d+χ−1
+= 2( d + χ)
+(
+1 + n − d − χ
+(d + χ)(n − d − χ + 1) − (n − d − χ)
+)d+χ−1
+≤ 2(d + χ)
+(
+1 + 1
+d + χ − 1
+)d+χ−1
+≤ 2e(d + χ).
+Therefore, we have that
+|X|
+min{|B| : B ∈ B d+χ−m+1} ≤ 2e(d + χ)
+d + χ − m + 1 . (4)
+In order to compute ∆, we notice that each x ∈ X belongs to at most
+min
+{
+|E|
+(|E| − 1
+q
+)
+,
+(⌊ n
+d+χ ⌋
+1
+)(n − ⌊ n
+d+χ ⌋
+d + χ − 1
+)}
+(5)
+distinct sets Ba,e,(e′
+1,...,e′q). Indeed, as observed in Section 2, the number of dis-
+tinct sets Se,(e′
+1,...,e′
+q),χ is at most |E|
+{|E|−1
+q
+)
+. Notice that, for a vector a =
+(a1, . . . , ad+χ), the actual number of ( d + χ)-tuples Se,(e′
+1,...,e′q),χ = (i1, . . . , id+χ)
+for which it holds that xi1 = a1, . . . , xid+χ = ad+χ might be signiﬁcantly smaller
+than the total number of ( d + χ)-tuples Se,(e′
+1,...,e′q ),χ, but this estimate is suﬃ-
+cient to obtain the ﬁrst value in the “min” in the expression of α that appears
+in the statement of the theorem. However, if |E| is close to
+{n
+d
+)
+, i.e., it contains
+almost all hyperedges of size d on [ n], then it might be convenient to upper
+Group Testing in Arbitrary Hypergraphs 9
+bound the number of distinct hyperedges Ba,e,(e′
+1,...,e′q ) containing a given vector
+x ∈ X by
+{⌊ n
+d+χ ⌋
+1
+){n−⌊ n
+d+χ ⌋
+d+χ−1
+)
+which is obtained by considering all possible ways of
+choosing (d + χ) positions in x so that exactly one of those positions corresponds
+to a 1-entry of x, whereas the others correspond to 0-entries.
+Now observe that each Ba,e,(e′
+1,...,e′q) belongs to
+{d+χ−1
+d+χ−m
+)
+distinct hyperedges
+BA,e,(e′
+1,...,e′q). Therefore, (5) implies that the maximum degree of vertices in
+Hd+χ−m+1 is
+∆ ≤
+( d + χ − 1
+d + χ − m
+)
+min
+{
+|E|
+(|E| − 1
+q
+)
+,
+(⌊ n
+d+χ ⌋
+1
+)(n − ⌊ n
+d+χ ⌋
+d + χ − 1
+)}
+. (6)
+In order to estimate our upper bound, we resort to the following we ll known
+inequality: (a
+b
+)
+≤ (ea/b)b. (7)
+By exploiting (7), we obtain the following upper bound of the second e xpression
+in the min of (6):
+(⌊ n
+d+χ ⌋
+1
+)(n − ⌊ n
+d+χ ⌋
+d + χ − 1
+)
+≤
+⌊ n
+d + χ
+⌋(
+n − ⌊ n
+d+χ ⌋)
+d + χ − 1
+)d+χ−1
+ed+χ−1
+≤ ed+χ−1
+( n
+d + χ − 1
+)d+χ
+.
+Applying inequality (7) to
+{|E|−1
+q
+)
+in (6), we get
+∆ ≤
+( d + χ − 1
+d + χ − m
+)
+min
+{
+eq|E|
+( |E| − 1
+q
+)q
+, ed+χ−1
+( n
+d + χ − 1
+)d+χ}
+(8)
+By plugging into (3) the upper bound (8) on ∆ and the upper bound (4) on
+|X|
+min{|B| :B∈Bd+χ−m+1} , we obtain the stated upper bound.
+5.1 A non-adaptive group testing algorithm for general hype rgraph
+In order to prove the upper bound on the number of tests of the n on-adaptive
+algorithm, we prove a more general result that can be exploited also to prove
+existential results for the three-stage algorithms.
+Theorem 2. Let F = ( V, E) be a hypergraph with V = [ n] with all hyperedges
+in E of size at most d. For any positive integer p ≤ d − 1, there exists a non-
+adaptive algorithm that allows to discard all but those hype redges e such that
+|e \ e∗| < p, where e∗ is the defective hyperedge, and uses t = O
+(
+d
+p log E
+)
+tests.
+10 A. De Bonis
+Proof. Let E denote the input set of hyperedges. First we consider the case wh en
+all hyperedges of E have size exactly d and show that in this case an ( E, p, , d+1)-
+selector corresponds to a non-adaptive algorithm that allows to dis card all but
+those hyperedges e ∈ E such that |e \ e∗| < p. Then we will consider the case of
+hypergraphs that are not necessarily uniform. Let M be an ( E, p, d + 1)-selector.
+By Deﬁnition 2, for any two distinct hyperedges e and e′, the submatrix M ′ of M
+formed by the d + p columns with indices in Se,e′,p contains at least d + 1 rows of
+the identity matrix Id+p. At least one of these rows has 0 at the intersection with
+each of the d columns with index in e and an entry equal to 1 at the intersection
+with one of the p columns with indices in Se,e′,p \ e. By deﬁnition of Se,e′,p, if
+|e′\e| ≥ p then Se,e′,p\e ⊆ e′\e, and consequently the above said entry equal to 1
+is at the intersection with one column with index in e′ \ e. It follows that the OR
+of the d columns associated to vertices in e is diﬀerent from that of the d columns
+associated to vertices in e′. Now suppose that e∗ be the defective hyperedge and
+e′ be an arbitrary hyperedge such that |e′ \ e∗| ≥ p. From the above argument,
+there exists a row index, say r, such that at least one column associated to a
+vertex in e′ has an entry equal to 1 in position r, whereas all columns associated
+to vertices in e∗ have 0 in that position. It follows that the response vector has
+an entry equal to 0 in position r whereas at least one element of e′ \ e∗ is in the
+pool associated to the row of M with index r, thus showing that e′ is not the
+defective hyperedge. By inspecting each column of the ( E, p, d + 1)-selector and
+comparing it with the response vector, one can identify those colum ns that have
+an entry equal to 1 in a position where the response vector has 0 an d get rid
+of all hyperedges containing one of the vertices associated to tho se columns. By
+the above argument one gets rid of all hyperedges e′ such that |e′ \ e∗| ≥ p.
+Now let us consider a not necessarily uniform hypergraph E with hyperedges
+of size at most d. We add dummy vertices to each hyperedge of size smaller than
+d, so as to obtain a set ˜E of hyperedges all having size d. We will see that a
+non-adaptive group testing based on an ( ˜E, p, d + 1)-selector allows to discard all
+non-defective hyperedges e such that |e \ e∗| ≥ p. Let {in+1, . . . , in+d−1} be the
+dummy vertices. Notice that these dummy vertices do not need to b e diﬀerent
+from those we have used in the deﬁnition of the sets Se,e′,p’s, as we will see
+below. For each e ∈ E, we denote with ˜e the corresponding hyperedge in ˜E. The
+hyperedge ˜e is either equal to e, if |e| = d, or equal to e ∪ {in+1, . . . , in+d−|e|}, if
+|e| < d. Obviously, ˜E has all hyperedges of size d and it holds that | ˜E| = |E|. Let
+M be an ( ˜E, p, d + 1)-selector. By Deﬁnition 2, for any two distinct hyperedges
+˜e and ˜e′, the submatrix M ′ of M formed by the d + p columns with indices
+in S˜e,˜e′,p contains at least d + 1 rows of the identity matrix Id+p. At least one
+of these rows, say the row with index r, has 0 at the intersection with all the
+columns with index in ˜e and an entry equal to 1 at the intersection with one of
+the remaining columns of M ′. If |˜e′ \ ˜e| ≥ p, it holds that S˜e,˜e′,p = S˜e,˜e. In other
+words, all column indices in S˜e,˜e′,p that are not in ˜e, are in fact all contained in
+˜e′ \ ˜e and consequently the above said entry equal to 1 in the row with inde x
+r is at the intersection with one of the columns in ˜ e′ \ ˜e. Now, let e∗ denote
+the defective hyperedge in the original set of hyperedges E and let us replace
+Group Testing in Arbitrary Hypergraphs 11
+e with e∗ in the above discussion. Suppose that a hyperedge e′ of the original
+hypergraph is such that |e′ \ e∗| ≥ p. Since for each e ∈ E it holds that e ⊆ ˜e and
+e ∩ {in+1, . . . in+χ} = ∅, it follows that ˜e \ ˜e′ ⊇ e \ e′. This implies that |˜e′ \ ˜e∗| is
+larger than or equal to p, and consequently, from the above discussion, it follows
+that the submatrix M ′ formed by the columns of M with index in S˜e,˜e′ contains
+a row that has 0 at the intersection with each of the columns with inde x in ˜e∗ and
+an entry equal to 1 at the intersection with one of columns with index in ˜e′ \ ˜e∗.
+We need to show that this index does not correspond to a dummy ver tex, i.e., we
+need to show that it belongs to e′ \ e∗. To see this, we recall that S˜e∗,˜e ∩ (˜e \ ˜e∗)
+consists of the smallest p vertices in ˜e′ \ ˜e∗ and since |e′ \ e∗| ≥ p, it holds that
+these p vertices belong all to e′ \ e∗. Therefore, we have proved that there exists
+a row in M ′, that contains 0 at the intersection with all the columns with index
+in ˜e∗ and an entry equal to 1 at the intersection with a column associated to a
+vertex in e′ \ e∗. Since ˜e∗ ⊇ e∗, this row has all 0’s at the intersection with the
+columns with index in e∗. As a consequence, for any non-defective hyperedge e′
+with |e′ \ e∗| ≥ p, there exists a row index r such that at least one column with
+index in e′ has a 1-entry in position r, whereas the response vector has a 0-entry
+in that position. In other words there is an element x in e′ that is contained in
+a pool that tests negative, and consequently, e′ is not the defective hyperedge.
+Notice that decoding can be achieved by inspecting all columns of the selector
+that are associated with non-dummy vertices. Indeed, as we have just seen, any
+non-defective hyperedge e′ such that |e′\e∗| ≥ p contains a vertex that is included
+in a pool that tests negative, i.e, a vertex associated with a column w ith a 1 in a
+position that corresponds to a 0 in the response vector. By inspec ting all columns
+of the selectors, the decoding algorithm ﬁnds all columns with a 1 in a p osition
+corresponding to a negative response and gets rid of all hyperedg es that contain
+one or more vertices associated with those columns. In this way, th e decoding
+algorithm discards any non-defective hyperedge e′ such that |e′ \ e∗| ≥ p.
+Finally, we observe that the dummy vertices added to the hyperedg es of E
+do not need to be diﬀerent from those used in the deﬁnition of the se ts Se,e′,p
+in Section 2. The fact that some of the dummy vertices used to deﬁn e the sets
+Se,e′,p’s might be contained in some of the hyperedges of ˜E might lead to a
+fault in the above discussion only if |˜e′ \ ˜e| < p and we need to include dummy
+vertices in S˜e,˜e′,p. Indeed, some dummy vertices might be also included in ˜ e and
+we could end up at adding some vertices twice to the set S˜e,˜e′,p. However, this
+cannot happen since in the above discussion we have exploited the pr operty of
+( ˜E, p, d + 1)-selectors only in reference to pairs of hyperedges ˜ e and ˜e′ associated
+to vertices e and e′ of E such that |e \ e′| ≥ p. We have seen that this implies
+not only that S˜e,˜e′,p is equal to S˜e,˜e′ but also that S˜e,˜e′ ∩ (˜e′ \ ˜e) ⊆ e′ \ e. In other
+words, the only dummy vertices possibly involved in the deﬁnition of S˜e,˜e′,p are
+those in ˜e.
+The upper bound in the statement of the theorem then follows from the
+upper bound Theorem 1 with χ = p, q = 1, and m = d + 1. Notice that we have
+replaced n with n + d − 1 in that bound, since we have added up to d − 1 dummy
+vertices to [ n] in order to obtain the set of hyperedges ˜E.
+12 A. De Bonis
+The following corollary is an immediate consequence of Theorem 2.
+Corollary 1. Let d and n be integers with 1 ≤ d ≤ n, and let E be a set of
+hyperedges of size at most d on [n]. Moreover, let p be an integer such that 1 ≤
+p ≤ min{|e′ \ e| : e, e′ ∈ E}. There exists a non-adaptive group testing algorithm
+that ﬁnds the defective hyperedge in E and uses at most t = O
+(
+d
+p log |E|
+)
+tests.
+Proof. If for any two distinct hyperedges e, e′ ∈ E it holds that min{|e′ \ e| :
+e, e′ ∈ E} ≥ p, then the non-adaptive algorithm of Theorem 2 discards all non-
+defective hyperedges.
+5.2 A two-stage group testing algorithm for general hypergr aphs
+Theorem 3. Let F = ( V, E) be a hypergraph with V = [ n] and all hyperedges
+in E of size at most d. Moreover, let q and χ be positive integers such that
+1 ≤ q ≤ |E| − 1, χ = min{|⋃q
+i=1 e′
+i \ e|, for any q + 1 distinct e, e′
+1, . . . , e′
+q ∈ E}.
+There exists a (trivial) two-stage algorithm that uses a num ber of tests t with
+t < 2e(d + χ)
+χ
+(
+1 + ln
+(( d + χ − 1
+d + χ − d − 1
+)
+β
+))
++ dq,
+where β = min
+{
+eq|E|
+(
+|E|−1
+q
+)q
+, ed+χ−1
+(
+n+d−1
+d+χ−1
+)d+χ}
+and e = 2 .7182... is the
+base of the natural logarithm.
+Proof. Let E be a set of hyperedges each consisting of at most d vertices in [n]. As
+in the proof of Corollary 1, let us denote with ˜E the set of hyperedges obtained by
+replacing in E any hyperedge e of size smaller than d by e ∪ {in+1, . . . , in+d−|e|}.
+For each e ∈ E, we denote with ˜ e the corresponding hyperedge in ˜E. This
+hyperedge is either equal to e, if |e| = d, or is equal to e ∪ {in+1, . . . , in+d−|e|}, if
+|e| < d . Let us consider the non-adaptive algorithm that tests the pools h aving
+as characteristic vectors the rows of an ( ˜E, q, d + 1, χ)-selector M . We will show
+that after executing this non-adaptive algorithm, one is left with at most q
+hyperedges that are candidate to be the defective hyperedge. L et e∗ be the
+defective hyperedge and let us suppose by contradiction that, af ter executing
+the algorithm associated with M , there are at least q hyperedges, in addition
+to e∗, that are still candidate to be the defective one. Let us consider q such
+hyperedges, say e′
+1, . . . , e′
+q.
+By Deﬁnition 3, it holds that the submatrix M ′ of M consisting of the
+columns with indices in S˜e∗,(˜e′
+1,...,˜e′
+q),χ contains at least d + 1 distinct rows of
+the identity matrix Id+χ. This implies that at least one of these rows, say the
+row with index r, has a 0 at the intersection with each column with index in ˜ e∗
+and 1 at the intersection with one of the remaining columns of S˜e∗,(˜e′
+1,...,˜e′
+q ),χ.
+Since for each e ∈ E it holds that e ⊆ ˜e and e ∩ {in+1, . . . in+χ} = ∅, it follows
+that⋃q
+i=1 ˜e′
+i \ ˜e∗ ⊇⋃q
+i=1 e′
+i \ e∗. Consequently, the hypothesis |⋃q
+i=1 e′
+i \ e∗| ≥ χ
+implies that |⋃q
+i=1 ˜e′
+i \ ˜e∗| ≥ χ. This means that S˜e∗,(˜e′
+1,...,˜e′q),χ = S˜e∗,(˜e′
+1,...,˜e′q),
+Group Testing in Arbitrary Hypergraphs 13
+i.e., that the columns with index in S˜e∗,(˜e′
+1,...,˜e′q),χ that are not in ˜e∗, are in fact
+all contained in ⋃q
+i=1 ˜e′
+i \ ˜e∗. Therefore, the above said entry equal to 1 in the
+row with index r is at the intersection with one of the columns in ⋃q
+i=1 ˜e′
+i \ ˜e∗.
+Now we need to prove that this entry equal to 1, in fact, intersect s a column
+associated with a non-dummy vertex, i.e., a vertex in ⋃q
+i=1 e′
+i \ e∗. By deﬁnition
+of S˜e∗,(˜e′
+1,...,˜e′q),χ , the set S˜e∗,(˜e′
+1,...,˜e′q ),χ consists of the smallest χ integers in⋃q
+i=1 ˜e′
+i \ ˜e∗. Moreover, since ⋃q
+i=1 e′
+i \ e∗ ⊆⋃q
+i=1 ˜e′
+i \ ˜e∗ and |⋃q
+i=1 e′
+i \ e∗| ≥ χ,
+one has that S˜e∗,(˜e′
+1,...,˜e′
+q),χ ∩ (⋃q
+i=1 ˜e′
+i \ ˜e∗) ⊆⋃q
+i=1 e′
+i \ e∗, thus implying that the
+above said entry equal to 1 of the row with index r is at the intersection with a
+column associated to a vertex in ⋃q
+i=1 e′
+i \ e∗. We also observe that since e∗ ⊆ ˜e∗,
+all columns in e∗ have zeros at the intersection with the row with index r. Let
+Tr be the pool having this row as characteristic vector. From what we have just
+said, it holds that |Tr ∩ e∗| = 0 and |T ∩⋃q
+i=1 e′
+i \ e∗| ≥ 1. As a consequence,
+Tr contains at least one element belonging to one of the hyperedges e′
+1, . . . , e′
+q
+whereas the result of the test on Tr is negative, thus indicating that at least one
+of e′
+1, . . . , e′
+q is non-defective.
+Let us consider now a two-stage algorithm whose ﬁrst stage consis ts in the
+non-adaptive group testing algorithm associated with the rows of t he ( ˜E, q, d +
+1, χ)-selector M . From the above argument, after the ﬁrst stage, we are left with
+at most q hyperedges that are still candidate to be the defective hyperedg e.
+Therefore, in order to determine the defective hyperedge, one n eeds only to
+perform individual tests on at most dq elements. Notice that these tests can be
+performed in parallel.
+As for the decoding algorithm that identiﬁes the non-defective hyp eredges
+from the responses to the tests performed in stage 1, the algorit hm needs only
+to inspect each column of the selector and every time ﬁnds a column w ith a
+1-entry in a position corresponding to a no response, discards the hyperedges
+that contain the vertex associated with that column. The stated u pper bound
+follows by the upper bound of Theorem 1 by replacing m with d + 1 and n with
+n + d − 1 since the set of vertices of E has been augmented with at most d − 1
+dummy vertices.
+Corollary 2. Let d and n be integers with 1 ≤ d ≤ n, and let E be a set of
+hyperedges of size at most d on [n]. If there exists a constant q ≥ 1 such that for
+any q + 1 distinct hyperedges e, e′
+1, . . . , e′
+q ∈ E, |⋃q
+i=1 e′
+i \ e| = Ω(d), then there
+exists a trivial two-stage algorithm that ﬁnds the defectiv e hyperedge in E and
+uses t = O(log |E|) tests.
+5.3 A three-stage group testing algorithm for general hyper graphs
+The following theorem furnishes an upper bound on the number of te sts of
+three-stage algorithms. An interesting feature of this upper bou nd is that it
+holds independently of the size of the pairwise intersections of the h yperedges.
+Theorem 4. Let F = ( V, E) be a hypergraph with V = [ n] with hyperedges of
+size at most d and let b be any positive integer smaller than d. There exists
+14 A. De Bonis
+a three-stage algorithm that ﬁnds the defective hyperedge i n E and uses t =
+O( d
+b log |E| + b log |E|) tests.
+Proof. Let us describe the three stage algorithm. The ﬁrst two stages aim at re-
+stricting the set of potentially defective hyperedges to hyperedg es with at most
+b−1 vertices. From Theorem 2, one has that there is an O( d
+b log |E|) non-adaptive
+algorithm A that discards all but the hyperedges e such that |e \ e∗| < b, where
+e∗ is the defective hyperedge. Stage 1 consists in running algorithm A. If all
+hyperedges that have not be discarded by A have size smaller than b, then the
+algorithm skips stage 2 and proceeds to stage 3. If otherwise, the algorithm
+chooses a hyperedge e of maximum size among those that have not been dis-
+carded by A and proceeds to stage 2 where it performs in parallel individual test s
+on the vertices of e. Since e has not been discarded, it means that |e \ e∗| < b and
+therefore at least |e| − b + 1 of the individual tests yield a positive response. Let
+i1, . . . , if denote the vertices of e that have been tested positive. The algorithm
+looks at the intersection between e and any other not yet discarded hyperedge e′
+and discards e′ if it either contains one or more of the vertices of e that have been
+tested negative, or if {i1, . . . , if } ⁄⊆e′. In other words, after this second stage the
+algorithm is left only with the hyperedges e′ such that e ∩ e′ = {i1, . . . , if }. The
+vertices i1, . . . , if are removed from all these hyperedges since it is already known
+that they are defective. Each hyperedge e′ that has not been discarded in stage 2
+is therefore replaced by a hyperedge of size |e′| −f ≤ |e′| − |e| + b − 1 ≤ b − 1. The
+last inequality is a consequence of having chosen e as a hyperedge of maximum
+size among those that have not been discarded in stage 1. In stage 3, the algo-
+rithm is left with a hypergraph with hyperedges of at most b − 1 vertices and,
+by Corollary 1 with d being replaced by b − 1, the defective hyperedge can be
+detected non-adaptively using O(b log |E|) tests. In applying Corollary 1, we do
+not make any assumption on the size of the set diﬀerences between hyperedges
+and take p in that bound as small as 1. Notice that the algorithm of Corollary
+1 might end up with more that one hyperedge if there exist hyperedg es that are
+proper subsets of the defective one. However, in this eventuality the algorithm
+would choose the largest hyperedge among those that have not be discarded.
+By setting b =
+√
+d in Theorem 4, we get the following corollary.
+Corollary 3. Let E be a hypergraph with V = [ n] with hyperedges of size at
+most d. There exists a three-stage algorithm that ﬁnds the defecti ve hyperedge in
+E and uses t = O(
+√
+d log |E|) tests.
+References
+1. Alon, N., Asodi, V.: Learning a hidden subgraph. SIAM J. Di screte Math. 18, no.
+4, pp. 697–712 (2005)
+2. Arasli, B. and Ulukus, S.: Graph and cluster formation bas ed group testing, 2021
+IEEE ISIT, pp. 1236-1241 (2021)
+3. Clementi, A. E. F., Monti, A., Silvestri, R.: Selective fa milies, superimposed codes,
+and broadcasting on unknown radio networks. In: Twelfth Ann ual ACM-SIAM Sym-
+posium on Discrete Algorithms, pp. 709–718 (2001)
+Group Testing in Arbitrary Hypergraphs 15
+4. De Bonis, A, G¸ asieniec, L, Vaccaro, U.: Optimal two-stag e algorithms for group
+testing problems. SIAM J. Comput. 34, no. 5, pp.1253–1270 (2 005)
+5. Dorfman, R.: The detection of defective members of large p opulations. Ann. Math.
+Statist. 14, pp. 436–440 (1943)
+6. Du, D.Z., Hwang, F. K.: Pooling design and Nonadaptive Gro up Testing. Series on
+Appl. Math. vol. 18. World Scientiﬁc (2006)
+7. D’yachkov, A.G., Rykov, V.V.: A survey of superimposed co de theory. Problems
+Control Inform. Theory 12, pp. 229–242 (1983)
+8. Erd¨ os, P., Frankl, P., F¨ uredi, Z.: Families of ﬁnite sets in which no set is covered by
+the union of r others. Israel J. Math. 51, pp. 79–89 (1985)
+9. Gonen, M., Langberg, M., Sprintson A.: Group testing on ge neral set-systems, IEEE
+Trans Inf. Theory 2022, pp. 874–879 (2022)
+10. Harvey, N.J.A., Patrascu, M., Wen, Y., Yekhanin, S., Cha n, V.W.S.: Non-Adaptive
+Fault Diagnosis for All-Optical Networks via Combinatoria l Group Testing on
+Graphs. In: 26th IEEE Int. Conf. on Comp. Communications, pp . 697–705 (2007)
+11. Hong, E.S., Ladner, R.E.: Group testing for image compre ssion. IEEE Transactions
+on Image Processing 11, no. 8, pp. 901–911 (2002)
+12. Goenka R., Cao S.J., Wong C.W., Rajwade A., Baron D.: Cont act tracing enhances
+the eﬃciency of covid-19 group testing. In: ICASSP 2021 pp. 8 168–8172 (2021)
+13. Katona G. O. H.: Intersection theorems for systems of ﬁni te sets. Acta Math. Acad.
+Sci. Hung. 15, pp. 329–337, (1964)
+14. Kautz, W.H., Singleton, R.C.: Nonrandom binary superim posed codes. IEEE Trans
+Inf. Theory 10, pp. 363–377 (1964)
+15. Lo, C., Liu, M., Lynch, J.P., Gilbert, A.C.: Eﬃcient Sens or Fault Detection Us-
+ing Combinatorial Group Testing. In: 2013 IEEE Internation al Conference on Dis-
+tributed Computing in Sensor Systems, pp. 199–206 (2013)
+16. Lov` asz, L.: On the ratio of optimal integral and fractio nal covers. Discrete Math.,
+13, 383–390 (1975)
+17. Nikolopoulos, P.,S. Srinivasavaradhan,R., Guo T., Fra gouli, C., Diggavi S.: Group
+testing for connected communities. In: The 24th Int. Conf. o n Artiﬁcial Intelligence
+and Statistics. volume 130, pp. 2341–2349. PMLR (2021)
+18. Ruszink´ o, M.: On the upper bound of the size of the r-cover-free families. J. Com-
+bin. Theory Ser. A 66, pp. 302–310 (1994)
+19. Sobel M., Groll, P.A.: Group testing to eliminate eﬃcien tly all defectives in a
+binomial sample. Bell System Tech. J. 38, pp. 1179–1252 (195 9)
+20. Vorobyev, I.: Note on generalized group testing. Availa ble at
+https://doi.org/10.48550/arXiv.2211.04264 (2022)
+21. Wolf, J.: Born again group testing: multiaccess communi cations. IEEE Trans. Inf.
+Theory 31, pp. 185–191 (1985)
+22. Zhu, J., Rivera, K., and Baron, D.: Noisy pooled pcr for vi rus testing. Available
+at https://doi.org/10.48550/arXiv.2004.02689 (2020)

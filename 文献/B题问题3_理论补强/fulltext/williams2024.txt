@@ -1,0 +1,1412 @@
+Efficient Localization of
+Directional Emitters via Joint
+Beampattern Estimation
+FRASER WILLIAMS , Student Member, IEEE
+Queensland University of Technology, Brisbane, Australia
+Revolution Aerospace Pty Ltd, Brisbane, Australia
+AKILA PEMASIRI
+Queensland University of Technology, Brisbane, Australia
+DHAMMIKA JAYALATH , Senior Member, IEEE
+Queensland University of Technology, Brisbane, Australia
+TERRENCE MARTIN
+Revolution Aerospace Pty Ltd, Brisbane, Australia
+CLINTON FOOKES , Senior Member, IEEE
+Queensland University of Technology, Brisbane, Australia
+Abstract—The localization of directional RF emitters presents
+significant challenges for electronic warfare applications. Tradi-
+tional localization methods, designed for omnidirectional emitters,
+experience degraded performance when applied to directional
+sources due to pronounced received signal strength (RSS) mod-
+ulations introduced by directive beampatterns. This paper presents
+a robust direct position determination (DPD) approach that jointly
+estimates emitter position and beampattern parameters by incorpo-
+rating RSS modulation from both path attenuation and directional
+gain alongside angle of arrival (AOA) and time difference of arrival
+(TDOA) information. To address the computational challenge of
+joint optimization over position and beampattern parameters, we
+develop an alternating maximization algorithm that decomposes
+the four-dimensional search into efficient iterative two-dimensional
+optimizations using a generalized beampattern model. Cram ´er-
+Rao Lower Bound (CRLB) analysis establishes theoretical perfor-
+mance limits, and numerical simulations demonstrate substantial
+Manuscript received XXXXX 00, 0000; revised XXXXX 00, 0000;
+accepted XXXXX 00, 0000.
+The research for this paper received funding support from Revolution
+Aerospace Pty Ltd and the Queensland Government through Trusted
+Autonomous Systems (TAS), a Defence Cooperative Research Centre
+funded through the Commonwealth Next Generation Technologies Fund
+and the Queensland Government. Claude Sonnet 4.5 (Anthropic) was
+used for editing and grammar enhancement throughout the manuscript.
+(Corresponding author: F . Williams).
+Authors’ addresses: F. Williams is with the School of Electrical Engi-
+neering and Robotics, Queensland University of Technology, Brisbane,
+QLD 4000, Australia, and also with Revolution Aerospace Pty Ltd,
+Brisbane, QLD, Australia (e-mail: fraser.williams@hdr.qut.edu.au). A.
+Pemasiri, D. Jayalath, and C. Fookes are with the School of Electrical
+Engineering and Robotics, Queensland University of Technology, Bris-
+bane, QLD 4000, Australia (e-mail: a.thondilege@qut.edu.au; dham-
+mika.jayalath@qut.edu.au; c.fookes@qut.edu.au). T. Martin is with
+Revolution Aerospace Pty Ltd, Brisbane, QLD, Australia (e-mail:
+terry@revn.aero).
+0018-9251 © YYYY IEEE
+improvements over conventional methods. At -10 dB SNR, the
+proposed approach achieves 49% to 61% error reduction compared
+to AOA-TDOA baselines, with performance approaching the CRLB
+above -10 dB. The algorithm converges rapidly, requiring 3 to
+4 iterations on average, and exhibits robustness to beampattern
+model mismatch. A contrast-expanded half-power uncertainty met-
+ric is introduced to quantify localization confidence, revealing that
+the proposed method produces concentrated unimodal likelihood
+surfaces while conventional approaches generate spurious peaks.
+Sensitivity analysis demonstrates that optimal performance occurs
+when receivers are positioned at beampattern main lobe edges where
+RSS gradients are maximized.
+Index Terms—Array processing, direct position determination,
+emitter localization, received signal strength, directional emitter
+Notation
+Vectors and matrices are represented by bold lower-
+case and upper-case respectively. Notation includes ˜(·)for
+the discrete Fourier transform (DFT),∥·∥for thel 2 norm,
+(·)T for transpose,(·) ∗ for conjugate,(·) H for Hermitian
+(conjugate transpose),≜for definition, diag{·}for the
+vector to diagonal matrix operator,⊗for the Kronecker
+product,(·)† for the Moore-Penrose inverse, andE[·]for
+expectation.
+I. Introduction
+The passive localization of radio frequency (RF) emit-
+ters constitutes a fundamental capability in applications
+spanning navigation [1], telecommunications, and elec-
+tronic warfare [2]. This typically requires correlating mea-
+surements from multiple spatially distributed receivers
+according to an a priori model of signal transformations
+[3]. These measurements include time difference of arrival
+(TDOA) [1], angle of arrival (AOA) derived through
+beamforming [3], [4], frequency difference of arrival
+(FDOA) based on Doppler shift [5], [6], and received
+signal strength (RSS) from propagation loss [2], [7].
+RSS-based approaches are particularly valuable for low
+size, weight, and power (SWaP) implementations due to
+their minimal hardware requirements [8], which enables
+deployment on compact, mobile platforms.
+Signal propagation introduces various transformations
+that affect received signal strength, including channel
+effects such as path loss, shadowing, and multipath reflec-
+tions [9]. While these effects are widely recognized, many
+contemporary localization techniques fail to account for
+another significant factor: the directional emission charac-
+teristics of the source [10]. Modern radio-based systems
+frequently employ directional transmission to enhance
+performance in applications such as long-distance com-
+munications, spatial multiplexing, radar operations, and
+electronic countermeasures [11], [12]. In these systems,
+transmissions are modulated by beampatterns resulting
+from directive antennas or phased arrays. Consequently,
+localization approaches that assume omnidirectional emis-
+sions encounter substantial localization errors driven by
+unmodeled RSS variations across receivers [10]. Limited
+approaches have been presented in the literature to ad-
+IEEE TRANSACTIONS ON AEROSPACE AND ELECTRONIC SYSTEMS VOL. XX, No. XX XXXXX YYYY 1
+arXiv:2411.04364v4  [eess.SP]  29 Oct 2025
+dress directional emitters, such as [10] which assumes
+a priori knowledge of emitter beamwidth. However, this
+assumption is unsatisfactory due to the strong sensitivity
+of localization performance to beamwidth and orientation
+errors, as demonstrated through our Cram ´er-Rao Lower
+Bound (CRLB) analysis in this work.
+Recent research in direct position determination
+(DPD), which directly incorporates signal measurements
+into a physics-based model via a maximum-likelihood
+estimation (MLE) approach, has demonstrated improved
+localization at low signal to noise ratio (SNR) by incorpo-
+rating path loss into the transformation model [13]. Build-
+ing on this foundation, we extend the DPD framework
+to account for directional emission by jointly estimating
+the emitter’s position and beampattern parameters. Since
+emitters can employ arbitrary beampatterns, we introduce
+a generalized beampattern model that captures main lobe
+characteristics through two parameters: orientationϕand
+half-power beamwidthβ. This model provides sufficient
+fidelity for effective localization while maintaining com-
+putational tractability.
+The introduction of beampattern parameters increases
+the optimization search space from two dimensions (posi-
+tion) to four dimensions (position plus beampattern), ren-
+dering exhaustive grid search computationally prohibitive
+for real-time applications. To address this challenge, we
+develop an alternating maximization algorithm that de-
+composes the joint optimization into efficient iterative
+two-dimensional searches over position and beampattern
+subspaces. This approach reduces computational com-
+plexity while maintaining near-optimal performance, as
+validated through comparison with theoretical CRLB.
+The principal contributions of this work are:
+•A generalized beampattern model that captures di-
+rectional emission characteristics through orientation
+and beamwidth parameters, enabling tractable joint
+estimation within the DPD framework.
+•CRLB analysis quantifying the fundamental limits of
+directional emitter localization and revealing that op-
+timal receiver placement occurs at beampattern main
+lobe edges where RSS gradients are maximized.
+•An efficient alternating maximization algorithm that
+reduces the four-dimensional joint optimization to
+iterative two-dimensional searches, achieving rapid
+convergence (3-4 iterations) across SNR conditions.
+•A contrast-expanded half-power uncertainty met-
+ric for quantifying spatial localization confidence,
+demonstrating that joint beampattern estimation
+eliminates spurious peaks present in conventional
+methods.
+•Comprehensive simulation results demonstrating
+49% to 61% error reduction compared to conven-
+tional AOA-TDOA methods at -10 dB SNR, with
+performance approaching the CRLB above -10 dB
+SNR.
+Simulation results across representative directional
+communications and radar scenarios validate the ap-
+proach, demonstrating robustness to beampattern model
+mismatch when the true emitter employs realistic antenna
+patterns with sidelobes.
+The remainder of this paper is organized as follows.
+Section II formulates the directional emitter localiza-
+tion problem and introduces the generalized beampattern
+model. Section III derives the CRLB for position esti-
+mation. Section IV presents the iterative DPD algorithm.
+Section V evaluates performance through Monte Carlo
+simulations. Section VI concludes the paper with discus-
+sion of future research directions.
+II. Problem Formulation
+Consider a stationary directional emitter, andLspa-
+tially distributed receivers each equipped with a uniform
+linear array (ULA) havingMelements. The signal re-
+ceived by thelth receiver is given by
+rl(t) =b ldl(p,ψ)al(p)s(t−τ l(p)−t 0) +nl(t),(1)
+wherer l(t)is theM×1received signal vector at
+timet,b l is the complex channel attenuation factor,
+p= [x,y] T is the emitter position,d l(p,ψ)is the direc-
+tional path attenuation incorporating beampattern effects,
+ψ= [ϕ,β] T is the beampattern parameter vector where
+ϕis the emitter orientation andβis the emitter main-
+lobe beamwidth in radians,a l(p)is the receiver steering
+vector,s(t−τ l(p)−t 0)is the signal waveform at timet
+transmitted att 0, delayed byτ l(p), andn l(t)represents
+noise at thelth receiver.
+In order to study the effect of directional emitters
+we propose to approximate the emitter beampattern by a
+generic function. The function should be even, smooth,
+periodic, and with defined half-power beamwidth. We
+propose
+gl(p,ψ) =e
+α(β)
+h
+cos
+
+θ(t)
+l (p)−ϕ
+
+−1
+i
+(2)
+α(β)≜− log(2)/2
+cos(β/2)−1 ,(3)
+whereβis the half-power beamwidth ofg l in radians,
+andθ (t)
+l (p)is the angle from the transmitter to thelth
+receiver. The transmit angle is given by
+θ(t)
+l (p) =tan -1 (yl−y,x l−x)(4)
+where tan -1 is the quadrant-aware arc-tangent function
+and thelth receiver position isu l = [xl,yl]. The gen-
+eralized beampattern model is visualized in Fig. 1.
+The directional path attenuationd l(p,ψ)is given by
+dl(p,ψ) = κl
+∥p−u l∥gl(p,ψ),(5)
+κl ≜
+s
+PTG0GRλ2
+(4π)2Ll
+,(6)
+whereκ l represents all position-independent parameters,
+PT the transmit power,G 0 the peak gain of the emitter,
+GR the gain of an individual antenna element,λthe radio
+wavelength,L l system losses such as filter insertion loss,
+ul the position of thelth receiver,∥p−u l∥the distance
+2 IEEE TRANSACTIONS ON AEROSPACE AND ELECTRONIC SYSTEMS VOL. XX, No. XX XXXXX YYYY
+−150 −100 −50 0 50 100 150
+Angle θ(t)
+l (°)
+0
+0.2
+0.4
+0.6
+0.8
+1
+Beampattern Gain |gl(p,ψ)|2 Proposed β=30°
+Norm. ULA M =4
+Half-power
+Fig. 1. Generalized beampattern model withϕ= 0° andβ= 30°
+compared to a 4-element ULA. Vertical dashed lines show the
+half-power beamwidth points, with crosses falling on the intersections
+with the model.
+between emitter and receiver, andg l(p,ψ)the directional
+beampattern defined in (2). It is possible to calibrate
+receivers such thatκ l is constant across receivers through
+compensation ofL l.
+The receiver steering vector is anM×1vector with
+mth element
+[al(p)]m =e
+−j2π (m−1)∆
+λ cos
+
+θ(r)
+l (p)
+
+,(7)
+for1≤m≤M,
+θ(r)
+l (p) =tan -1(y−y l,x−x l),(8)
+where∆is the physical separation between antenna
+elements,λis the wavelength of the radio signal, and
+θ(r)
+l (p)is angle from thelth receiver to the positionp.
+The propagation delay is given by
+τl(p) =∥p−u l∥
+c ,(9)
+wherecis the speed of light in a vacuum.
+Expressing (1) in frequency domain we have
+˜rl,k =b ldl(p,ψ)al(p)˜ske−jωk[τl(p)+t0] + ˜nl,k,(10)
+ωk ≜ 2π(k−1)
+NT ,for1≤k≤N,(11)
+whereNis the number of signal samples,Tis the sam-
+pling period,kis the discrete frequency bin, and˜s k and
+˜nl,k are the Fourier coefficients ofs(t)andn(t)forming
+the vectors ˜s= [˜s 1,...,˜s N]T and ˜n= [ ˜n1,..., ˜nN]T
+respectively.
+To maximize clarity we define the following
+˜nk ≜[ ˜nT
+1,k,..., ˜nL,k]T (12)
+ak,l(p,ψ)≜d l(p,ψ)e−jωkτl(p)al(p)(13)
+ak(p,ψ)≜[a k,1(p,ψ)T,...,a k,L(p,ψ)T ]T (14)
+˜rk ≜[ ˜rT
+1,k,..., ˜rT
+L,k]T (15)
+b≜[b 1,...,b L]T (16)
+Λk(p,ψ)≜diag(a k(p,ψ))(17)
+H≜I L⊗1M (18)
+ck(p,ψ)≜Λ k(p,ψ)Hb,(19)
+whereI L is theL×Lidentity matrix and1 M is anM×1
+vector of ones.
+The received signal is then given by
+˜rk =c k(p,ψ)˜sk + ˜nk.(20)
+We wish to estimate the emitter positionpusing the
+observations of (20).
+III. Cram ´er-Rao Lower Bound
+We derive the Cram ´er-Rao Lower Bound (CRLB)
+for position estimation, which provides the minimum
+variance achievable by any unbiased estimator under our
+signal model.
+A. Fisher Information Matrix
+Noise is assumed to be drawn from the complex Gaus-
+sian distribution ˜nk ∼ CN(0,σ2
+n). The log-likelihood
+function of the observed signal is
+lnP( ˜r) =−MLNlog
+ 
+πσ 2
+n
+
+− 1
+σ2n
+NX
+k=1
+∥˜rk−ck(p,ψ)˜sk∥2.(21)
+The Fisher information matrix is given by
+J=−E
+∂2 lnP( ˜r)
+∂ζ 2
+
+(22)
+where the vectorζcontains all unknown parameters
+ζ≜[p,ϵ],(23)
+ϵ≜[ψ T,bT, ˜sT ].(24)
+The FIM has the partitioned structure
+Jζζ = 2
+σ2n
+
+Jpp Jpϵ
+Jϵp Jϵϵ
+
+,(25)
+where sub-blocksJ ζiζj are computed from partial deriva-
+tives of the mean signal model
+µk =c k(p,ψ)˜sk (26)
+with respect to the parameters. These derivatives involve
+positionp, beampattern parametersψ, channel attenua-
+tionb, and signal samples ˜s. The detailed derivations of
+all partial derivatives are provided in Appendix A.
+B. Position Bound
+Using the partitioned matrix inversion formula [14],
+the CRLB for position can be extracted from the full FIM
+by
+CRLBp = σ2
+n
+2
+
+Jpp−JpϵJ−1
+ϵϵ Jϵp
+−1
+.(27)
+The scalar position error bound is then
+σp =
+p
+tr(CRLBp).(28)
+The derived CRLB accounts for the directional nature
+of the emitter through incorporation of the beampattern
+parametersψin the signal model. This enables theoretical
+WILLIAMS ET AL.: EFFICIENT LOCALIZATION OF DIRECTIONAL EMITTERS 3
+performance analysis that captures the RSS modulation
+due to emitter directivity.
+In Section V, we compare our proposed approach
+against this bound to demonstrate its efficiency in exploit-
+ing directional information for improved localization.
+IV. Directional Emitter Localization Algorithm
+In this section we develop a directional emitter-aware
+DPD cost function for localization.
+A. Cost Function
+Following the standard maximum likelihood approach,
+we minimize the negative log-likelihood function (21),
+which is equivalent to minimizing
+Q(p,ψ) =
+NX
+k=1
+∥˜rk−ck(p,ψ)˜sk∥2.(29)
+For unknown signals, eliminating the nuisance pa-
+rameter˜sk through standard manipulations yields the
+equivalent maximization problem
+˜Q(p,ψ) =
+NX
+k=1
+ck(p,ψ)H ˜rk
+2
+ck(p,ψ)Hck(p,ψ) .(30)
+Expanding (30) using (19) and the sample covariance
+matrix
+Rk ≜ ˜rk ˜rH
+k ,(31)
+the cost function takes the Rayleigh quotient form
+˜Q(p,ψ) =b HA(p,ψ)b,(32)
+where
+A(p,ψ) =H H
+PN
+k=1 Λk(p,ψ)HRkΛk(p,ψ)
+∥γ(p,ψ)∥ 2 H,(33)
+γ(p,ψ)≜[d 1(p,ψ),...,d L(p,ψ)].(34)
+The standard approach to maximizing (32) under the
+constraint∥b∥ 2 =Lis to estimatebas the principal
+eigenvector ofA(p,ψ), yielding ˜Q(p,ψ) =λ max(A).
+However, this eigenvalue-based approach is problematic
+for RSS-based localization of directional emitters. Under
+practical conditions, it tends to allocate higher values of
+bl to receivers experiencing stronger signals (those within
+the main lobe) and lower values to receivers with weaker
+signals. This creates a systematic bias that effectively
+“flattens” the perceived beampattern, severely degrading
+the algorithm’s ability to accurately estimate the emitter’s
+beampattern parametersψ, which are critical for precise
+localization of directive emitters [8].
+To address this, we instead normalize by constraining
+each channel coefficient to unity:
+bl = 1.(35)
+This choice preserves the RSS variations due to beam-
+pattern and path attenuation while avoiding the systematic
+bias introduced by eigenvalue-based estimation. Under
+(35), the cost function simplifies to
+˜Q(p,ψ) =
+NX
+k=1
+ak(p,ψ)H
+∥γ(p,ψ)∥ Rk
+ak(p,ψ)
+∥γ(p,ψ)∥ ,(36)
+wherea k(p,ψ)is defined in (14).
+To enhance robustness and resolution, we apply the
+minimum variance distortionless response (MVDR) trans-
+formation [15] to (36), yielding
+˜Qenh(p,ψ) =
+NX
+k=1
+ak(p,ψ)H
+∥γ(p,ψ)∥ R−1
+k
+ak(p,ψ)
+∥γ(p,ψ)∥
+−1
+.
+(37)
+We employ MVDR beamforming due to its supe-
+rior spatial discrimination, which is particularly critical
+for directional emitter localization, although other high-
+resolution techniques such as MUSIC [16], ESPRIT [17],
+or enhanced eigenspace methods [18] could equally be
+applied. The highly non-uniform RSS distribution across
+receivers, induced by the emitter’s beampattern, creates
+ambiguities that benefit from the superior spatial selec-
+tivity offered by high-resolution techniques. The matched
+filter approach in (36) tends to produce broad spatial
+responses that can conflate beampattern effects with mul-
+tipath or sidelobe interference, whereas enhanced tech-
+niques’ adaptive nulling capability sharpens the likelihood
+surface, enabling more reliable joint estimation of position
+and beampattern parameters, particularly at low SNR.
+The emitter position and beampattern parameters are
+then estimated by
+( ˆp, ˆψ) =arg max
+p,ψ
+˜Qenh(p,ψ).(38)
+This concludes the derivation of the directional emitter
+DPD cost function.
+B. Reduced Computation
+When beampattern parametersψare known, equation
+(38) reduces to a standard2-dimensional grid search
+over positionp. However, joint estimation of position
+and beampattern requires a4-dimensional search, which
+becomes computationally prohibitive due to the expo-
+nential growth in grid size. The computational burden
+is further exacerbated for highly directive emitters with
+small beamwidthβ, where fine angular resolution is
+required to accurately resolve the orientationϕ.
+The natural decomposition of (38) into positionp=
+[x,y]T and beampatternψ= [ϕ,β] T subproblems is mo-
+tivated by their distinct physical roles and computational
+structure. Position determines the spatial geometry (the
+time delays and array manifold vectorsa l(p)in (14)),
+while beampattern parameters govern the relative signal
+strength distribution across receivers throughγ(p,ψ)in
+(34). This separation is evident in the cost function struc-
+ture (36): given a fixed position, beampattern estimation
+reduces to matching the observed amplitude profile across
+receivers, a lower-dimensional problem dominated by
+4 IEEE TRANSACTIONS ON AEROSPACE AND ELECTRONIC SYSTEMS VOL. XX, No. XX XXXXX YYYY
+the directional gain pattern. Conversely, given a fixed
+beampattern, position estimation becomes a spatial lo-
+calization problem driven by phase coherence across
+array elements and time-delay geometry. Furthermore, the
+parameter spaces are fundamentally different: position is
+continuous Cartesian, while orientation is periodic angular
+and beamwidth is a positive scale parameter, suggesting
+they are best optimized in separate coordinate blocks. This
+motivates an alternating maximization (AM) approach
+that iteratively optimizes each parameter subset while
+holding the other fixed, as detailed in Algorithm 1.
+Algorithm 1Alternating Maximization for Joint Position
+and Beampattern Estimation
+Input:Received signals{r l}L
+l=1, receiver positions
+{ul}L
+l=1, initial beampatternψ 0, convergence
+thresholdε
+Output:Estimated position ˆpand beampattern ˆψ
+// Initialize position with wide beampattern assumption
+ˆp←arg max p ˜Qenh(p,ψ 0)
+ˆψ←ψ 0
+∆←∞
+while∆>εdo
+ˆpprev← ˆp
+// Fix position, optimize beampattern
+ˆψ←arg max ψ ˜Qenh( ˆp,ψ)
+// Fix beampattern, optimize position
+ˆp←arg max p ˜Qenh(p, ˆψ)
+∆←
+ ˆp− ˆpprev
+
+return ˆp, ˆψ
+The alternating maximization structure provides the-
+oretical convergence guarantees: each iteration performs
+coordinate-wise maximization of ˜Qenh(p,ψ), yielding a
+monotonically non-decreasing sequence of objective val-
+ues{ ˜Qi}I
+i=1 where ˜Qi ≤ ˜Qi+1. Since the objective
+function is bounded above, the sequence converges to a
+stationary point of ˜Qenh(p,ψ)[19]. While convergence to
+the global maximum is not guaranteed due to the non-
+convex nature of the problem, the separable structure
+of the subproblems (spatial geometry versus amplitude
+distribution) reduces the likelihood of poor local minima
+compared to simultaneous optimization.
+The quality of the solution is influenced by initializa-
+tion: we initialize with a coarse position estimate assum-
+ing a wide beampatternψ 0, effectively treating the emitter
+as quasi-omnidirectional, which provides a robust starting
+point that avoids directional ambiguities. This initializa-
+tion strategy exploits the observation that position esti-
+mation is less sensitive to beampattern misspecification
+when the assumed pattern is wide, whereas beampattern
+estimation requires accurate position knowledge. Section
+V empirically validates this approach, demonstrating rapid
+convergence (typically fewer than 3 iterations even at
+low SNR) with the algorithm consistently achieving near-
+CRLB performance at moderate SNR levels.
+V. Simulation Results
+A. Experimental Design
+We investigate the performance of the proposed al-
+gorithm through Monte Carlo simulations of two rep-
+resentative scenarios for directional emitters: directional
+communications and radar. To evaluate the localization
+performance we study the mean distance error given by
+the Euclidean distance between the estimated and true
+position of the emitter. To evaluate the uncertainty of the
+localization heatmaps, whose behavior deviates from the
+case of omnidirectional emitters, we define a contrast-
+expanded half-power uncertainty metric. This metric first
+normalizes all cost function values across the search grid
+to span the range[0,1]by applying the transformation
+Qnorm(p,ψ) = [Q(p,ψ)−min(Q)]/[max(Q)−min(Q)],
+then measures the spatial area (in m 2) of grid cells
+whereQ norm(p,ψ)>0.5. This normalization ensures
+that the half-power threshold is consistently defined rel-
+ative to the full dynamic range of each individual cost
+function, enabling fair comparison across different SNR
+levels and methods with varying absolute cost function
+magnitudes. For robust localization, we expect the half-
+power uncertainty to be proportional to the mean distance
+error, as both metrics should decrease consistently when
+localization improves. We further investigate the effect
+of beampattern mismatch between the proposed gener-
+alized model and realistic beampatterns. The sensitivity
+of the localization to small changes in beamwidth and
+orientation are then studied via the CRLB. As a baseline,
+we compare against the traditional AOA TDOA-based
+DPD method [3] which does not account for directional
+emission patterns.
+Both scenarios share the following simulation param-
+eters. The channel attenuation for each receiver is given
+byb l∼CN(1,0.1 2). The noise varianceσ 2
+n is equal at
+all receivers. Since the noise variance is equal across
+all receivers while the received signal strength varies
+due to beampattern and path attenuation, each receiver
+experiences different SNR. The best-case SNR (at the
+receiver with the strongest signal) is varied between−15
+and0dB in steps of1dB.L= 4receivers are simulated,
+distributed at positionsu 1 = [−2500,−2500],u 2 =
+[−2500,2500],u 3 = [2500,−2500],u 4 = [2500,2500]m,
+each equipped with anM= 4element ULA, capturing
+N= 32samples with sampling frequency200kHz.
+The exhaustive grid search is performed with25m grid
+resolution,1° orientation resolution, and10° beamwidth
+resolution between10° and90°. We perform250Monte
+Carlo trials, filtering the top and bottom5%of distance
+errors to prevent disproportionate effects on mean error
+calculations.
+Fig. 2a presents the experimental setup for the direc-
+tional communication scenario, where the emitter is posi-
+tioned atp= [600,600]m, having orientationϕ=−10°
+to the horizontal and half-power beamwidthβ= 30°. This
+scenario represents a typical communications geometry
+WILLIAMS ET AL.: EFFICIENT LOCALIZATION OF DIRECTIONAL EMITTERS 5
+x(km)
+y(km)
+E ϕ=−10°
+R2
+R1
+R4
+R3
+β= 30°
+(a)Directional communication experiment.
+x(km)
+y(km)E
+ϕ=−70°
+R2
+R1
+R4
+R3
+β= 30°
+(b)Radar experiment.
+Fig. 2. Experimental setup including position of the emitter, its
+orientation and beamwidth, and the position of the receivers.
+where only a subset of receivers are illuminated by the
+emitter’s main lobe.
+Fig. 2b presents the radar scenario, where the emitter
+is located outside the receiver array atp= [−4000,4000]
+m, oriented atϕ=−70° to the horizontal with beamwidth
+β= 30°. This geometry represents a standoff radar
+scenario where the emitter illuminates the receiver array
+from an oblique angle.
+B. Nominal Localization
+We evaluate the proposed algorithm’s performance
+under nominal conditions where the signal model matches
+the generalized beampattern of (2). We first examine
+the spatial distribution of likelihood values through cost
+function heatmaps, then quantify localization accuracy
+and uncertainty metrics across SNR.
+Fig. 3 presents qualitative comparison between local-
+ization methods at 0 dB SNR. The traditional AOA TDOA
+method [3] produces broad likelihood surfaces with mul-
+tiple spurious peaks (secondary maxima displaced from
+the true emitter location) in both scenarios, a conse-
+quence of ignoring the RSS modulation introduced by the
+directional beampattern. The MVDR baseline provides
+improved spatial resolution through adaptive beamform-
+ing, but assumes omnidirectional emission and thus still
+exhibits significant spatial ambiguity. In contrast, the pro-
+posed method produces sharply concentrated likelihood
+surfaces centered on the true emitter location, effectively
+eliminating spurious peaks by jointly estimating position
+and beampattern parameters, which correctly accounts for
+the directional RSS modulation.
+To quantify these qualitative observations, we analyze
+mean distance error and spatial uncertainty across SNR.
+Fig. 4 presents localization performance from -15 dB
+to 0 dB SNR. The proposed method demonstrates sub-
+stantially improved performance compared to baselines
+that do not jointly estimate beampattern parameters. For
+the directional communications experiment (Fig. 4a), the
+proposed method approaches the CRLB above -10 dB,
+achieving 1071 m mean distance error at -10 dB: a
+49.0% reduction compared to 2100 m for AOA TDOA
+and a 46.7% reduction compared to 2008 m for MVDR.
+These improvements are particularly pronounced at low
+SNR, where the joint estimation framework effectively
+leverages the additional information contained in the
+beampattern-modulated RSS distribution. The radar sce-
+nario (Fig. 4b) exhibits similar trends, with the proposed
+method achieving 1468 m at -10 dB versus 3782 m (AOA
+TDOA) and 3434 m (MVDR), representing 61.2% and
+57.3% error reductions respectively.
+The contrast-expanded half-power uncertainty metric
+is presented in Fig. 5. The proposed technique maintains
+an approximately proportional relationship between un-
+certainty and mean distance error across both scenarios,
+with uncertainty decreasing monotonically as SNR im-
+proves, the expected behavior for a well-posed localiza-
+tion problem. In contrast, the AOA TDOA baseline ex-
+hibits counterintuitive behavior: increasing uncertainty at
+high SNR despite improved position accuracy. This occurs
+because the cost function produces multiple distinct peaks
+(spurious maxima displaced from the true location, visible
+in Fig. 3a and 3d), which collectively increase the spatial
+area exceeding the half-power threshold even as the global
+maximum sharpens. The proposed method eliminates
+these spurious peaks by jointly estimating beampattern
+parameters, producing concentrated unimodal likelihood
+surfaces that yield both low error and low uncertainty.
+These results demonstrate that joint estimation of position
+and beampattern parameters is essential for robust local-
+ization of directional emitters, providing both improved
+accuracy and reduced spatial ambiguity compared to
+methods that assume omnidirectional emission.
+C. Iteration Convergence
+The iterative nature of the proposed algorithm de-
+mands consideration of convergence properties. In Section
+B we argue theoretical convergence. In this section the
+practical number of iterations required for convergence
+6 IEEE TRANSACTIONS ON AEROSPACE AND ELECTRONIC SYSTEMS VOL. XX, No. XX XXXXX YYYY
+AOA TDOA MVDR Proposed
+Directional Comms.
+(a)
+ (b)
+ (c)
+Radar
+(d)
+ (e)
+ (f)
+Fig. 3. Heatmaps comparing localization methods for directional communications and radar experiments at SNR =0dB,N= 32,M= 4.
+Grids measure6km×6km. Superimposed white symbols represent receiver positions, and the red cross represents the true emitter position.
+Note the multiple spurious peaks in AOA TDOA, reduced ambiguity in MVDR, and sharp unimodal response in the proposed method.
+−14 −12 −10 −8 −6 −4 −2 0
+SNR (dB)
+0
+500
+1000
+1500
+2000
+2500Mean Distance Error (m)
+AOA-TDOA
+MVDR
+Proposed
+CRLB
+(a)Directional communication experiment.
+−14 −12 −10 −8 −6 −4 −2 0
+SNR (dB)
+0
+1000
+2000
+3000
+4000
+5000
+6000Mean Distance Error (m)
+AOA-TDOA
+MVDR
+Proposed
+CRLB (b)Radar experiment.
+Fig. 4. Localization mean distance error vs SNR for the directional communications and radar experiments.
+is presented, which may increase by the difficulty of the
+localization problem.
+Fig. 6 presents the mean number of iterations over
+all trials for each SNR until meeting the convergence
+criteria for the directional communication and radar ex-
+periments respectively, when provided with an initial
+position estimate. At -10 dB SNR, 3.34 iterations are
+required for the directional communications scenario and
+3.45 iterations for the radar scenario, with convergence
+improving as SNR increases to 0 dB. This demonstrates
+that the proposed algorithm converges efficiently in prac-
+tical scenarios.
+WILLIAMS ET AL.: EFFICIENT LOCALIZATION OF DIRECTIONAL EMITTERS 7
+−14 −12 −10 −8 −6 −4 −2 0
+SNR (dB)
+2
+3
+4
+5
+6Mean Uncertainty (m2)
+×106
+AOA-TDOA
+MVDR
+Proposed
+(a)Directional communication experiment.
+−14 −12 −10 −8 −6 −4 −2 0
+SNR (dB)
+0
+2
+4
+6Mean Uncertainty (m2)
+×106
+AOA-TDOA
+MVDR
+Proposed (b)Radar experiment.
+Fig. 5. Contrast-expanded half-power uncertainty (m 2) versus SNR. The proposed method exhibits monotonically decreasing uncertainty, while
+AOA TDOA shows increasing uncertainty at high SNR due to spurious peaks.
+−14 −12 −10 −8 −6 −4 −2 0
+SNR (dB)
+1.0
+1.5
+2.0
+2.5
+3.0
+3.5
+Mean Iterations
+Directive Comms
+Directive Radar
+Fig. 6. Mean number of iterations until convergence criteria was met
+for the proposed algorithm in both the directional communications and
+radar experiment.
+D. Model Mismatch
+The generalized beampattern model of (2) represents
+only the main lobe of a directional emitter. As such, model
+mismatch with realistic directional emitters is certain.
+The effect of this mismatch is examined for both
+the directional communications and radar experiments by
+simulating the emitter beampattern as a 4-element ULA
+as shown in Fig. 1. The presence of sidelobes and nulls
+within the realistic beampattern may interfere with the
+effective estimation of beampattern parametersϕandβ,
+as significant mismatch occurs at these locations. The
+localization experiments otherwise remain identical to the
+nominal case.
+The model mismatch localization performance is
+demonstrated in Fig. 7. Despite the presence of side-
+lobes and nulls in the realistic beampattern, the proposed
+technique maintains superior performance compared to
+baseline methods. For the directional communications
+experiment (Fig. 7a), the proposed method achieves 643
+m mean distance error at -10 dB, representing 64.0%
+and 60.4% error reductions compared to 1787 m (AOA
+TDOA) and 1622 m (MVDR) respectively. Notably, this
+represents even better performance than the nominal case
+(1071 m), suggesting that the sidelobe structure of the
+realistic beampattern provides additional spatial informa-
+tion that aids localization when receivers are positioned
+appropriately. For the radar scenario (Fig. 7b), the pro-
+posed technique achieves 1787 m at -10 dB compared to
+4070 m (AOA TDOA) and 3752 m (MVDR), representing
+56.1% and 52.4% error reductions respectively.
+We examine the beampattern parameter estimation
+step specifically in Fig. 8 for both experiments at 0 dB
+SNR. The cost function surface reveals how well the
+generalized model approximates the realistic ULA beam-
+pattern. For the directional communication experiment
+(Fig. 8a), the model mismatch shows little effect on the
+estimate, with viable regions concentrated atβ= 30°
+andβ= 40° beamwidths for orientations centered about
+the true valueϕ=−10°. This demonstrates that the
+generalized model successfully captures the main lobe
+characteristics despite the presence of sidelobes. In con-
+trast, the radar experiment (Fig. 8b) exhibits beampattern
+ambiguity, with alternativeϕ-βpairs becoming viable.
+While the true parameter pair (β= 30°,ϕ=−70°)
+produces a peak in the cost function, a comparable peak
+appears near (β= 30°,ϕ= 140°). Additionally, the
+cost function broadens for larger beamwidths, indicating
+that the sidelobe structure can be approximated by wider
+main lobes in the generalized model. Despite this beam-
+pattern ambiguity, the position estimation remains accu-
+rate, demonstrating the robustness of the joint estimation
+framework.
+E. Beampattern Sensitivity
+The localization performance depends critically on
+accurate knowledge of the beampattern parametersϕand
+β. To quantify this sensitivity, we analyze how the CRLB
+varies when the true beampattern parameters deviate from
+8 IEEE TRANSACTIONS ON AEROSPACE AND ELECTRONIC SYSTEMS VOL. XX, No. XX XXXXX YYYY
+−14 −12 −10 −8 −6 −4 −2 0
+SNR (dB)
+0
+500
+1000
+1500
+2000
+2500Mean Distance Error (m)
+AOA-TDOA
+MVDR
+Proposed
+(a)Directional communications experiment.
+−14 −12 −10 −8 −6 −4 −2 0
+SNR (dB)
+0
+1000
+2000
+3000
+4000
+5000
+6000Mean Distance Error (m)
+AOA-TDOA
+MVDR
+Proposed (b)Radar experiment.
+Fig. 7. Localization mean distance error versus SNR for model mismatch experiments. The emitter uses a realistic 4-element ULA
+beampattern while the algorithm assumes the generalized model of (2).
+−180 −120 −60 0 60 120 180
+Orientation (deg)
+10
+20
+30
+40
+50
+60
+70
+80
+90Beamwidth (deg)
+(a)Directional communication experiment.
+−180 −120 −60 0 60 120 180
+Orientation (deg)
+10
+20
+30
+40
+50
+60
+70
+80
+90Beamwidth (deg) (b)Radar experiment.
+Fig. 8. Beampattern parameter cost function ˜Qenh( ˆp,ψ)at 0 dB SNR for model mismatch experiments, evaluated at the true position
+ˆp=p true. Brighter regions indicate higher likelihood. The white cross marks the true beampattern parameters.
+their nominal values, examining perturbations in orienta-
+tion and beamwidth independently.
+Fig. 9 presents CRLB sensitivity analysis for both
+scenarios. The top row shows results for the directional
+communications experiment, where only two of four
+receivers are effectively illuminated by the narrow beam-
+pattern.
+For orientation sensitivity (Fig. 9a), the lowest CRLB
+(best localization performance) occurs at the true value
+ϕ=−10°, which preferentially illuminates the receiver
+at[2500,−2500]m over the receiver at[2500,2500]m.
+Interestingly,ϕ= 0° (which would equally illuminate
+both receivers) exhibits higher CRLB than the optimal
+ϕ=−10°. This seemingly counterintuitive result arises
+from competing effects: while balanced illumination in-
+creases the number of effective receivers, localization
+performance is optimized when receivers are positioned
+at the edge of the main lobe where small variations
+inϕproduce maximum RSS gradient. Atϕ=−20°,
+the beampattern no longer effectively illuminates both
+receivers, causing significant CRLB degradation as spatial
+diversity is lost.
+For beamwidth sensitivity (Fig. 9b), the CRLB is
+relatively stable near the nominalβ= 30° but degrades
+for narrower beamwidths. This occurs because narrower
+beampatterns reduce the number of effectively illuminated
+receivers, decreasing the available spatial diversity for
+localization.
+The radar experiment (bottom row) presents a differ-
+ent geometry where all four receivers are illuminated,
+with receivers at[−2500,2500]m and[−2500,−2500]
+m receiving stronger signals. The orientation sensitivity
+(Fig. 9c) shows similar edge-of-lobe effects, while the
+beamwidth sensitivity (Fig. 9d) demonstrates that decreas-
+ing beamwidth belowβ= 30° causes significant CRLB
+degradation even for minor perturbations, highlighting the
+critical importance of RSS variation across receivers for
+effective localization.
+WILLIAMS ET AL.: EFFICIENT LOCALIZATION OF DIRECTIONAL EMITTERS 9
+Orientation Sensitivity Beamwidth Sensitivity
+Directional Comms.
+−14 −12 −10 −8 −6 −4 −2 0
+SNR (dB)
+0
+500
+1000
+1500RMS Distance Error (m)
+CRLB φ = □20°
+CRLB φ = □15°
+CRLB φ = □10°
+CRLB φ = □5°
+CRLB φ = 0°
+(a)Varyingϕwith fixedβ= 30°.
+−14 −12 −10 −8 −6 −4 −2 0
+SNR (dB)
+0
+100
+200
+300
+400RMS Distance Error (m)
+CRLB β = 20°
+CRLB β = 25°
+CRLB β = 30°
+CRLB β = 35°
+CRLB β = 40° (b)Varyingβwith fixedϕ=−10°.
+Radar
+−14 −12 −10 −8 −6 −4 −2 0
+SNR (dB)
+0
+100
+200
+300
+400
+500RMS Distance Error (m)
+CRLB φ = □80°
+CRLB φ = □75°
+CRLB φ = □70°
+CRLB φ = □65°
+CRLB φ = □60°
+(c)Varyingϕwith fixedβ= 30°.
+−14 −12 −10 −8 −6 −4 −2 0
+SNR (dB)
+0
+100
+200
+300
+400
+500
+600RMS Distance Error (m)
+CRLB β = 20°
+CRLB β = 25°
+CRLB β = 30°
+CRLB β = 35°
+CRLB β = 40° (d)Varyingβwith fixedϕ=−70°.
+Fig. 9. CRLB sensitivity to perturbations in beampattern parameters for the directional communications (top) and radar (bottom) experiments.
+Left column: orientationϕvaried while beamwidth is fixed atβ= 30°. Right column: beamwidthβvaried while orientation is fixed at the true
+value. Lower CRLB indicates better theoretical localization performance.
+VI. Conclusion
+This paper presents a robust direct position determina-
+tion approach for localizing highly directional RF emitters
+by jointly estimating position and beampattern parame-
+ters. We extend the conventional DPD framework to incor-
+porate directional emission effects through a generalized
+beampattern model that captures main lobe characteristics
+while remaining computationally tractable. To address the
+computational challenge of joint 4-dimensional optimiza-
+tion over positionp= [x,y] T and beampattern parameters
+ψ= [ϕ,β] T , we develop an alternating maximization
+algorithm that decomposes the problem into efficient
+iterative 2-dimensional searches.
+Numerical simulations across two representative sce-
+narios demonstrate substantial performance improvements
+compared to conventional methods that assume omni-
+directional emission. At -10 dB SNR, the proposed
+method achieves 1071 m mean distance error for the
+directional communications scenario and 1468 m for the
+radar scenario, representing 49.0% to 61.2% error reduc-
+tions compared to AOA-TDOA baselines. Performance
+approaches the Cram ´er-Rao Lower Bound above -10 dB
+SNR, validating the theoretical efficiency of the approach.
+The iterative algorithm converges rapidly, requiring only
+3.34 to 3.45 iterations on average at -10 dB SNR.
+We introduce a contrast-expanded half-power uncer-
+tainty metric to quantify localization confidence, revealing
+that the proposed method produces concentrated uni-
+modal likelihood surfaces while baseline methods exhibit
+multiple spurious peaks that inflate spatial uncertainty.
+The approach demonstrates robustness to beampattern
+model mismatch, maintaining superior performance even
+when the true emitter uses a realistic ULA pattern with
+sidelobes rather than the assumed generalized model.
+Sensitivity analysis via CRLB perturbations reveals that
+optimal localization occurs when receivers are positioned
+at the edge of the main lobe where RSS gradients are
+maximized, providing practical insights for receiver de-
+ployment.
+The results establish that joint estimation of position
+and beampattern parameters is essential for effective
+localization of directional emitters, particularly in low
+SNR scenarios where conventional methods fail. Future
+work could extend this framework to multi-emitter scenar-
+ios, non-stationary platforms, and alternative beampattern
+models for specific antenna types.
+10 IEEE TRANSACTIONS ON AEROSPACE AND ELECTRONIC SYSTEMS VOL. XX, No. XX XXXXX YYYY
+Appendix A
+CRLB Partial Derivatives
+This appendix provides the detailed derivations of
+partial derivatives required for computing the Fisher
+Information Matrix in Section III. All derivatives
+are computed for the observation modelµ l,k =
+bldl(p,ψ)al(p)e−jωkτl(p)˜sk whereldenotes the receiver
+index andkdenotes the frequency bin, andd l(p,ψ) =
+κl
+∥p−ul∥gl(p,ψ)as defined in the main text.
+The partial derivatives for each receiver and frequency
+bin are concatenated to form the complete gradient as
+∂µk
+∂ζi
+=
+"∂µ1,k
+∂ζi
+T
+,...,
+∂µL,k
+∂ζi
+T#T
+.(39)
+A. Position Derivatives
+The position derivatives account for how the model
+changes with emitter location:
+∂µl,k
+∂p = ∂
+∂pbldl(p,ψ)al(p)e−jωkτl(p)˜sk (40)
+=δ 1 +δ 2 +δ 3,(41)
+where
+δ1 ≜b l
+∂dl(p,ψ)
+∂p al(p)e−jωkτl(p)˜sk,(42)
+δ2 ≜b ldl(p,ψ) ∂al(p)
+∂p e−jωkτl(p)˜sk,(43)
+δ3 ≜b ldl(p,ψ)al(p)∂e−jωkτl(p)
+∂p ˜sk.(44)
+The directional path attenuation gradient in (42)
+is computed using the product rule ond l(p,ψ) =
+κl
+∥p−ul∥gl(p,ψ):
+∂dl(p,ψ)
+∂p = κl
+∥p−u l∥
+∂gl(p,ψ)
+∂p +gl(p,ψ) ∂
+∂p
+ κl
+∥p−u l∥
+
+,
+(45)
+where the beampattern gradient is
+∂gl(p,ψ)
+∂p = ∂gl(p,ψ)
+∂θ (t)
+l (p)
+∂θ (t)
+l (p)
+∂p ,(46)
+∂gl(p,ψ)
+∂θ (t)
+l (p)
+=−α(β) sin
+
+θ(t)
+l (p)−ϕ
+
+gl(p,ψ),(47)
+∂θ (t)
+l (p)
+∂p =
+ yl−y
+∥p−u l∥2,−(xl−x)
+∥p−u l∥2
+
+,(48)
+and the geometric attenuation gradient is
+∂
+∂p
+ κl
+∥p−u l∥
+
+=−κ l
+p−u l
+∥p−u l∥3.(49)
+The steering vector gradient in (43) is
+∂al(p)
+∂p = ∂al(p)
+∂θ (r)
+l (p)
+∂θ (r)
+l (p)
+∂p ,(50)
+where
+∂al,m(p)
+∂θ (r)
+l (p)
+=j2π m∆
+λ sin
+
+θ(r)
+l (p)
+
+al,m(p)(51)
+and
+∂θ (r)
+l (p)
+∂p =
+−(y−y l)
+∥p−u l∥2, x−x l
+∥p−u l∥2
+
+.(52)
+The propagation delay gradient in (44) is
+∂e−jωkτl(p)
+∂p =−jω ke−jωkτl(p)∂τl(p)
+∂p (53)
+=− 1
+cjωke−jωkτl(p) p−u l
+∥p−u l∥.(54)
+B. Orientation Derivatives
+The partial derivative with respect to beam orientation
+ϕis
+∂µl,k
+∂ϕ =b l
+∂dl(p,ψ)
+∂ϕ al(p)e−jωkτl(p)˜sk,(55)
+where
+∂dl(p,ψ)
+∂ϕ = κl
+∥p−u l∥
+∂gl(p,ψ)
+∂ϕ ,(56)
+∂gl(p,ψ)
+∂ϕ =α(β) sin
+
+θ(t)
+l (p)−ϕ
+
+gl(p,ψ).(57)
+C. Beamwidth Derivatives
+The partial derivative with respect to beamwidthβis
+∂µl,k
+∂β =b l
+∂dl(p,ψ)
+∂β al(p)e−jωkτl(p)˜sk,(58)
+where
+∂dl(p,ψ)
+∂β = κl
+∥p−u l∥
+∂gl(p,ψ)
+∂β ,(59)
+∂gl(p,ψ)
+∂β = ∂gl(p,ψ)
+∂α
+∂α
+∂β.(60)
+The component derivatives are
+∂gl(p,ψ)
+∂α =
+h
+cos
+
+θ(t)
+l (p)−ϕ
+
+−1
+i
+gl(p,ψ)(61)
+and
+∂α
+∂β =− log(2)
+4
+sin(β/2)
+(cos(β/2)−1) 2.(62)
+D. Channel Attenuation Derivatives
+The partial derivative with respect to channel attenu-
+ation vectorbis
+∂µl,k
+∂b
+
+i
+= ∂bl
+∂bi
+dl(p,ψ)al(p)e−jωkτl(p)˜sk,
+for1≤i≤L(63)
+=
+(
+dl(p,ψ)al(p)e−jωkτl(p)˜sk, l=i
+0M, l̸=i ,(64)
+where0 M is theM×1zero vector.
+WILLIAMS ET AL.: EFFICIENT LOCALIZATION OF DIRECTIONAL EMITTERS 11
+E. Signal Sample Derivatives
+The partial derivative with respect to signal samples
+˜sis ∂µl,k
+∂˜s
+
+i
+(65)
+=
+(
+bldl(p,ψ)al(p)e−jωkτl(p), i=k
+0M, i̸=k ,
+for1≤i≤N.(66)
+These partial derivatives are combined according to (39)
+and used to construct the Fisher Information Matrix
+blocks as described in Section III.
+REFERENCES
+[1] K. Ho and Y . Chan
+Solution and performance analysis of geolocation by TDOA
+IEEE Transactions on Aerospace and Electronic Systems,
+vol. 29, no. 4, pp. 1311–1322, Oct. 1993.
+[2] H. Ketabalian, M. Biguesh, and A. Sheikhi
+A Closed-Form Solution for Localization Based on RSS
+IEEE Transactions on Aerospace and Electronic Systems,
+vol. 56, no. 2, pp. 912–923, Apr. 2020.
+[3] A. Weiss
+Direct position determination of narrowband radio frequency
+transmitters
+IEEE Signal Processing Letters, vol. 11, no. 5, pp. 513–516,
+May 2004.
+[4] C. Liu, J. Yang, and F. Wang
+Joint TDOA and AOA location algorithm
+Journal of Systems Engineering and Electronics, vol. 24, no. 2,
+pp. 183–188, Apr. 2013.
+[5] D. Musicki and W. Koch
+Geolocation using TDOA and FDOA measurements
+In2008 11th International Conference on Information Fusion,
+Jun. 2008, pp. 1–8.
+[6] Y . Song, C. Hao, M. Li, X. Wang, J. Li, and Q. Wan
+A Fast Algorithm of Direct Position Determination Using
+TDOA and FDOA
+Journal of Physics: Conference Series, vol. 1169, p. 012014,
+Feb. 2019.
+[7] M. Y . You, A. N. Lu, Y . X. Ye, and K. Huang
+Direct Position Determination Using Compressive Sensing
+Measurements without Reconstruction
+IEEE Transactions on Aerospace and Electronic Systems, pp.
+1–8, 2022.
+[8] N. Salman, M. Ghogho, and A. H. Kemp
+On the Joint Estimation of the RSS-Based Location and Path-
+loss Exponent
+IEEE Wireless Communications Letters, vol. 1, no. 1, pp. 34–
+37, Feb. 2012.
+[9] T. S. Rappaport
+Wireless Communications: Principles and Practice. Cambridge
+University Press, 2024.
+[10] M.-Y . Youet al.
+Joint Direct Estimation of Emitter Location and Antenna Beam
+Direction Based on Baseband Reconstruction
+IEEE Sensors Journal, vol. 23, no. 9, pp. 9607–9619, May
+2023.
+[11] M. I. Skolnik
+Introduction to Radar Systems. McGraw-hill New York, 1980,
+vol. 3.
+[12] M. J. Sibley
+Modern Telecommunications: Basic Principles and Practices.
+CRC Press, 2018.
+[13] F. Williams, D. Jayalath, A. J. Tom, T. Martin, and C. Fookes
+Enhancing Emitter Localization Accuracy Through Integration
+of Received Signal Strength in Direct Position Determination
+In2023 IEEE Statistical Signal Processing Workshop (SSP),
+Jul. 2023, pp. 458–462.
+[14] S. M. Kay
+Fundamentals of Statistical Signal Processing: Estimation The-
+ory. USA: Prentice-Hall, Inc., Feb. 1993.
+[15] L. Tzafri and A. J. Weiss
+High-Resolution Direct Position Determination Using MVDR
+IEEE Transactions on Wireless Communications, vol. 15, no. 9,
+pp. 6449–6461, Sep. 2016.
+[16] F. Chen, T. Zhou, B. Sun, L. Kong, and X. Xiao
+Direct position determination and effective extraction of multi-
+ple transmitters
+The Journal of Engineering, vol. 2019, no. 21, pp. 7787–7791,
+2019.
+[17] X. Shi, X. Zhang, and H. Zeng
+Direct Position Determination of Non-Circular Sources for Mul-
+tiple Arrays via Weighted Euler ESPRIT Data Fusion Method
+Applied Sciences, vol. 12, no. 5, p. 2503, Jan. 2022.
+[18] G. Z. Wu, M. Zhang, and F. C. Guo
+High-resolution direct position determination based on
+eigenspace using a single moving ULA
+Signal, Image and Video Processing, vol. 13, no. 5, pp. 887–
+894, Jul. 2019.
+[19] P. Tseng
+Convergence of a Block Coordinate Descent Method for Non-
+differentiable Minimization
+Journal of Optimization Theory and Applications, vol. 109,
+no. 3, pp. 475–494, Jun. 2001.
+Fraser Williams(Student Member, IEEE)
+received the B.Eng in electrical engineering and
+B.Sc in physics from the Queensland Univer-
+sity of Technology, Australia, in 2021, and is
+pursuing the Ph.D. in electrical engineering at
+the same university.
+He is employed as a Research Engineer
+at Revolution Aerospace Pty Ltd in Brisbane,
+Queensland, Australia. His research interests
+include statistical signal processing, array pro-
+cessing, and radio frequency signal processing.
+Akila Pemasirireceived her B.Sc. degree
+in Computer Science and Engineering from
+the University of Moratuwa, Sri Lanka, and
+her Ph.D. from the Queensland University of
+Technology (QUT), Australia, in 2021. She is
+currently a Postdoctoral Research Fellow in
+the Signal Processing, Artificial Intelligence,
+and Vision Technologies group at QUT. Her
+research interests include applying machine
+learning principles to solve complex problems
+across various domains, including communications, defense, medical
+and healthcare, sports, and infrastructure.
+12 IEEE TRANSACTIONS ON AEROSPACE AND ELECTRONIC SYSTEMS VOL. XX, No. XX XXXXX YYYY
+Dhammika Jayalath(Senior Member, IEEE)
+received the B.Sc. degree in electronics and
+telecommunications engineering from the Uni-
+versity of Moratuwa, Sri Lanka, the M.Eng.
+degree in telecommunications from the Asian
+Institute of Technology, Thailand, and the
+Ph.D. degree in wireless communications from
+Monash University, Australia, in 2002. He was
+a fellow with the Australian National Univer-
+sity and a Senior Researcher with the National
+ICT Australia. He has been an Academician with the Science and
+Engineering Faculty, Queensland University of Technology, since 2007.
+His research interests include the general areas of communications and
+signal processing. He has published significantly in these areas. His
+current research interests include applying machine learning principles
+in communication systems, physical layer security, and signal design
+for robust communications.
+Terrence Martinis a co-founder of Revolu-
+tion Aerospace Pty Ltd. He is a former RAAF
+& Army military aerospace engineering officer
+with a PhD in Applied Signal Processing &
+Machine Learning. He has accumulated signif-
+icant experience across a 35-year career-span,
+with time on fast jets & rotary wing manned
+platforms, alongside an extensive array of work
+for RAAF, Navy & Army on a variety of UA V
+platforms. Terry has a deep interest in UA V
+related technologies, and in 2018 he was nominated by Engineers
+Australia as one of Australia’s 30 most Innovative Engineers.
+Clinton Fookes(Senior Member, IEEE) re-
+ceived the B.Eng. in Aerospace and Avionics,
+the MBA degree, and the Ph.D. degree in com-
+puter vision. He is currently the Associate Dean
+Research and a Professor of Vision and Signal
+Processing with the Faculty of Engineering
+at the Queensland University of Technology,
+Brisbane, Australia. His research interests in-
+clude computer vision, machine learning, sig-
+nal processing, and artificial intelligence. He
+serves on the editorial boards for IEEE TRANSACTIONS ON IMAGE
+PROCESSING and Pattern Recognition. He has previously served on
+the Editorial Board for IEEE TRANSACTIONS ON INFORMATION
+FORENSICS AND SECURITY . He is a Fellow of the International
+Association of Pattern Recognition and a Fellow of the Australian
+Academy of Technological Sciences and Engineering. He is a Senior
+Member of the IEEE and a multi-award winning researcher including
+an Australian Institute of Policy and Science Young Tall Poppy, an
+Australian Museum Eureka Prize winner, Engineers Australia Engineer-
+ing Excellence Award, Australian Defence Scientist of the Year, and a
+Senior Fulbright Scholar.
+WILLIAMS ET AL.: EFFICIENT LOCALIZATION OF DIRECTIONAL EMITTERS 13

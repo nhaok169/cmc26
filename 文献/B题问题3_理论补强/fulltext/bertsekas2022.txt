@@ -1,0 +1,785 @@
+arXiv:2212.07998v3  [cs.AI]  29 Dec 2022
+December 2022 ASU Research Note; Ref: arXiv:2212.07998
+Rollout Algorithms and Approximate Dynamic Programming fo r
+Bayesian Optimization and Sequential Estimation
+by
+Dimitri Bertsekas †
+Abstract
+We provide a unifying approximate dynamic programming framework t hat applies to a broad variety
+of problems involving sequential estimation. We consider ﬁrst the co nstruction of surrogate cost functions
+for the purposes of optimization, and we focus on the special case of Bayesian optimization, using the
+rollout algorithm and some of its variations. We then discuss the more general case of sequential estimation
+of a random vector using optimal measurement selection, and its ap plication to problems of stochastic
+and adaptive control. We distinguish between adaptive control of d eterministic and stochastic systems:
+the former are better suited for the use of rollout, while the latter are well suited for the use of rollout
+with certainty equivalence approximations. As an example of the det erministic case, we discuss sequential
+decoding problems, and a rollout algorithm for the approximate solut ion of the Wordle and Mastermind
+puzzles, recently developed in the paper [BBB22].
+1. BA YESIAN OPTIMIZA TION
+In this paper, we consider a dynamic programming (DP) formulation o f the problem of estimating an m-
+dimensional random vector θ = ( θ1, . . . , θm), using optimal sequential selection of observations, which are
+based on feedback from preceding observations. We discuss the u se of reinforcement learning (RL) algorithms
+for solution, and rollout algorithms in particular. We will initially focus on the case of Bayesian optimization,
+particularly one involving a Gaussian process. The ideas extend more generally, as we will discuss in Section
+4. The sequential estimation problem also arises in adaptive control formulations involving the optimal
+selection of both controls and observations to estimate the model parameters, as we explain in Section 5. As
+an example we discuss sequential decoding, whereby we search for a hidden code word by using a sequence
+of queries, in the spirit of the Wordle puzzle and the family of Masterm ind games.
+† Fulton Professor of Computational Decision Making, School of Computing and Augmented Intelligence, Arizona
+State University, Tempe, AZ.
+1
+We will now discuss a DP framework for Bayesian optimization, where w e aim to minimize a real-valued
+function f . The function is deﬁned over a set of m points, which we denote by 1 , . . . , m. These m points lie
+in some space, which we leave unspeciﬁed for the moment. † The value of f at a point u is denoted by θu:
+θu = f (u), for all u = 1, . . . , m.
+Thus the m-dimensional vector θ = ( θ1, . . . , θm) belongs to ℜm and represents the function f . In Bayesian
+optimization, we obtain sequentially noisy observations of values f (u) = θu at suitably selected points u.
+These values are used to estimate the vector θ (i.e., the function f ), and to ultimately minimize (approx-
+imately) f over the m points u = 1 , . . . , m. The essence of the problem is to select points for observation
+based on an exploration-exploitation tradeoﬀ (exploring the poten tial of relatively unexplored candidate
+solutions and improving the estimate of promising candidate solutions ).
+u 1 2 3 4 u 1 2 3 4 1 2 3 4 1 2 3 4 1 2 3 4 
+4 Function 
+θ1
+θ2
+2 θ3
+θ4
+Function f (u) = θu z1 = θ1 + w1
+z2 = θ2 + w2
+z3 = θ3 + w3
+z4 = θ4 + w4
+Figure 1.1 Illustration of a function f that we wish to estimate. The function is deﬁned at
+the points u = 1, 2, 3, 4, and is represented by a vector θ = (θ1, θ2, θ3, θ4) ∈ ℜ 4, in the sense that
+f (u) = θu for all u. The prior distribution of θ is given, and is used to construct the posterior
+distribution of θ given noisy observations zu = θu + wu at some of the points u.
+In particular, at each of N successive times k = 1, . . . , N, we select a single point uk ∈ {1, . . . , m}, and
+observe the corresponding component θuk of θ with some noise wuk , i.e.,
+zuk = θuk + wuk ; (1.1)
+see Fig. 1.1. We will view the observation points u1, . . . , uN as the optimization variables (or controls/actions
+in a DP/RL context), and consider policies for selecting uk with knowledge of the preceding observations
+† We restrict the domain of deﬁnition of f to be the ﬁnite set {1, . . . , m} in order to facilitate the implementation
+of the rollout algorithm to be discussed in what follows. How ever, in a more general formulation, the domain of f
+can be an inﬁnite set, such as a subset of a ﬁnite-dimensional Euclidean space.
+2
+zu1 , . . . , zuk− 1 that have resulted from the selections u1, . . . , uk−1. We assume that the noise random variables
+wu, u ∈ {1, . . . , m} are independent and that their distributions are given. Moreover, we assume that θ has a
+given a priori distribution on the space of m-dimensional vectors ℜm, which we denote by b0. The posterior
+distribution of θ, given any subset of observations
+{zu1, . . . , zuk },
+is denoted by bk.
+An important special case arises when b0 and the distributions of wu, u ∈ {1, . . . , m}, are Gaussian. A
+key consequence of this assumption is that the posterior distribut ion bk is Gaussian, and can be calculated in
+closed form by using well-known formulas. More generally, bk evolves according to an equation of the form
+bk+1 = Bk(bk, uk+1, zuk+1), k = 0, . . . , N − 1. (1.2)
+Thus given the set of observations up to time k, and the next choice uk+1, resulting in an observation value
+zuk+1, the function Bk gives the formula for updating bk to bk+1, and may be viewed as a recursive estimator
+of bk. In the Gaussian case, the function Bk can be written in closed form, using standard formulas for
+Gaussian random vector estimation. In other cases where no close d form expression is possible, Bk can
+be implemented through simulation that computes (approximately) t he new posterior bk+1 using samples
+generated from the current posterior bk.
+At the end of the sequential estimation process, after the comple te observation set
+{zu1, . . . , zuN }
+has been obtained, we have the posterior distribution bN of θ, which we can use to compute a surrogate of
+f . As an example we may use as surrogate the posterior mean ˆθ = ( ˆθ1, . . . , ˆθm), and declare as minimizer of
+f over u the point u∗ with minimum posterior mean:
+u∗ ∈ arg min{ˆθu | u = 1, . . . , m}.
+In the next section, we will focus on a DP formulation and a correspo nding rollout algorithm for
+suboptimal sequential choice of observations, based on the resu lts of the preceding observations. The DP
+approach draws its origin from long standing research on statistica l design of sequential experiments, as well
+as related research on stochastic optimal control problems, whe re we aim to ﬁnd a policy that simultaneously
+optimizes over observations and controls; see Section 5.
+2. A DYNAMIC PROGRAMMING FORMULA TION
+The sequential estimation problem as described in the preceding sec tion, viewed as a DP problem, involves
+a state at time k, which is the posterior bk, and a control/action at time k, which is the point index uk+1
+3
+selected for observation. The transition equation according to wh ich the state evolves, is
+bk+1 = Bk(bk, uk+1, zuk+1), k = 0, . . . , N − 1;
+cf. Eq. (1.2). To complete the DP formulation, we need to introduce a cost structure. To this end, we assume
+that observing θu, as per Eq. (1.1), incurs a cost c(u), and that there is a terminal cost G(bN ) that depends
+of the ﬁnal posterior distribution; as an example, the function G may involve the mean and covariance of
+bN .
+The corresponding DP algorithm is †
+J ∗
+k (bk) = min
+uk+1∈{1,...,m}
+[
+c(uk+1) + Ezuk+1
+{
+J ∗
+k+1
+{
+Bk(bk, uk+1, zuk+1)
+) ⏐⏐ bk, uk+1
+}]
+, k = 0, . . . , N − 1,
+(2.1)
+and proceeds backwards from the terminal condition
+J ∗
+N (bN ) = G(bN ). (2.2)
+Here the expected value in the right side of the DP equation (2.1) is ta ken with respect to the conditional
+distribution of zuk+1, given bk and the choice uk+1. The observation cost c(u) may be 0 or a constant for
+all u, and the terminal cost G(bN ) may be a suitable measure of surrogate “ﬁdelity” that depends on the
+posterior mean and covariance of θ corresponding to bN .
+Generally, executing the DP algorithm (2.1) is practically infeasible, be cause the space of posterior
+distributions over ℜn is inﬁnite-dimensional and very complicated. In the Gaussian case wh ere the a priori
+distribution b0 is Gaussian and the noise variables wu are Gaussian, the posterior bk is m-dimensional
+Gaussian, so it is characterized by its mean and covariance, and can be speciﬁed by a ﬁnite set of numbers.
+Despite this simpliﬁcation, the DP algorithm (2.1) is prohibitively time-co nsuming even under Gaussian
+assumptions, except for simple special cases. We consequently re sort to DP/RL methods of approximation
+in value space, whereby the function J ∗
+k+1 in the right side of Eq. (2.1) is replaced by an approximation ˜Jk+1,
+as we will discuss in the next section.
+3. APPROXIMA TION IN V ALUE SP ACE AND THE ROLLOUT APPROACH
+The most popular Bayesian optimization methodology makes use of a m yopic/greedy policy µk+1, which at
+each time k and given bk, selects a point ˆ uk+1 = µk+1(bk) for the next observation, using some calculation
+† An alternative DP formulation may be deﬁned on the space of “i nformation vectors” Ik at time k, given by
+Ik = (zu1 , . . . , zuk , u1, . . . , uk). This DP algorithm has the form
+ˆJ k(Ik) = min
+uk+1∈{1,...,m}
+[
+c(uk+1) + Ezuk+1
+{
+ˆJ k+1(Ik, zuk+1 , uk+1)
+) ⏐⏐ Ik, uk+1
+}]
+, k = 0, . . . , N − 1,
+and can similarly be used as the starting point for approxima tions.
+4
+involving an acquisition function . This function, denoted Ak(bk, uk+1), quantiﬁes an “expected beneﬁt” for
+an observation at uk+1, given the current posterior bk. The myopic policy selects the next point at which to
+observe, ˆuk+1, by maximizing the acquisition function:
+ˆuk+1 ∈ arg max
+uk+1∈{1,...,m}
+Ak(bk, uk+1). (3.1)
+Several ways to deﬁne suitable acquisition functions have been pro posed, and an important issue is to be
+able to calculate economically its values Ak(bk, uk+1) for the purposes of the maximization in Eq. (3.1).
+Another important issue of course is to be able to calculate the post erior bk economically. There is a large
+literature on this methodology and its applications, particularly for t he Gaussian case. We refer to the
+books by Rasmussen and Williams [RaW06], Powell and Ryzhov [PoR12], th e highly cited papers by Saks
+et al. [SWM89], and Queipo et al. [QHS05], the reviews by Sasena [Sas02], Powell and Frazier [PoF08],
+Forrester and Keane [FoK09], Brochu, Cora, and De Freitas [BCD10 ], Ryzhov, Powell, and Frazier [RPF12],
+Ghavamzadeh, Mannor, Pineau, and Tamar [GMP15], Shahriari et al. [SSW16], and Frazier [Fra18], and the
+references quoted there.
+Approximation in value space is an alternative approach, which is base d on the DP formulation of the
+preceding section. In particular, in this approach we approximate t he DP algorithm (2.1) by replacing J ∗
+k+1
+with an approximation ˜Jk+1 in the minimization of the right side. Thus we select the next observat ion at
+point ˜uk+1 according to
+˜uk+1 ∈ arg min
+uk+1∈{1,...,m}
+Qk(bk, uk+1), k = 0, . . . , N − 1, (3.2)
+where Qk(bk, uk+1) is the Q-factor corresponding to the pair ( bk, uk+1), given by
+Qk(bk, uk+1) = c(uk+1) + Ezuk+1
+{
+˜Jk+1
+{
+Bk(bk, uk+1, zuk+1)
+) ⏐⏐ bk, uk+1
+}
+, k = 0, . . . , N − 1. (3.3)
+The expected value in the preceding equation is taken with respect t o the conditional probability distribution
+of zuk+1 given (bk, uk+1), which can be computed using bk and the given distribution of the noise wuk+1 . Thus
+if bk and ˜Jk+1 are available, we may use Monte Carlo simulation to determine the Q-fa ctors Qk(bk, uk+1)
+for all uk+1 ∈ { 1, . . . , m}, and select as next point for observation the one that correspon ds to the minimal
+Q-factor [cf. Eq. (3.2)].
+3.1 Rollout Algorithms for Bayesian Optimization
+A special case of approximation in value space is the rollout algorithm, whereby the function J ∗
+k+1 in the
+right side of the DP Eq. (2.1) is replaced by the cost function of some policy µk+1(bk), k = 0 , . . . , N − 1,
+called base policy. Thus, given a base policy the rollout algorithm uses the cost functio n of this policy as the
+function ˜Jk+1 in the approximation in value space scheme (3.2)-(3.3). The principal advantages of rollout are
+5
+that it is well suited for the use of simulation, it overcomes the diﬃcult ies caused by the complexity of the
+state space, and with proper implementation it is typically supported by a cost improvement guarantee (the
+policy obtained by approximation in value space using some base policy p erforms better than the original
+base policy). The values of ˜Jk+1 needed for the Q-factor calculations in Eq. (3.3) can be computed o r
+approximated by simulation. Greedy/myopic policies based on an acqu isition function [cf. Eq. (3.1)] have
+been suggested as base policies in various rollout proposals. †
+One-Step or Multistep Lookahead for stages Possible 
+. . . 
++1 Current Info Vector 
+Possible 
+Stages Beyond Truncation 
+Stages Beyond Truncation 
+Stages Beyond Truncation 
+Rollout with Base Policy Using an Acquisition Function 
+Rollout with Base Policy Using an Acquisition Function 
+Rollout with Base Policy Using an Acquisition Function 
+Rollout with Base Policy Using an Acquisition Function 
+Truncated Horizon 
+Current Posterior 
+Current Posterior bk
+uk+1 
+Posteriors bk+1 
+Q-Factor Calculation 
+Q-Factor Calculation Qk(bk, u k+1 )
+b0
+) Observations 
+Figure 3.1 Illustration of rollout at the current posterior bk. For each uk+1 ∈ { 1, . . . , m}, we
+compute the Q-factor Qk(bk, uk+1) by using Monte-Carlo simulation with samples from wuk+1
+and a base heuristic that uses an acquisition function start ing from each possible posterior bk+1.
+The rollout may extend to the end of the horizon N , or it may be truncated after a few steps.
+In particular, given bk, the rollout algorithm computes for each uk+1 ∈ { 1, . . . , m} a Q-factor value
+† The rollout algorithm for Bayesian optimization under Gaus sian assumptions was ﬁrst proposed by Lam,
+Wilcox, and Wolpert [L WW16]. This was further discussed by J iang et al. [JJB20], [JCG20], Lee at al. [LEC20],
+Lee [Lee20], Yue and Kontar [YuK20], Lee et al. [LEP21], Paul son, Sorouifar, and Chakrabarty [PSC22], where it is
+also referred to as “nonmyopic Bayesian optimization” or “n onmyopic sequential experimental design.” For related
+work, see Gerlach, Hoﬀmann, and Charlish [GHC21]. These pap ers also discuss various approximations to the rollout
+approach, and generally report encouraging computational results. Extensive accounts of rollout algorithms and
+related RL subjects may be found in the author’s DP book [Ber1 7], and RL books [Ber19], [Ber20a], where a cost
+improvement guarantee is extensively discussed. Section 3 .5 of the book [Ber20a] focuses on rollout algorithms for
+surrogate and Bayesian optimization.
+6
+Qk(bk, uk+1) by simulating the base policy for multiple time steps starting from all p ossible posteriors bk+1
+that can be generated from ( bk, uk+1), and by accumulating the corresponding cost [including a terminal
+cost such as G(bN )]; see Fig. 3.1. It then selects the next point ˜ uk+1 for observation by using the Q-factor
+minimization of Eq. (3.2).
+Note that the equation
+bk+1 = Bk(bk, uk+1, zuk+1), k = 0, . . . , N − 1,
+which governs the evolution of the posterior distribution, is stocha stic because zuk+1 involves the stochas-
+tic noise wuk+1 . Thus some Monte Carlo simulation is unavoidable in the calculation of th e Q-factors
+Qk(bk, uk+1). On the other hand, one may greatly reduce the Monte Carlo comp utational burden by em-
+ploying a “certainty equivalence” approximation, which at stage k, treats only the noise wuk+1 as stochastic,
+and replaces the noise variables wuk+2 , wuk+3 , . . ., after the ﬁrst stage of the calculation, by deterministic
+quantities such as their means ˆwuk+2 , ˆwuk+3 , . . .. This idea has been suggested for stochastic scheduling prob-
+lems in the paper by Bertsekas and Castanon [BeC99], and in greater detail in the author’s books [Ber20a]
+(Sections 2.2.4, 2.5.2, and Example 3.1.4) and [Ber22] (Sections 3.2 and 5.4) as an economical approximation
+of stochastic rollout, which does not degrade appreciably its perfo rmance. The rationale is that even with
+this certainty equivalence approximation, the stochastic ﬁrst ste p of the simulation ensures that rollout acts
+as a legitimate Newton step for solving the associated Bellman equatio n; we refer to [Ber20a] and [Ber22]
+for an extensive discussion of this issue.
+The simulation of the Q-factor values may also involve other approxim ations, some of which have
+been suggested in various proposals on rollout-based Bayesian opt imization. For example, if the number
+of possible observations m is very large, we may compute and compare the Q-factors of only a s ubset. In
+particular, at a given time k, we may rank the observations by using an acquisition function, sele ct a subset
+Uk+1 of most promising observations, compute their Q-factors Qk(bk, uk+1), uk+1 ∈ Uk+1, and select the
+observation whose Q-factor is minimal; this idea has been used in the c ase of the Wordle puzzle [BBB22],
+which will be discussed later in Section 5.
+3.2 Multiagent Rollout for Bayesian Optimization
+In some Bayesian optimization applications there arises the possibility of simultaneously performing multiple
+observations before receiving feedback about the correspondin g observation outcomes. This occurs, among
+others, in two important contexts:
+(a) In parallel computation settings, where multiple processors ar e used to perform simultaneously expen-
+sive evaluations of the function f at multiple points u. These evaluations may involve some form of
+7
+truncated simulation, so they yield evaluations of the form zu = θu + wu, where wu is the simulation
+noise.
+(b) In distributed sensor systems, where a number of sensors pr ovide in parallel relevant information
+about the random vector θ that we want to estimate; see e.g., the recent papers by Li, Krakow , and
+Gopalswamy [LKG21], [LKG22], which describe related multisensor estim ation problems.
+Of course in such cases we may treat the entire set of simultaneous observations as a single observation
+within an enlarged Cartesian product space of observations, but t here is a fundamental diﬃculty: the size of
+the observation space (and hence the number of Q-factors to be calculated by rollout at each time step) grows
+exponentially with the number of simultaneous observations. This in t urn greatly increases the computational
+requirements of the rollout algorithm.
+To address this diﬃculty, we may employ the methodology of multiagen t rollout, recently developed
+by the author in the papers [Ber20b], [Ber21], [BKB20], and the books [Ber20a], [Ber22]. This methodology
+addresses DP problems where the control at each stage consists of several distinct decisions, each one made
+by one of several agents. In multiagent rollout, the policy improvem ent is done one-agent-at-a-time in a
+given order, with (possibly partial) knowledge of the choices of the p receding agents in the order. As a
+result, the amount of computation for each policy improvement gro ws linearly with the number of agents, as
+opposed to exponentially for the standard all-agents-at-once me thod. At the same time the theoretical cost
+improvement property of the rollout algorithm can be shown to be pr eserved, while the empirical evidence
+suggests that great computational savings are achieved with har dly any performance degradation. The book
+[Ber20a], and the papers [BKB20] and [Ber21] discuss the use of dist ributed schemes, whereby the agents
+do not requite full knowledge of the choices of the preceding agent s, thereby increasing the potential for
+parallelism of the computations.
+4. GENERALIZA TION TO SEQUENTIAL ESTIMA TION OF RANDOM VECTO RS
+A more general problem that contains Bayesian optimization as a spe cial case and admits a similar treatment,
+is to sequentially estimate an m-dimensional random vector θ = (θ1, . . . , θm) by using N linear observations
+of θ of the form
+zu = a′uθ + wu, u ∈ {1, . . . , n},
+where n is some integer. Here wu are independent random variables with given probability distributions ,
+the m-dimensional vectors au are known, and a′uθ denotes the inner product of au and θ. Similar to the case
+of Bayesian optimization, the problem simpliﬁes if the given a priori dist ribution of θ is Gaussian, and the
+random variables wu are independent and Gaussian. Then, the posterior distribution of θ, given any subset
+8
+of observations, is Gaussian (thanks to the linearity of the observ ations), and can be calculated in closed
+form.
+Observations are generated sequentially at times 1 , . . . , N, one at a time and with knowledge of the
+outcomes of the preceding observations, by choosing an index uk ∈ { 1, . . . , n} at time k, at a cost c(uk).
+Thus uk are the optimization variables, and aﬀect both the quality of estimat ion of θ and the observation
+cost. The objective, roughly speaking, is to select N observations to estimate θ in a way that minimizes an
+appropriate cost function; for example, one that penalizes some f orm of estimation error plus the cost of the
+observations. We can similarly formulate the corresponding optimiza tion problem in terms of N -stage DP,
+and develop rollout algorithms for its approximate solution.
+5. ADAPTIVE CONTROL OF SYSTEMS WITH UNKNOWN P ARAMETERS
+In this section, we discuss the adaptive control of a dynamic syste m with unknown parameters. Our formu-
+lation involves simultaneous control of the system state and estima tion of the unknown parameters. In such
+problems there may be multiple observation options, so there may be a tradeoﬀ between selecting expen-
+sive/more informative observations and inexpensive/less informat ive observations. Moreover, the options for
+observation may be aﬀected by the current state of the system, so possibilities may arise to steer the system
+towards states that are favorable for observation purposes. B ayesian optimization can be viewed as a special
+case where the decision just speciﬁes the choice of observation at each step, while the system equation is
+suitably simpliﬁed, as will be discussed shortly.
+The idea of optimal observation selection in the context of stochas tic optimal control was introduced
+in multiple works from the 60s. For some modern works that include th e use of rollout, see He and Chong
+[HeC06], Hero et al. [HCC07], Chong, Kreucher, and Hero [CKH09], Jia [J ia10], Antunes and Heemels
+[AnH14], Beyme and Leung [BeL15], Khashooei, Antunes, and Heemels [KAH15], Gommans et al. [GTA17],
+Elsherif, Chong, and Kim ECK19], Hoﬀmann et al. [HSC19], Molin, Esen, a nd Johansson [MEJ19], Hoﬀmann
+et al. [HCR21], Lei et al. [LZY22], and the references given there.
+The adaptive control formulation of this section involves a state th at consists of two components:
+(a) A perfectly observed component xk that evolves over time according to a discrete-time system equatio n.
+(b) An unknown parameter θ, which belongs to some space, and is unobserved but stays consta nt. The
+perfectly observed component xk depends on θ, and can be used to estimate θ.
+We view θ as a parameter in the system equation that governs the evolution o f xk. Thus we have a system
+of the form
+xk+1 = fk(xk, θ, uk, wk), k = 0. . . . , N − 1, (5.1)
+9
+where uk is the control at time k, selected from a set Uk(xk), and wk is a random disturbance with given
+probability distribution that depends on ( xk, θ, uk). The a priori probability distribution of θ is given and
+is updated based on the observed values of the state components xk and the applied controls uk.† We also
+introduce a cost gk(xk, θ, uk, wk) for each stage k = 0, . . . , N − 1, and a terminal cost gN (xN ), and view the
+problem as a Partially Observed Markovian Decision Problem (POMDP) w ith a special structure.
+Note that xk may involve components that play the role of observations. For exa mple, θ may be a
+vector (θ1, . . . , θm) in ℜm, uk may correspond to selection of one out of m possible noisy observations of θu,
+u ∈ {1, ..., m}, and the system equation may have the form
+xk+1 = θuk + wuk ;
+cf. Eq. (1.1). This corresponds to the Bayesian optimization proble m of Sections 1-3. Thus the adaptive
+control formulation of the present section includes Bayesian optim ization as a special case.
+In principle θ may take values within a ﬁnite or an inﬁnite set (such as ℜm). However, to facilitate
+the presentation of the subsequent DP analysis, and correspond ing approximation in value space and rollout
+algorithms, we will assume that θ can take one of n known values θ1, . . . , θn from within some unspeciﬁed
+space:
+θ ∈ {θ1, . . . , θn}.
+Moreover, we assume that the information vector
+Ik = (x0, . . . , xk, u0, . . . , uk−1)
+is available at time k, and is used to compute the posterior probabilities
+bi
+k = P {θ = θi | Ik}, i = 1, . . . , n,
+and the posterior distribution
+bk = (b1
+k, . . . , bn
+k ).
+Together with the perfectly observed state xk, the posterior distribution bk forms the pair ( xk, bk), which is
+commonly called the belief state of the POMDP at time k.
+Note that according to the classical methodology of POMDP (see e.g ., [Ber17a], Chapter 4), the belief
+component bk+1 is determined by the belief state ( xk, bk), the control uk, and the observation obtained at
+time k + 1, i.e., xk+1. Thus bk can be updated according to an equation of the form
+bk+1 = Bk(xk, bk, uk, xk+1),
+† We do not address the complex measurability issues needed to make our problem deﬁnition mathematically
+rigorous. In the algorithms to be presented in this section, we will assume that θ takes values within a ﬁnite set.
+10
+where Bk is an appropriate function, which can be viewed as a recursive estima tor of θ. There are several
+approaches to implement this estimator (perhaps with some approx imation error), including closed formed
+expressions that involve the use of Bayes’ rule, as well as the simula tion-based method of particle ﬁltering.
+5.1 The Exact DP Algorithm - Approximation in V alue Space
+We will now describe an exact DP algorithm that operates in the space of information vectors Ik. To describe
+this algorithm, let us denote by J ∗
+k (Ik) the optimal cost starting at information vector Ik at time k. Using
+the equation
+Ik+1 = (Ik, xk+1, uk) =
+{
+Ik, fk(xk, θ, uk, wk), uk
+)
+,
+the algorithm takes the form
+J ∗
+k (Ik) = min
+uk∈Uk(xk)
+Eθ,wk
+{
+gk(xk, θ, uk, wk)+
+J ∗
+k+1
+{
+Ik, fk(xk, θ, uk, wk), uk
+)
+| Ik, uk
+}
+,
+(5.2)
+for k = 0, . . . , N − 1, with J ∗
+N (IN ) = gN (xN ); see e.g., the DP textbook [Ber17a], Section 4.1.
+By using the law of iterated expectations,
+Eθ,wk {· | Ik, uk} = Eθ
+{
+Ewk {· | Ik, θ, uk} | Ik, uk
+}
+,
+we can rewrite this DP algorithm as
+J ∗
+k (Ik) = min
+uk∈Uk(xk)
+n∑
+i=1
+bi
+kEwk
+{
+gk(xk, θi, uk, wk)+
+J ∗
+k+1
+{
+Ik, fk(xk, θi, uk, wk), uk
+)
+| Ik, θi, uk
+}
+.
+(5.3)
+The summation over i above represents the expected value over θ conditioned on Ik and uk.
+The algorithm (5.3) is typically very hard to implement, because of the dependence of J ∗
+k+1 on the
+entire information vector Ik+1, which expands in size according to
+Ik+1 = (Ik, xk+1, uk).
+To address this implementation diﬃculty, we may use approximation in v alue space, based on replacing J ∗
+k+1
+in the DP algorithm (5.2) with some function that can be obtained (eith er oﬀ-line or on-line) with a tractable
+computation.
+One approximation possibility is based on the use of the optimal cost f unction corresponding to each
+parameter value θi,
+ˆJ i
+k+1(xk+1), i = 1, . . . , n. (5.4)
+11
+Here, ˆJ i
+k+1(xk+1) is the optimal cost that would be obtained starting from state xk+1 under the assumption
+that θ is known to be equal to θi; this corresponds to a perfect state information problem. Then, given xk
+and the posterior distribution bk (which is detemined from Ik), an approximation in value space scheme with
+one-step lookahead minimization applies at time k a control
+˜uk ∈ arg min
+uk∈Uk(xk)
+n∑
+i=1
+bi
+kEwk
+{
+gk(xk, θi, uk, wk)+
+ˆJ i
+k+1
+{
+fk(xk, θi, uk, wk)
+)
+| xk, θi, uk
+}
+.
+(5.5)
+Thus, instead of the optimal control, which minimizes the optimal Q-f actor of ( Ik, uk) appearing in the right
+side of Eq. (5.2), we apply control ˜ uk that minimizes the expected value over θ of the optimal Q-factors that
+correspond to ﬁxed and known values of θ.
+A simpler version of this approach is to use the same function ˆJ i
+k+1 for every i. However, the dependence
+on i may be useful in some contexts where diﬀerences in the value of i may have a radical eﬀect on the
+qualitative character of the system equation.
+Generally, the optimal costs ˆJ i
+k+1(xk+1) that correspond to the diﬀerent parameter values θi [cf. Eq.
+(5.4)] may be hard to compute, despite their perfect state inform ation structure. † An alternative possibility
+is to use oﬀ-line trained feature-based or neural network-based approximations to ˆJ i
+k+1(xk+1).
+In an inﬁnite horizon variant of the problem, it is reasonable to expec t that the estimate of the parameter
+θ improves over time, and that with a suitable estimation scheme, it con verges asymptotically to the correct
+value of θ, call it θ∗, i.e.,
+lim
+k→∞
+bi
+k =
+{
+1 if θi = θ∗,
+0 if θi ⁄= θ∗.
+Then it can be seen that the generated one-step lookahead contr ols ˜uk are asymptotically obtained from the
+Bellman equation that corresponds to the correct parameter θ∗, and are typically optimal in some asymptotic
+sense. Schemes of this type have been discussed in the adaptive co ntrol literature since the 70s; see e.g.,
+Mandl [Man74], Doshi and Shreve [DoS80], Kumar and Lin [KuL82], Kuma r [Kum85]. Moreover, some of
+the pitfalls of performing parameter identiﬁcation while simultaneous ly applying adaptive control have been
+described by Borkar and Varaiya [BoV79], and by Kumar [Kum83]; see [B er17], Section 6.8 for a related
+discussion.
+5.2 Rollout
+Another approximation possibility is to use the costs of given policies πi in place of the optimal costs
+† In favorable special cases, such as linear quadratic proble ms, the optimal costs ˆJ i
+k+1(xk+1) may be easily
+calculated in closed form. Still, however, even in such case s the calculation of the belief probabilities bi
+k may not be
+simple, and may require the use of a system identiﬁcation alg orithm.
+12
+ˆJ i
+k+1(xk+1) in the approximation in value space scheme of Eq. (5.5). In this case the one-step lookahead
+scheme (5.5) takes the form
+˜uk ∈ arg min
+uk∈Uk(xk)
+n∑
+i=1
+bi
+kEwk
+{
+gk(xk, θi, uk, wk)+
+ˆJ i
+k+1,πi
+{
+fk(xk, θi, uk, wk)
+)
+| xk, θi, uk
+}
+,
+(5.6)
+and has the character of a rollout algorithm, with πi = {µi
+0, . . . , µi
+N −1}, i = 1 , . . . , n, being known base
+policies, with components µi
+k that depend only on xk. Here, the term
+ˆJ i
+k+1,πi
+{
+fk(xk, θi, uk, wk)
+)
+in Eq. (5.6) is the cost of the base policy πi, calculated starting from the next state
+xk+1 = fk(xk, θi, uk, wk),
+under the assumption that θ will stay ﬁxed at the value θ = θi until the end of the horizon. These costs
+must be computed separately for each of the n values θi, and averaged using the belief distribution bk to
+form the Q-factors that are minimized in Eq. (5.6) to obtain the rollou t control ˜uk.
+5.3 The Case of a Deterministic System
+Let us now consider the case where the system (5.1) is deterministic of the form
+xk+1 = fk(xk, θ, uk). (5.7)
+Then, while the problem still has a stochastic character due to the u ncertainty about the value of θ, the DP
+algorithm (5.3) and its approximation in value space counterparts ar e greatly simpliﬁed because there is no
+expectation over wk to contend with. Indeed, given a state xk, a parameter value θi, and a control uk, the
+on-line computation of the control of the rollout-like algorithm (5.6) , takes the form
+˜uk ∈ arg min
+uk∈Uk(xk)
+n∑
+i=1
+bi
+k
+(
+gk(xk, θi, uk) + ˆJ i
+k+1,πi
+{
+fk(xk, θi, uk)
+))
+. (5.8)
+Note that the term
+ˆJ i
+k+1,πi
+{
+fk(xk, θi, uk)
+)
+in the above equation must be computed for every pair ( uk, θi), with uk ∈ Uk(xk), i = 1, . . . , n. However, its
+computation does not involve Monte Carlo simulation, and can be perf ormed with a deterministic propagation
+13
+x0 ) . . . 
+). . . ). . . 
+uk x
+k xN
+k xk+1 
+k u′
+k
+. . . Q -Factors 
+-Factors Current State x
+Current State xk
+∗ x′
+k+1 
+0 x1
+x
+′′ 
+k+1 
++1 x
+′′′ 
+k+1 
+2 Next States Final States 
+Next States Final States 
+u θ1
+θ2
+u θ1
+θ2
+Price Rise Base Policy π1
+Price Rise Base Policy π1
+Base Policy π2
+Base Policy π2
+Figure 5.1 Schematic illustration of adaptive control by rollout for d eterministic systems. The Q-
+factor Qk(uk, θi) is computed for every pair ( uk, θi) by using the base policy πi and deterministic
+propagation of the system equation starting from the next st ate
+xk+1 = fk(xk, θi, uk).
+The Q-factor Qk(uk, θi) are then averaged over θi, using the current belief distribution bk, and
+the control applied is the one that minimizes the averaged Q- factor
+n∑
+i=1
+bi
+kQk(uk, θi)
+over uk ∈ Uk(xk).
+from the state xk+1 of Eq. (5.7) up to the end of the horizon, using the base policy πi, while assuming that
+θ is ﬁxed at the value θi.
+The term
+Qk(uk, θi) = gk(xk, θi, uk) + ˆJ i
+k+1,πi
+{
+fk(xk, θi, uk)
+)
+appearing on the right side of Eq. (5.8) can bet viewed as a Q-factor . Its expected value,
+ˆQk(uk) =
+n∑
+i=1
+bi
+kQk(uk, θi),
+must be calculated for every uk ∈ Uk(xk), and the computation of the rollout control ˜ uk is then obtained
+from the minimization
+˜uk ∈ arg min
+uk ∈Uk(xk)
+ˆQk(uk);
+cf. Eq. (5.8). This computation is illustrated in Fig. 5.1.
+The case of a deterministic system is particularly interesting becaus e we can typically expect that the
+true parameter θ∗ is identiﬁed in a ﬁnite number of stages, since at each stage k, we are receiving a noiseless
+14
+measurement relating to θ, namely the state xk. Once this happens, the problem becomes one of perfect
+state information.
+An intuitive example that demonstrates the deterministic system ca se is the popular Worlde puzzle.
+Example 5.1 (The Wordle Puzzle)
+Wordle is a decoding puzzle whereby we try to guess a mystery w ord θ∗ out of a known ﬁnite collection of
+5-letter words. This is done with sequential guesses each of which provides additional information on the correct
+word θ∗, by using certain given rules to shrink the current mystery l ist (the smallest list that contains θ∗, based
+on the currently available information). The objective is t o minimize the number of guesses to ﬁnd θ∗.
+The rules for shrinking the mystery list relate to the common letters between the word guesses and the
+mystery word θ∗, and they will not be described here (there is a large literat ure regarding Wordle). Moreover,
+θ∗ is assumed to be chosen from the initial collection of 5-lett er words according to a uniform distribution.
+Under this assumption, it can be shown that the belief distri bution bk at stage k continues to be uniform
+over the current mystery list. As a result, we may use as state xk the mystery list at stage k, which evolves
+deterministically according to an equation of the form (5.7 ), where uk is the guess word at stage k. There are
+several base policies to use in the rollout-like algorithm ( 5.8), which are described in the paper by Bhambri,
+Bhattacharjee, and Bertsekas [BBB22], together with compu tational results showing that the corresponding
+rollout algorithm (5.8) performs remarkably close to optim al (within less than 0 .5% of the optimal average
+number of guesses, as calculated by Selby [Sel22]).
+We also note that the rollout approach applies to several var iations of the Wordle puzzle for which an
+optimal solution is intractable. Such variations may inclu de for example a larger length ℓ > 5 of mystery words,
+and/or a known nonuniform distribution over the initial col lection of ℓ-letter words; see [BBB22]. The rollout
+approach also applies to the popular family of Mastermind ga mes that centers around ﬁnding a hidden sequence
+of objects (e.g., letters or colors) using partial observat ions, and shares the sequential decoding structure of the
+Wordle puzzzle.
+Finally, let us note that an illustration similar to the one of Fig. 5.1 applies for the case of the stochastic
+system of Eq. (5.1) [cf. the rollout scheme (5.6)]. In this case, a Q-f actor
+Qk(uk, θi, wk) = gk(xk, θi, uk, wk) + ˆJ i
+k+1,πi
+{
+fk(xk, θi, uk, wk)
+)
+must be calculated for every triplet ( uk, θi, wk), using the base policy πi. The rollout control ˜uk is obtained
+by minimizing the expected value of this Q-factor [averaged using the distribution of ( θ, wk)]; cf. Eq. (5.6).
+However, for a stochastic system, in contrast to the determinist ic case, the calculation of the Q-factors
+Qk(uk, θi, wk)
+requires Monte Carlo simulation, to take into account the current a nd future noise terms wk, . . . , wN −1.
+The Monte Carlo computation cost may be mitigated by using a certain ty equivalence approximation for the
+future noise terms wk+1, . . . , wN −1, as noted in Section 3.1, albeit with additional potential loss of optima lity.
+15
+6. CONCLUDING REMARKS
+We introduced a uniﬁed framework for construction of surrogate cost functions by Bayesian optimization,
+and for more general sequential estimation and control problems . A common attribute of these problems
+is the aim to estimate some hidden variables through the use of targe ted sequential observations. We
+have focused on the rollout algorithm methodology, which is simple and well suited for this framework.
+Its principal characteristic is that it yields high quality approximate s olutions, with improved performance
+over commonly used heuristics, which can be used as base policies. Mo reover, the rollout algorithm can
+be economically extended to multiagent problems, involving simultaneo us observations, where the classical
+Bayesian optimization methods may be impractical.
+While the rollout algorithm generally requires a substantial amount of Monte Carlo simulation, it admits
+parallelization and approximations based on truncation of its horizon and the use of certainty equivalence
+beyond the ﬁrst step of the simulation. These approximations spee d up the computations and enlarge the
+range of the practical applications of the rollout approach.
+7. REFERENCES
+[AnH14] Antunes, D., and Heemels, W. P. M. H., 2014. “Rollout Event- Triggered Control: Beyond Periodic
+Control Performance,” IEEE Trans. on Automatic Control, Vol. 59 , pp. 3296-3311.
+[BBB22] Bhambri, S., Bhattacharjee, A., and Bertsekas, D. P., 202 2. “Reinforcement Learning Methods for
+Wordle: A POMDP/Adaptive Control Approach,” arXiv preprint arXiv :2211.10298.
+[BCD10] Brochu, E., Cora, V. M., and De Freitas, N., 2010. “A Tutoria l on Bayesian Optimization of Expen-
+sive Cost Functions, with Application to Active User Modeling and Hiera rchical Reinforcement Learning,”
+arXiv preprint arXiv:1012.2599.
+[BKB20] Bhattacharya, S., Kailas, S., Badyal, S., Gil, S., Bertsekas, D ., 2020.`‘Multiagent Rollout and Policy
+Iteration for POMDP with Application to Multi-Robot Repair Problems,” Proc. CORL.
+[BeC99] Bertsekas, D. P., and Casta˜ non, D. A., 1999. “Rollout Algo rithms for Stochastic Scheduling Prob-
+lems,” Heuristics, Vol. 5, pp. 89-108.
+[[BeL15] Beyme, S., and Leung, C., 2015. “Rollout Algorithms for Wirele ss Sensor Network-Assisted Target
+Search,” IEEE Sensors Journal, Vol. 15, pp. 3835-3845.
+[Ber17] Bertsekas, D. P., 2017. Dynamic Programming and Optimal C ontrol, Vol. I, 4th Ed., Athena Scien-
+tiﬁc, Belmont, MA.
+16
+[Ber19] Bertsekas, D. P., 2019. Reinforcement Learning and Optim al Control, Athena Scientiﬁc, Belmont,
+MA.
+[Ber20a] Bertsekas, D. P., 2020. Rollout, Policy Iteration, and Dist ributed Reinforcement Learning, Athena
+Scientiﬁc, Belmont, MA.
+[Ber20b] Bertsekas, D. P., 2020. “Multiagent Value Iteration Algor ithms in Dynamic Programming and
+Reinforcement Learning,” Results in Control and Optimization J., Vol. 1.
+[Ber21] Bertsekas, D. P., 2021. “Multiagent Reinforcement Learning: Rollout and Policy Iteration,” IEEE/CAA
+Journal of Automatica Sinica, Vol. 8, pp. 249-271.
+[Ber22] Bertsekas, D. P., 2022. Lessons from AlphaZero for Optim al, Model Predictive, and Adaptive Control,
+Athena Scientiﬁc, Belmont, MA.
+[BoV79] Borkar, V., and Varaiya, P. P., 1979. “Adaptive Control of Markov Chains, I: Finite Parameter
+Set,” IEEE Trans. Automatic Control, Vol. AC-24, pp. 953-958.
+[CKH09] Chong, E.K., Kreucher, C. M. and Hero, A. O., 2009. “Partia lly Observable Markov Decision
+Process Approximations for Adaptive Sensing, Discrete Event Dyn amic Systems, Vol. 19, pp. 377-422.
+[DoS80] Doshi, B., and Shreve, S., 1980. “Strong Consistency of a M odiﬁed Maximum Likelihood Estimator
+for Controlled Markov Chains,” J. of Applied Probability, Vol. 17, pp. 7 26-734.
+[ECK19] Elsherif, F., Chong, E. K. and Kim, J. H., 2019. “Energy-Eﬃc ient Base Station Control Framework
+for 5G Cellular Networks Based on Markov Decision Process,” IEEE Tr ansactions on Vehicular Technology,
+Vol. 68, pp. 9267-9279.
+[FoK09] Forrester, A. I., and Keane, A. J., 2009. “Recent Advanc es in Surrogate-Based Optimization.
+Progress in Aerospace Sciences,” Vol. 45, pp. 50-79.
+[Fra18] Frazier, P. I., 2018. “A Tutorial on Bayesian Optimization,” a rXiv preprint arXiv:1807.02811.
+[GHC21] Gerlach, T., Hoﬀmann, F., and Charlish, A., 2021. “Policy Rollou t Action Selection with Knowledge
+Gradient for Sensor Path Planning,” 2021 IEEE 24th International Conference on Information Fusion, pp.
+1-8.
+[GMP15] Ghavamzadeh, M., Mannor, S., Pineau, J., and Tamar, A., 201 5. “Bayesian Reinforcement Learn-
+ing: A Survey,” Foundations and Trends in Machine Learning, Vol. 8, p p. 359-483.
+[GTA17] Gommans, T. M. P., Theunisse, T. A. F., Antunes, D. J., and H eemels, W. P. M. H., 2017.
+“Resource-Aware MPC for Constrained Linear Systems: Two Rollou t Approaches,” Journal of Process
+17
+Control, Vol. 51, pp. 68-83.
+[HCC07] Hero, A. O., Casta˜ non, D., Cochran, D., and Kastella, K., ed s., 2007. Foundations and Applications
+of Sensor Management, Springer Science.
+[HCR21] Hoﬀmann, F., Charlish, A., Ritchie, M., and Griﬃths, H., 2021. “ Policy Rollout Action Selection in
+Continuous Domains for Sensor Path Planning,” IEEE Transactions o n Aerospace and Electronic Systems.
+[HSC19] Hoﬀmann, F., Schily, H., Charlish, A., Ritchie, M., and Griﬃths, H ., 2019. “A Rollout Based Path
+Planner for Emitter Localization,” 22th International Conference on Information Fusion.
+[HeC06] He, Y., and Chong, E. K., 2006. “Sensor Scheduling for Targ et Tracking: A Monte Carlo Sampling
+Approach,” Digital Signal Processing, Vol. 16, pp. 533-545.
+[JCG20] Jiang, S., Chai, H., Gonzalez, J., and Garnett, R., 2020. “BIN OCULARS for Eﬃcient, Nonmyopic
+Sequential Experimental Design,” In Proc. Intern. Conference o n Machine Learning, pp. 4794-4803.
+[JJB20] Jiang, S., Jiang, D. R., Balandat, M., Karrer, B., Gardner, J. R., and Garnett, R., 2020. “Eﬃcient
+Nonmyopic Bayesian Optimization via One-Shot Multi-Step Trees,” arX iv preprint arXiv:2006.15779.
+[Jia10] Jia, Q. S., 2010. “A Rollout Method for Finite-Stage Event-Ba sed Decision Processes,” IF AC Pro-
+ceedings Vol. 43(12), pp. 247-252.
+[KAH15] Khashooei, B. A., Antunes, D. J., and Heemels, W. P. M. H., 20 15. “Rollout Strategies for Output-
+Based Event-Triggered Control,” In Proc. 2015 European Contro l Conference, pp. 2168-2173.
+[KuL82] Kumar, P. R., and Lin, W., 1982. “Optimal Adaptive Controller s for Unknown Markov Chains,”
+IEEE Trans. Automatic Control, Vol. AC-27, pp. 765-774.
+[Kum83] Kumar, P. R., 1983. “Optimal Adaptive Control of Linear-Q uadratic-Gaussian Systems,” SIAM J.
+on Control and Optimization, Vol. 21, pp. 163-178.
+[Kum85] Kumar, P. R., 1985. “A Survey of Some Results in Stochastic Adaptive Control,” SIAM J. on
+Control and Optimization, Vol. 23, pp. 329-380.
+[LEC20] Lee, E. H., Eriksson, D., Cheng, B., McCourt, M., and Bindel, D ., 2020. “Eﬃcient Rollout Strategies
+for Bayesian Optimization,” arXiv preprint arXiv:2002.10539.
+[LEP21] Lee, E. H., Eriksson, D., Perrone, V., and Seeger, M., 2021. “A Nonmyopic Approach to Cost-
+Constrained Bayesian Optimization,” In Uncertainty in Artiﬁcial Inte lligence Proceedings, pp. 568-577.
+[LKG21] Li, T., Krakow, L. W., and Gopalswamy, S., 2021. “Optimizing Co nsensus-Based Multi-Target
+Tracking with Multiagent Rollout Control Policies,” In 2021 IEEE Confe rence on Control Technology and
+18
+Applications, pp. 131-137.
+[LKG22] Li, T., Krakow, L. W., and Gopalswamy, S., 2022. “SMA-NBO: A Sequential Multi-Agent Planning
+with Nominal Belief-State Optimization in Target Tracking,” arXiv prep rint arXiv:2203.01507.
+[L WW16] Lam, R., Willcox, K., and Wolpert, D. H., 2016. “Bayesian Optimiz ation with a Finite Budget: An
+Approximate Dynamic Programming Approach,” In Advances in Neura l Information Processing Systems,
+pp. 883-891.
+[LZY22] Lei, W., Zhang, D., Ye, Y., and Lu, C., 2022. “Joint Beam Trainin g and Data Transmission Control
+for Mmwave Delay-Sensitive Communications: A Parallel Reinforceme nt Learning Approach,” IEEE J. of
+Selected Topics in Signal Processing, Vol. 16, pp. 447-459.
+[Lee20] Lee, E. H., 2020. “Budget-Constrained Bayesian Optimizat ion, Doctoral dissertation, Cornell Uni-
+versity.
+[Man74] Mandl, P., 1974. “Estimation and Control in Markov Chains,” A dvances in Applied Probability,
+Vol. 6, pp. 40-60.
+[MEJ19] Molin, A., Esen, H., and Johansson, K. H., 2019. “Scheduling N etworked State Estimators Based
+on Value of Information,” Automatica, Vol. 110.
+[PSC22] Paulson, J. A., Sonouifar, F., and Chakrabarty, A., 2022. “ Eﬃcient Multi-Step Lookahead Bayesian
+Optimization with Local Search Constraints,” IEEE Conf. on Decision and Control, pp. 123-129.
+[PoF08] Powell, W. B., and Frazier, P., 2008. “Optimal Learning,” in Sta te-of-the-Art Decision-Making Tools
+in the Information-Intensive Age, INFORMS, pp. 213-246.
+[PoR12] Powell, W. B., and Ryzhov, I. O., 2012. Optimal Learning, J. W iley, N. Y.
+[QHS05] Queipo, N. V., Haftka, R. T., Shyy, W., Goel, T., Vaidyanathan , R., and Tucker, P. K., 2005.
+“Surrogate-Based Analysis and Optimization,” Progress in Aerospa ce Sciences, Vol. 41, pp. 1-28.
+[RPF12] Ryzhov, I. O., Powell, W. B., and Frazier, P. I., 2012. “The Kn owledge Gradient Algorithm for a
+General Class of Online Learning Problems,” Operations Research, V ol. 60, pp. 180-195.
+[RaW06] Rasmussen, C. E., and Williams, C. K., 2006. Gaussian Process es for Machine Learning, MIT
+Press, Cambridge, MA.
+[SSW16] Shahriari, B., Swersky, K., Wang, Z., Adams, R. P., and De Fre itas, N., 2015. “Taking the Human
+Out of the Loop: A Review of Bayesian Optimization,” Proc. of IEEE, V ol. 104, pp. 148-175.
+[SWM89] Sacks, J., Welch, W. J., Mitchell, T. J., and Wynn, H. P., 1989. “ Design and Analysis of Computer
+19
+Experiments,” Statistical Science, Vol. 4, pp. 409-423.
+[Sas02] Sasena, M. J., 2002. Flexibility and Eﬃciency Enhancements f or Constrained Global Design Opti-
+mization with Kriging Approximations, Ph.D. Thesis, Univ. of Michigan.
+[Sel22] Selby A., 2022. “The Best Strategies for Wordle (last edited o n 17 March 2022),” Available at URL
+(Accessed: 14 November 2022).
+[YuK20] Yue, X., and Kontar, R. A., 2020. “Lookahead Bayesian Opt imization via Rollout: Guarantees and
+Sequential Rolling Horizons,” arXiv preprint arXiv:1911.01004.
+20

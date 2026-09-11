@@ -1,0 +1,580 @@
+                                          Geometry-Aware Set-Membership Multilateration:
+                                              Directional Bounds and Anchor Selection
+
+                                                                                               Giuseppe C. Calafiore
+                                                        Fellow, IEEE ­ Department of Electronics and Telecommunications, Politecnico di Torino, Italy
+
+                                                                                              Email: giuseppe.calafiore@polito.it
+
+arXiv:2603.14263v1 [eess.SY] 15 Mar 2026  Abstract--In this paper, we study anchor selection for range-          term and yields a convex polyhedron Xd containing the true
+                                                                                                                 nonconvex feasible set Xtrue. Intersecting Xd with the upper-
+                                          based localization under unknown-but-bounded measurement               ball set H gives a refined localization set
+
+                                          errors. We start from the convex localization set X = Xd  H
+
+                                          recently introduced in [1], where Xd is a polyhedron obtained
+
+                                          from pairwise differences of squared-range equations between the       X = Xd  H, Xtrue  X  Xd.  (1)
+
+                                          unknown location x and the anchors, and H is the intersection
+
+                                          of upper-range hyperspheres. Our first goal is offline design: we      The same paper also develops SOCP/SDP procedures for
+                                                                                                                 inner and outer approximations of X . Among the papers
+                                          derive geometry-only E- and D-type scores from the centered            closest in spirit, Shi et al. [10] also assume bounded range
+                                                                                                                 errors, but formulate a worst-case point-estimation problem
+                                          scatter matrix S(A) = AQmA, where A collects the anchor                solved via semidefinite relaxation rather than a global set-
+                                                                                                                 valued certification problem. One of the open directions
+                                          coordinates  and  Qm  =  Im  -  1  11  is  the  centering  projector,  explicitly pointed out in [1] is the need for a formal analysis
+                                                                          m                                      of how conservative the inclusion Xtrue  X becomes as
+                                          showing that min(S(A)) controls worst-direction and diameter           the anchor geometry deteriorates. This paper takes a design-
+                                                                                                                 and-selection viewpoint on that question. Suppose a platform
+                                          surrogates for the polyhedral certificate Xd, while det S(A)           has access to a pool of candidate anchors or ranging agents,
+                                                                                                                 but can activate only a subset because of communication,
+                                          controls principal-axis volume surrogates. Our second goal is          power, or scheduling constraints. Which subset should be
+                                                                                                                 chosen before the measurements are collected, and how should
+                                          online uncertainty assessment for a selected subset of anchors:        its realized uncertainty be certified after the measurements
+                                                                                                                 are available? Our answer separates these two tasks. For
+                                          exploiting the special structure X = Xd  H, we derive a                offline design, we derive geometry-only E- and D-type scores
+                                                                                                                 from the centered scatter matrix S(A), leading to target-free
+                                          simplex-aggregated enclosing ball for H and an exact support-          rules for anchor subset selection. For online certification, we
+                                                                                                                 exploit the special structure X = Xd  H and derive new
+                                          function formula for H, which lead to finite hybrid bounds             H-aware size bounds that explain why the actual localization
+                                                                                                                 set can remain much smaller than the loose polyhedral
+                                          for the actual localization set X , even when the polyhedral           certificate suggested by Xd alone. The resulting picture is a
+                                                                                                                 deterministic, set-membership analogue of anchor-geometry
+                                          certificate deteriorates. Numerical experiments are performed in       design in stochastic localization. The closest approach in spirit
+                                                                                                                 on the stochastic side is the literature on Crame´r­Rao/Fisher-
+                                          two dimensions, showing that geometry-based subset selection is        information bounds, sensor placement, and geometry design
+                                                                                                                 for range-only localization, see, e.g., [11], [12], [14]; the
+                                          close to an oracle combinatorial search, that the D-score slightly     present contribution differs in that the objective is a guaranteed
+                                                                                                                 global uncertainty set rather than a local covariance surrogate.
+                                          dominates the E-score for the area-oriented metric considered          Our new contributions are: 1) geometry-only E- and D-
+                                                                                                                 type anchor-selection scores with explicit worst-direction and
+                                          here, and that the new H-aware certificates track the realized         principal-axis interpretations for the polyhedral certificate
+                                                                                                                 Xd; 2) H-aware online certificates that remain finite and
+                                          size of the selected localization set closely.                         informative even when Xd becomes ill-conditioned; and 3)
+                                                                                                                 exhaustive two-dimensional experiments that separate offline
+                                                                   I. INTRODUCTION                               selection from post-measurement certification and show near-
+                                                                                                                 oracle behavior on the tested instances.
+                                             Range-based localization and multilateration are classical
+                                          primitives in navigation, robotics, and sensor networks. Stan-
+                                          dard formulations typically assume stochastic errors and seek
+                                          one point estimate via least-squares, maximum-likelihood, or
+                                          convex-relaxation methods; representative references include
+                                          the classical linearized estimator of Chan and Ho, the
+                                          source-localization formulation of Beck, Stoica, and Li, and
+                                          SDP/SOCP relaxations for sensor-network localization [4]­
+                                          [7]. Classical algebraic multilateration formulations for GPS-
+                                          type equations go back to Bancroft [8], while robust convex
+                                          formulations also address anchor-position uncertainty [9]. A
+                                          recent survey is given in [13]. By contrast, set-membership
+                                          and interval methods seek guaranteed uncertainty sets under
+                                          unknown-but-bounded errors, and are classical in bounded-
+                                          error identification and interval analysis [2], [3].
+
+                                             In the journal precursor [1], multilateration was addressed
+                                          in this latter deterministic framework. The range errors are
+                                          assumed only to satisfy interval bounds, and the goal is to
+                                          compute a guaranteed set containing all positions compatible
+                                          with the measurements. The key step in [1] is a difference-
+                                          of-measurements construction that eliminates the quadratic
+      II. SET-MEMBERSHIP LOCALIZATION PROBLEM
+
+   Consider m known anchors' positions a(i)  Rn, i =
+1, . . . , m, collected in the matrix
+
+A = [a(1) · · · a(m)]  Rn×m,
+
+and measurements i are taken of the (squared) Euclidean
+distance between an unknown location x and the anchors:
+
+x - a(i)22 = i, i = 1, . . . , m.        (2)
+
+Here, according to the setup proposed in [1], we assume
+
+that i is corrupted by unknown-but-bounded noise, hence
+only interval bounds i-  i  i+ are assumed known.
+This model actually covers both plain and squared range
+
+measurements with absolute or relative unknown-but-bounded
+
+errors, as detailed in [1].
+
+Remark 1 (Noise Model Equivalence). In practice, depending                Fig. 1. Localization with three anchors in R2.
+on the physical principles they are based on (e.g. time-of-flight,
+power attenuation, etc.), different types of range measurement      denote the measurement hyperrectangle. Proposition 3 in [1]
+devices may have different types of errors, such as errors on       shows that the set of all x compatible with all difference-
+the distance itself, errors on the squared distance, or relative    of-measurements equations for some   H is a polyhedron
+errors. However, under the interval uncertainty model, an           which admits the explicit representation
+interval error on the distance can be mapped directly and
+exactly to an equivalent model with interval uncertainty on         Xd = x  Rn :    R, -  Qm
+the squared distance, and the same is true for relative errors                                       - 2QmAx + 1  + . (4)
+on the distance or squared distance. Indeed, Section 2 of
+[1]) shows that the squared interval model (2) is general and
+representative of most practical situations.
+
+   According to such model and bounds, the unknown target's         Moreover, if
+position belongs to a nonconvex geometrical region Xtrue,
+which is the intersection of m hyperspherical annuli:                             m
+
+                           m                                              H=           x  Rn : x - a(i)2  i+ ,            (5)
+
+       Xtrue = {x  Rn : i-  x - a(i)22  i+}, (3)                                  i=1
+
+                          i=1                                       then the localization set is X = Xd  H and satisfies Xtrue 
+                                                                    X  Xd, see [1]. A useful consequence of (4) is that the
+see Figure 1 for an illustrative example in dimension n =           scalar  can be eliminated explicitly. Let qi denote row i of
+2 with m = 3 anchors (and also Figure 2 for a detailed              QmA, and, for a fixed x, define the intervals
+visualization of the localization construction).
+                                                                                           Ii(x) =. [i(x), ui(x)],
+   Now, for any pair of measurements 1  i < j  m
+we consider the difference of measurements equations (2),           with          i(x) =. i- - (Qm)i + 2qix,
+obtaining
+
+           2(a(j) - a(i))x = (j - i) - (j - i),                                   ui(x) =. i+ - (Qm)i + 2qix.
+
+which are affine in x, and in which we defined i =. a(i)22          Then (4) is equivalent to the existence of one scalar  such
+for all i. Stacking all p = m(m - 1)/2 pairwise differences         that   Ii(x) for all i, that is,
+gives
+                                                                                        m
+                        2EAx = E( - ),
+                                                                                           Ii(x) = .
+where E  Rp×m has rows (e(i) - e(j)) for pairs (i, j),
+i < j. Equivalently (see [1]), E is the incidence matrix of                            i=1
+
+the complete difference-of-measurements graph, and it holds         Since the Ii(x) are intervals on the real line, a common
+that EE = mQm, where Qm is the centering projector                  intersection exists if and only if every lower endpoint is no
+                                                                    larger than every upper endpoint, namely
+
+Qm  =.  Im  -  1 11.                                                      i(x)  uj(x), i, j = 1, . . . , m.
+               m
+                                                                    Substituting the expressions above yields
+Let                                                                        2(qi - qj )x  j+ - i- - (Qm)j + (Qm)i.
+          H = [-, +] = {  Rm : -    +},
+Defining                                                                   Let  = 2 - 1. Since 1, 2  H, we have |i|  wi for all
+             ij =. j+ - i- - (Qm)j + (Qm)i,                                i, hence
+
+we obtain the explicit halfspace representation                                       |v(x1     -  x2)|     1 w    QmAS(A)-1v       .
+                                                                                                            2
+ Xd = {x  Rn : 2(qi - qj)x  ij, i, j = 1, . . . , m}. (6)
+                                                                           Taking the supremum over x1, x2  Xd proves the second
+In other words,  only plays the role of a common shift                     inequality in (8). The last inequality follows from Cauchy-
+aligning the m scalar intervals Ii(x); eliminating  amounts to             Schwarz and
+enforcing pairwise overlap of those intervals. Representation
+(6) is convenient in the optimization problems of Section V.               QmAS(A)-1v22 = vS(A)-1AQmAS(A)-1v                                       (9)
+The outer bounding set Xd, and its refinement X , provide                                           = vS(A)-1v.
+set-membership outer-bounding estimates of the true set Xtrue
+of points compatible with the measurements. In what follows                Corollary 1. Under the assumptions of Proposition 1,
+we analyze the dependence of Xd and of X from the anchors'
+geometry.                                                                             diam(X )  diam(Xd)                   w2       . (10)
+
+                                                                                                                      2 min(S(A))
+
+III. GEOMETRY SCORES AND H-AWARE CERTIFICATES                              Proof. Take the supremum of the last inequality in (8) over
+                                                                           all unit vectors v, and use
+
+   A relevant object in our analysis is the centered scatter                max vS(A)-1v              =  max(S(A)-1)          =        1
+matrix                                                                                                                                          .
+                                                                           v 2 =1
+                                              m                                                                                  min(S(A))
+
+        S(A) =. AQmA = (a(i) - a¯)(a(i) - a¯), (7)                         Proposition 2. Assume H = . For any simplex weight
+                                                                                       p  m =. {p  Rm : p  0, 1p = 1},
+                                             i=1
+
+where   a¯  =  1   m      a(i)  is  the  anchors'  centroid.  The  matrix
+               m   i=1
+
+S(A) is translation invariant, and it is positive definite exactly
+
+when the anchors do not lie in a proper affine subspace of                 define                        c(p) =. Ap
+
+Rn. Let                   w =. + - -  Rm
+
+                                                                           and
+
+be the vector of interval widths. For a compact set   Rn                           (p)2 =. p(+ - ) + Ap22
+and a unit vector v  Rn, define
+                                                                                            m            1    m                         (11)
+                                                                                                         2
+               widthv() =. max vx - min vx.                                           =         pii+  -            pipj a(i) - a(j)22.
+
+                                    x    x                                                i=1               i,j=1
+
+When S(A)  0 and Xd = , the argument below also shows                      Then
+that Xd is bounded; hence the directional widths of both Xd
+and X are finite in the nondegenerate case of interest.                               X  H  {x  Rn : x - c(p)2  (p)}. (12)
+
+                                                                           Consequently,
+
+Proposition 1. Assume S(A)  0. Then for every unit vector                             diam(X )  2,  =. min (p).                         (13)
+v  Rn,                                                                                                                   pm
+
+               widthv(X )  widthv(Xd)                                      Proof. Fix x  H and p  m. Since x - a(i)22  i+ for
+
+                                1 w      QmAS(A)-1v                        all i,           m                         m
+                                2
+                                                                                                   pix - a(i)22  pii+.
+                                1        vS(A)-1v.
+                              2 w2                                 (8)                      i=1                       i=1
+
+Proof. The first inequality follows from X  Xd. Pick any                   Using the weighted variance identity around c(p) = Ap,
+x1, x2  Xd. By (4), there exist 1, 2  R and 1, 2  H
+such that                                                                  m                                             m
+
+                                                                                   pix - a(i)22 = x - c(p)22 + pia(i) - c(p)22,
+
+                                                                           i=1                                           i=1
+
+         = Qm - 2QmAx + 1,  = 1, 2.                                        which yields (12). The pairwise-distance expression in (11)
+                                                                           is the standard identity for weighted scatter. Minimizing over
+Applying Qm to both sides and subtracting gives                            p  m gives (13).
+               2QmA(x1 - x2) = Qm(2 - 1).
+                                                                           Remark 2. Two explicit choices are useful. For the uniform
+
+Multiplying on the left by A and using AQmA = S(A)                         weight  p  =  1  1,
+                                                                                         m
+
+yields                                                                                   (p)2 = 1          m          1
+                                                                                                    m                 m
+               x1  -  x2  =  1  S   (A)-1AQm(2     -  1).                                                     i+   -     tr  S(A).      (14)
+                             2
+                                                                                                         i=1
+                                   (a) full view                                          (b) enlarged view near true
+
+          2.0                                                                        0.7
+
+          1.5                                                                        0.6
+
+          1.0                                                                        0.5
+
+          0.5                                                                        0.4
+     y
+                                                                           y
+
+          0.0                                                                        0.3
+
+          0.5                                                                        0.2
+
+          1.0                                                                        0.1
+
+          1.5                                                                        0.0
+
+               2                1          0         1               2                    0.2 0.0    x  0.2      0.4
+                                           x
+
+Fig. 2. Illustration of the localization construction on a three-anchor example. For visual clarity, this figure uses larger interval widths than the numerical
+
+experiments of Section V, so that the annuli and the nested sets are easier to distinguish. In the left panel, the blue solid circles and red dotted circles are
+the upper and lower range boundaries, the stars are the anchors, and the orange cross is the true target. The black dashed polygon is Xd, the purple region
+is X = Xd  H, and the green region is the true feasible set Xtrue. The right panel enlarges the neighborhood of Xtrue.
+
+Hence                                                                         Minimizing over t > 0 yields (16), with minimum value
+                                                                              vAp + v2(p). Since widthv(H) = hH(v) + hH(-v)
+                                1     m          1                            and X  H, (17) follows. Combining (17) with Proposition 1
+                                m                m
+          diam(X )  2                    i+   -      tr S(A).                 gives (18).
+
+                                   i=1
+
+For  the  pairwise  choice   p  =  1  (ei  +  ej ),                             Remark 3. Formula (16) reduces the support computation
+                                   2                                            to a low-dimensional simplex-constrained optimization; in
+                                                                        (15) practice one may also solve the equivalent primal SOCP
+          (p)2 = i+ + j+ - a(i) - a(j)22 ,                                      directly. A simpler closed-form surrogate follows from the
+                             2                   4                              support of each individual ball:
+
+which gives a simple two-anchor lens bound.
+
+Proposition 3. Assume H has nonempty interior and let                                     hH(v)  min{va(i) +           i+}.
+                         hH(v) =. max vx
+                                                                                                              i
+                                                      xH
+                                                                              Hence
+denote the support function of H. Then, for every v  Rn,
+                                                                                          H(v)  H(v)
+
+          hH(v) = min vAp + v2 (p) .                                    (16)              =. min{va(i) +               i+}     (19)
+                       pm
+                                                                                                 i
+
+Hence, for every unit vector v,                                                                    - max{va(i) -       i+}.
+           widthv(X )  H(v) =. hH(v) + hH(-v), (17)
+                                                                                                          i
+
+and, if S(A)  0,                                                              Corollary 2. Assume S(A)  0 and let S(A) = U U 
+                                                                              with eigenvectors u1, . . . , un and eigenvalues 1, . . . , n > 0.
+widthv(X )  min           1  w|QmAS(A)-1v|,             H(v)            .     Define
+                          2
+
+                                                                        (18)  bj =. min   w2 ,       H(uj )   ,       j = 1, . . . , n. (20)
+                                                                                          2 j
+Proof. Consider the SOCP
+
+       max{vx       :  x  -  a(i)22        i+,   i = 1, . . . , m}.           Then X is contained in the orthogonal box aligned with U
+                                                                              and side lengths bj, hence
+          x
+
+Its Lagrangian dual is
+
+                                              1                                           n          1/2                               n
+                                                v
+          min          µ(+         -  )    +         +  2Aµ22        .        diam(X )             b2j ,         vol(BU )  bj. (21)
+                                              4t
+     µ0, t=1µ>0                                                                           j=1                                        j=1
+
+Under the Slater assumption for H, strong duality holds.                      Discarding the H term recovers
+Writing µ = tp with p  m gives
+                                                                                          vol(BU )   w2 n           1          (22)
+                      vAp + v22 + t(p)2.                                                               2                    .
+                                   4t
+                                                                                                                 det S(A)
+   The bounds above reveal two distinct mechanisms. The                              V. NUMERICAL VALIDATION
+matrix S(A) quantifies how the difference equations enlarge           Experiments in this section are performed in R2 and use a
+the polyhedral outer set Xd, whereas the H-induced terms           squared-range interval model
+ and H quantify how the intersection with the upper
+balls truncates that enlargement. In particular, Proposition 2     i  [d2i - , d2i + ],          di = x - a(i)2,    (25)
+remains finite whenever H is nonempty, even when the Xd-
+based diameter bound in Corollary 1 deteriorates severely.         with  = 0.05, i.e., every interval width is equal to
+                                                                   0.1. All computations below use the actual localization set
+IV. GEOMETRY-BASED ANCHOR SELECTION                                X = Xd  H. Since X is convex and is described by the
+                                                                   linear inequalities (6) together with the ball constraints (5),
+   Consider a pool of candidate anchors {b(1), . . . , b(N)} and   its support in any direction v is obtained from the convex
+                                                                   program
+suppose that only k < N of them can be used. For a subset
+                                                                   max{vx  :  x        Xd,  x - a(i)2    i+, i = 1, . . . , m},
+I  {1, . . . , N } of cardinality k, let AI be the corresponding
+anchor matrix and let SI = AIQkAI. The previous section               x
+yields two natural offline design scores:
+                                                                   which is a small convex second-order cone program (SOCP).
+E(I) =. min(SI ),               D(I) =. det SI .       (23)
+                                                                   Therefore the exact coordinate-aligned bounding box of X is
+These scores are meaningful only for affinely spanning subsets:
+if SI is rank deficient, then E(I) = D(I) = 0 and the              obtained by solving, for each coordinate vector ej, the pair of
+associated Xd-based directional certificates are not finite.       problems max ej x and min ej x over X . In R2 this means
+When all interval widths are equal and the subset size k           four convex programs. While the numerical experiments in this
+is fixed, maximizing E minimizes the Xd-based diameter             section are visually presented in R2, the theoretical results and
+bound (10), whereas maximizing D minimizes the polyhedral
+principal-axis volume bound (22). If the widths are not            methodology are not restricted to n = 2 and scale seamlessly
+uniform, the corresponding weighted scores become                  to 3D or generic Rn. For a 3D application (such as UAV/drone
+
+                                                                   localization), computing the exact coordinate box requires
+
+                                                                   solving exactly 6 small convex programs, and generally 2n
+                                                                   such problems in Rn.
+
+                                                                   A. Anchor subset selection as offline design
+
+JE (I )         =.   wI 22 ,    JD (I )  =.  wI 22n .              We first test the proposed geometry scores on a combina-
+                    min(SI )                 det SI
+                                                       (24)        torial selection problem. In each Monte Carlo trial, N = 8
+
+                                                                   candidate anchors are sampled uniformly in the annulus of
+
+The notation E/D is reminiscent of the stochastic setting,         radii 1 and 2 around the target, and k = 4 anchors must be
+but here min(SI) and det SI act as deterministic E- and
+D-optimality criteria: they bound guaranteed-set surrogates        selected. Since  8  = 70, we enumerate all subsets. For every
+rather than local covariance matrices. The quantities  and                          4
+H remain measurement-dependent and are therefore online
+certificates for an already selected subset. Likewise, the         subset we compute the exact area of the coordinate-aligned
+weighted scores in (24) are genuinely offline only when
+conservative width envelopes wI are known a priori; otherwise      outer box of X , together with the D-score D = det S and the
+(23) are the natural pre-measurement selectors. The E-score        E-score E = min(S) from (23). We compare four policies
+targets worst-direction ambiguity, whereas the D-score reflects    over 60 trials: the oracle subset minimizing the exact box
+overall spread. In moderate-size pools both can be optimized
+exhaustively; for larger pools they can be embedded in greedy      area, the subset maximizing D, the subset maximizing E,
+or branch-and-bound schemes.
+                                                                   and the mean area over all subsets. Table I summarizes the
+
+                                                                   results. Both geometry rules are close to the oracle, with the
+
+                                                                   determinant-based score performing slightly better on this
+
+                                                                   area-oriented metric: its mean box area is only 4.1% above
+
+                                                                   the oracle, while the E-score is 6.2% above it. Both rules are
+
+                                                                   dramatically better than an average subset, whose mean box
+
+Remark 4 (Scalability and Combinatorial Search). Exact             area is about four times larger than the oracle. In 25 of the
+
+offline anchor selection is inherently a combinatorial problem,    60 trials the D-score recovers the oracle subset exactly; the
+
+requiring the evaluation of  N  subsets. However, this is rarely   E-score does so in 24 trials. Figure 4 shows that both scores
+                             k
+                                                                   are within 2% of the oracle in nearly half of the trials. For
+a limiting factor in practice for two reasons. First, in standard
+                                                                   the online certificate, let
+applications like GPS or drone localization, the total number
+                                                                                       =.   1 w
+of available anchors N is typically small (for example, in the                Bd,j     =.   2    QmAS(A)-1ej     ,
+                                                                              BH,j
+range 4 to 12 in GPS localization), making exhaustive search                                H(ej), j = 1, 2.
+
+computationally viable. Second, for larger pools, suboptimal
+
+greedy addition or branch-and-bound schemes can efficiently        Because X  Xd and X  H, the exact coordinate width of
+                                                                   X along axis ej is no larger than either quantity. We therefore
+approximate the E- or D-scores. Furthermore, it is important       form the hybrid coordinate-box bound
+
+to note that the online certification phase (evaluating  and                                        2
+H) is strictly non-combinatorial; it simply evaluates the
+properties of the single k-subset that has been selected in the                     Bhyb =. min{Bd,j , BH,j }.
+
+offline phase.                                                                                    j=1
+                                       TABLE I                                                          1.0
+SUBSET SELECTION OVER 60 MONTE CARLO TRIALS (N = 8, k = 4).
+
+                              Method              Mean box area of X     Rel. to oracle                 0.8
+
+                              Oracle subset           1.42 × 10-3             1.00       empirical CDF  0.6
+                              D-score max det S       1.47 × 10-3             1.04
+                              E-score max min(S)      1.50 × 10-3             1.06
+                              Average subset          5.85 × 10-3             4.13
+
+                                                                                                        0.4
+
+                                                                                                        0.2
+
+exact coordinate-box area of  10 1                                                                      0.0  E-score  mmaaxxdmeitn((SS))
+                                                                                                             D-score
+
+                                                                                                        1.0  1.1 box-a1r.e2a ratio to th1e.3oracle 1.4                                                  1.5
+
+                              10 2                                                       Fig. 4. Empirical CDF of the box-area ratio to the oracle over the 60 Monte
+                                                                                         Carlo trials. The D-score slightly dominates the E-score on this area-based
+
+                                                                                         metric and is therefore the practical default, while both remain close to the
+
+                                                                                         oracle.
+
+                              10 3                                                       1.2                          exact vertical width of                                    badldl-iianmduecteedr  bound
+                                   10 3                                                                               d width bound                                                                     bound  2
+                                                                                                                      support bound                                         1.2
+                                         10 2     10 1                   100
+                                         hybrid coordinate-box bound of                  1.0                          hybrid min bound
+                                                                                                                                               1.0
+
+                                                                                         0.8vertical width                                                                  0.8
+                                                                                                                                                            diameter bound
+                                                                                         0.6                                                                                0.6
+
+Fig. 3. Hybrid coordinate-box bound Bhyb versus the exact coordinate-box                 0.4                                                                                0.4
+area of the actual localization set X over all subsets in the Monte Carlo
+                                                                                         0.2                                                                                0.2
+experiment. Both axes are on logarithmic scale.
+                                                                                                             0.2 0.4 0.6 0.8 1.0 1.2                                             0.2 0.4 0.6 0.8 1.0 1.2
+                                                                                                                      height h of the third anchor                                        height h of the third anchor
+
+In each coordinate, we start from the Xd-based width estimate                            Fig. 5. Geometry sweep for the actual localization set X . Left: exact vertical
+and, if the H-based width is smaller, we replace it by that                              width, the Xd-based bound, the H-support bound, and their hybrid minimum.
+tighter value. Figure 3 plots Bhyb against the exact area of                             Right: pure polyhedral diameter bound and ball-induced diameter bound.
+the coordinate-aligned box of X . Both axes are logarithmic
+because the values span several orders of magnitude across                               the hybrid bound therefore follows the polyhedral term in
+the 4200 subsets. The reported log-log correlation is simply                             well-spread geometries and automatically switches to the ball-
+the Pearson correlation between log10 Bhyb and the logarithm                             intersection term when the anchor set becomes nearly collinear.
+of the exact box area; values close to one mean that the                                 The right panel compares the pure polyhedral diameter bound
+bound correctly tracks which subsets produce small and large                             (10) with the ball-induced bound 2 from Proposition 2.
+uncertainty boxes. Here the correlation is 0.984, while the                              Over the same sweep, the former changes from 8.84 × 10-2
+mean ratio Bhyb/Abox(X ) is 1.69 (median 1.50). Thus, the                                to 1.33, whereas the latter changes only from 4.47 × 10-1
+new H-aware bound is not only valid, but also predictive of                              to 7.18 × 10-1. This is precisely the gap between diam(Xd)
+the realized size of the localization set.                                               and the actual size of X : the conditioning of S(A) drives the
+                                                                                         growth of the loose polyhedral envelope, while the intersection
+B. Why H-aware online certification is needed                                            with the upper balls still clips the feasible region substantially.
+
+   To isolate the role of the H-aware terms, we next consider                            VI. DESIGN PERSPECTIVE AND PRACTICAL IMPLICATIONS
+three anchors at (-1, 0), (1, 0), and (0, h), with true target
+x = (0.15, 0.35). The height h is varied from 1.2 down to                                   The new results support a simple two-stage workflow for
+0.08, so that the third anchor approaches the line through the                           set-membership multilateration. Before measurements are
+first two. Figure 5 summarizes the results.                                              collected, one uses the geometry-only scores E and D in
+                                                                                         (23) to select or schedule a subset of anchors. These scores are
+   The left panel reports the exact vertical width of X , obtained                       inexpensive, target-free, and depend only on anchor positions,
+from the two support problems max e2 x and min e2 x over X ,                             so they are natural design surrogates in applications with
+together with the Xd-based width bound from Proposition 1,                               communication, energy, or sensing-budget constraints. After
+the H-support bound H(e2) from Proposition 3, and the                                    measurements are available, one keeps the selected subset and
+hybrid minimum of the two. As h decreases from 1.2 to                                    computes the corresponding H-aware certificates  and H
+0.08, the exact vertical width grows from 7.27 × 10-2 to                                 to assess the actual size of the resulting localization set X .
+6.86 × 10-1, while the Xd-based bound grows from 8.33 ×                                  This separation also clarifies the respective roles of the D- and
+10-2 to 1.25. The H-support bound remains much tighter
+near degeneracy, changing from 1.00 × 10-1 to 7.04 × 10-1;
+E-scores. If one seeks a compact overall uncertainty region,                     [10] X. Shi, G. Mao, B. D. O. Anderson, Z. Yang, and J. Chen, Robust
+then maximizing det S is the appropriate default, as confirmed                         localization using range measurements with unknown and bounded
+by the subset-selection experiment on the exact box area of                            errors, IEEE Transactions on Wireless Communications, 16(6):4065­
+X . If the application is instead driven by worst-direction                            4078, 2017.
+ambiguity, then maximizing min(S) is the natural alternative
+because it directly minimizes the dominant term in (10). The                     [11] C. Chang and A. Sahai, Crame´r­Rao-type bounds for localization,
+online H-aware terms should then be viewed as post-selection                           EURASIP Journal on Advances in Signal Processing, 2006:94287,
+certificates: they do not replace the geometry scores, but they                        2006.
+substantially sharpen the realized uncertainty assessment of
+the selected subset, especially in nearly collinear or clustered                 [12] A. N. Bishop, B. Fidan, B. D. O. Anderson, K. Dogancay, and P. N.
+geometries.                                                                            Pathirana, Optimality analysis of sensor-target localization geometries,
+                                                                                       Automatica, 46(3):479­492, 2010.
+                        VII. CONCLUSIONS
+                                                                                 [13] E. Widdison and D. G. Long, A review of linear multilateration
+                                                                                       techniques and applications, IEEE Access, 12:26251­26266, 2024.
+
+                                                                                 [14] D. Moreno-Salinas, A. M. Pascoal, and J. Aranda, Optimal sensor
+                                                                                       placement for multiple target positioning with range-only measurements
+                                                                                       in two-dimensional scenarios, Sensors, 13(8):10674­10710, 2013.
+
+   We re-framed the localization-set construction of [1] as a
+design problem for anchor subset selection under bounded
+range errors. The matrix S(A) = AQmA yields simple
+geometry-only E- and D-type scores that can be used offline
+to select anchors before measurements are collected. At the
+same time, the special structure X = Xd  H yields new H-
+aware online certificates for the selected subset: the simplex-
+aggregated radius  gives a finite diameter bound even when
+the Xd-based certificate deteriorates badly, and the support-
+function formula for H leads to hybrid directional bounds that
+track the actual size of X closely. The reported experiments
+show near-oracle subset selection on the tested instances and
+indicate that the new H-aware certificates explain a substantial
+part of the gap between the loose polyhedral envelope and
+the realized localization set.
+
+   Future research directions include extending these geometry-
+aware certificates to dynamic localization, where the target's
+state is tracked over time using bounded-error kinematic
+models. Additionally, incorporating unknown-but-bounded un-
+certainty on the anchor positions themselves, and developing
+decentralized algorithms for evaluating the D- and E-scores in
+large-scale networks, remain open and promising problems.
+
+                           REFERENCES
+
+[1] G. C. Calafiore, Set-membership localization via range measurements,
+     SIAM Journal on Optimization, to appear. Preprint available at http:
+     //arxiv.org/abs/2603.04867
+
+[2] M. Milanese, J. Norton, H. Piet-Lahanier, and E. Walter, editors,
+     Bounding Approaches to System Identification, Plenum Press, New
+     York, 1996.
+
+[3] L. Jaulin, M. Kieffer, O. Didrit, and E. Walter, Applied Interval Analysis,
+     Springer, London, 2001.
+
+[4] Y. T. Chan and K. C. Ho, A simple and efficient estimator for hyperbolic
+     location, IEEE Transactions on Signal Processing, 42(8):1905­1915,
+     1994.
+
+[5] A. Beck, P. Stoica, and J. Li, Exact and approximate solutions of
+     source localization problems, IEEE Transactions on Signal Processing,
+     56(5):1770­1778, 2008.
+
+[6] P. Biswas, T.-C. Liang, K.-C. Toh, T.-C. Wang, and Y. Ye, Semidefinite
+     programming approaches for sensor network localization with noisy
+     distance measurements, IEEE Transactions on Automation Science and
+     Engineering, 3(4):360­371, 2006.
+
+[7] P. Tseng, Second-order cone programming relaxation of sensor network
+     localization, SIAM Journal on Optimization, 18(1):156­185, 2007.
+
+[8] S. Bancroft, An algebraic solution of the GPS equations, IEEE
+     Transactions on Aerospace and Electronic Systems, AES-21(1):56­59,
+     1985.
+
+[9] G. Naddafzadeh Shirazi, M. B. Shenouda, and L. Lampe, Second
+     order cone programming for sensor network localization with anchor
+     position uncertainty, IEEE Transactions on Wireless Communications,
+     13(2):749­763, 2014.
+

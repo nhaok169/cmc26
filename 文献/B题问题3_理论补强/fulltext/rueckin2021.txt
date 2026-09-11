@@ -1,0 +1,737 @@
+Adaptive Informative Path Planning Using
+Deep Reinforcement Learning for UA V-based Active Sensing
+Julius R ¨uckin, Liren Jin, Marija Popovi ´c
+Abstract— Aerial robots are increasingly being utilized for
+environmental monitoring and exploration. However, a key
+challenge is efﬁciently planning paths to maximize the in-
+formation value of acquired data as an initially unknown
+environment is explored. To address this, we propose a new
+approach for informative path planning based on deep rein-
+forcement learning (RL). Combining recent advances in RL and
+robotic applications, our method combines tree search with an
+ofﬂine-learned neural network predicting informative sensing
+actions. We introduce several components making our approach
+applicable for robotic tasks with high-dimensional state and
+large action spaces. By deploying the trained network during a
+mission, our method enables sample-efﬁcient online replanning
+on platforms with limited computational resources. Simulations
+show that our approach performs on par with existing methods
+while reducing runtime by 8−10×. We validate its performance
+using real-world surface temperature data.
+I. I NTRODUCTION
+Recent years have seen an increasing usage of autonomous
+robots in a variety of data collection applications, includ-
+ing environmental monitoring [1–5], exploration [6], and
+inspection [7]. In many tasks, these systems promise a more
+ﬂexible, safe, and economic solution compared to traditional
+manual or static sampling methods [4, 8]. However, to fully
+exploit their potential, a key challenge is developing algo-
+rithms for active sensing, where the objective is to plan paths
+for efﬁcient data gathering subject to ﬁnite computational and
+sensing resources, such as energy, time, or travel distance.
+This paper examines the task of active sensing using an un-
+manned aerial vehicle (UA V) in terrain monitoring scenarios.
+Our goal is to map an a priori unknown nonhomogeneous 2D
+scalar ﬁeld, e.g. of temperature, humidity, etc., on the terrain
+using measurements taken by an on-board sensor. In similar
+setups, most practical systems rely on precomputed paths for
+data collection, e.g. coverage planning [7]. However, such
+approaches assume a uniform distribution of measurement
+information value in the environment and hence do not allow
+for adaptivity, i.e. closely inspecting regions of interest, such
+as hotspots [1, 2] or anomalies [9], as they are discovered.
+Our motivation is to ﬁnd information-rich paths targeting
+these areas by performing efﬁcient online adaptive replan-
+ning on computationally constrained platforms.
+Several informative path planning (IPP) approaches for
+active sensing have been proposed [1–3, 8, 10], which enable
+adjusting decision-making based on observed data. However,
+This work was funded by the Deutsche Forschungsgemeinschaft (DFG,
+German Research Foundation) under Germany’s Excellence Strategy -
+EXC 2070 – 390732324. Authors are with the Cluster of Excellence
+PhenoRob, Institute of Geodesy and Geoinformation, University of Bonn.
+Corresponding: jrueckin@uni-bonn.de.
+Fig. 1: Our RL-based IPP approach applied in a temperature
+mapping scenario. (Left) Our simulation setup using real-world
+ﬁeld temperature data. (Right) The temperature variable is projected
+to the surface. Our approach adaptively plans a UA V’s path (evolv-
+ing over time from blue to red) focusing on hotter regions (red).
+scaling these methods to large problem spaces remains an
+open challenge. The main computational bottleneck in IPP
+is the predictive replanning step, since multiple future mea-
+surements must be simulated when evaluating next candidate
+actions. Previous studies have tackled this by discretizing
+the action space, e.g. sparse graphs [10, 11]; however, such
+simpliﬁcations sacriﬁce on the quality of predictive plans. An
+alternative paradigm is to use reinforcement learning (RL)
+to learn data gathering actions. Though emerging works in
+RL for IPP demonstrate promising results [12, 13], they have
+been limited to small 2D action spaces, and adaptive planning
+to map environments with spatial correlations and large 3D
+action spaces has not yet been investigated.
+To address this, we propose a new RL-based IPP frame-
+work suitable for UA V-based active sensing. Inspired by
+recent advances in RL [14, 15], our method combines
+Monte Carlo tree search (MCTS) with a convolutional neural
+network (CNN) to learn information-rich actions in adaptive
+data gathering missions. Since active sensing tasks are typi-
+cally expensive to simulate, our approach caters for training
+in low data regimes. By replacing the computational burden
+of predictive planning with simple tree search, we achieve
+efﬁcient online replanning, which is critical for deployment
+on mobile robots (Fig. 1). The contributions of this work are:
+1) A new deep RL algorithm for robotic planning applica-
+tions that supports continuous high-dimensional state
+spaces, large action spaces, and data-efﬁcient training.
+2) The integration of our RL algorithm in an IPP frame-
+work for UA V-based terrain monitoring.
+3) The validation of our approach in an ablation study
+and evaluations against benchmarks using synthetic
+and real-world data showcasing its performance.
+We open-source our framework for usage by the community.1
+1github.com/dmar-bonn/ipp-rl
+arXiv:2109.13570v2  [cs.RO]  3 Mar 2022
+II. R ELATED WORK
+Our work lies at the intersection of IPP for active sensing,
+MCTS planning methods, and recent advances in RL.
+IPP methods are gaining rapid traction in many active
+sensing applications [1–3, 10]. In this area of study, our
+work focuses on strategies with adaptive online replanning
+capabilities, which allow the targeted monitoring of regions
+of interest, e.g. hotspots or abnormal areas, in a priori
+unknown environments [9]. Some methods focus on discrete
+action spaces deﬁned by sparse graphs of permissible actions
+[10, 11]. However, these simpliﬁcations are not applicable as
+the distribution of target regions requires online decision-
+making as they are discovered. Our proposed algorithm
+reasons about a discrete action space magnitudes larger while
+ensuring online computability. In terms of planning strategy,
+IPP algorithms can be classiﬁed into combinatorial [16, 17],
+sampling-based [3, 10], and optimization-based approaches
+[1, 2]. Combinatorial methods exhaustively query the search
+space. Thus, they cannot plan online in large search spaces,
+which makes them impractical for adaptive replanning.
+Continuous-space sampling-based planners generate in-
+formative robot trajectories by sampling candidate actions
+while guaranteeing probabilistically asymptotic optimality
+[3, 8]. However, their sample-efﬁciency is typically low
+for planning with more complex objectives and larger ac-
+tion spaces since many measurements need to be forward-
+simulated to ﬁnd promising paths in the problem space
+[1, 18]. In our particular setup, considering spatial corre-
+lations in a terrain over many candidate regions leads to
+a complex and expensive-to-evaluate information criterion.
+In similar scenarios, several works have investigated global
+optimization, e.g. evolutionary algorithms [1, 2] or Bayesian
+Optimization [8], to enhance planning efﬁciency. Although
+these approaches deliver high-quality paths [1, 11], using
+them for online decision-making is still computationally
+expensive when reasoning about many spatially correlated
+candidate future measurements.
+In robotics, RL algorithms are increasingly being utilized
+for search and rescue [19], information gathering [12],
+and exploration of unknown environments [13]. Although
+emerging works show promising performance, RL-based
+approaches have not yet been investigated for online adaptive
+IPP, instead being mostly restricted to environment explo-
+ration tasks. To address this gap, we propose the ﬁrst RL
+approach for adaptively planning informative paths online
+over spatially correlated terrains with large action spaces.
+Another well-studied planning paradigm is MCTS [20,
+21]. Recently, MCTS extensions were proposed for large
+action spaces [22] and partially observable environments
+[23]. Choudhury et al. [10] applied a variant of MCTS
+to obtain long-horizon, anytime solutions in adaptive IPP
+problems. However, these online methods are restricted to
+small action spaces and spatially uncorrelated environments.
+Inspired by recent advances in RL [14, 15], our RL-based
+algorithm bypasses computationally expensive MCTS roll-
+outs and sample-inefﬁcient action selections with a learned
+value function and an action policy, respectively. We extend
+the AlphaZero algorithm by applying it to robotics tasks
+with limited computational budget and low data regimes.
+Related to our approach are RL methods which address
+the exploration-exploitation trade-off at train time [24, 25].
+However, our algorithm explicitly balances exploration and
+exploitation at deploy time by combining a learned policy
+with MCTS sampling-based planning in large action spaces.
+III. B ACKGROUND
+We begin by brieﬂy describing the general active sensing
+problem and specifying the terrain monitoring scenario used
+to develop our RL-based IPP approach.
+A. Problem Formulation
+The general active sensing problem aims to maximize
+an information-theoretic criterion I(·) over a set of action
+sequences Ψ, i.e. robot trajectories:
+ψ∗ = argmax
+ψ∈Ψ
+I(ψ)
+C(ψ), s.t. C(ψ)≤ B, (1)
+where C : Ψ→ R+ maps an action sequence to its associated
+execution cost, B∈ R+ is the robot’s budget limit, e.g. time
+or energy, and I : Ψ → R+ is the information criterion,
+computed from the new sensor measurements obtained by
+executingψ.
+This work focuses on the scenario of monitoring a terrain
+using a UA V equipped with a camera. Speciﬁcally, in this
+case, the costs C(ψ) of an action sequenceψ = (ψ1,...,ψ n)
+of length n are deﬁned by the total ﬂight time:
+C(ψ) =
+n−1∑
+i=1
+c(ψi,ψ i+1), (2)
+where ψi ∈ R3 is a 3D measurement position above the
+terrain the image is registered from. c : R3× R3 →
+R+ computes the ﬂight time costs between measurement
+positions by a constant acceleration-deceleration±ua model
+with maximum speed uv.
+B. Terrain Mapping
+We leverage the method of Popovi ´c et al. [1] for efﬁcient
+probabilistic mapping of the terrain. The terrain ξ ⊂ R2
+is discretized by a grid map X while the mapped target
+variable, e.g. temperature, is a scalar ﬁeld ζ : ξ→ R. The
+prior map distribution p(ζ|ξ)∼N (µ−,P −) is given by a
+Gaussian Process (GP) deﬁned by a prior mean vector µ−
+and covariance matrixP −. At mission time, a Kalman Filter
+KF(µ−,P −,z,ψi) =µ+,P + is used to sequentially fuse
+dataz∈ Rm observed at a measurement locationψi with the
+last iteration’s map belief p(ζ|ξ)∼N (µ−,P −) in order
+to obtain the posterior map mean µ+, and covariance P +.
+For further details, the reader is referred to [1].
+C. Utility Deﬁnition for Adaptive IPP
+In Eq. (1), we deﬁne the A-optimal information criterion
+associated with an action sequence of n measurements [26]:
+I(ψ) =
+n∑
+i=1
+Tr(P −)− Tr(P +), (3)
+where P − and P + are obtained before and after applying
+KF to the measurements observed along ψi, respectively.
+We study an active sensing task where the goal is to gather
+terrain areas with higher values of the target variable ζ, e.g.
+high temperature. This scenario requires online replanning
+to focus on mapping these areas of interest XI as they are
+discovered, and is thus a relevant problem setup for our new
+efﬁcient RL-based IPP strategy. We utilize conﬁdence-based
+level sets to deﬁne XI [27]:
+XI ={xi∈X |µ−
+i +βP−
+i,i≥µth}, (4)
+whereµ−
+i andP−
+i,i are the mean and variance of grid cell xi.
+β, µth∈ R+ are a user-deﬁned conﬁdence interval width
+and threshold, respectively. Consequently, we restrict P −
+and P + in Eq. (3) to the grid cells xi∈X I as deﬁned by
+Eq. (4), noted as P −
+XI andP +
+XI respectively.
+IV. A PPROACH
+This section presents our new RL-based IPP approach for
+active sensing. As shown in Fig. 2, we iteratively train a CNN
+on diverse simulated terrain monitoring scenarios to learn the
+most informative data gathering actions. The trained CNN is
+leveraged during a mission to achieve fast online replanning.
+A. Connection between IPP & RL
+We ﬁrst cast the general IPP problem from Sec. III in
+a RL setting. The value V (s) of a state s is deﬁned as
+V (s) = r(s,a,s′) + γV (s′), where γ ∈ [0, 1], and s′ is
+the successor state when choosing a next action ψi+1 =
+a∼π(s) according to the policy π(·). A state s is deﬁned
+by s = (sm,a−), where sm∼N (µ−,P −) is the current
+map state, and a− is the previously executed action, i.e. the
+current UA V position. Consequently,s′ = (s′
+m,a ) is deﬁned
+by s′
+m ∼N (µ+,P +). In our work, the 3D action space
+A is a discrete set of measurement positions. The reward
+function r is deﬁned as:
+r(s,a,s′) = Tr(P −
+XI)− Tr(P +
+XI)
+c(a−, a) . (5)
+We set γ = 1, such that V (·) restores Eq. (1).
+B. Algorithm Overview
+Our goal is to learn the best policies for IPP ofﬂine to
+allow for fast online replanning at deployment. To achieve
+this, we bring recent advances in RL by Silver et al. [14, 15]
+into the robotics domain. In a similar spirit, our RL algorithm
+combines MCTS with a policy-value CNN (Fig. 2). At train
+time, the algorithm alternates between episode generation
+and CNN training. For terrain monitoring, episodes are gen-
+erated by simulating diverse scenarios varying in map priors,
+target variables, and initial UA V positions as explained in
+Sec. IV-C. Each episode step from a state s is planned by
+a tree search producing a target value V (s) given by the
+simulator and a target policy π(s) proportional to the tree’s
+root node’s action visit counts.V (s) andπ(s) are stored in a
+replay buffer used for CNN training. As described in Sec. IV-
+E, we introduce a CNN architecture suitable for inference on
+mobile robots. Further, Sec. IV-F proposes components for
+low data regimes in robotics tasks, which are often expensive
+to simulate.
+Train network to predict action
+policies and paths' utilities
+Simulate terrain monitoring
+episodes to gather train data
+Policy Evaluation
+Policy Improvement
+Fig. 2: Overview of our RL-based IPP approach. We use a
+CNN to predict policies and values guiding a tree search to ﬁnd
+informative paths for data gathering. The CNN is iteratively trained
+in simulation to improve the policy and value estimates.
+C. Episode Generation at Train Time
+The most recently trained CNN is used to simulate a ﬁxed
+number of episodes. An episode terminates when the budget
+B is spent or a maximum number of steps is reached. In
+each step from state s, a tree search is executed for a certain
+number of simulations as described in Sec. IV-D. The policy
+π(s) is derived from the root node’s action visits N(s,a ):
+π(s)a = N(s,a )1/τ
+∑
+a′∈AN(s,a′)1/τ, (6)
+whereA is the set of next measurement positions reachable
+within the remaining budget b. τ is a hyper-parameter
+smoothing policies to be uniform asτ→∞ and collapsing to
+argmaxa∈Aπ(s)a asτ→0. The action is sampled from a∼
+π(s) and the next map state is given by KF(·,P −,·,a ) =
+s′
+m. r and b are given by Eq. (5) and c(a−,a ) respectively.
+The tuple (s,a,π(s),V (s),b ) is stored in the replay buffer.
+D. Tree Search with Neural Networks
+As shown in Fig. 3, a ﬁxed number of simulations is
+executed by traversing the tree. Each simulation terminates
+when the budget or a maximal depth is exceeded. The tree
+search queries the CNN for policy and value estimates p,v
+at leaf nodes with state s(l) and stores the node’s prior
+probabilitiesP (s(l)) =p. The probabilistic upper conﬁdence
+tree (PUCT) bound is used to traverse the tree [28]:
+PUCT(s,a ) =Q(s,a )
++ Pa(s)
+√
+N(s)
+1 +N(s,a )
+(
+c1 + log
+[N(s) +c2 + 1
+c2
+])
+, (7)
+whereQ(s,a ) =r(s,a,s′)+γ·V (s′) is the state-action value
+and N(s) =∑
+a′∈AN(s,a′) is the visit count of the parent
+node s. c1,c 2∈ R+ are exploration factors. We choose the
+next action a = argmaxa′∈A PUCT(s, a’).
+As the reward has no ﬁxed scale, in Eq. (7), we min-max
+normalize Q(s,a ) to ˜Q(s,a )∈ [0, 1] across all a∈A in s.
+To enforce exploration, similarly to Silver et al. [14], we add
+Dirichlet-noise to P (s(r)) of the root node with state s(r):
+P (s(r)) = (1−ϵ)π(s(r)) +ϵη, (8)
+where ϵ∈ [0, 1], and the noise η∼ Dir(δ), δ >0.
+E. Network Architecture & Training
+The CNN fθ(s) = (p,v ) is parameterized by θ predicting
+a policyp and valuev. Input to the CNN are (a) the min-max
+Fig. 3: Tree search with a CNN . The colored gradients represent
+the map state at each node and the arrows indicate how these map
+states evolve as potential measurement are taken. (1) The predicted
+policies p steer traversing the tree, and (2) the predicted values
+v avoid expensive high-variance rollouts at leaf nodes. (3) The
+predicted value is used to update the parent nodes’ value estimates.
+normalized current map covariance P −
+XI; (b) the remaining
+budget b≤ B normalized over B; (c) the UA V position a−
+normalized over the bounds of the 3D action space A; and
+(d) a costs feature map C of same shape as P −
+XI with C[i, :
+] = c(ai,a ), subsequently min-max normalized. Note that
+the scalar inputs are expanded to feature maps of the same
+shape asP −
+XI. Additionally, we input a history of the previous
+two covariance, position, and budget input planes.
+Fig. 4: Our policy-value CNN architecture. We leverage an
+ERFNet encoder [29] with 10 residual blocks providing shared
+representations for the policy and value prediction. Both heads
+consist of three convolutional blocks and global average pooling
+to make the CNN input size-agnostic. Last, fully connected layers
+project to a policy vector (Softmax) and single positive scalar value
+(Softplus). Feature map dimensions are w.r.t. 10×10 grid mapsX .
+As visualized in Fig. 4, the CNN has a shared encoder.
+We leverage Non-bottleneck-1D blocks proposed by Romera
+et al. [29] to reduce inference time. The encoder is fol-
+lowed by two separate prediction heads for policy and
+value estimates. Both heads consist of three blocks with
+2D convolution, batch norm, and SiLU activations. The last
+block’s output feature maps in each head are ﬂattened to
+ﬁxed dimensions by global average and max pooling before
+applying a fully connected layer. This reduces the number of
+parameters and ensures an input size-agnostic architecture.
+The CNN parameters θ are trained with stochastic gradient
+descent (SGD) on mini-batches of size 96 to minimize:
+l(s) =α· (V (s)−v)2−β·π(s)T logp +λ·‖θ‖2, (9)
+where the loss coefﬁcients α,β,λ ≥ 0 are hyperparameters.
+SGD uses a one-cycle learning rate over three epochs [30].
+F . AlphaZero in Low Data Regimes
+Adaptive IPP with spatio-temporal correlations is expen-
+sive to simulate. Opposed to fast-to-simulate games such as
+Go or chess [15], real-world robotics tasks are often limited
+in the number of simulations and episodes at train time.
+A major shortcoming of the original AlphaZero algorithm
+[15] is that the policy targets in Eq. (6) merely reﬂect the tree
+search exploration dynamics. However, the raw action visit
+countsN(s,a ) do not necessarily capture the gathered state-
+action value information for a ﬁnite number of simulations.
+Hence, with only a moderate number of simulations per
+episode step, AlphaZero tends to overemphasize initially
+explored actions in subsequent training iterations, leading
+to bias in training data and thus overestimated state-action
+values. As Eq. (7) is also guided by Q(s,a ), the overem-
+phasis on initially explored actions induces overﬁtting and
+low-quality policies. Next, we introduce methods to solve
+these problems and increase efﬁciency of our RL algorithm.
+To avoid overemphasizing random actions in the node se-
+lection, a large exploration constantc1 in Eq. (7) is desirable.
+However, in later training iterations, increasing exploitation
+of known good actions is required to ensure convergence.
+Thus, we propose an exponentially decaying exploration
+constantc(i)
+1 = max(c(start)
+1 ·λi
+c1, c(min)
+1 ), wherei∈ N is the
+training iteration number, c(start)
+1 > 0 is the initial constant,
+λc1 > 0 is the exponential decay factor, and c(min)
+1 > 0 is
+the minimal value. Similarly, for the Dirichlet exploration
+noise in Eq. (8) deﬁned by δ, we introduce an exponentially
+decaying schedulingδ(i) = max(δ(start)·λi
+δ, δ(min)), where
+δ(start) > 0 is the initial value, λδ > 0 is the exponential
+decay factor, and δ(min)> 0 is the minimal value. A high
+δ(start) around 1 leads to a uniform noise distribution η
+avoiding overemphasis on random actions. However, δ(i)
+should decrease with increasingi to exploit the learnedπ(s).
+Next, we propose an increasing replay buffer size w to
+accelerate training. Similar to our approach, adaptive replay
+buffers are known to improve performance in other RL
+domains [31]. On the one hand, a substantial amount of data
+is required to train the CNN on a variety of paths. On the
+other hand, the loss (Eq. (9)) initially shows sudden drops
+when outdated train data leaves the replay buffer. Thus, in
+early training stages, a small w improves convergence speed.
+Largerw in later training stages help regularize training and
+ensure train data diversity. Hence, w is adaptively set to:
+w(i) = min
+(⌊
+w(start) + i
+w(step)
+⌋
+,w (max)
+)
+, (10)
+where w(start)∈ N+ and w(max)∈ N+ are the initial and
+maximum window sizes. The window size is increased by
+one each w(step)∈ N+ training iterations.
+Moreover, we adapt two techniques introduced by Wu
+[32] for the game of Go. First, forced playouts and policy
+pruning decouple exploration dynamics and policy targets.
+While traversing the search tree, underexplored root node
+actions a are chosen by setting PUCT(s(root),a ) =∞ in
+Eq. (7). In Eq. (6), action visits N(s(root),a ) are subtracted
+unless action a led to a high-value successor state. Second,
+in regular intervals in the encoder, and as the ﬁrst layers of
+the value and policy head, we use global pooling bias layers.
+This enables our CNN to focus on local and global features
+required for IPP. Further details are discussed by Wu [32].
+Variant 33% Tr(P ) ↓ 67% Tr(P ) ↓ 100% Tr(P ) ↓ 33% RMSE ↓ 67% RMSE ↓ 100% RMSE ↓ Runtime [s] ↓
+Baseline as in Sec. IV 73.61 31.83 12.44 0.15 0.09 0.05 0.64
+(i) w/ ﬁxed off-policy window 83.25 50.17 24.68 0.16 0.12 0.09 0.68
+(i) w/ ﬁxed exploration constants 95.27 39.46 21.86 0.20 0.11 0.08 0.65
+(i) w/o forced playouts + policy pruning 79.23 28.53 22.62 0.18 0.09 0.07 0.66
+(ii) w/o global pooling bias blocks 103.58 45.78 31.44 0.19 0.11 0.10 0.64
+(ii) 5 residual blocks in encoder 82.90 29.94 17.94 0.16 0.08 0.07 0.55
+(ii) w/o input feature history 102.40 40.48 31.33 0.20 0.10 0.09 0.66
+TABLE I: Ablation study results . We systematically (i) remove components, and (ii) change the CNN architecture to quantify their
+impact. Remaining uncertainty Tr(P ) and RMSE in the map state are evaluated after 33%, 67%, and 100% spent effective mission time.
+Our approach as proposed in Sec. IV achieves the fastest and most stable reductions in uncertainty and RMSE over the mission time.
+G. Planning at Mission Time
+Replanning is performed after each map update. Using the
+trained CNN, we perform tree search from the current state
+s, choosing action a from π(s) with τ→ 0 in Eq. (6), i.e.
+a = argmaxa∈Aπ(s)a. Since π(·) steers the exploration,
+the tree search is highly sample-efﬁcient. This way, the
+number of tree search simulations is greatly reduced to allow
+fast replanning. Note that policy noise injection and forced
+playouts at the root are disabled to improve performance.
+V. E XPERIMENTAL RESULTS
+This section presents our experimental results. We ﬁrst
+validate our RL approach in an ablation study, then assess its
+IPP and runtime performance in terrain monitoring scenarios.
+A. Experimental Setup
+Our simulation setup considers terrains ξ with 2D discrete
+ﬁeld mapsX with values between 0 and 1, randomly split in
+high- and low-value regions to create regions of interest as
+deﬁned by Eq. (4). We model ground truth terrain maps of
+40×40m andr×r [m],r∈ R, resolution. The UA V action
+space of measurement locations is deﬁned by a discrete 3D
+lattice above the terrain ξ. The lattice mirrors the g×g grid
+mapX on two altitude levels ( 8 m and 14 m), resulting in
+2·g2 actions. The missions are implemented in Python on a
+desktop with a 1.8 GHz Intel i7, 16 GB RAM without GPU
+acceleration to avoid unfair advantages in inference speed of
+our CNN. We repeat the missions 10 times and report means
+and standard deviations. Our RL algorithm is trained ofﬂine
+on a single machine with a 2.2 GHz AMD Ryzen 9 3900X,
+63GB RAM, and a NVIDIA GeForce RTX 2080 Ti GPU.
+We use the same altitude-dependent inverse sensor model
+as Popovi´c et al. [1] to simulate camera measurement noise,
+assuming a downwards-facing square camera footprint with
+60◦ FoV . The prior map mean is uniform with a value of
+0.5. The GP is deﬁned by Mat ´ern 3/2 kernel with length
+scale 3.67, signal variance 1.82, and noise variance 1.42 by
+maximizing log marginal likelihood over independent maps.
+The threshold µth = 0.4 deﬁnes regions of interest.
+We set the mission budget B = 150 s, the UA V initial
+position to (2, 2, 14)m, the acceleration-deceleration±ua =
+2 m/s2 with maximum speed uv = 2 m/s. At train time,
+each episode randomly generates a new ground truth map,
+map priors from a wide range of GP hyperparameters and
+UA V start positions, such that our approach has no unfair
+overﬁtting advantage. We evaluate map uncertainty with
+Tr(P +) and the root mean squared error (RMSE) of µ+
+in regions of interest to assess planning performance. Lower
+values indicate better performance. In contrast to earlier work
+[1, 2, 10], the remaining budget does not only incorporate the
+path travel time, but also the planning runtime, as relevant
+for robotic platforms with limited on-board resources. We
+refer to the spent budget B as the effective mission time .
+B. Ablation Study
+This section validates the algorithm design and CNN
+architecture introduced in Sec. IV. We perform an ablation
+study comparing our approach to versions of itself (i) re-
+moving proposed training procedure components, and (ii)
+changing the CNN architecture. We assume a resolution of
+r = 4m resulting in a 10×10 grid map X withA of 200
+actions. Note that the results do not depend on the actual size
+ofX andA. We generate a small number of 280 episodes in
+each iteration and terminate training after 40 iterations. Each
+tree search is executed as described in Sec. IV-G with 10
+simulations and exploration constants c(start)
+1 =15,c (min)
+1 =
+4,λc1 =λδ = 0.8,δ (start) = 1.0,δ (min) = 0.3,c 2 = 10000.
+Table I summarizes our results. We evaluate map uncertainty
+and RMSE over the posterior map state after 33%, 67%, and
+100% effective mission time , and average planning runtime.
+As proposed in Eq. (10), the training procedure considers
+a replay buffer with adaptive size w(start) = 1,w (step) =
+2,w (max) = 10. Convergence speed, and thus performance,
+improves compared to a ﬁxed-size bufferw(i) =10. Also, our
+proposed exploration constants scheduling scheme improves
+plan quality by stabilizing the exploration-exploitation trade-
+off compared to ﬁxed constants c(i)
+1 = 4,δ (i) = 0.3. Further,
+the results show the beneﬁts of including a history of the two
+previous map states and UA V positions in addition to their
+current values. Interestingly, reducing the encoder depth from
+10 to 5 blocks and removing forced playouts both perform
+reasonably well, but still lead to worse results in later mission
+stages. This suggests that deeper CNNs and forced playouts
+facilitate learning in larger grid maps and longer missions.
+Similarly, global pooling bias blocks help learning global
+map features, which beneﬁts information-gathering.
+C. Comparison Against Benchmarks
+Next, our RL algorithm is evaluated against benchmarks.
+We set a resolution r = 2.5 m, hence X is a 15× 15
+grid, and A has 450 actions. Our approach is compared
+against: (a) uniform random sampling in A; (b) coverage
+Fig. 5: Evaluation of our approach against benchmarks. On average, our RL approach ensures the fastest uncertainty and RMSE
+reduction in regions of interest over mission time. Solid lines indicate means over 10 trials, and shaded regions indicate the standard
+deviations. Note that there is inherent variability due to the randomly generated hotspot locations. However, our method ensures stable
+performance over changing environments. Further, replanning runtime is reduced by a factor of 8− 10×. The planned path (evolving over
+time from blue to red) validates the adaptive behavior of our approach exploring the terrain with focus on the high-value region (green).
+path with equispaced measurements at a ﬁxed 8 m altitude;
+(c) MCTS with progressive widening [22] for large action
+spaces and a generalized cost-beneﬁt rollout policy proposed
+by Choudhury et al. [10]; (d) a state-of-the-art IPP framework
+using the Covariance Matrix Adaptation Evolution Strategy
+(CMA-ES) proposed by Popovi ´c et al. [1]. All planners
+consider a 5-step horizon. We set CMA-ES parameters to
+45 iterations, 12 offsprings, and (4, 4, 3) m coordinate-wise
+step size to trade-off between performance and runtime. The
+permissible next actions of MCTS are reduced to a radius
+of 11m around the UA V to be computable online, resulting
+in∼ 115 next actions per move. For a fair comparison, we
+trained our approach on this restricted action space, which
+is still much larger than studied in prior work [10, 11].
+Fig. 5 reports the results obtained using each approach.
+Our method substantially reduces runtime, achieving a
+speedup of 8− 10× compared to CMA-ES and MCTS.
+This result highlights the improved sample-efﬁciency in our
+tree search and conﬁrms that the CNN can learn informative
+actions from training in diverse simulated missions. Random
+sampling performs poorly as it reduces uncertainty and
+RMSE in high-value regions only by chance. The coverage
+path shows high variability since data-gathering efﬁciency
+greatly depends on the problem setup, i.e. hotspot locations
+relative to the preplanned path. Our approach outperforms
+this benchmark with much greater consistency.
+D. Temperature Mapping Scenario
+We demonstrate our RL-based IPP approach in a photore-
+alistic simulation using real-world surface temperature data.
+The data was collected in a 40× 40 m crop ﬁeld nearby
+Forschungszentrum J ¨ulich, Germany (50.87◦ lat., 6.44◦ lon.)
+on July 20, 2021 with a DJI Matrice 600 UA V carrying a
+Vue Pro R 640 thermal sensor. The UA V executed a coverage
+path at 100 m altitude to collect images, which were then
+processed using Pix4D software to generate an orthomosaic
+representing the target terrain in our simulation as depicted in
+Fig. 1-left. The aim is to validate our method for adaptively
+mapping high-temperature areas in this realistic setting.
+For fusing new data into the map, we assume altitude-
+dependent sensor noise as described in Sec. V-A. The terrain
+is discretized using a uniform 2.5m resolution. We compare
+our RL-based online algorithm against a ﬁxed 8 m altitude
+Fig. 6: Real-world scenario. (Left) Surface temperature of a crop
+ﬁeld used for the conducted real-world experiments. (Right) Our
+RL approach ensures fast uncertainty reduction in high-temperature
+regions (red) outperforming traditionally used coverage paths.
+lawnmower path as a traditional baseline. Our approach is
+trained only on synthetic simulated data as shown in Fig. 5.
+Fig. 1-right shows the planned 3D path above the terrain
+using our strategy. This conﬁrms that our method collects
+targeted measurements in hotter areas of interest (red) by
+efﬁcient online replanning. This is reﬂected quantitatively
+in Fig. 6-right as our approach ensures fast uncertainty
+reduction while a coverage path performs worse as it cannot
+adapt mapping behaviour. These results verify the successful
+transfer of our model trained in simulation to real-world data
+and demonstrate its beneﬁts over a traditional approach.
+VI. C ONCLUSIONS AND FUTURE WORK
+This paper proposes a new RL-based approach for online
+adaptive IPP using resource-constrained robots. The algo-
+rithm enables sample-efﬁcient planning in large action spaces
+and high-dimensional state spaces, enabling fast information
+gathering in active sensing tasks. A key feature of our
+approach are components for accelerated learning in low data
+regimes. We validate the approach in an ablation study, and
+evaluate its performance compared to multiple benchmarks.
+Results show that our approach drastically reduces planning
+runtime, enabling efﬁcient adaptive replanning. Future work
+will investigate extending our algorithm to multi-robot teams
+and dynamically growing maps. We plan to conduct real-
+world ﬁeld experiments to validate our method.
+ACKNOWLEDGEMENT
+We would like to thank Jordan Bates from Forschungszen-
+trum J ¨ulich for providing the real-world data.
+REFERENCES
+[1] M. Popovi ´c, T. Vidal-Calleja, G. Hitz, J. J. Chung, I. Sa, R. Siegwart,
+and J. Nieto, “An informative path planning framework for UA V-based
+terrain monitoring,” Autonomous Robots, vol. 44, no. 6, pp. 889–911,
+2020.
+[2] G. Hitz, E. Galceran, M.- `E. Garneau, F. Pomerleau, and R. Siegwart,
+“Adaptive continuous-space informative path planning for online en-
+vironmental monitoring,” Journal of Field Robotics, vol. 34, no. 8, pp.
+1427–1449, 2017.
+[3] G. A. Hollinger and G. S. Sukhatme, “Sampling-based robotic infor-
+mation gathering algorithms,” The International Journal of Robotics
+Research, vol. 33, no. 9, pp. 1271–1287, 2014.
+[4] M. Dunbabin and L. Marques, “Robots for Environmental Monitor-
+ing: Signiﬁcant Advancements and Applications,” IEEE Robotics &
+Automation Magazine, vol. 19, no. 1, pp. 24–39, 2012.
+[5] C. C. Lelong, P. Burger, G. Jubelin, B. Roux, S. Labb ´e, and F. Baret,
+“Assessment of Unmanned Aerial Vehicles Imagery for Quantitative
+Monitoring of Wheat Crop in Small Plots,” Sensors, vol. 8, no. 5, pp.
+3557–3585, 2008.
+[6] P. Doherty and P. Rudol, “A UA V search and rescue scenario with
+human body detection and geolocalization,” in Australasian Joint
+Conference on Artiﬁcial Intelligence . Springer, 2007, pp. 1–13.
+[7] E. Galceran and M. Carreras, “A survey on coverage path planning
+for robotics,” Robotics and Autonomous Systems , vol. 61, no. 12, pp.
+1258–1276, 2013.
+[8] K. C. T. Vivaldini, T. H. Martinelli, V . C. Guizilini, J. R. Souza, M. D.
+Oliveira, F. T. Ramos, and D. F. Wolf, “UA V route planning for active
+disease classiﬁcation,” Autonomous robots, vol. 43, no. 5, pp. 1137–
+1153, 2019.
+[9] A. Blanchard and T. Sapsis, “Informative path planning for anomaly
+detection in environment exploration and eonitoring,” arXiv preprint
+arXiv:2005.10040, 2020.
+[10] S. Choudhury, N. Gruver, and M. J. Kochenderfer, “Adaptive In-
+formative Path Planning with Multimodal Sensing,” in International
+Conference on Automated Planning and Scheduling , vol. 30. AAAI
+Press, 2020, pp. 57–65.
+[11] M. Popovi ´c, T. Vidal-Calleja, J. J. Chung, J. Nieto, and R. Siegwart,
+“Informative Path Planning for Active Field Mapping under Localiza-
+tion Uncertainty,” in IEEE International Conference on Robotics and
+Automation. IEEE, 2020.
+[12] A. Viseras and R. Garcia, “DeepIG: Multi-robot information gathering
+with deep reinforcement learning,” IEEE Robotics and Automation
+Letters, vol. 4, no. 3, pp. 3059–3066, 2019.
+[13] F. Chen, J. D. Martin, Y . Huang, J. Wang, and B. Englot, “Autonomous
+Exploration Under Uncertainty via Deep Reinforcement Learning on
+Graphs,” in IEEE/RSJ International Conference on Intelligent Robots
+and Systems. IEEE, 2020, pp. 6140–6147.
+[14] D. Silver, J. Schrittwieser, K. Simonyan, I. Antonoglou, A. Huang,
+A. Guez, T. Hubert, L. Baker, M. Lai, A. Bolton et al. , “Mastering
+the game of Go without human knowledge,” Nature, vol. 550, no.
+7676, pp. 354–359, 2017.
+[15] D. Silver, T. Hubert, J. Schrittwieser, I. Antonoglou, M. Lai, A. Guez,
+M. Lanctot, L. Sifre, D. Kumaran, T. Graepel et al. , “A general
+reinforcement learning algorithm that masters chess, shogi, and Go
+through self-play,” Science, vol. 362, no. 6419, pp. 1140–1144, 2018.
+[16] C.-W. Ko, J. Lee, and M. Queyranne, “An Exact Algorithm for
+Maximum Entropy Sampling,” Operations Research, vol. 43, no. 4,
+pp. 684–691, 1995.
+[17] J. Binney and G. S. Sukhatme, “Branch and bound for informative
+path planning,” in IEEE International Conference on Robotics and
+Automation. IEEE, 2012, pp. 2147–2154.
+[18] M. N. Omidvar and X. Li, “A Comparative Study of CMA-ES on
+Large Scale Global Optimisation,” in Australasian Joint Conference
+on Artiﬁcial Intelligence . Springer, 2010, pp. 303–312.
+[19] F. Niroui, K. Zhang, Z. Kashino, and G. Nejat, “Deep reinforcement
+learning robot for search and rescue applications: Exploration in
+unknown cluttered environments,” IEEE Robotics and Automation
+Letters, vol. 4, no. 2, pp. 610–617, 2019.
+[20] C. B. Browne, E. Powley, D. Whitehouse, S. M. Lucas, P. I. Cowling,
+P. Rohlfshagen, S. Tavener, D. Perez, S. Samothrakis, and S. Colton,
+“A Survey of Monte Carlo Tree Search Methods,” IEEE Transactions
+on Computational Intelligence and AI in Games , vol. 4, no. 1, pp.
+1–43, 2012.
+[21] G. Chaslot, S. Bakkes, I. Szita, and P. Spronck, “Monte-Carlo Tree
+Search: A New Framework for Game AI,” AAAI Conference on
+Artiﬁcial Intelligence and Interactive Digital Entertainment , vol. 8,
+pp. 216–217, 2008.
+[22] Z. N. Sunberg and M. J. Kochenderfer, “Online algorithms for
+POMDPs with continuous state, action, and observation spaces,” in
+International Conference on Automated Planning and Scheduling .
+AAAI Press, 2018.
+[23] D. Silver and J. Veness, “Monte-Carlo planning in large POMDPs,”
+in Neural Information Processing Systems , 2010.
+[24] J. Schulman, F. Wolski, P. Dhariwal, A. Radford, and O. Klimov,
+“Proximal policy optimization algorithms,” arXiv preprint
+arXiv:1707.06347, 2017.
+[25] T. Haarnoja, A. Zhou, P. Abbeel, and S. Levine, “Soft actor-critic: Off-
+policy maximum entropy deep reinforcement learning with a stochastic
+actor,” in International Conference on Machine Learning . PMLR,
+2018, pp. 1861–1870.
+[26] R. Sim and N. Roy, “Global A-optimal Robot Exploration in SLAM,”
+in IEEE International Conference on Robotics and Automation. IEEE,
+2005, pp. 661–666.
+[27] A. Gotovos, N. Casati, G. Hitz, and A. Krause, “Active Learning for
+Level Set Estimation,” in International Joint Conference on Artiﬁcial
+Intelligence. AAAI Press, 2013, pp. 1344–1350.
+[28] J. Schrittwieser, I. Antonoglou, T. Hubert, K. Simonyan, L. Sifre,
+S. Schmitt, A. Guez, E. Lockhart, D. Hassabis, T. Graepel et al. ,
+“Mastering Atari, Go, chess and shogi by planning with a learned
+model,” Nature, vol. 588, no. 7839, pp. 604–609, 2020.
+[29] E. Romera, J. M. Alvarez, L. M. Bergasa, and R. Arroyo, “ERFNet:
+Efﬁcient Residual Factorized ConvNet for Real-Time Semantic Seg-
+mentation,” IEEE Transactions on Intelligent Transportation Systems ,
+vol. 19, no. 1, pp. 263–272, 2017.
+[30] L. N. Smith, “A disciplined approach to neural network hyper-
+parameters: Part 1 – rate, batch size, momentum, and weight decay,”
+arXiv, 2018.
+[31] R. Liu and J. Zou, “The Effects of Memory Replay in Reinforcement
+Learning,” in Allerton Conference on Communication, Control, and
+Computing. IEEE, 2018, pp. 478–485.
+[32] D. J. Wu, “Accelerating Self-Play Learning in Go,” arXiv, 2019.

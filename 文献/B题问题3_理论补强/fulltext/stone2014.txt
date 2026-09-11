@@ -1,0 +1,788 @@
+arXiv:1405.4720v1  [stat.ME]  19 May 2014
+Statistical Science
+2014, Vol. 29, No. 1, 69–80
+DOI: 10.1214/13-STS420
+c© Institute of Mathematical Statistics , 2014
+Search for the Wreckage of Air France
+Flight AF 447 1
+Lawrence D. Stone, Colleen M. Keller, Thomas M. Kratzke and J ohan P. Strumpfer
+Abstract. In the early morning hours of June 1, 2009, during a ﬂight
+from Rio de Janeiro to Paris, Air France Flight AF 447 disappe ared
+during stormy weather over a remote part of the Atlantic carr ying 228
+passengers and crew to their deaths. After two years of unsuc cessful
+search, the authors were asked by the French Bureau d’Enquˆ e tes et
+d’Analyses pour la s´ ecurit´ e de l’aviation to develop a pro bability dis-
+tribution for the location of the wreckage that accounted fo r all infor-
+mation about the crash location as well as for previous searc h eﬀorts.
+We used a Bayesian procedure developed for search planning t o pro-
+duce the posterior target location distribution. This dist ribution was
+used to guide the search in the third year, and the wreckage wa s found
+with one week of undersea search. In this paper we discuss why Bayesian
+analysis is ideally suited to solving this problem, review p revious non-
+Bayesian eﬀorts, and describe the methodology used to produc e the
+posterior probability distribution for the location of the wreck.
+Key words and phrases: AF 447, Bayesian, particle ﬁlter.
+1. BACKGROUND
+In the early morning hours of June 1, 2009, Air
+France Flight AF 447, with 228 passengers and crew
+aboard, disappeared during stormy weather over
+the Atlantic while on a ﬂight from Rio de Janeiro
+to Paris. Upon receiving notiﬁcation of the crash,
+the French Bureau d’Enquˆ etes et d’Analyses (BEA)
+pour la s´ ecurit´ e de l’aviation and French search and
+rescue authorities organized an international search
+Lawrence Stone is Chief Scientist, Colleen Keller and
+Thomas Kratzke are Senior Analysts, Metron, Inc.,
+1818 Library Street, Suite 600, Reston, Virginia 20190,
+USA (e-mail: stone@metsci.com; keller@metsci.com;
+kratzke@metsci.com; URL: www.metsci.com). Johan
+Strumpfer is Visiting Professor, Graduate School of
+Business, University of Cape Town, Cape Town, South
+Africa (e-mail: Johan.Strumpfer@gmail.com).
+1Discussed in 10.1214/13-STS447 and 10.1214/13-STS463.
+This is an electronic reprint of the original article
+published by the Institute of Mathematical Statistics in
+Statistical Science, 2014, Vol. 29, No. 1, 69–80 . This
+reprint diﬀers from the original in pagination and
+typographic detail.
+by aircraft and surface ships to look for signs of the
+plane and possible survivors. On the sixth day of
+this eﬀort, the ﬁrst debris and bodies were found
+38 NM north of the aircraft’s last known position.
+That day a large portion of the galley was found
+along with other debris and some bodies. Figure 1
+shows the aircraft’s last known position, intended
+ﬂight path and a 40 NM circle about the last known
+position. Analysis by the BEA determined that the
+wreckage had to lie within 40 NM of the plane’s last
+known position.
+The aircraft was equipped with a ﬂight data
+recorder and a cockpit voice recorder. Each of these
+recorders was ﬁtted with an underwater locator bea-
+con that activates an acoustic signal upon contact
+with water. The BEA initiated a search to detect
+these beacons. The search was performed by two
+ships employing passive acoustic sensors supplied
+by the U.S. Navy and operated by personnel from
+Phoenix International. The search began on June
+10, 2009 and lasted 31 days until the time when the
+batteries in the beacons were estimated to be ex-
+hausted. The ships searched extensively along the
+intended ﬂight path, but the beacons were not de-
+1
+2 STONE, KELLER, KRATZKE AND STRUMPFER
+Fig. 1. Last known position of the aircraft, intended ﬂight path and the 40 NM circle.
+tected. Next the BEA began an active acoustic
+search with side-looking sonar to detect the wreck-
+age on the ocean bottom. This search took place in
+August 2009 south of the last known position in an
+area not covered by the passive acoustic search. This
+search was also unsuccessful.
+After the unsuccessful search in 2009, the BEA
+commissioned a group of oceanographic experts to
+estimate the currents in the area at the time of the
+crash and to use these estimates along with the
+times and locations where the surface search had
+found bodies and debris in order to estimate the
+location of the wreckage. In [ 6] the group recom-
+mended the rectangular search area north and west
+of the last known position shown in Figure 2. This
+rectangle is described as a 95% conﬁdence zone. The
+group used available current measurements to make
+a number of estimates of the currents in the area
+of the wreck at the time of the loss. Using these
+estimates, they performed a backward drift on re-
+covered debris and bodies to produce a number of
+trajectories ending at an estimated location of the
+crash. The group removed trajectories that they felt
+were outliers. A bivariate normal error was esti-
+mated for each of the remaining crash location esti-
+mates and used to produce a weighted mean with a
+bivariate normal error distribution. This error dis-
+tribution was used to compute a rectangle centered
+at the mean with a 95% probability of “containing”
+the wreck location. This rectangle guided the active
+acoustic search in April and May of 2010.
+The 2010 searches were performed by two teams.
+The U.S. Navy and Phoenix International team used
+a towed side-scan sonar system. The Woods Hole
+Oceanographic Institute team used autonomous
+underwater vehicles with side-scan sonars and a
+remotely operated vehicle. After an unsuccessful
+search in the rectangle, the teams extended their
+eﬀorts to the south and west of the rectangle. Un-
+fortunately, this search was also unsuccessful.
+In July 2010 we were tasked by the BEA to review
+all information about the loss of AF 447 as well as
+the previous search eﬀorts to produce a probabil-
+ity distribution (map) for the location of the under-
+water wreckage. The probability maps that resulted
+from this process were used to guide the 2011 search.
+On April 3, 2011, almost two years after the loss
+of the aircraft, the underwater wreckage was located
+SEARCH FOR AIR FRANCE FLIGHT AF 447 3
+Fig. 2. The 95% conﬁdence zone recommended in [ 6] for the 2010 search area.
+on the ocean bottom some 14,000 feet below the
+surface. On April 8, 2011, the director of the BEA
+stated, “This study [ 10] published on the BEA web-
+site on 20 January 2011, indicated a strong possi-
+bility for discovery of the wreckage near the center
+of the Circle. It was in this area that it was in fact
+discovered after one week of exploration” [ 11]. Sub-
+sequently, the ﬂight data recorder and cockpit voice
+recorder were found, retrieved from the ocean bot-
+tom and ﬂown to the BEA in Paris where the data
+in these recorders were recovered and analyzed. This
+data provided crucial information for determining
+the cause of the crash. Finding the wreckage also
+allowed the BEA to return the bodies of many pas-
+sengers and crew to their loved ones.
+In the sections below we describe the Bayesian
+process used to compute these probability distribu-
+tions.
+2. WHY BAYESIAN ANALYSIS
+Bayesian analysis is ideally suited to planning
+complicated and diﬃcult searches involving uncer-
+tainties that are quantiﬁed by a combination of ob-
+jective and subjective probabilities. This approach
+has been applied to a number of important and
+successful searches in the past, in particular, the
+searches for the USS Scorpion [7] and SS Central
+America [8]. This approach is the basis for the U.S.
+Coast Guard’s Search and Rescue Optimal Planning
+System (SAROPS) that is used to plan Coast Guard
+maritime searches for people and ships missing at
+sea [ 5].
+Complicated searches such as the one for AF 447
+are onetime events. We are not able to recreate the
+conditions of the crash 1000 times and record the
+distribution of locations where the aircraft hits the
+water. As a result, deﬁnitions of probability distribu-
+tions in terms of relative frequencies of events do not
+apply. Instead, we are faced with computing a prob-
+ability distribution on the location of the wreckage
+(search object) in the presence of uncertainties and
+conﬂicting information that require the use of sub-
+jective probabilities. The probability distribution on
+which the search is based is therefore a subjective
+one. It is based on the analysts’ best understanding
+of the uncertainties in the information about the lo-
+cation of the search object.
+In an ideal situation, search eﬀort is applied in an
+optimal fashion to maximize the probability of de-
+tecting the search object within the eﬀort available.
+The optimal search problem is a Bayesian decision
+problem often based on a subjective probability dis-
+tribution [2–4, 9]. The basic optimal search problem
+can be stated as follows.
+The search object is located in one of J cells with
+p(j) being the probability the object is in cell j. We
+assume ∑J
+j=1 p(j) = 1. For each cell j, there is a de-
+tection function bj where bj(z) is the probability of
+4 STONE, KELLER, KRATZKE AND STRUMPFER
+detecting the object with eﬀort z given the object
+is in cell j. Search eﬀort is often measured in hours,
+which we will use for this discussion. A search allo-
+cation Z speciﬁes the eﬀort zj ≥ 0 to be placed in
+cell j for j = 1, . . . , J. The probability of detection
+P(Z) and cost C(Z) for the search allocation Z are
+computed by
+P(Z) =
+J∑
+j=1
+bj(zj)p(j) and C(Z) =
+J∑
+j=1
+zj.
+Suppose there are T hours of search available. The
+optimal search problem is to ﬁnd an allocation Z ∗
+for which C(Z ∗) ≤ T and
+P(Z ∗) ≥ P(Z) for all Z such that C(Z) ≤ T.
+As the search proceeds and the search object is
+not found, the posterior distribution given failure of
+the search is computed and used as the basis for
+planning the next increment of search. Even at this
+stage, subjective estimates of the detection capabil-
+ity of the sensors must often be used because of the
+lack of previous testing against the search object.
+Classical statistics has no formalism for approaching
+this type of decision problem. In contrast, Bayesian
+statistics and decision theory are ideally suited to
+the task.
+3. ANALYSIS APPROACH
+In the analysis that we performed for the BEA,
+we were not called upon to provide a recommended
+allocation of search eﬀort but only to compute the
+posterior distribution for the location of the wreck-
+age. The approach taken for this analysis follows
+the model described in [ 7] and [ 8]. The informa-
+tion about a complex search is often inconsistent
+and contradictory. However, one can organize it into
+self-consistent stories or scenarios about the loss of
+the aircraft. Within each scenario, the uncertainties
+in the information are quantiﬁed using probability
+distributions. These distributions may be subjective
+if little or no data is available to estimate the uncer-
+tainties. For each scenario, a probability distribution
+on target location is computed to reﬂect the un-
+certainties in the information forming the scenario.
+This is typically done by simulation. The result-
+ing distributions are combined by assigning subjec-
+tive probabilities to the scenarios and computing a
+weighted mixture of these scenario distributions to
+obtain the prior distribution. The subjective prob-
+ability assigned to a scenario reﬂects the analysts’
+evaluation of the probability that the scenario rep-
+resents what happened.
+We approximated the continuous spatial distribu-
+tion for the location of the wreckage by a discrete
+distribution represented by a set of N point masses
+or particles ( xn, wn) for n = 1, . . . , N, where wn is
+the probability mass attached to particle n. The
+probabilities sum to 1. In the case of a stationary
+search object, xn is a latitude-longitude point. In
+the case of a moving object, xn is a continuous space
+and time path over the time interval of interest. For
+visualization purposes, a grid of cells is imposed on
+the search space. Cell probabilities are computed by
+summing the probabilities of the particles in each
+cell, and the cells are color coded according to their
+probabilities. For the ﬁgures in this paper we used a
+black to white scale with black indicating the highest
+probability cells and white the lowest. Computation
+of the probability distributions described below was
+performed by a modiﬁed version of SAROPS.
+The computation of the posterior distribution in-
+volves two basic steps, (1) computation of the prior
+(before search) distribution and (2) computation
+of the posterior distribution given the unsuccessful
+search.
+3.1 Prior Distribution
+During ﬂight, a commercial aircraft sends mes-
+sages via satellite containing maintenance and lo-
+gistic information about the aircraft. Every 10 min-
+utes it sends a GPS position for the aircraft. The
+last known position, 2 .98◦N latitude /30.59◦W lon-
+gitude, for AF 447 was sent at 02 hours 10 minutes
+and 34 seconds Coordinated Universal Time on June
+1, 2009. Based on failure to receive any messages af-
+ter 02 hours, 14 minutes and 26 seconds, the BEA
+estimated that the plane could not have traveled
+more than 40 NM from its last known position be-
+fore crashing into the ocean. Thus, we assumed the
+location of the wreckage was within the 40 NM circle
+centered at the last known position with probability
+1. Any probability distribution for the location of
+the wreckage that had probability outside this cir-
+cle was truncated at the circle and renormalized to
+a probability distribution. Errors in GPS positions
+typically have a standard deviation of roughly 10 m
+which is dwarfed by the other uncertainties in the
+location of the aircraft, so this error was not consid-
+ered to be signiﬁcant in our analysis.
+The prior distribution P on the location of the
+wreck was taken to be a mixture of three distribu-
+tions, D1, D2 and D3. The distribution D1 is uni-
+form within the 40 NM circle, and D2 is based on
+SEARCH FOR AIR FRANCE FLIGHT AF 447 5
+data from crashes that involved loss of control while
+a plane was at ﬂight altitude. D3 is based on an anal-
+ysis that drifted dead bodies found on the surface
+backward in time to possible crash locations. On
+the basis of discussions with analysts at the BEA,
+we decided on the following subjective weights for
+these distributions (scenarios), p1 = p2 = 0.35 and
+p3 = 0.3 so that
+P = p1D1 + p2D2 + p3D3.(3.1)
+In retrospect, it appears it would have been more
+appropriate to view D3 as a likelihood function and
+multiply the distribution 0 .5D1 + 0.5D2 by D3 to
+obtain the prior.
+The distribution D2 is based on an analysis of
+data from nine commercial aircraft accidents involv-
+ing loss of control at ﬂight altitude. The analysis was
+performed by the Russian Interstate Aviation Group
+and the BEA. It showed that all impact points (ad-
+justed to the 35,000-foot altitude at which AF 447
+was cruising) were contained within a circle of ra-
+dius 20 NM from the point at which the emergency
+began. These results were represented by a circular
+normal distribution centered at the last known po-
+sition with standard deviation 8 NM along any axis.
+We set D2 equal to this distribution truncated at
+the 40 NM circle.
+The D3 scenario is the reverse-drift scenario. The
+distribution for this scenario was computed using
+data on currents and winds to reverse the motion
+of recovered bodies back to the time of impact.
+We used current estimates produced for BEA [ 6]
+and wind estimates from the U.S. Navy’s Opera-
+tional Global Atmospheric Prediction System model
+to perform the reverse drift.
+At daylight on June 1st, 2009, French and Brazil-
+ian aircraft began a visual search for survivors and
+debris from the wreck. The ﬁrst debris was found on
+June 6th, and more than 60 bodies were recovered
+from June 6th–June 10th, 2009.
+There are two components of drift, drift due to
+ocean current and drift due to wind. The latter is
+called leeway. To produce the reverse-drift scenario,
+we used positions and times at which bodies were
+recovered from June 6–10. We did not reverse-drift
+pieces of debris because we lacked good leeway mod-
+els for them, whereas we could use the model in [ 1]
+for bodies. We used polygons to represent the posi-
+tions of selected bodies recovered on each day from
+June 6–10. For each polygon 16,000 positions were
+drawn from a uniform distribution over the polygon.
+Each position became a particle that was drifted
+backward in time subject to winds and currents in
+the following manner. We used a 60-minute time
+step. For each step and each particle, a draw was
+made from the distributions on wind and current
+for the time and position of the particle in the man-
+ner described below. The negative of the vector sum
+of current plus the leeway resulting from the wind
+was applied to the particle motion until the next
+time step.
+The large uncertainties in the ocean currents at
+the time of the crash produced a distribution for
+the crash location that spread way beyond the 40
+NM circle. Figure 3 shows the reverse-drift distribu-
+tion produced in this fashion and truncated at the
+40 NM circle. Because of the large uncertainties in
+the currents, this scenario was given a lower weight
+than the other two that comprise the prior. Figure
+4 shows the prior P . For the prior distribution and
+the subsequent posteriors given failure to detect, we
+used N = 75,000 points.
+3.1.1 Simulating winds and currents This section
+discusses simulation of winds and currents.
+Wind and current estimates are provided by the
+environmental community in the form of a grid of
+velocity vectors ( u, v) indexed by space and time
+where u is the speed in the east–west direction and
+v is the speed in the north–south direction. We in-
+terpret these as mean values of the actual wind and
+current velocities and add a stochastic component
+by the method described below.
+To obtain ( u, v) for a wind or current at a time
+that corresponds to a grid time but for a spatial
+point that is not equal to one of the spatial grid
+points, we take the three closest spatial grid points
+and use a weighted average of the values at those
+points, where the weights are proportional to the
+inverses of the distances from the desired point to
+the chosen grid points.
+Most often we will need ( u, v) for times that are
+not equal to one of the time grid values. To get ( u, v)
+in this case, we use the values as calculated above for
+the two closest times in the data and then linearly
+interpolate between these values.
+For every time step and every particle, the simula-
+tion perturbs the speeds u and v obtained from the
+data by adding a random draw from a normal dis-
+tribution with a standard deviation of 0.22 kts for
+current speeds and 2.0 kts for wind speeds. These
+draws are independent for u and v and from par-
+ticle to particle, but for a given particle and speed
+6 STONE, KELLER, KRATZKE AND STRUMPFER
+Fig. 3. Reverse drift distribution D3.
+Fig. 4. Prior distribution P .
+SEARCH FOR AIR FRANCE FLIGHT AF 447 7
+the draws are correlated in time. Speciﬁcally, if ∆ t
+is the increment in time, measured in minutes, be-
+tween two time steps, then the correlation is given
+by
+ρ(∆t) = e−α∆t,
+where α is chosen so that e−α60 = 1/2.
+3.1.2 Simulating drift There are two forces acting
+on a drifting particle: currents and winds. The eﬀect
+of current is straightforward. The particle’s velocity
+due to the current is equal to the velocity of the
+current.
+While it is reasonable to expect that a current of
+3 knots will push an object at a speed of 3 knots,
+the same is not true for the wind. Drift due to wind
+(leeway) results from the sum of the force of the
+wind acting on the exposed surfaces of the object
+and the drag of the water acting on the submerged
+surfaces of the object.
+The wind does not push an object at the wind’s
+speed, and it often does not push an object ex-
+actly in the downwind direction. There is typically a
+downwind and crosswind component of leeway. The
+downwind component is in the direction the wind
+is blowing. The crosswind component is perpendic-
+ular to the downwind component, and the direc-
+tion of the crosswind leeway is not predictable. To
+account for this, the simulation switches between
+the two crosswind directions at exponentially dis-
+tributed times as it is producing a particle path. The
+magnitudes of the downwind and crosswind compo-
+nents are computed as follows.
+For a given particle and time, we compute the
+wind velocity from the gridded wind data in the
+same fashion as for the ocean currents. Let W be re-
+sulting wind speed expressed in meters per second.
+For a deceased person ﬂoating in the water, we used
+the following model developed in [ 1] to compute the
+mean downwind leeway DW and crosswind leeway
+CW measured in centimeters per second (cm/s):
+DW = 1.17W + 10.2 cm/s ,
+CW = 0.04W + 3.9 cm/s .
+We added a random component to the mean values
+computed above by adding the value of a draw from
+a normal distribution with mean 0 and standard de-
+viation equal to the standard error computed for the
+regression used to estimate the mean downwind and
+crosswind leeway, respectively. The time correlation
+of the random components of leeway was handled in
+the same way as for the ocean currents.
+3.2 Posterior Distribution
+The posterior distribution was computed in four
+steps with each step accounting for an increment
+of unsuccessful search. The result is the posterior
+distribution on the wreck location given failure of
+the search eﬀort in 2009 and 2010. The steps, that is,
+increments of unsuccessful search, are listed below:
+1. Failure of the surface search to ﬁnd debris or bod-
+ies for almost 6 days during June 1–6, 2009.
+2. Failure of the passive acoustic search to detect
+the underwater locator beacons on the ﬂight data
+recorder and cockpit voice recorder in June and
+July 2009.
+3. Failure of the active side-looking sonar search for
+the wreckage in August 2009.
+4. Failure of the active side-looking sonar search for
+the wreckage in April and May of 2010.
+We use the following notation for the posterior
+distributions. ˜P1 denotes the posterior given fail-
+ure of search increment 1; ˜P12 denotes the posterior
+given failure of search increments 1 and 2, and so
+on to ˜P1234 which denotes the posterior given fail-
+ure of search increments 1–4. It is ˜P1234 that the
+BEA used to plan the successful 2011 search. These
+distributions were computed sequentially. First ˜P1
+was computed and used as the “prior” for comput-
+ing ˜P12. Then ˜P12 was used as the prior to compute
+˜P123 and so on.
+4. COMPUTING THE POSTERIORS
+In this section we describe how we accounted for
+the four increments of unsuccessful search by com-
+puting the posterior distributions described above.
+4.1 Accounting for Unsuccessful Search
+We represented the prior distribution P by mak-
+ing N = 75,000 independent draws from this distri-
+bution for the location of the wreck on the ocean
+bottom. For the nth particle we set xn equal to
+the location of the nth draw and wn = 1 /N for
+n = 1, . . . , N. If an unsuccessful search takes place,
+we compute the probability pd(n) that the search
+would have detected the search object if it were lo-
+cated at xn. The posterior probabilities ˜ wn on the
+particles are computed using Bayes’ rule as follows:
+˜wn = (1 − pd(n))wn
+∑N
+n′=1(1 − pd(n′))wn′
+(4.1)
+for n = 1, . . . , N.
+8 STONE, KELLER, KRATZKE AND STRUMPFER
+The updated particles ( xn, ˜wn) for n = 1, . . . , N pro-
+vide a discrete approximation to the posterior given
+failure of the search.
+If the search object is moving, then a stochas-
+tic motion model must be speciﬁed. In addition to
+drawing the initial position, we make draws from the
+distributions speciﬁed by the motion model to cre-
+ate a continuous time and space path for the search
+object over the time interval of interest. Each par-
+ticle is a path with a probability on it. The set of
+particles is a discrete sample path approximation
+to the stochastic process describing the motion of
+the search object. When a search takes place, we
+account for the motion of the particles and the sen-
+sors in calculating pd(n). The posterior is again com-
+puted from ( 4.1).
+4.2 Step 1: Unsuccessful Surface Search
+We decided to incorporate the eﬀect of the al-
+most 6 days of unsuccessful surface search as follows.
+Each point xn in the prior speciﬁes a location on
+the ocean bottom. In the calculation of this distri-
+bution, we assumed that when the aircraft crashed
+into the surface of the ocean it fell straight to the
+bottom some 14,000 feet below. It is likely that there
+was some lateral motion as the wreckage drifted to
+the bottom, but we reasoned that this uncertainty
+was small compared to the other uncertainties in the
+problem, so we ignored it.
+For each particle we constructed a path starting at
+the position of the particle projected up to the sur-
+face of the ocean. We drifted the particle forward in
+time for six days using the wind and current drift
+model described in Section 3.1. However, this time
+we used the drift vector itself rather than its nega-
+tive. This produced a path for each particle. As with
+the reverse drift scenario, the leeway component of
+drift was based on that of a body in the water.
+Aircraft searches are reported in terms of sorties.
+Sorties described a sequence of straight line seg-
+ments (ﬂight legs) ﬂown at speciﬁed times, speeds
+and altitudes. Typically the set of legs for a sor-
+tie covers a rectangular area on the ocean surface.
+We used the detectability of the galley found on
+the 6th day of surface search as a surrogate for the
+detectability of the ﬂoating debris. We further as-
+sumed that the detectability of the galley is equiva-
+lent to that of a four-man raft (they are roughly the
+same size). The Coast Guard has developed tables
+that provide estimates of the probability of detect-
+ing a four-man raft from an aircraft on one leg of
+a sortie as a function of the speed and altitude of
+the aircraft, range at the point of closest approach
+to the search object on the leg, and environmental
+variables such as visibility, cloud cover and sea state
+of the ocean.
+For each particle and each leg of each sortie, we
+computed the range at closest point of approach and
+used the Coast Guard tables to compute the prob-
+ability that the particle would fail to be detected
+on that leg. We assumed an independent detection
+opportunity on each leg and multiplied the failure
+probability for each leg and sortie to obtain an over-
+all probability of failure to detect for each particle.
+Search by ships was incorporated in a similar man-
+ner. The result was the computation of the failure
+probability q(n) for the air and ship searches for
+each particle for the six days of unsuccessful search.
+Because of the many uncertainties and approxi-
+mations involved in the computation of the failure
+probabilities for this search, and because we felt that
+it was unlikely that the search would fail to detect
+any debris for almost six days under the assumptions
+we had made, we decided it was necessary to allow
+for the possibility that the search was ineﬀective for
+most of those six days for reasons unknown to us. We
+made a subjective estimate that the search was in-
+eﬀective (failure probability 1) with probability 0.7
+and eﬀective [failure probability q(n)] with probabil-
+ity 0.3. As a result we set 1 − pd(n) = 0.7 + 0.3q(n)
+and computed the posterior probabilities w1
+n = ˜wn
+on the path of the nth particle by ( 4.1), which is
+also the posterior probability on the wreck location
+being equal to xn given failure of the six days of sur-
+face search. Thus, ( xn, w1
+n) for n = 1, . . . , N yields
+the posterior distribution ˜P1. More details on the
+aircraft searches may be found in [ 10].
+4.3 Step 2: Passive Acoustic Search for the
+Underwater Locator Beacons
+The aircraft was equipped with a ﬂight data
+recorder and a cockpit voice recorder. Each of these
+recorders was ﬁtted with an underwater locator bea-
+con that activates an acoustic signal upon contact
+with water. The batteries on the locator beacons
+were estimated to last for 40 days.
+The passive acoustic search to detect these bea-
+cons lasted 31 days ending on 10 July 2009. The
+search was performed by two ships employing pas-
+sive acoustic sensors supplied by the U.S. Navy and
+operated by personnel from Phoenix International.
+Based on a calculation involving the source level of
+the beacons and propagation loss through the water,
+we estimated the sensors to have probability at least
+SEARCH FOR AIR FRANCE FLIGHT AF 447 9
+Fig. 5. The vertical and horizontal lines show the search paths for t he passive acoustic search. The circles are the 20 and 40
+NM circles about the last known position. The white rectangl e in row 24 was searched by side-looking sonar in August 2009.
+0.9 of detecting the beacons within lateral range
+1730 m. Experience in past searches has shown that
+detection estimates based on manufacturers’ spec-
+iﬁcations and operator estimates tend to be opti-
+mistic. Thus, we put a maximum of 0.9 on estimates
+of sensor detection probabilities. The search paths,
+which are shown in Figure 5, were designed so that
+1730 m would be the maximum lateral range to the
+nearest path for any point in the search region.
+In estimating the probability of detection for these
+sensors we accounted for the possibility that one or
+both of the beacons were destroyed in the crash.
+Based on survival data for these beacons obtained
+from previous crashes, we estimated a probability of
+0.8 that a single beacon survived the crash. If beacon
+survival is independent, then PD, the probability of
+detecting at least one of the beacons given they are
+within lateral range 1730 m of the sensor, equals
+PD = (1 − (0.1)2)(0.8)2 + (0.9)(2(0.8)(0.2)) = 0.92.
+If the beacons were mounted suﬃciently close to-
+gether to consider their chances of survival to be
+completely dependent, then the probability of de-
+tecting at least one beacon drops to 0 .9 × 0.8 = 0.72.
+We decided to use a weighted average of 0.25 for the
+independent and 0.75 for the dependent probabili-
+ties, yielding a detection probability of ¯PD = 77.
+The ships tracks displayed in Figure 5 show the
+passive acoustic search paths, which were designed
+to cover the expected ﬂight path of the aircraft. We
+computed the posterior distribution ˜P12 by start-
+ing with ˜P1 as the prior and computing 1 − pd(n)
+for each particle by the same method used for the
+aircraft search. For each particle and path, we deter-
+mined whether the path came within 1730 m of the
+particle. If it did, the failure probability for that par-
+ticle was multiplied by 1 − ¯PD = 0.23. The resulting
+1 − pd(n) was used in ( 4.1) with wn = w1
+n to compute
+w2
+n = ˜wn and the posterior distribution ˜P12.
+4.4 Step 3: Active Side-Looking Sonar Search in
+August 2009
+The BEA employed a side-looking (active) sonar
+from the French Research Institute for Exploration
+of the Seas towed by the French research vessel
+Pourquoi Pas ? to continue the search after the bat-
+teries on the beacons were estimated to have been
+exhausted. This search took place in August 2009
+in the white rectangle in row 24 in Figure 5. This
+region was chosen because it was suitable for search
+by side-looking sonar and had not been searched be-
+fore. We assumed a 0.90 probability of detection in
+the searched region. This represents a conservative,
+subjective estimate of the probability of this sensor
+10 STONE, KELLER, KRATZKE AND STRUMPFER
+Fig. 6. Regions searched by active side-looking sonar in April–May 2010.
+detecting a ﬁeld of debris. The detection of small
+items such as oil drums on the ocean bottom con-
+ﬁrmed that the sensor was working well. We com-
+puted the posterior after this search eﬀort by setting
+1 − pd(n) =
+{ 0.1, if xn is located in the
+search rectangle,
+1, otherwise.
+(4.2)
+This 1 − pd(n) was used in ( 4.1) with wn = w2
+n to
+compute w3
+n and the posterior distribution ˜P123.
+4.5 Step 4: Active Side-Looking Sonar Search in
+April and May 2010
+Figure 6 shows the regions searched during 2010
+with active side-looking sonar. The search began in
+the rectangular region recommended by [ 6] inside
+the 40 NM circle and proceeded to the remainder of
+the areas shown in medium gray including a small
+rectangular region southwest of the last known po-
+sition. As with the previous active sonar search,
+we estimated that within these regions the search
+sensors achieved detection probability 0.9. We felt
+this was a conservative subjective estimate based
+on the careful execution of the search, the quality
+of sonar records and the numerous small articles de-
+tected during this search. The search region was rep-
+resented by a rectangular and a polygonal region.
+As with the active sonar search in 2009, we com-
+puted 1 − pd(n) in the manner given in ( 4.2) with
+the rectangular and polygonal search regions replac-
+ing the rectangle of the 2009 search. This produced
+the desired posterior ˜P1234 which accounts for all the
+unsuccessful search.
+4.6 Posterior After the Unsuccessful Searches in
+Steps 1–4
+Figure 7 shows the posterior after the unsuccess-
+ful searches in steps 1–4. Even though this poste-
+rior allows for the possibility that the beacons did
+not work, doubts about the beacons compelled us to
+SEARCH FOR AIR FRANCE FLIGHT AF 447 11
+Fig. 7. Posterior distrubtion ˜P1234.
+produce the alternate posterior shown in Figure 8,
+which assumes the beacons did not function. The lo-
+cation of the wreckage which is shown in this ﬁgure
+falls in a high probability area. This posterior dis-
+tribution seems remarkably accurate and raises the
+question of why the beacons were not detected.
+The BEA recovered one data recorder with the
+beacon attached. Testing by the BEA showed that
+when the beacon was connected to a fully charged
+battery, it did not produce a signal. This indicates
+that the beacons were damaged in the crash and did
+not function. This would explain why the beacons
+were not detected by the passive acoustic search.
+A better way to handle the doubts that we had
+about the beacons would have been to compute a
+joint distribution on beacon failure and wreck loca-
+tion. The marginal distribution on wreck location
+would then be the appropriate posterior on which
+to base further search.
+5. CONCLUSIONS
+Figure 8 shows that the wreckage is located in
+a high probability area assuming the beacons failed
+to operate properly. Because the wreckage is located
+in an area thoroughly covered by the passive search
+(see Figure 5), these results and the tests of the re-
+covered beacon by the BEA suggest that both bea-
+cons failed to actuate. It appears that the likely fail-
+ure of the beacons to actuate resulted in a long and
+diﬃcult search.
+The approach described in this paper used a care-
+ful and methodical consideration of all data avail-
+able with their associated uncertainties, to form an
+analytic assessment of the highest likelihood areas
+for future search eﬀorts. The weighted scenario ap-
+proach allowed inconsistent information to be com-
+bined with subjective weights that capture the con-
+ﬁdence in the data. The analysis of the detection ef-
+fectiveness of each search component produced the
+Bayesian posterior distributions shown in Figures 7
+and 8 and formed a solid basis for planning the next
+increment of search. In fact, the 2011 search com-
+menced in the center of the distribution and quickly
+found the wreckage.
+Failure to use a Bayesian approach in planning the
+2010 search delayed the discovery of the wreckage by
+up to one year. The success of the analysis described
+in this paper provides a powerful illustration of the
+12 STONE, KELLER, KRATZKE AND STRUMPFER
+Fig. 8. Posterior distribution which assumes both beacons failed; produced because of doubts about the survivability of the
+beacons.
+value of a methodical, Bayesian approach to search
+planning. The full report of this work is available on
+the BEA website in [ 10].
+ACKNOWLEDGMENTS
+We thank Joseph B. Kadane for his helpful com-
+ments and suggestions.
+REFERENCES
+[1] Breivik, Ø. , Allen, A. A. , Maisondieu, C. and
+Roth, J. C. (2011). Wind-induced drift of objects
+at sea: The leeway ﬁeld method. Applied Ocean Re-
+search 33 100–109.
+[2] DeGroot, M. H. (2004). Optimal Statistical Decisions .
+Wiley, Hoboken, NJ. MR2288194
+[3] Koopman, B. O. (1956). The theory of search. I. Kine-
+matic bases. Oper. Res. 4 324–346. MR0081814
+[4] Koopman, B. O. (1956). The theory of search. II. Target
+detection. Oper. Res. 4 503–531. MR0090467
+[5] Kratzke, T. M. , Stone, L. D. and Frost, J. R.
+(2010). Search and rescue optimal planning system.
+In Proceedings of the 13th International Confer-
+ence on Information Fusion (FUSION), Edinburgh,
+Scotland, 26–29 July, 2010 1–8. IEEE.
+[6] Ollitrault, M. (2010). Estimating the Wreckage Loca-
+tion of the Rio–Paris AF447. Technical report, from
+the Drift Group to BEA.
+[7] Richardson, H. R. and Stone, L. D. (1971). Oper-
+ations analysis during the underwater search for
+Scorpion. Naval Research Logistics Quarterly 18
+141–157.
+[8] Stone, L. D. (1992). Search for the SS Central America:
+Mathematical Treasure Hunting. Interfaces 22 32–
+54.
+[9] Stone, L. D. (2004). Theory of Optimal Search , 2nd ed.
+INFORMS, Catonsville, MD.
+[10] Stone, L. D. , Keller, C. M. , Kratzke, T. M. and
+Strumpfer, J. P. (2011). Search Analysis for the
+Location of the AF447. Technical report, BEA.
+[11] Troadec, J.-P. (2011). Undersea search operations to
+ﬁnd the wreckage of the A 330, ﬂight AF 447: the
+culmination of extensive searches. Technical report,
+note from BEA Director.

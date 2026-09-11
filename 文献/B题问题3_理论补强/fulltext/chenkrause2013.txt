@@ -1,0 +1,979 @@
+Near-optimal Batch Mode Active Learning
+and Adaptive Submodular Optimization
+Yuxin Chen yuxin.chen@inf.ethz.ch
+Andreas Krause krausea@ethz.ch
+ETH Zurich, Universit¨ atstrasse 6, 8092 Z¨ urich, Switzerland
+Abstract
+Active learning can lead to a dramatic
+reduction in labeling eﬀort. However, in
+many practical implementations (such as
+crowdsourcing, surveys, high-throughput
+experimental design), it is preferable to query
+labels for batches of examples to be labelled
+in parallel. While several heuristics have been
+proposed for batch-mode active learning, little
+is known about their theoretical performance.
+We consider batch mode active learning and
+more general information-parallel stochastic
+optimization problems that exhibit adaptive
+submodularity, a natural diminishing returns
+condition. We prove that for such problems,
+a simple greedy strategy is competitive
+with the optimal batch-mode policy. In
+some cases, surprisingly, the use of batches
+incurs competitively low cost, even when
+compared to a fully sequential strategy. We
+demonstrate the eﬀectiveness of our approach
+on batch-mode active learning tasks, where
+it outperforms the state of the art, as well
+as the novel problem of multi-stage inﬂuence
+maximization in social networks.
+1. Introduction
+Active learning, i.e., sequential selection of unlabeled
+examples for labeling, can lead to dramatic (potentially
+exponential) reduction in labeling eﬀort as compared to
+passive learning. In many practical settings, however,
+fully sequential selection, where the choice of the next
+example depends on all previous labels, is infeasible.
+For example, when recruiting workers on Amazon
+Mechanical Turk for crowdsourcing annotation, one
+Proceedings of the 30 th International Conference on
+Machine Learning, Atlanta, Georgia, USA, 2013. JMLR:
+W&CP volume 28. Copyright 2013 by the author(s).
+usually generates tasks comprising several unlabeled
+examples. Similarly, in high-throughput experimental
+design, it is often more cost-eﬀective to perform several
+experiments in parallel. Such problems have been stud-
+ied from the perspective of batch-mode active learning.
+While several heuristics have been proposed, little
+is known about their theoretical performance. More
+generally, in many sequential decision problems, we
+would like to choose multiple actions to be performed
+in parallel, and receive feedback only after all actions
+have been carried out. This feedback then informs the
+next batch of actions. For example, consider a viral
+marketing problem (Kempe et al., 2003), where we
+wish to spur demand for a new product by inﬂuencing
+a set of nodes in a social network. In such a setting it is
+natural to conduct a multi-stage marketing campaign,
+where each stage is informed by the observed eﬀec-
+tiveness of the previous stage. Similar problems arise
+in resource allocation in computational sustainability
+(Golovin et al., 2011), and vaccination problems in
+epidemiology (Anshelevich et al., 2009).
+In this paper, we study information-parallel learning
+and decision making . In particular, we tackle batch-
+mode active learning and more general stochastic
+optimization problems, such as inﬂuence maximization
+in social networks, that exhibit adaptive submodularity
+(Golovin & Krause, 2011), a natural diminishing
+returns condition. We prove that, for such problems,
+a simple BatchGreedy approach, which greedily
+selects examples within a batch, and assembles batches
+in a greedy manner, is competitive with the optimal
+batch-mode policy. Furthermore, we prove that
+surprisingly, in some natural settings, the price of
+parallelism is bounded: the use of batches incurs
+competitively low cost irrespective of the batch size,
+even when compared to a fully sequential policy. We
+demonstrate the eﬀectiveness of our approach on
+active learning tasks, as well as adaptive inﬂuence
+maximization in social networks. Our approach is the
+ﬁrst to provide both strong guarantees and compelling
+
+Near-optimal Batch Mode Active Learning and Adaptive Submodular Optimization
+empirical performance for the important practical
+problem of batch mode active learning, where Batch-
+Greedy improves on random selection by≈ 48% more
+than the state of the art does on our test sets.
+In summary, our main contributions are:
+• We consider a general approach for information
+parallel learning and decision making,
+• prove strong performance guarantees for a simple
+BatchGreedy algorithm,
+• provide practical algorithms for batch-mode active
+learning and inﬂuence maximization, and
+• demonstrate the empirical eﬀectiveness of the
+algorithms for both applications.
+2. Problem Statement and Applications
+We ﬁrst describe two diﬀerent applications that moti-
+vate our research. Then, in Section 2.2 we introduce a
+formalism that captures both of them, and then prove
+results for this more general model in Section 3.
+2.1. Motivating applications
+Pool-based batch mode active learning Con-
+sider a simple model of pool-based Bayesian active
+learning. We are given a poolV of unlabeled examples
+x1,..., xn. We use y1,...,y n∈{ +1,−1}, where yi is
+the (initially unknown) label1 of example xi. Our goal
+is to learn a classiﬁer h :V→{ +1,−1} out of a ﬁnite
+setH of hypotheses, each corresponding to distinct la-
+belings of the poolV, and containing the true labeling,
+i.e., a hypothesish such thath(xi) = yi for 1≤i≤n.
+For now let us assume that we have a uniform prior
+P (h) = 1
+|H| over the hypotheses. We later show that
+our results also hold for more general priors, as well as
+for the prior-free (non-Bayesian) setting.
+Suppose we have already observed the labels yA
+for a subset A ⊆ V of the pool. In this case,
+some of the hypotheses h ∈ Hwill be inconsistent
+with the observations yA, and we use the notation
+H(yA) ={h∈H :i∈A⇒ yi =h(xi)} to refer to the
+version space (set of hypotheses) consistent with the
+observation yA. We wish to actively select a minimum
+number of unlabeled examples and obtain their labels
+yA, such that these allow us to uniquely identify h
+(i.e., infer the labels of all unlabeled examples), so that
+|H(yA)| = 1. An optimal active learning strategy is
+one that minimizes the expected number of labels re-
+quested, in expectation over our priorP (h). Similarly,
+we can consider strategies for batch-mode active learn-
+ing, which pick batches of k unlabeled examples at a
+1Note that our approach naturally extends to≥ 2 labels.
+time, then request all labels for the selected batch in par-
+allel, and then proceed to pick the next batch given the
+labels obtained so far. See Figure 1 for an illustration.
+Finding such an optimal policy is a formidable task.
+In fact, even representing an optimal batch policy may
+require exponential space. In the following, we will
+describe a general class of batch mode optimization
+problems, and present a simple greedy algorithm that
+is provably competitive with the optimal batch policy.
+Multi-stage inﬂuence maximization in social
+networks Suppose we would like to stimulate
+demand for a novel product. The idea behind viral
+marketing is to utilize the social network structure con-
+necting the potential customers: By giving the product
+to a subset of target people for free, these may inﬂuence
+their friends, potentially creating a cascade of inﬂuence
+motivating many more consumers to adopt the product.
+This problem was formalized by Kempe et al. (2003),
+who show that many natural models of inﬂuence
+(such as the independent cascade, or linear threshold
+models) can be modeled stochastically. Formally,
+letV = {1,...,n } be the set of nodes in the social
+network, and let Ys⊆V be the (random) set of nodes
+eventually inﬂuenced if s is initially targeted. If a set
+A of nodes is initially targeted, the eventual inﬂuence
+is
+⏐⏐⏐⋃
+s∈AYs
+⏐⏐⏐ with probability2P (YA) =∏
+s∈AP (Ys).
+Instead of committing to all target nodes in advance,
+it is natural to consider conducting a multi-stage
+advertising campaign: In each stage certain nodes are
+targeted, then the eﬀect of the campaign is observed,
+then the next target nodes are chosen, and so on.
+Implementing such a procedure may be much more
+practical if many nodes can be selected in each stage, to
+be inﬂuenced in parallel. In the following, we propose
+a simple greedy approach that is competitive not only
+with the optimal multi-stage strategy but even with an
+optimal fully sequential strategy.
+2.2. General Problem Statement
+We now formalize a class of interactive optimization
+problems generalizing the two examples of Section 2.1.
+Adaptive Submodular Optimization We wish
+to adaptively select items A out of a ﬁnite set of n
+items V = {1,...,n } (unlabeled examples; target
+nodes). Each item s∈V is associated with a random
+variableYs, taking values in a (ﬁnite) setO of outcomes
+(labels; sets of nodes eventually inﬂuenced). We use
+YV = [ Y1,...,Y n], to refer to the collection of all
+2Here we focus on factorial priors. Dependencies can be
+modeled as well (Golovin & Krause, 2011).
+
+Near-optimal Batch Mode Active Learning and Adaptive Submodular Optimization
+x2x3x4x5x6x7x8x1
+--
+x9x10x11x12
+x2x3x4x5x6x7x8x1 x9x10x11x12
++
+x2x3x4x5x6x7x8x1 x9x10x11x12
+(a) 1-dimensional data
+{x3,x6,x9}
+{x1,x2} {x7,x8}{x4,x5}
+{x10,x11,x12}
+{+,+,+}
+{ , ,+}{ ,+,+}
+{ , , } (b) The policy tree
+Figure 1. Illustration of batch mode ( k = 3) active learning, in the simple case of one-dimensional data and binary
+threshold hypotheses. Figure 1(a) shows the unlabeled data (top row), ﬁrst batch selected for labeling (middle row), and
+received labels, as well as second selected batch (bottom row). Figure 1(b) illustrates the decision tree representing the
+BatchGreedy policy, with the branch taken for the example of Figure 1(a).
+variables, and assume thatYV is distributed according
+to a joint distribution P (YV). Whenever an item s is
+selected, the corresponding variableYs =ys is revealed.
+This information can be used to select subsequent items.
+We model the value associated with a set of items A,
+and corresponding observations yA⊆V× O by means
+of an objective function3 f : 2V×O→ N. In our active
+learning example, we can use f(yA) =|H|−|H (yA)|,
+i.e., the number of the hypotheses eliminated through
+the labeled examples yA. In our viral marketing
+example, we choose f(yA) = |⋃
+s∈Ays|, i.e., the
+number of nodes eventually inﬂuenced. Furthermore,
+letS⊆V× O be a set of observations. Note that while
+technically yA andS do not denote the same objects
+(S denotes a set of item/observation pairs, yA denotes
+the observations corresponding the item setA), we will
+sometimes use these notations interchangeably to refer
+to observations. In both applications, f satisﬁes the
+following natural four properties4:
+1. Normalized: f(∅) = 0, i.e., we derive no utility
+from knowing nothing.
+2. Monotonic: WheneverS ⊆ S′ ⊆ V×O, then
+f(S)≤f(S′) – adding labels never hurts.
+3. Submodular: whenever S ⊆ S′ ⊆ V× O and
+(j,y )∈V× O\S′, it holds thatf(S∪{ (j,y )})−
+f(S)≥ f(S′∪{ (j,y )})−f(S′). Thus, adding a
+label helps more if we have observed few labels so
+far, and less if we have obtained many labels.
+4. Adaptive submodular: Consider the conditional
+expected marginal gain of item j w.r.t. to
+observationsS⊆V× O,
+∆f(j|S )=
+∑
+y
+P (Yj =y|S )
+[
+f(S∪{ (j,y )})−f(S)
+]
+.
+(2.1)
+3Note that if f takes rational values, we can normalize
+it to take integer values.
+4As a discrete analog of convexity, in many ways
+(adaptive) submodularity is a minimal assumption needed
+to ensure (approximate) tractability.
+Function f together with distribution P (YV)
+is called adaptive submodular, if, whenever
+S ⊆ S′ ⊆ V ×O and P (S′) > 0 we have
+∆f(j|S )≥ ∆f(j|S′). Thus, the gain of item j,
+in expectation over its unknown label, can never
+increase as we gather more information.
+Our goal will be to ﬁnd a policy π for selecting items
+(and associated observations)yA, such that we achieve
+a certain quota of value Q≥ 0, i.e., f(yA)≥ Q, while
+at the same time minimizing the number of items A
+used. In the active learning example, Q = |H|− 1:
+achieving this quota is a necessary and suﬃcient con-
+dition for identifying the true hypothesis. In inﬂuence
+maximization, Q may be a certain fraction of the size
+of the social network. In the following, w.l.o.g. 5, we
+assumef(yV) =Q for all yV∈ supp(P ).
+Formally, a policyπ : 2V×O→V is a partial mapping
+from observations yA ⊆ V×O to the next item to
+be picked (or to stop, if yA /∈ dom(π)). Therefore,
+if the variables YV are in state YV = yV, the policy
+obtains a set of observations, which is denoted as
+S(π, yV) ⊆ V ×O. We deﬁne the expected and
+worst-case cost of policyπ as
+costac(π)= EyV [|S(π, yV)|] ; costwc(π)=max
+yV
+|S(π, yV)|
+Our goal, is to ﬁnd, out of a set Π of candidate policies
+a feasible policyπ∗ with minimum cost,
+min
+π∈Π
+cost(π) s.t.f(S(π, yV))≥Q for all yV w.P (yV)>0.
+Batch selection Based on this notation, we can
+study how diﬀerent classes of policies compare in
+terms of their cost. On the one extreme, we have
+fully sequential policies Πseq, where the choice of each
+item may depend on the labels of all previous items
+selected. On the other extreme, we have constant, or
+5Iff(yV)>Q , we replacef with the – still submodular
+– functionfQ(yA) = min(f(yA),Q ).
+
+Near-optimal Batch Mode Active Learning and Adaptive Submodular Optimization
+non-adaptive policies Π const which commit to items
+picked in advance, before making any observations.
+However, fully sequential and constant policies are only
+two extremes on a spectrum. We are interested in poli-
+cies Π[k] that sequentially pick batches of size k. Any
+policyπ∈ Π[k] starts selecting a ﬁxed setA1⊆V ofk
+items. It then obtains all labels yA1. If f(yA1)≥Q, it
+stops. Otherwise, if batchesA1,..., A𝓁−1 have already
+been selected, it picks batchA𝓁⊆V ofk items, obtains
+the labels, and stops iff(yA1∪···∪A𝓁)≥Q.
+Obtaining an optimal batch policy is a formidable task:
+There are
+(n
+k
+)
+batches of size k, and an optimal batch
+policy assembles such batches into a decision tree of
+possibly exponentially large branching factor. In the
+following, we describe a simple greedy algorithm, and
+prove that it implements a batch policy with cost com-
+petitive to that of the optimal batch policy. Moreover,
+we prove that under some additional conditions on
+the distribution P (YV), the greedy algorithm is even
+competitive with the optimal fully sequential policy.
+3. Near-optimal Batch Selection:
+Greedy Algorithms and Guarantees
+We consider a simple, greedy approach towards con-
+structing batch policies. This policy, BatchGreedy,
+selects items within a batch in a greedy manner, then
+receives observations for all items in the batch, then
+selects the next batch in a greedy manner, conditional
+on all observations made so far, and so on. An
+important challenge in batch selection is the fact that
+the value of items (e.g., unlabeled examples) selected
+depends on observations (e.g., labels) obtained only
+after the entire batch is selected. In active learning
+for example, one wishes to select examples within a
+batch that are likely to be informative individually, but
+also diverse (minimize redundancy). BatchGreedy
+addresses this challenge by using a suitable notion of
+marginal beneﬁt of an item, that takes into account
+all observations made so far, as well as items that have
+already been selected within the batch (but no obser-
+vation has been obtained yet). Formally, we generalize
+the conditional marginal beneﬁt (2.1) of items by
+∆f(s|A, yB) = EyV
+[
+f(y{s}∪A∪B)−f(yA∪B)| yB
+]
+.
+(3.1)
+Thus, ∆f(s | A, yB) reﬂects the expected marginal
+gain of item s, when items B have been selected and
+the corresponding observations yB have been made,
+and itemsA have already been selected, but no obser-
+vations have yet been made about them. Therefore,
+(3.1) captures possible redundancy (diminishing gains)
+of candidate item s w.r.t. to labels already obtained,
+as well as labels that will likely be obtained within the
+Algorithm 1 The BatchGreedy algorithm.
+Input: QuotaQ. Objective f and priorP (yV)
+yB←∅
+repeat
+A←∅
+fori = 1 tok do
+s← arg maxs′ ∆f(s′|A, yB);A←A∪{ s}
+end for
+Observe yA and set yB← yB∪ yA
+untilf(yB)≥Q
+batch. Hence it encourages diversity among the items
+selected in the batch.
+Using this notation, the BatchGreedy policy will
+greedily select thei-th element in thej-th batch
+si,j = arg max
+s∈V
+∆f(s|{s1,j,...,s i−1,j}, yB),
+where yB is the set of observations (labeled examples)
+from batches up to j− 1. After a batch is completed,
+all labels are requested and added to the observations
+yB. Pseudocode is presented in Algorithm 1.
+If we set the batch size k to 1, BatchGreedy reverts
+back to a fully sequential, greedy active learning
+scheme. In particular, for the active learning example
+from Section 2.1, this algorithm is known as General-
+ized Binary Search, studied extensively in the literature
+(see e.g., Dasgupta (2004)). In fact, it is known that
+this simple greedy algorithm is near-optimal: its cost is
+upper-bounded byO(log|H|) times that of the optimal
+sequential policy. More generally, Golovin & Krause
+(2011) prove that this result can be generalized to
+any adaptive optimization problems that are adaptive
+submodular. As our ﬁrst main theoretical contribution,
+we generalize their results, which only hold for fully
+sequential policies, to the batch setting.
+We ﬁrst show that BatchGreedy is near-optimal as
+compared to the optimal batch selection policy.
+Theorem 1. Let OPTac,k be the expected cost
+and OPTwc,k be the worst-case cost of an opti-
+mal policy selecting batches of size k. Further let
+δ = min yV∈supp(P)P (yV). Then for the cost of the
+policyπG implementing BatchGreedy it holds that
+costac(πG)≤ OPTac,k
+( e
+e− 1
+)(
+lnQ + 1
+)
+, and
+costwc(πG)≤ OPTwc,k
+( e
+e− 1
+)(
+lnQ
+δ + 1
+)
+.
+Note that the guarantee of Theorem 1 matches (up
+to a small constant factor) hardness results known for
+the fully sequential (k = 1) setting, which it general-
+izes, therefore BatchGreedy is near-optimal under
+
+Near-optimal Batch Mode Active Learning and Adaptive Submodular Optimization
+computational constraints. Further note that for the
+active learning application, Theorem 1 guarantees that
+in the non-Bayesian setting (i.e., without any prior 6),
+BatchGreedy requires at most a factor of O(ln|H|)
+more batches than the optimal batch-mode policy.
+As our second main theoretical result, we also prove
+that, perhaps surprisingly, under certain conditions
+BatchGreedy is not just competitive with the
+optimal policy that is restricted to selecting batches of
+examples: It is competitive with respect to an optimal
+fully sequential policy, which is not required to obey
+such a restriction. The additional condition needed
+is that the variables Y1,...,Y n are independent. This
+assumption is satisﬁed in the inﬂuence maximization
+application, but not in the active learning problem.
+Theorem 2. Fixβ >0. Let OPTwc be the worst-case
+cost of an optimal sequential policy π∗, constrained
+to picking a number of items which is a multiple
+of k. Further suppose that the variables Y1,...,Y n
+are independent. Then for the cost of the policy πG
+implementing BatchGreedy, run until it achieves
+f(πG)≥Q−β it holds that
+costwc(πG)≤ OPTwc
+(
+e/(e− 1)
+)2(
+lnQ
+β + 1
+)
+.
+Moreover, it holds thatP
+(
+f(S(πG, yV))≥Q
+)
+≥ 1−β.
+The proofs are given in the supplementary material.
+The key technical insight behind the proof is that a
+bound on the adaptivity gap for stochastic submodular
+maximization of Asadpour et al. (2008), adapted and
+generalized to our setting, allows us to interpret the
+BatchGreedy policy as an approximate implemen-
+tation of the fully sequential greedy policy. Note that
+Theorem 2, for technical reasons, is of a slightly dif-
+ferent ﬂavor than Theorem 1: it compares the optimal
+policyπ∗ always achieving quotaQ with one achieving
+the quota Q only with probability 1−β. By choosing
+β < minyV∈supp(P)P (yV), it can be guaranteed that
+in factf(S(πG, yV)) =Q for all yV with nonzero prob-
+ability. In this case, the bound on the worst-case cost
+of Theorem 2 is only a factor ofe/(e− 1)≈ 1.58 larger
+than that of Theorem 1, irrespective of the batch size.
+4. Implementation Details
+As is, BatchGreedy is not immediately practical
+for the applications from Section 2.1: Computing the
+marginal gains (3.1) requires computing expectations
+6In the special case of uniform prior, δ = 1
+|H|. For
+general priors (with smallδ), BatchGreedy can be proved
+to yield anO(log|H|) approximation, following analogously
+from Theorem 9.1 in Golovin & Krause (2011)
+−1 −0.5 0 0.5 1−1
+−0.5
+0
+0.5
+1
+(a) ε = 0
+−1 −0.5 0 0.5 1−1
+−0.5
+0
+0.5
+1 (b) ε = 0.2
+Figure 2. Illustration of Algorithm 2 in 2-d space. Figure
+2(a) shows the sampling result in noise-free case (red arrows
+are constraints); Figure 2(b) shows sampling result when
+20% of the observations are noisy: hypotheses that violate
+more constraints induce lower conﬁdence.
+Algorithm 2 Hit-and-run hypothesis sampler for lin-
+ear separators and noisy observations
+Input: Labeled examples yB ∈ Rd, N, number of
+mixing iterationsT , noise levelε∈ [0, 0.5).
+Output: Hypotheses set ˆH.
+w0← a random point ond-dim. unit sphereSd
+fori = 1 toN do
+θ← a random direction (unit vector) inSd
+SetL← Sd∩{ w| w = wi−1 +θρ,ρ ∈R}, and
+select wi from sectorL withρ∼ p(ρ)∝ ( ε
+1−ε)m,
+wherem =|{x : x∈B, (x, sign(wT
+i x)) /∈ yB}|
+Add everyT -th samplehi(x) = sign(wT
+i x) to ˆH
+end for
+that may be intractable. In the inﬂuence maximization
+application, it is possible to perform Monte-Carlo
+sampling of the inﬂuence process to evaluate (3.1) up
+to arbitrarily small multiplicative error (1 +ε) (Kempe
+et al., 2003). Furthermore, with a slight generalization
+of the arguments of Golovin & Krause (2011), using
+such an approximation of (3.1) increases the cost by at
+most the same factor (1 +ε).
+To obtain a practical algorithm for batch mode active
+learning, further challenges arise: BatchGreedy as is
+requires thatH is ﬁnite, and its running time depends
+polynomially on |H|. Furthermore, it requires that
+observations are noise free. As a practical implemen-
+tation, we focus on active learning of linear separators,
+i.e., h(x) = sign( wTx). In our experiments we use
+a Markov-Chain Monte Carlo sampler in order to
+generate samples from the posterior distribution over
+hypotheses P (w| yS). In particular, we build on the
+hit-and-run sampler (Smith, 1984; Lovasz, 1998), which
+is known to lead to a provably eﬃcient near-optimal es-
+timation for the fully sequential active learning problem
+(Gonen et al., 2011). To handle noise, at each iteration,
+we generalize the hit-and-run sampler by sampling the
+
+Near-optimal Batch Mode Active Learning and Adaptive Submodular Optimization
+Algorithm 3Approximate implementation ofBatch-
+Greedy for batch-mode active learning.
+Input: HypothesesH, batch sizek, noise levelε
+Sample ˆH ={h1,...,h N} fromH using Algo. 2
+Deﬁne ˆP (H) = 1
+N
+∑N
+𝓁=1δh𝓁; set yB←∅
+repeat
+A←∅
+fori = 1 tok do
+s←arg min
+s′
+N∑
+𝓁=1
+[
+ˆP (H({(x,h𝓁(x)): x∈A∪{s′}}))
+]
+A←A∪{ s}
+end for
+Observe yA and set yB← yB∪ yA
+Sample ˆH ={h1,...,h N} (Algo. 2) using yB
+Update approximation ˆP (H) = 1
+N
+∑N
+𝓁=1δh𝓁.
+until (1−ε) of all hypotheses in the support of ˆP
+induce same labeling on the unlabeled pool
+entire version space, while varying the sample density
+according to a likelihood function. In the case of sym-
+metric binary channel (i.e., labels are ﬂipped with prob-
+ability ε), we sample hypotheses with probability re-
+lated to the number of mistakes. This way, our method
+can handle data that are not linearly separable. Algo-
+rithm 2 presents details of our sampler, and our ﬁnal
+batch-mode active learning algorithm is formalized in
+Algorithm 3. The time complexity of random sampling
+(Algorithm 2) isO(TN ), whereT is the number of mix-
+ing iterations. Once we discretized the hypothesis space
+withN samples, it takesO(knN ) steps for Algorithm 3
+to select a batch ofk items. Hence the time complexity
+of Algorithm 3 selecting one batch isO(N(T +kn)).
+Furthermore, in both applications, we can use lazy
+evaluations to speed up the BatchGreedy algorithm
+(as used in Golovin & Krause (2011) for the fully
+sequential setting). Lazy evaluations utilize the fact
+that the marginal gains ∆ f(s| A, yB) are monoton-
+ically decreasing in both A and yB. This insight can
+be exploited by utilizing priority queues to accelerate
+selection of the next greedy choice.
+5. Experimental Results
+We empirically evaluate BatchGreedy on several
+data sets and on both applications discussed in Sec-
+tion 2.1. Our emphasis is on comparingBatchGreedy
+with baselines, as well as empirically quantifying the
+price of parallelism.
+Batch mode active learning of linear separators
+One natural way to perform batch mode active learn-
+ing is to select batches comprising thek most uncertain
+examples. As one baseline, we use “batch mode margin-
+based active learning” (k-batch SVM) to greedily select
+batches of examples, as considered in Jain et al. (2010)
+for large-scale active learning. In this method, we ran-
+domly chose examples until there are two distinct la-
+bels, and we train SVM classiﬁers based on the labeled
+examples at the end of each batch. The next k un-
+labeled examples with the smallest distances from the
+decision boundary wTx +b = 0 are selected for label-
+ing. Another baseline approach we employ is the state
+of the art batch mode active learning algorithm (KLR-
+BMAL) of Hoi et al. (2006) that selects batches of k
+examples that are informative w.r.t. the Fisher informa-
+tion matrix. To see how well the parallelization of the se-
+lection process approximates the sequential algorithm,
+we compare with the fully sequential active learning
+algorithm, where only one example is selected and ob-
+served at each iteration, as well as a “passive learning”
+approach, where we make no observations during the
+learning process (corresponding to inﬁnite batch size).
+We also compareBatchGreedyagainst the sequential
+active learning algorithm with purely random selection.
+For fair comparison, we use SVM as classiﬁer for all
+competing algorithms, so the methods only diﬀer by
+the set of examples chosen for labeling. We implement
+the KLR-BMAL algorithm using class membership
+probabilities inferred from the hypothesis sampler, and
+set the smoothing parameter δ to be 0.1 (Hoi et al.,
+2006). As for our sampler, we set ε to be 0 .1. We
+normalize the data so that each feature has mean 0 and
+standard deviation 0.5, and place independent normal
+priors on each dimension. The results for all the batch
+mode active learning experiments are obtained from
+150 random starts.
+We run our the ﬁrst set of experiments on two UCI
+data sets7, WDBC (569 instances, 32-d) and Australian
+(690 instances, 16-d), using a ﬁxed number of 5000
+sampled hypotheses in each random trial. Figure 3(a)
+and Figure 3(b) depict the 150-trial average percentage
+of mistakes made by each algorithm when predicting
+the labels of the corresponding data set, for a batch
+size of k = 10. Figure 3(b) shows an improvement of
+BatchGreedy over both KLR-BMAL and the 10-
+batch SVM algorithm. On both datasets, surprisingly,
+BatchGreedyis competitive with the fully sequential
+greedy algorithm, with only minor diﬀerences. We
+also evaluate BatchGreedy on the MNIST data
+set. For each of the 14780 instances, we reduced the
+dimensionality down to 10 via PCA, and compare
+BatchGreedy with the sequential, KLR-BMAL,
+10-bacth SVM, passive and random algorithms through
+150 random trials. We observe that, even using 5000
+7http://archive.ics.uci.edu/ml/
+
+Near-optimal Batch Mode Active Learning and Adaptive Submodular Optimization
+10 20 30 40 500
+2
+4
+6
+8
+10
+12
+14
+Number of labels requested
+% Mistakes
+ 
+ 
+10−batch SVM
+passive
+10−batch greedy
+random
+KLR−BMAL
+sequential
+sequential svm
+(a) [A] WDBC
+10 20 30 40 50
+14
+16
+18
+20
+22
+24
+26
+28
+30
+Number of labels requested
+% Mistakes
+ 
+ 
+10−batch SVM
+passive
+random
+10−batch greedy
+KLR−BMAL
+sequential
+sequential svm (b) [A] Australian
+10 20 30 40 500
+1
+2
+3
+4
+5
+6
+7
+8
+Number of labels requested
+% Mistakes
+ 
+ 
+passive
+KLR−BMAL
+sequential
+sequential svm
+10−batch greedy
+10−batch SVM
+random (c) [A] MNIST
+20 30 40 50 60 70
+2
+3
+4
+Number of labels requested
+% Mistakes
+ 
+ 
+3000 s.
+5000 s.
+500 s.
+1000 s.
+2000 s.
+300 s.
+(d) [A] WDBC Samples
+0 200 400 600 8000
+5
+10
+15
+20
+25
+30
+35% Nodes not covered
+Number of nodes selected
+ 
+ 
+Non−adaptive
+10−batch
+100−batch
+sequential (e) [I] Epinions
+0 200 400 600 8000
+10
+20
+30
+40
+50% Nodes not covered
+Number of nodes selected
+ 
+ 
+Non−adaptive
+10−batch
+100−batch
+sequential (f) [I] Slashdot
+Figure 3. Results on the [A] active learning and [I] inﬂuence maximization problems. For [A], BatchGreedy outperforms
+the state of the art by∼ 48% on average across the three datasets w.r.t the improvement over random selection. Note the
+low “price of parallelism” of BatchGreedy: Batch selection performs almost as well as fully sequential selection.
+sample hypotheses for each iteration, BatchGreedy
+is signiﬁcantly faster than KLR-BMAL, as the cost of
+BatchGreedy grows linearly w.r.t. the number of hy-
+potheses and number of examples, while KLR-BMAL
+costs quadratically w.r.t. the number of examples.
+In fact, for the same settings, it takes KLR-BMAL
+approx. 50 seconds to select one example, compared to
+approx. 10 seconds for BatchGreedy.
+We also study the impact of the discretization param-
+eterM (i.e., number of hypotheses used to sample the
+version space), varying it from 300 to 5000, and we
+plot the results for each setting in Figure 3(d). For the
+WDBC data set, we can observe a statistically signiﬁcant
+performance improvement across the 150 trials when
+increasing the number of sampled hypotheses used
+from 300 to 2000. Starting from 3000 samples, however,
+the advantage of introducing more samples begins to
+decrease dramatically. As there is a linear increase in
+running time as we employ more samples, we suggest to
+pick a moderateM to balance eﬃciency and accuracy.
+Multi-stage inﬂuence maximization in Social
+Networks We also apply BatchGreedy to the
+multi-stage inﬂuence maximization problem described
+in Section 2.1. We use two data sets from the SNAP
+repository8: the Epinions social network (with 75879
+8http://snap.stanford.edu/
+nodes and 508837 directed edges, where members of
+the site can decide whether to “trust” each other) and
+the Slashdot social network (with 82168 nodes and
+948464 directed edges, where users are allowed to tag
+each other as friends or foes). For each network, we
+take the subgraph induced by the top 1000 nodes with
+largest outdegree. We use the independent cascade
+model (Kempe et al., 2003). In our simulations, we
+assume that each person has a certain, ﬁxed probability
+to inﬂuence its neighbors. We choose this probability
+t according to the edge density of the target network,
+in our case to 0.05 and 0.03, respectively.
+We evaluate the performance of BatchGreedy while
+varying the size of batches picked at each stage. We
+repeat the experiments 100 times for all batch sizes
+(the non-adaptive method corresponds to inﬁnite batch
+size). In each experiment, we initialize 100 random
+realizations of the target network based on the edge
+activation probability, and greedily select the best
+node in expectation. The results are summarized in
+Figure 3(e) and Figure 3(f). We observe that for the
+Epinions network, the sequential greedy policy covers
+99% of the target network by selecting 244 nodes, while
+the 10-batch greedy policy, 100-batch greedy policy
+and non-adaptive greedy policy cost 241, 284, and
+584 nodes respectively, to achieve the same coverage.
+
+Near-optimal Batch Mode Active Learning and Adaptive Submodular Optimization
+Similarly, for the Slashdot network those numbers are
+330, 319, 343, 765. After incorporation of the ﬁrst batch
+of labels, BatchGreedy performs surprisingly well,
+even competitively with the fully sequential policy.
+6. Related Work
+Active Learning Fully sequential active learning,
+where one single unlabeled example is selected to
+be labeled at a time, has received much attention in
+the machine learning community. Several heuristic
+approaches have been proposed that perform well
+in some applications (e.g., MacKay (1992); Settles
+(2010)), and theoretical investigations (e.g., Balcan
+et al. (2006); Dasgupta (2006)) prove bounds on the
+label complexity. While in some cases exponential
+reduction is possible, in other settings little reduction
+over passive learning can be achieved (Dasgupta,
+2006). Therefore, it is interesting to study active
+learning as an optimization problem with the goal to
+eﬃciently identify a suﬃcient yet near-minimal number
+of informative labels. For both noise-free (Dasgupta,
+2004) and noisy (Golovin et al., 2010) active leaning
+problems, simple greedy policies have been shown to
+be provably competitive with the optimal (intractable)
+policy. This paper builds on these approaches, and
+generalizes the results to batch mode active learning.
+Batch mode active learning and submodularity
+Due to its practical importance, several approaches for
+batch mode active learning have been proposed. How-
+ever, previous work has focused on eﬃciently selecting
+a single batch comprising examples that are both
+diverse and informative. Interestingly, the classical
+notion of submodular set functions has proven useful
+(Hoi et al., 2006; Guillory & Bilmes, 2011). In Hoi et al.
+(2006), both individual diversity and informativeness
+are evaluated w.r.t. the Fisher information matrix of
+the estimated linear separator. Cesa-Bianchi et al.
+(2010) and Guillory & Bilmes (2011) investigate the
+problem of active learning on graph structured data,
+and provide near-optimal solutions for such problems.
+In contrast to the prior work, this paper focuses
+on analyzing batch-mode policies, i.e., sequential
+construction of batches with the goal to minimize the
+overall number of labels needed across batches. A
+work closely related in spirit is that of Desautels et al.
+(2012), who consider batch mode bandit problems,
+where the goal is to trade exploration and exploitation,
+and performance is measured w.r.t. the cumulative
+regret. In spite of a diﬀerent context and formalism, a
+greedy algorithm works provably well in that setting.
+Adaptive and interactive submodular opti-
+mization For a general introduction to adaptive
+submodular optimization, see Golovin & Krause
+(2011). Asadpour et al. (2008) study a special case of
+the adaptive submodular maximization problem where
+the random variables must be independent (which is
+not the case in active learning). Guillory & Bilmes
+(2010) consider a diﬀerent formalism for interactive
+submodular maximization and its applications, ana-
+lyzing the worst-case cost of fully sequential policies.
+In contrast to these previous approaches, which
+focus on the fully sequential case, in this paper we
+analyze the batch-mode setting, for which we provide
+approximation bounds as well as practical algorithms.
+Inﬂuence maximization This problem was ﬁrst
+introduced by Domingos & Richardson (2001), and
+Kempe et al. (2003) prove that the problem of (non-
+adaptively) ﬁnding the optimal k individuals in the
+network to target requires submodular maximization.
+Recently, by using adaptive submodularity, Golovin
+& Krause (2011) generalize the problem to the fully
+sequential setting where observations are made after
+each selection. Our results generalize theirs and ad-
+dress the multi-stage setting, which, to our knowledge,
+is the ﬁrst attempt to address this natural variant of
+the inﬂuence maximization problem.
+7. Conclusions
+We presented a general framework for batch mode
+active learning and stochastic optimization. We
+analyzed BatchGreedy, an intuitive adaptive greedy
+approach, and proved its competitiveness with the op-
+timal batch-mode policy. For some problem instances
+(e.g., multi-stage inﬂuence maximization) we proved
+that, perhaps surprisingly, using batches only incurs a
+bounded increase of cost as compared to allowing fully
+sequential selection. In addition to new theoretical
+results, we empirically demonstrate the eﬀectiveness
+of BatchGreedy on two real-world applications:
+Batch mode active learning of linear separators (where
+BatchGreedy outperforms the state of the art), and
+multi-stage inﬂuence maximization (where we observe a
+surprisingly small increase in cost compared to the fully
+sequential strategy). A natural question for future work
+is to understand more generally for which problems
+the price of parallelism, i.e., the increase in cost by re-
+stricting to information-parallel decisions, is bounded.
+We believe that our results provide an important step
+in characterizing the (approximate) tractability of
+practical active learning and optimization problems.
+Acknowledgments. We would like to thank G´ abor
+Bart´ ok for helpful comments. This research was supported
+in part by SNSF grant 200021 137971, NSF IIS-0953413,
+DARPA MSEE FA8650-11-1-7156 and ERC StG 307036.
+
+Near-optimal Batch Mode Active Learning and Adaptive Submodular Optimization
+References
+Anshelevich, Elliot, Chakrabarty, Deeparnab, Hate,
+Ameya, and Swamy, Chaitanya. Approximation al-
+gorithms for the ﬁreﬁghter problem: Cuts over time
+and submodularity. InAlgorithms and Computation.
+Springer Berlin / Heidelberg, 2009.
+Asadpour, Arash, Nazerzadeh, Hamid, and Saberi,
+Amin. Stochastic submodular maximization. In
+WINE, pp. 477–489, Berlin, Heidelberg, 2008.
+Springer-Verlag.
+Balcan, Maria Florina, Beygelzimer, Alina, and Lang-
+ford, John. Agnostic active learning. In ICML, pp.
+65–72, 2006.
+Cesa-Bianchi, Nicol` o, Gentile, Claudio, Vitale, Fabio,
+and Zappella, Giovanni. Active learning on trees
+and graphs. In COLT, pp. 320–332, 2010.
+Dasgupta, Sanjoy. Analysis of a greedy active learning
+strategy. In NIPS, 2004.
+Dasgupta, Sanjoy. Coarse sample complexity bounds
+for active learning. In Weiss, Y., Sch¨ olkopf, B., and
+Platt, J. (eds.), Advances in Neural Information
+Processing Systems 18 , pp. 235–242. MIT Press,
+Cambridge, MA, 2006.
+Desautels, Thomas, Krause, Andreas, and Burdick,
+Joel. Parallelizing exploration-exploitation tradeoﬀs
+with gaussian process bandit optimization. InICML,
+2012.
+Domingos, Pedro and Richardson, Matt. Mining the
+network value of customers. InKDD, pp. 57–66, 2001.
+Golovin, Daniel and Krause, Andreas. Adaptive sub-
+modularity: Theory and applications in active learn-
+ing and stochastic optimization. Journal of Artiﬁcial
+Intelligence Research (JAIR), 42:427–486, 2011.
+Golovin, Daniel, Krause, Andreas, and Ray, Debajyoti.
+Near-optimal bayesian active learning with noisy
+observations. In NIPS, December 2010.
+Golovin, Daniel, Krause, Andreas, Gardner, Beth, Con-
+verse, Sarah, and Morey, Steve. Dynamic resource
+allocation in conservation planning. In AAAI, 2011.
+Gonen, Alon, Sabato, Sivan, and Shalev-Shwartz,
+Shai. Active learning halfspaces under margin
+assumptions. CoRR, abs/1112.1556v3, 2011.
+Guillory, Andrew and Bilmes, Jeﬀ. Interactive
+submodular set cover. In ICML, 2010.
+Guillory, Andrew and Bilmes, Jeﬀ. Active semi-
+supervised learning using submodular functions. In
+UAI, 2011.
+Hoi, Steven C. H., Jin, Rong, Zhu, Jianke, and Lyu,
+Michael R. Batch mode active learning and its appli-
+cation to medical image classiﬁcation. InICML, 2006.
+Jain, Prateek, Vijayanarasimhan, Sudheendra, and
+Grauman, Kristen. Hashing hyperplane queries
+to near points with applications to large-scale
+active learning. In Advances in Neural Information
+Processing Systems 23, pp. 928–936. 2010.
+Kempe, David, Kleinberg, Jon, and Tardos, ´Eva.
+Maximizing the spread of inﬂuence through a social
+network. In KDD, pp. 137–146, 2003.
+Lovasz, Laszlo. Hit-and-run mixes fast. Math. Prog,
+86:443–461, 1998.
+MacKay, David J.C. Information-based objective func-
+tions for active data selection. Neural Computation,
+4(4):590–604, 1992.
+Settles, Burr. Active learning literature survey. Tech-
+nical Report 1648, University of Wisconsin-Madison,
+2010.
+Smith, Robert L. Eﬃcient monte carlo procedures
+for generating points uniformly distributed over
+bounded regions. Operations Research, 1984.
