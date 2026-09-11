@@ -1,11 +1,11 @@
-"""问题1求解：交会定位区域的顶点、直径、直径圆覆盖。
+"""问题1求解：交会定位区域的顶点、直径、直径圆覆盖、最小包围圆。
 
 算法与《第一问_论文参考稿.md》伪代码一致：
-  边界直线两两求交 → 半平面筛选 → 凸多边形顶点
-  → 顶点对最大距离即直径 → 检查其余顶点是否在直径圆内。
+  构造半平面 → 法向角间隙判定有界性 → 边界直线两两求交筛顶点
+  → 顶点对最大距离即直径 → 检查直径圆是否覆盖 → 最小包围圆。
 
-N 为个位数时整体复杂度 O(N^3)。定位区域不含 1800 m 目标圆域；
-诊断方框只用来区分空集与无界，不进入 P。
+N 为个位数时整体复杂度 O(N^3)。定位区域只取示向度误差锥交会，
+不叠加目标圆域或有效接收半径圆盘。
 """
 from __future__ import annotations
 
@@ -19,8 +19,6 @@ EPS = 1e-9  # 半平面归属
 PARALLEL_EPS = 1e-12  # 直线求交：|det| 过小视为平行
 DEDUP_TOL = 1e-7
 COVER_TOL = 1e-8
-# 仅用于区分“无界 nonempty”与“空集”的诊断方框半边长，不是题面 1800 m 目标圆域
-DIAG_HALF = 1.0e6
 
 
 def _unit(ang_deg: float) -> np.ndarray:
@@ -85,7 +83,11 @@ def angular_sort(pts: Sequence[np.ndarray]) -> np.ndarray:
 
 
 def recession_unbounded(planes: Sequence[Halfplane]) -> bool:
-    """若所有内法向落在某个闭半平面内（最大角间隙 >= 180°），则公共区域无界。"""
+    """若所有内法向落在某个闭半平面内（最大角间隙 >= 180°），则公共区域无界。
+
+    对本题误差锥：无界等价于各 2° 示向度弧有公共方向；沿该方向走到无穷
+    必进入所有锥，故无界蕴含非空，不必再用探针判断可行性。
+    """
     angs = np.sort([float(np.arctan2(h.normal[1], h.normal[0])) for h in planes])
     if len(angs) < 2:
         return True
@@ -93,17 +95,6 @@ def recession_unbounded(planes: Sequence[Halfplane]) -> bool:
     wrap = float(angs[0] + 2 * np.pi - angs[-1])
     max_gap = max(float(gaps.max()) if len(gaps) else 0.0, wrap)
     return max_gap >= np.pi - 1e-10
-
-
-def _box_planes(center: Sequence[float], half: float = DIAG_HALF) -> List[Halfplane]:
-    """诊断用大方框，只判断空/无界，不进入定位区域 P。"""
-    c = np.asarray(center, dtype=float)
-    return [
-        Halfplane(c + np.array([-half, 0.0]), np.array([1.0, 0.0]), 90.0),
-        Halfplane(c + np.array([half, 0.0]), np.array([-1.0, 0.0]), 90.0),
-        Halfplane(c + np.array([0.0, -half]), np.array([0.0, 1.0]), 0.0),
-        Halfplane(c + np.array([0.0, half]), np.array([0.0, -1.0]), 0.0),
-    ]
 
 
 def halfplane_vertices(planes: Sequence[Halfplane]) -> List[np.ndarray]:
@@ -115,14 +106,6 @@ def halfplane_vertices(planes: Sequence[Halfplane]) -> List[np.ndarray]:
             if p is not None and satisfies_all(p, planes):
                 cand.append(p)
     return dedup_points(cand)
-
-
-def has_feasible_point(planes: Sequence[Halfplane], center: Sequence[float]) -> bool:
-    """半平面是否有公共点。无有限顶点时，用诊断方框探测无界可行域。"""
-    if halfplane_vertices(planes):
-        return True
-    boxed = list(planes) + _box_planes(center)
-    return len(halfplane_vertices(boxed)) > 0
 
 
 def polygon_diameter(vertices: np.ndarray) -> Tuple[float, np.ndarray, np.ndarray]:
@@ -166,6 +149,53 @@ def circle_covers(
     return bool(np.all(dist <= R + tol)), O, R, dist
 
 
+def _circumcircle(a: np.ndarray, b: np.ndarray, c: np.ndarray):
+    """三点外接圆。共线则返回 None。"""
+    d = 2.0 * (a[0] * (b[1] - c[1]) + b[0] * (c[1] - a[1]) + c[0] * (a[1] - b[1]))
+    if abs(d) < 1e-12:
+        return None
+    a2, b2, c2 = float(np.dot(a, a)), float(np.dot(b, b)), float(np.dot(c, c))
+    ux = (a2 * (b[1] - c[1]) + b2 * (c[1] - a[1]) + c2 * (a[1] - b[1])) / d
+    uy = (a2 * (c[0] - b[0]) + b2 * (a[0] - c[0]) + c2 * (b[0] - a[0])) / d
+    O = np.array([ux, uy], dtype=float)
+    return O, float(np.linalg.norm(O - a))
+
+
+def minimum_enclosing_circle(
+    vertices: np.ndarray,
+    tol: float = COVER_TOL,
+) -> Tuple[np.ndarray, float]:
+    """凸多边形最小包围圆：在覆盖全部顶点的两点圆、三点外接圆中取半径最小者。"""
+    verts = np.asarray(vertices, dtype=float)
+    if verts.ndim == 1:
+        verts = verts.reshape(1, -1)
+    m = len(verts)
+    if m == 0:
+        raise ValueError("空顶点集没有最小包围圆")
+    if m == 1:
+        return verts[0].copy(), 0.0
+
+    best_O, best_R = None, np.inf
+    for i in range(m):
+        for j in range(i + 1, m):
+            O = (verts[i] + verts[j]) / 2.0
+            R = float(np.linalg.norm(verts[i] - O))
+            if np.all(np.linalg.norm(verts - O, axis=1) <= R + tol) and R < best_R:
+                best_O, best_R = O, R
+    for i in range(m):
+        for j in range(i + 1, m):
+            for k in range(j + 1, m):
+                circ = _circumcircle(verts[i], verts[j], verts[k])
+                if circ is None:
+                    continue
+                O, R = circ
+                if np.all(np.linalg.norm(verts - O, axis=1) <= R + tol) and R < best_R:
+                    best_O, best_R = O, R
+    if best_O is None:
+        raise ValueError("未能求出最小包围圆")
+    return best_O, float(best_R)
+
+
 @dataclass
 class LocateResult:
     status: str  # OK / UNBOUNDED / EMPTY
@@ -178,6 +208,8 @@ class LocateResult:
     radius: Optional[float]
     covers: Optional[bool]
     n_planes: int
+    mec_center: Optional[np.ndarray] = None
+    mec_radius: Optional[float] = None
 
     def pretty(self) -> str:
         lines = [f"status = {self.status}", self.message]
@@ -191,6 +223,9 @@ class LocateResult:
             lines.append(f"端点 B = ({self.B[0]:.6f}, {self.B[1]:.6f})")
             lines.append(f"圆心 O = ({self.center[0]:.6f}, {self.center[1]:.6f}), R = {self.radius:.6f}")
             lines.append(f"直径圆覆盖 P？ {'是' if self.covers else '否'}")
+        if self.mec_radius is not None:
+            c = self.mec_center
+            lines.append(f"最小包围圆 MEC: 圆心 = ({c[0]:.6f}, {c[1]:.6f}), R = {self.mec_radius:.6f}")
         return "\n".join(lines)
 
 
@@ -201,9 +236,8 @@ def locate(
 ) -> LocateResult:
     """交会定位主程序。sensors[i]、thetas_deg[i] 一一对应。
 
-    定位区域 P 只取示向度误差锥的公共交集，不叠加半径 1800 m 目标圆域。
-    判定顺序：先看半平面交是否为空，再看是否无界，避免把“无有限顶点的无界锥”
-    误判为 EMPTY。
+    定位区域 P 只取示向度误差锥的公共交集，不叠加目标圆域或接收半径圆盘。
+    判定顺序：先看法向角间隙判定无界，有界后再枚举交点；交点空则为空集。
     """
     N = len(sensors)
     if N != len(thetas_deg):
@@ -220,18 +254,9 @@ def locate(
     for S, th in zip(sensors, thetas_deg):
         planes.extend(cone_halfplanes(S, th, delta_deg))
     m = len(planes)
-    verts = halfplane_vertices(planes)
-    center = np.mean(np.asarray(sensors, dtype=float), axis=0)
-
-    # 空集优先：无界 recession 也可能对应矛盾约束（空）。无有限顶点 ≠ 空。
-    if not has_feasible_point(planes, center):
-        return LocateResult(
-            "EMPTY",
-            "交会区域为空：半平面无公共点，定位失败，应更换或增加检测点。",
-            None, None, None, None, None, None, None, m,
-        )
 
     if recession_unbounded(planes):
+        verts = halfplane_vertices(planes)
         return LocateResult(
             "UNBOUNDED",
             "半平面公共区域无界（法向未包围原点），直径无定义，需要增加或调整检测点。",
@@ -239,6 +264,7 @@ def locate(
             None, None, None, None, None, None, m,
         )
 
+    verts = halfplane_vertices(planes)
     if len(verts) == 0:
         return LocateResult(
             "EMPTY",
@@ -249,6 +275,7 @@ def locate(
     P = angular_sort(verts)
     D, A, B = polygon_diameter(P)
     covers, O, R, _ = circle_covers(P, A, B)
+    mec_c, mec_r = minimum_enclosing_circle(P)
     n = len(P)
     if n == 1:
         msg = "交会区域退化为单点。半平面数 2N = {}。".format(m)
@@ -256,7 +283,7 @@ def locate(
         msg = "交会区域退化为线段。半平面数 2N = {}。".format(m)
     else:
         msg = "有界凸 {} 边形。半平面数 2N = {}。".format(n, m)
-    return LocateResult("OK", msg, P, D, A, B, O, R, covers, m)
+    return LocateResult("OK", msg, P, D, A, B, O, R, covers, m, mec_c, mec_r)
 
 
 def bearing_deg(src, dst) -> float:
@@ -294,11 +321,24 @@ def _demo():
     eq = np.array([[0.0, 0.0], [2.0, 0.0], [1.0, np.sqrt(3.0)]])
     D, A, B = polygon_diameter(eq)
     covers, O, R, dist = circle_covers(eq, A, B)
+    mec_c, mec_r = minimum_enclosing_circle(eq)
     print(f"边长=2, D={D:.6f}, R={R:.6f}, 顶点到圆心 = {dist}, 覆盖? {covers}")
+    print(f"MEC R={mec_r:.6f} (等边三角形外接圆)")
 
     print("\n" + "=" * 60)
-    print("算例 F  两站同向（无有限顶点的无界区域，应 UNBOUNDED 而非 EMPTY）")
+    print("算例 F  两站同向（无有限直径，应 UNBOUNDED 而非 EMPTY）")
     print(locate([[0.0, 0.0], [200.0, 0.0]], [90.0, 90.0], 1.0).pretty())
+
+    print("\n" + "=" * 60)
+    print("算例 G  三站环绕：交会六边形，直径圆不能覆盖")
+    G0 = np.array([0.0, 0.0])
+    Ss = [
+        np.array([800.0, 0.0]),
+        np.array([-400.0, 400.0 * np.sqrt(3.0)]),
+        np.array([-400.0, -400.0 * np.sqrt(3.0)]),
+    ]
+    ths = [bearing_deg(S, G0) for S in Ss]
+    print(locate(Ss, ths, 1.0).pretty())
 
     print("\n" + "=" * 60)
     print("退化：单点 / 共线三点")

@@ -9,6 +9,9 @@ sys.path.insert(0, os.path.dirname(__file__))
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+
+plt.rcParams["font.sans-serif"] = ["Microsoft YaHei", "SimHei", "SimSun"]
+plt.rcParams["axes.unicode_minus"] = False
 from geometry import DELTA, k_expr, episode
 
 K = 40.0 / (2 * DELTA)
@@ -28,9 +31,9 @@ for i, D in enumerate(Ds):
 Zc = np.clip(Z, 0, 150)                     # 截断到150m便于显示
 
 schools = [(550, 498, "minimax (550,498)"),
-           (675, 476, "P-opt a=1 (675,476)"),
-           (750, 450, "conservative (750,450)"),
-           (500, 250, "time-opt (500,250)")]
+           (675, 476, "概率最优 (675,476)"),
+           (750, 450, "保守 (750,450)"),
+           (500, 250, "时间最优 (500,250)")]
 # 各流派用自身h的成功区间
 def interval(t, h):
     m = np.array([max(k_expr(t, h, D, e) for e in EPS5) <= K * K for D in Ds])
@@ -51,10 +54,10 @@ for (t, h, name), col in zip(schools, colors):
         ax.annotate(f"{name}\n[{iv[0]:.0f},{iv[1]:.0f}]m", (t, iv[1] + 40),
                     color=col, fontsize=7.5, ha="center")
 ax.plot([5, 734], [734, 734], "--", color="#e41a1c", lw=1, alpha=0.5)
-ax.set_xlabel("bet t (m)   [h = lever lower bound]")
-ax.set_ylabel("true distance D (m)")
-ax.set_title("(a) localization diameter over (bet, truth)\nred contour = 40 m two-step success line")
-fig.colorbar(pm, ax=ax, label="region diameter (m, clipped at 150)")
+ax.set_xlabel("赌注 t / m　　（侧偏 h 取杠杆下界）")
+ax.set_ylabel("真实距离 D / m")
+ax.set_title("(a) (t, D) 平面定位直径　　红线：40 m 两步成功等值线")
+fig.colorbar(pm, ax=ax, label="定位区域直径 / m（显示截断于 150）")
 
 # ---------- Panel 2: E[T] vs t ----------
 ax = axes[1]
@@ -65,15 +68,15 @@ ET_time, ET_cons = [], []
 for t in tt:
     T1 = np.array([episode(t, 250.0, D, rho_rule=rho_ad)[0] for D in Ds]); ET_time.append(T1 @ w)
     T2 = np.array([episode(t, lever_h(t), D, rho_rule=rho_ad)[0] for D in Ds]); ET_cons.append(T2 @ w)
-ax.plot(tt, ET_time, "o-", color="#ff7f00", label="time school (h=250)")
-ax.plot(tt, ET_cons, "s-", color="#4daf4a", label="conservative school (h=lever)")
+ax.plot(tt, ET_time, "o-", color="#ff7f00", label="时间流派（h = 250）")
+ax.plot(tt, ET_cons, "s-", color="#4daf4a", label="保守流派（h = 杠杆下界）")
 for (t, h, name), col in zip(schools, colors):
     if 350 <= t <= 1000:
-        ax.annotate(name.split(" ")[0], (t, 268 if "time" in name else 319),
+        ax.annotate(name.split(" ")[0], (t, 268 if "时间" in name else 319),
                     color=col, fontsize=8, ha="center")
-ax.set_xlabel("bet t (m)")
-ax.set_ylabel("expected total time E[T] (s)")
-ax.set_title("(b) E[T] vs bet   [adaptive rho=0.5L, prior f_D prop. to D]")
+ax.set_xlabel("赌注 t / m")
+ax.set_ylabel("期望总时间 E[T] / s")
+ax.set_title("(b) E[T]–赌注　　自适应 ρ = 0.5 L，先验 f_D ∝ D")
 ax.legend(); ax.grid(alpha=0.3)
 
 os.makedirs(os.path.join(os.path.dirname(__file__), "figs"), exist_ok=True)

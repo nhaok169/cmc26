@@ -17,3 +17,11 @@ simulator/JammersSimulatorData/*.log
 
 # 本地旧稿
 _backup/
+
+# 第三问演练日志（含完整请求）
+q3/logs/
+
+# 临时抽取
+_tmp_*.py
+_tmp_*.txt
+
