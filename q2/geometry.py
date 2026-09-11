@@ -137,5 +137,7 @@ def episode(t, h, D, rng=None, rho_rule=lambda L: 300.0, max_meas=7):
         HPs += meas_at(Sn)
     v = region(HPs)
     r, C = mec(v)
+    if r > 20.0:
+        return np.inf, n          # 未收敛: 目标未清除, 该episode时间无意义
     T += np.linalg.norm(C - cur) / V + CLEAR_T
     return T, n

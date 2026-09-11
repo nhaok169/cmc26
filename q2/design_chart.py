@@ -24,7 +24,7 @@ Z = np.zeros((len(Ds), len(ts)))
 for i, D in enumerate(Ds):
     for j, t in enumerate(ts):
         h = lever_h(t)
-        Z[i, j] = 2 * DELTA * np.sqrt(min(k_expr(t, h, D, e) for e in EPS5))
+        Z[i, j] = 2 * DELTA * np.sqrt(max(k_expr(t, h, D, e) for e in EPS5))  # 最坏情形(对ε取max,与interval()口径一致)
 Zc = np.clip(Z, 0, 150)                     # 截断到150m便于显示
 
 schools = [(550, 498, "minimax (550,498)"),
