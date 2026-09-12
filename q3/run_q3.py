@@ -1,17 +1,33 @@
 # -*- coding: utf-8 -*-
-"""启动 v6 自适应追踪策略连接真实测试服务器."""
+"""启动 v6 自适应追踪策略连接真实测试服务器.
+
+可从任意工作目录运行: python cmc26/q3/run_q3.py  或  cd cmc26/q3 && python run_q3.py
+需要的三个路径:
+  仓库根 (robot.py)  /  q3 (policy, ledger, scheduler, score)  /  q2 (geometry)
+"""
 import sys, os, datetime
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "q3"))
+_HERE = os.path.dirname(os.path.abspath(__file__))
+_ROOT = _HERE
+for _ in range(4):                       # 向上最多找 4 层
+    if os.path.isfile(os.path.join(_ROOT, "robot.py")):
+        break
+    _ROOT = os.path.dirname(_ROOT)
+for _p in (_ROOT, os.path.join(_ROOT, "q3"), os.path.join(_ROOT, "q2")):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
+
 import robot as R
 from policy import Policy
 
 TEAM = "202601006115"
 BASE = "http://127.0.0.1:2026"
 
-os.makedirs("logs", exist_ok=True)
+# 日志统一写到仓库根的 logs/ (与 Q4 一致), 而非当前工作目录
+_logdir = os.path.join(_ROOT, "logs")
+os.makedirs(_logdir, exist_ok=True)
 stamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-log = open(f"logs/robot_p3_{stamp}.jsonl", "w", encoding="utf-8")
+log = open(os.path.join(_logdir, f"robot_p3_{stamp}.jsonl"), "w", encoding="utf-8")
 
 print(f"robot_id={TEAM}, 问题3, 接口 {BASE}")
 print(f"日志: {log.name}")
