@@ -1,0 +1,107 @@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{问题二的模型的建立和求解}
+\subsubsection{具体分析}
+
+问题二要求在某全向干扰源已被一个检测点测得示向度的条件下，给出第二个检测点的选择策略与候选区域，属于带不确定性的实验设计类问题。决策变量是第二个检测点的平面位置，目标函数是该点观测所带来的定位精度增益。其难点根源于单站方位观测的信息贫乏：一条示向度只把干扰源约束在张角 $2^\circ$ 的楔形内，沿视线方向的径向不确定度可达上千米；同时目标距离完全未知，使得经典的"已知目标位置时的最优交会布站"结论无法直接套用，必须在可行域上改用期望或极小化极大准则重新求解，并把单点最优松弛为一片候选区域以便工程实施。本文采用"解析求特例、数值求一般"的组合策略：先用解析法给出垂直布站这一特殊形式下的完整闭式解，作为理解问题结构与验证数值结果的标尺；再在二维决策空间上做网格粗搜加局部精搜处理一般形式的布站决策；最后以目标函数的次水平集给出候选区域。
+
+\subsubsection{模型建立}
+
+\paragraph{可行域的建立与坐标归一化} 作刚性变换，把第一个检测点 $S_1$ 平移至坐标原点，并把示向度方向旋转至 $+x$ 轴。变换后干扰源 $G$ 的可行域为
+\begin{equation}
+\Omega=\Bigl\{\,G=r\,u(a):\ 0<r\le r_{\mathrm{hi}},\ \lvert a\rvert\le\delta\,\Bigr\},
+\qquad r_{\mathrm{hi}}=\min\left\{1500,\ r_{\partial}\right\},
+\label{eq:omega}
+\end{equation}
+其中 $r_{\partial}$ 为沿该方向到目标区域边界的距离。由于被测到信号意味着干扰源必然在有效接收半径之内，而附录 2 规定有效接收半径不超过 $1500$ 米，故 $r\le1500$ 米是硬约束。
+
+\paragraph{误差传播公式} 设第二检测点 $S_2=S_1+b\,u(\varphi)$，即基线长度为 $b$、基线方向与示向度方向夹角为 $\varphi$。记干扰源到两检测点的距离为 $r_1=\lvert S_1G\rvert$、$r_2=\lvert S_2G\rvert$，$G$ 处两视线的交会角为 $\alpha$。当两条方位线分别因环境偏差产生角扰动 $\delta\varphi_1,\delta\varphi_2$ 时，把方位线视为绕站点旋转，则第 $i$ 条线旋转 $\delta\varphi_i$ 会使交点沿另一条线的方向移动 $r_i\delta\varphi_i/\sin\alpha$，于是交点位移为
+\begin{equation}
+\Delta P=\frac{r_1\,\delta\varphi_1}{\sin\alpha}\,\hat u_2+\frac{r_2\,\delta\varphi_2}{\sin\alpha}\,\hat u_1,
+\label{eq:err-vec}
+\end{equation}
+其中 $\hat u_i$ 为第 $i$ 条方位线的单位方向向量。取最坏组合 $\lvert\delta\varphi_1\rvert=\lvert\delta\varphi_2\rvert=\delta$ 且同号，得定位偏差上界
+\begin{equation}
+E(S_2;G)=\frac{\delta}{\sin\alpha}\sqrt{r_1^2+r_2^2+2r_1r_2\cos\alpha}.
+\label{eq:err-general}
+\end{equation}
+式 \eqref{eq:err-general} 把布站决策完全归结为交会角与两站距离的组合。特别地，当三点共线时 $\sin\alpha\to0$ 而 $E\to\infty$，其物理含义是共线观测不提供任何距离信息，这正是"沿视线方向径直逼近"策略失效的根本原因。
+
+\paragraph{垂直布站的解析最优} 对垂直布站即取 $\varphi=90^\circ$，由余弦定理可得 $\cos\alpha=r_1/r_2$ 且 $\sin\alpha=b/r_2$，代入式 \eqref{eq:err-general} 化简为
+\begin{equation}
+E(b;r)=\frac{\delta}{b}\sqrt{(r^2+b^2)(4r^2+b^2)} .
+\label{eq:err-perp}
+\end{equation}
+令 $t=b^2/r^2$，则 $E\propto\sqrt{t+5+4/t}$，该函数在 $t=2$ 处取得唯一极小值 $3$，由此得到核心解析结论
+\begin{equation}
+\boxed{\quad b^{*}=\sqrt2\,r,\qquad
+\alpha^{*}=\arccos\frac{1}{\sqrt3}=54.74^\circ,\qquad
+E_{\min}=3\delta r=0.052360\,r \quad}
+\label{eq:opt-b}
+\end{equation}
+该结论的物理含义值得强调：最优交会角并非教科书中常被引用的 $90^\circ$，而是 $54.74^\circ$。原因是误差传播式 \eqref{eq:err-general} 中两条方位线的贡献分别被 $r_1$ 与 $r_2$ 加权，在 $b=\sqrt2r$ 处二者的加权和达到均衡；若强行取 $90^\circ$ 交会，则代价是基线必须放长，$r_2$ 增大反而放大了第二条方位线的误差贡献。
+
+\paragraph{稳健准则与候选区域} 由于实际情形中 $r$ 未知，式 \eqref{eq:opt-b} 只能视作以估计值 $\hat r$ 代入的近似最优，必须引入稳健化准则。极小化极大准则注意到式 \eqref{eq:err-perp} 关于 $r$ 单调递增，故最坏情形取在 $r_{\mathrm{hi}}$ 处，最优基线为 $b_{\mathrm{mm}}=\sqrt2\,r_{\mathrm{hi}}$。期望准则设 $r$ 在可行域内按面积均匀分布即密度函数 $f(r)=2r/r_{\mathrm{hi}}^2$，或以二维形式在可行域上取期望定位误差
+\begin{equation}
+J(S_2)=\mathbb E_{G\sim U(\Omega)}\bigl[\,E(S_2;G)\,\bigr]
+=\frac{1}{\lvert\Omega\rvert}\int_{\Omega}E(S_2;G)\,\mathrm{d}G ,
+\label{eq:objective}
+\end{equation}
+并把 $\varphi$ 一并放开求其最小值。候选区域定义为目标函数 \eqref{eq:objective} 关于最优值的次水平集
+\begin{equation}
+\mathcal C=\Bigl\{\,S_2:\ J(S_2)\le(1+\varepsilon)J(S_2^{*})\,\Bigr\},\qquad \varepsilon=5\% .
+\label{eq:candidate}
+\end{equation}
+这一定义的工程价值在于把"唯一最优点"松弛为"一片可接受区域"，使机器狗能够结合地形、障碍与其他任务需求在区域内灵活选取实际站位。
+
+\subsubsection{模型求解}
+
+对 $r$ 从 $200$ 米到 $1500$ 米逐点做一维精细搜索，最优基线与 $r$ 的比值稳定在 $1.414213\sim1.414226$，与解析值 $\sqrt2$ 的相对偏差小于 $10^{-5}$；最优交会角稳定在 $54.73^\circ\sim54.74^\circ$；最小误差与 $r$ 的比值恒为 $0.052360$，与解析系数 $3\delta$ 完全吻合，解析结论得到严格验证。如图 \ref{fig:q2-ana}(a) 所示，数值搜索得到的最优基线与解析直线 $b^{*}=\sqrt2r$ 完全重合；图 \ref{fig:q2-ana}(b) 给出不同源距离下误差随基线的变化曲线，每条曲线均呈先降后升的 U 形，极小点位置随 $r$ 线性外移且最小值随 $r$ 线性增大。
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.8\textwidth]{../求解/问题二/figures/最优基线与距离关系图.png}
+	\caption{垂直布站下最优基线与源距离的解析关系及误差曲线}
+	\label{fig:q2-ana}
+\end{figure}
+
+在可行域 $\Omega$ 内按面积均匀采样 $8000$ 个候选源位置，对每个候选布站位置计算期望定位误差 \eqref{eq:objective}，在 $(b,\varphi)$ 极坐标网格（$b$ 步长 $25$ 米、$\varphi$ 步长 $1.5^\circ$）上粗搜后再用 Nelder--Mead 单纯形法精搜，结果如表 \ref{tab:q2-opt} 所示。
+
+\begin{table}[H]
+	\centering
+	\caption{三种准则下的最优布站与定位精度}
+	\label{tab:q2-opt}
+	\begin{tabularx}{\textwidth}{LCCCC}
+		\toprule
+		准则 & 最优基线 $b^*$ (m) & 最优方位角 $\varphi^*$ & 期望误差 (m) & 最坏误差 (m) \\
+		\midrule
+		期望准则（主） & $1401.4$ & $20.03^\circ$ & $\mathbf{22.19}$ & $72.87$ \\
+		极小化极大准则 & $1499.3$ & $41.09^\circ$ & $26.90$ & $\mathbf{39.92}$ \\
+		限定垂直布站（次优） & $1510.0$ & $90.00^\circ$ & $55.73$ & $83.80$ \\
+		\bottomrule
+	\end{tabularx}
+\end{table}
+
+表 \ref{tab:q2-opt} 给出了一个在直觉上颇具冲击力的结果：在计入全可行域不确定性后，最优布站并非垂直，而是取 $\varphi^{*}\approx20^\circ$、$b^{*}\approx1401$ 米，此时期望定位误差为 $22.19$ 米；而教科书式的垂直布站即使把基线放长到 $1510$ 米，期望误差仍高达 $55.73$ 米，是最优方案的 $2.5$ 倍。若采用极小化极大准则，最优位置向垂直方向移动至 $\varphi^{*}=41.09^\circ$、$b^{*}=1499.3$ 米，期望误差略有上升但最坏误差由 $72.87$ 米压缩至 $39.92$ 米，体现出"平均最优"与"最坏最优"之间的典型权衡。
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.8\textwidth]{../求解/问题二/figures/可行域与候选区域示意图.png}
+	\caption{干扰源可行域、定位误差分布与最优第二检测点}
+	\label{fig:q2-field}
+\end{figure}
+
+如图 \ref{fig:q2-field}(a) 所示，可行域张角仅 $2^\circ$，在 $1500$ 米处侧向宽度仅约 $52$ 米，这种极度扁平的形状正是径向不确定度巨大而侧向信息几乎确定的几何体现。图 \ref{fig:q2-field}(b) 把可行域与最优第二检测点叠置显示，最优位置位于视线方向前出约 $1401$ 米、侧偏约 $479$ 米处。图 \ref{fig:q2-field}(c) 是 $(b,\varphi)$ 平面上的期望误差热力图，误差最小值出现在 $\varphi\approx20^\circ$、$b\approx1400$ 米附近，图中同时标出三种准则的最优解并以阴影标出候选区域。
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.8\textwidth]{../求解/问题二/figures/最优布站平面结构与成本灵敏度图.png}
+	\caption{平面上的期望定位误差结构与机动成本灵敏度}
+	\label{fig:q2-plane}
+\end{figure}
+
+如图 \ref{fig:q2-plane}(a) 所示，把目标函数铺展到整个平面上（色标取对数刻度）可以看到沿示向度方向存在一条明亮的高误差脊线，其成因正是共线观测导致的 $\sin\alpha\to0$；脊线两侧对称地分布着两个低误差盆地，最优第二检测点落于其中。这一结构清楚地说明第二检测点必须避开视线、侧向展开，而侧向展开到什么程度则由径向不确定性与探测几何共同决定。
+
+取 $\varepsilon=5\%$ 的容差，由式 \eqref{eq:candidate} 求解得到候选区域为 $b\in[1230,1630]$ 米、$\varphi\in[14^\circ,29^\circ]$（含关于视线方向的镜像）。即第二个检测点应选在以第一检测点为圆心、半径 $1230\sim1630$ 米、偏离示向度方向 $14^\circ\sim29^\circ$ 的两条对称圆弧带内。该区域以约 $400$ 米的径向宽度换取了不超过 $5\%$ 的定位精度损失，为实际布站留出了充分的工程余量。
+
+最后考察机动成本的灵敏度。问题二本身未计入机器狗的机动代价，但由问题三可知移动时间往往是虚拟时间的主要成分。计入单位机动成本 $\lambda\lvert S_2\rvert/v$ 后重新寻优，当 $\lambda$ 由 $0$ 增至 $1.0$ 时，最优基线由 $1401$ 米收缩至 $461$ 米，方位角向 $56.3^\circ$ 靠拢并趋近解析最优交会角 $54.74^\circ$，期望定位误差由 $22.19$ 米升至 $80.79$ 米，如图 \ref{fig:q2-plane}(b) 所示。这说明当机动成本较小时（$\lambda\le0.1$）最优基线基本不变、定位精度对基线长度在最优值附近并不敏感；但当成本进一步增大时，"短基线"必须搭配"接近最优交会角"的方位才能维持可接受的精度。该结论为问题三中采用"短侧移加逐步逼近"的折中策略提供了理论依据。

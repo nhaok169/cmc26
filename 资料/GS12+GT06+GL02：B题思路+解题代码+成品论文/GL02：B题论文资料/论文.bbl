@@ -1,0 +1,67 @@
+\begin{thebibliography}{8}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{#1}
+\expandafter\ifx\csname urlstyle\endcsname\relax\else
+  \urlstyle{same}\fi
+\expandafter\ifx\csname href\endcsname\relax
+  \DeclareUrlCommand\doi{\urlstyle{rm}}\else
+  \providecommand\doi[1]{\href{https://doi.org/#1}{\nolinkurl{#1}}}\fi
+
+\bibitem[卓金武(2011)]{卓金武2011MATLAB}
+卓金武.
+\newblock MATLAB在数学建模中的应用\allowbreak[M].
+\newblock 北京: 北京航空航天大学出版社, 2011.
+
+\bibitem[Behzadian et~al.(2012)Behzadian, Khanmohammadi~Otaghsara, Yazdani, and
+  Ignatius]{behzadian2012topsis}
+BEHZADIAN~M, KHANMOHAMMADI~OTAGHSARA~S, YAZDANI~M, et~al.
+\newblock A state-of-the-art survey of topsis applications\allowbreak[J].
+\newblock Expert Systems with Applications, 2012, 39\penalty0 (17):\penalty0
+  13051-13069.
+
+\bibitem[司守奎\ 等(2011)司守奎 and
+  孙玺菁]{司守奎2011数学建模算法与应用}
+司守奎, 孙玺菁.
+\newblock 数学建模算法与应用\allowbreak[M].
+\newblock 北京: 国防工业出版社, 2011.
+
+\bibitem[Hidayat et~al.(2023)Hidayat, Adnan, Abdullah, and
+  Safrudiannur]{hidayat2023measurement}
+HIDAYAT~R, ADNAN~M, ABDULLAH~M~F~N~L, et~al.
+\newblock A systematic literature review of measurement of mathematical
+  modeling in mathematics education context\allowbreak[J/OL].
+\newblock Eurasia Journal of Mathematics, Science and Technology Education,
+  2023, 19\penalty0 (6):\penalty0 1-20.
+\newblock \url{https://files.eric.ed.gov/fulltext/EJ1342895.pdf}.
+
+\bibitem[Krawitz et~al.(2024)Krawitz, Schukajlow, Yang, and
+  Geiger]{krawitz2024international}
+KRAWITZ~J, SCHUKAJLOW~S, YANG~X, et~al.
+\newblock A systematic review of international perspectives on mathematical
+  modelling: Modelling goals and task characteristics\allowbreak[J/OL].
+\newblock ZDM–Mathematics Education, 2024.
+\newblock \url{https://link.springer.com/article/10.1007/s11858-025-01683-2}.
+
+\bibitem[Cevikbas et~al.(2021)Cevikbas, Kaiser, and
+  Schukajlow]{cevikbas2021competencies}
+CEVIKBAS~M, KAISER~G, SCHUKAJLOW~S.
+\newblock A systematic literature review of the current discussion on
+  mathematical modelling competencies: state-of-the-art developments in
+  conceptualizing, measuring, and fostering\allowbreak[J/OL].
+\newblock Educational Studies in Mathematics, 2021, 108\penalty0 (3):\penalty0
+  375-405.
+\newblock \url{https://link.springer.com/article/10.1007/s10649-021-10104-6}.
+
+\bibitem[马美\ 等(2025)马美 and 陈桂秀]{ma2025interdisciplinary}
+马美, 陈桂秀.
+\newblock 数学建模思想在跨学科研究中的应用\allowbreak[J/OL].
+\newblock 应用数学进展, 2025, 14\penalty0 (2):\penalty0 152-160.
+\newblock \url{https://pdf.hanspub.org/ae2025152_901168690.pdf}.
+
+\bibitem[De~Gaetano(2025)]{degaetano2025nature}
+DE~GAETANO~A.
+\newblock The nature of mathematical models\allowbreak[J/OL].
+\newblock arXiv preprint arXiv:2502.07948, 2025.
+\newblock \url{https://arxiv.org/abs/2502.07948}.
+
+\end{thebibliography}

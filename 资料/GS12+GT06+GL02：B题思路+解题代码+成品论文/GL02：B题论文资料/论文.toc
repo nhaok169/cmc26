@@ -1,0 +1,56 @@
+\contentsline {section}{\numberline {一、}引言}{1}{section.1}%
+\contentsline {subsection}{\numberline {1.1}问题背景}{1}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}研究意义}{1}{subsection.1.2}%
+\contentsline {subsection}{\numberline {1.3}问题重述}{2}{subsection.1.3}%
+\contentsline {subsection}{\numberline {1.4}研究思路}{2}{subsection.1.4}%
+\contentsline {section}{\numberline {二、}总体分析}{2}{section.2}%
+\contentsline {section}{\numberline {三、}模型假设}{3}{section.3}%
+\contentsline {section}{\numberline {四、}符号说明}{4}{section.4}%
+\contentsline {section}{\numberline {五、}模型的建立与求解}{6}{section.5}%
+\contentsline {subsection}{\numberline {5.1}问题一的模型的建立和求解}{6}{subsection.5.1}%
+\contentsline {subsubsection}{\numberline {5.1.1}具体分析}{6}{subsubsection.5.1.1}%
+\contentsline {subsubsection}{\numberline {5.1.2}模型建立}{6}{subsubsection.5.1.2}%
+\contentsline {paragraph}{楔形的半平面等价表示}{6}{section*.3}%
+\contentsline {paragraph}{定位区域与截断}{6}{section*.4}%
+\contentsline {paragraph}{Sutherland--Hodgman 裁剪}{7}{section*.5}%
+\contentsline {paragraph}{直径算法}{7}{section*.6}%
+\contentsline {paragraph}{直径圆覆盖的充要判据}{7}{section*.7}%
+\contentsline {subsubsection}{\numberline {5.1.3}模型求解}{7}{subsubsection.5.1.3}%
+\contentsline {subsection}{\numberline {5.2}问题二的模型的建立和求解}{10}{subsection.5.2}%
+\contentsline {subsubsection}{\numberline {5.2.1}具体分析}{10}{subsubsection.5.2.1}%
+\contentsline {subsubsection}{\numberline {5.2.2}模型建立}{11}{subsubsection.5.2.2}%
+\contentsline {paragraph}{可行域的建立与坐标归一化}{11}{section*.13}%
+\contentsline {paragraph}{误差传播公式}{11}{section*.14}%
+\contentsline {paragraph}{垂直布站的解析最优}{11}{section*.15}%
+\contentsline {paragraph}{稳健准则与候选区域}{12}{section*.16}%
+\contentsline {subsubsection}{\numberline {5.2.3}模型求解}{12}{subsubsection.5.2.3}%
+\contentsline {subsection}{\numberline {5.3}问题三的模型的建立和求解}{14}{subsection.5.3}%
+\contentsline {subsubsection}{\numberline {5.3.1}具体分析}{14}{subsubsection.5.3.1}%
+\contentsline {subsubsection}{\numberline {5.3.2}模型建立}{15}{subsubsection.5.3.2}%
+\contentsline {paragraph}{可检测性模型与保证可测判据}{15}{section*.21}%
+\contentsline {paragraph}{观测点数下界与保证覆盖网}{15}{section*.22}%
+\contentsline {paragraph}{交会定位与逼近阈值}{15}{section*.23}%
+\contentsline {paragraph}{虚拟时间模型}{16}{section*.24}%
+\contentsline {paragraph}{分层搜索策略}{16}{section*.25}%
+\contentsline {subsubsection}{\numberline {5.3.3}模型求解}{17}{subsubsection.5.3.3}%
+\contentsline {subsection}{\numberline {5.4}问题四的模型的建立和求解}{19}{subsection.5.4}%
+\contentsline {subsubsection}{\numberline {5.4.1}具体分析}{19}{subsubsection.5.4.1}%
+\contentsline {subsubsection}{\numberline {5.4.2}模型建立}{20}{subsubsection.5.4.2}%
+\contentsline {paragraph}{可检测域的半圆盘刻画}{20}{section*.32}%
+\contentsline {paragraph}{背向不可测定理}{20}{section*.33}%
+\contentsline {paragraph}{方位包围判据}{20}{section*.34}%
+\contentsline {paragraph}{分级冗余网模型}{21}{section*.35}%
+\contentsline {paragraph}{自适应补测策略}{21}{section*.36}%
+\contentsline {subsubsection}{\numberline {5.4.3}模型求解}{22}{subsubsection.5.4.3}%
+\contentsline {section}{\numberline {六、}模型检验与分析}{25}{section.6}%
+\contentsline {subsection}{\numberline {6.1}交叉验证检验}{25}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}残差分析检验}{26}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}灵敏度分析}{27}{subsection.6.3}%
+\contentsline {section}{\numberline {七、}模型的评价}{28}{section.7}%
+\contentsline {subsection}{\numberline {7.1}模型的优点}{28}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}模型的缺点}{28}{subsection.7.2}%
+\contentsline {section}{\numberline {八、}模型的改进与推广}{29}{section.8}%
+\contentsline {subsection}{\numberline {8.1}模型的改进}{29}{subsection.8.1}%
+\contentsline {subsection}{\numberline {8.2}模型的推广}{29}{subsection.8.2}%
+\contentsline {section}{参考文献}{30}{section*.46}%
+\contentsfinish 
