@@ -570,7 +570,3 @@ class Policy3:
             print(f"[Policy3] cleared={n} vt={vt:.0f} order={self._order_len:.0f} "
                   f"phases={self.phase_stats}")
         return n, vt
-
-
-# 兼容旧命名: 正式交付统一使用 Policy
-Policy = Policy3
