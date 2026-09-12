@@ -403,10 +403,12 @@ class Policy:
                 self._handle_measure(ch, target, resp)
                 self._sync()
 
-            # 如果还有未清除的检出源, 继续追踪; 否则只扫 unknown 频道
-            has_detected = any(self.ledger.channels[ch].is_active
-                               for ch in self.ledger.detected_channels())
-            if has_detected:
+            # 方向C: 只在有未清除检出源时才 free_scan + hunt_all
+            has_uncleared_detected = any(
+                ch not in self.sim.cleared and self.ledger.channels[ch].is_active
+                for ch in self.ledger.detected_channels()
+            )
+            if has_uncleared_detected:
                 self._free_scan_at(target)
                 self._try_enroute(target)
                 self.hunt_all()
@@ -460,7 +462,7 @@ class Policy:
             est = np.asarray(est, float)
             if _try(est):
                 return True
-            for rad in [8, 16, 24]:
+            for rad in [8, 16, 24, 32]:
                 n_dirs = 8 if rad <= 16 else 4
                 for i in range(n_dirs):
                     a = 2 * math.pi * i / n_dirs
