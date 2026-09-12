@@ -1,0 +1,72 @@
+<svg viewBox="0 0 680 380" xmlns="http://www.w3.org/2000/svg">
+<rect width="680" height="380" fill="#ffffff"/>
+<line x1="60.0" y1="30" x2="60.0" y2="310" stroke="#e3e8ee"/>
+<text x="60.0" y="328" font-size="11" fill="#556" text-anchor="middle">250</text>
+<line x1="145.7" y1="30" x2="145.7" y2="310" stroke="#e3e8ee"/>
+<text x="145.7" y="328" font-size="11" fill="#556" text-anchor="middle">350</text>
+<line x1="231.4" y1="30" x2="231.4" y2="310" stroke="#e3e8ee"/>
+<text x="231.4" y="328" font-size="11" fill="#556" text-anchor="middle">450</text>
+<line x1="317.1" y1="30" x2="317.1" y2="310" stroke="#e3e8ee"/>
+<text x="317.1" y="328" font-size="11" fill="#556" text-anchor="middle">550</text>
+<line x1="402.9" y1="30" x2="402.9" y2="310" stroke="#e3e8ee"/>
+<text x="402.9" y="328" font-size="11" fill="#556" text-anchor="middle">650</text>
+<line x1="488.6" y1="30" x2="488.6" y2="310" stroke="#e3e8ee"/>
+<text x="488.6" y="328" font-size="11" fill="#556" text-anchor="middle">750</text>
+<line x1="574.3" y1="30" x2="574.3" y2="310" stroke="#e3e8ee"/>
+<text x="574.3" y="328" font-size="11" fill="#556" text-anchor="middle">850</text>
+<line x1="660.0" y1="30" x2="660.0" y2="310" stroke="#e3e8ee"/>
+<text x="660.0" y="328" font-size="11" fill="#556" text-anchor="middle">950</text>
+<line x1="60" y1="30" x2="60" y2="310" stroke="#9aa" stroke-width="1.5"/>
+<text x="52" y="230" font-size="11" fill="#556" text-anchor="middle" transform="rotate(-90 52 230)">T_avg (s/个)</text>
+<text x="340" y="368" font-size="13" fill="#334" text-anchor="middle" font-weight="bold">平均定位清除时间对比 (Q3 n=30 vs Q4修复版 n=10)</text>
+<line x1="60" y1="130" x2="660" y2="130" stroke="#cdd" stroke-dasharray="3 3"/>
+<line x1="60" y1="270" x2="660" y2="270" stroke="#cdd" stroke-dasharray="3 3"/>
+<text x="64" y="120" font-size="12" fill="#1a6" font-weight="bold">Q3 (n=30)</text>
+<text x="64" y="260" font-size="12" fill="#c60" font-weight="bold">Q4 修复版 (n=10)</text>
+<circle cx="133.7" cy="130" r="4" fill="#2c8" fill-opacity="0.6" stroke="#1a6"/>
+<circle cx="91.7" cy="130" r="4" fill="#2c8" fill-opacity="0.6" stroke="#1a6"/>
+<circle cx="135.4" cy="130" r="4" fill="#2c8" fill-opacity="0.6" stroke="#1a6"/>
+<circle cx="117.4" cy="130" r="4" fill="#2c8" fill-opacity="0.6" stroke="#1a6"/>
+<circle cx="98.6" cy="130" r="4" fill="#2c8" fill-opacity="0.6" stroke="#1a6"/>
+<circle cx="196.3" cy="130" r="4" fill="#2c8" fill-opacity="0.6" stroke="#1a6"/>
+<circle cx="111.4" cy="130" r="4" fill="#2c8" fill-opacity="0.6" stroke="#1a6"/>
+<circle cx="86.6" cy="130" r="4" fill="#2c8" fill-opacity="0.6" stroke="#1a6"/>
+<circle cx="118.3" cy="130" r="4" fill="#2c8" fill-opacity="0.6" stroke="#1a6"/>
+<circle cx="169.7" cy="130" r="4" fill="#2c8" fill-opacity="0.6" stroke="#1a6"/>
+<circle cx="141.4" cy="130" r="4" fill="#2c8" fill-opacity="0.6" stroke="#1a6"/>
+<circle cx="98.6" cy="130" r="4" fill="#2c8" fill-opacity="0.6" stroke="#1a6"/>
+<circle cx="170.6" cy="130" r="4" fill="#2c8" fill-opacity="0.6" stroke="#1a6"/>
+<circle cx="126.9" cy="130" r="4" fill="#2c8" fill-opacity="0.6" stroke="#1a6"/>
+<circle cx="102.9" cy="130" r="4" fill="#2c8" fill-opacity="0.6" stroke="#1a6"/>
+<circle cx="118.3" cy="130" r="4" fill="#2c8" fill-opacity="0.6" stroke="#1a6"/>
+<circle cx="132.9" cy="130" r="4" fill="#2c8" fill-opacity="0.6" stroke="#1a6"/>
+<circle cx="126.0" cy="130" r="4" fill="#2c8" fill-opacity="0.6" stroke="#1a6"/>
+<circle cx="72.9" cy="130" r="4" fill="#2c8" fill-opacity="0.6" stroke="#1a6"/>
+<circle cx="99.4" cy="130" r="4" fill="#2c8" fill-opacity="0.6" stroke="#1a6"/>
+<circle cx="158.6" cy="130" r="4" fill="#2c8" fill-opacity="0.6" stroke="#1a6"/>
+<circle cx="115.7" cy="130" r="4" fill="#2c8" fill-opacity="0.6" stroke="#1a6"/>
+<circle cx="117.4" cy="130" r="4" fill="#2c8" fill-opacity="0.6" stroke="#1a6"/>
+<circle cx="77.1" cy="130" r="4" fill="#2c8" fill-opacity="0.6" stroke="#1a6"/>
+<circle cx="159.4" cy="130" r="4" fill="#2c8" fill-opacity="0.6" stroke="#1a6"/>
+<circle cx="170.6" cy="130" r="4" fill="#2c8" fill-opacity="0.6" stroke="#1a6"/>
+<circle cx="112.3" cy="130" r="4" fill="#2c8" fill-opacity="0.6" stroke="#1a6"/>
+<circle cx="199.7" cy="130" r="4" fill="#2c8" fill-opacity="0.6" stroke="#1a6"/>
+<circle cx="105.4" cy="130" r="4" fill="#2c8" fill-opacity="0.6" stroke="#1a6"/>
+<circle cx="129.4" cy="130" r="4" fill="#2c8" fill-opacity="0.6" stroke="#1a6"/>
+<circle cx="513.4" cy="270" r="5" fill="#e84" fill-opacity="0.6" stroke="#c60"/>
+<circle cx="648.0" cy="270" r="5" fill="#e84" fill-opacity="0.6" stroke="#c60"/>
+<circle cx="300.0" cy="270" r="5" fill="#e84" fill-opacity="0.6" stroke="#c60"/>
+<circle cx="367.7" cy="270" r="5" fill="#e84" fill-opacity="0.6" stroke="#c60"/>
+<circle cx="258.0" cy="270" r="5" fill="#e84" fill-opacity="0.6" stroke="#c60"/>
+<circle cx="353.1" cy="270" r="5" fill="#e84" fill-opacity="0.6" stroke="#c60"/>
+<circle cx="346.3" cy="270" r="5" fill="#e84" fill-opacity="0.6" stroke="#c60"/>
+<circle cx="255.4" cy="270" r="5" fill="#e84" fill-opacity="0.6" stroke="#c60"/>
+<circle cx="192.0" cy="270" r="5" fill="#e84" fill-opacity="0.6" stroke="#c60"/>
+<circle cx="444.9" cy="270" r="5" fill="#e84" fill-opacity="0.6" stroke="#c60"/>
+<line x1="94.5" y1="130" x2="158.5" y2="130" stroke="#1a6" stroke-width="2.5"/>
+<line x1="126.5" y1="122" x2="126.5" y2="138" stroke="#1a6" stroke-width="2.5"/>
+<text x="126.5" y="154" font-size="12" fill="#1a6" text-anchor="middle" font-weight="bold">328±37</text>
+<line x1="238.8" y1="270" x2="496.9" y2="270" stroke="#c60" stroke-width="2.5"/>
+<line x1="367.9" y1="262" x2="367.9" y2="278" stroke="#c60" stroke-width="2.5"/>
+<text x="367.9" y="294" font-size="12" fill="#c60" text-anchor="middle" font-weight="bold">609±151</text>
+</svg>

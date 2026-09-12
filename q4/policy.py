@@ -178,11 +178,21 @@ class Policy3:
             return None
         return np.asarray(m[1], float)
 
-    def _try_clear(self, ch):
+    def _try_clear(self, ch, force=False):
+        """尝试清除 ch.
+
+        默认: 仅当 MEC 半径 <= CLEAR_TOL 时尝试.
+        force=True: 若 MEC 不收敛但已有方位 (centroid 已知), 按候选多边形几何
+        中心兜底尝试一次. 失败无害 (5 s 虚拟时间); 成功可救回接近共线/单方位源.
+        """
         cs = self.ledger.channels[ch]
         m = cs.mec
         if m is not None and m[1] is not None and m[0] <= CLEAR_TOL:
             return self._clear_at(ch, m[1])
+        if force and cs.bearings:
+            cen = cs.centroid
+            if cen is not None:
+                return self._clear_at(ch, np.asarray(cen, float))
         return False
 
     # ---------------- 追踪 (定向源: 从"已点亮"侧逼近) ----------------
@@ -492,6 +502,8 @@ class Policy3:
         # 走到 MEC 中心并就地测量 (既清除又补探针)
         self._measure(c, ch)
         if not self._try_clear(ch):
+            # 兜底: MEC 未收敛时按几何中心强清一次 (救回接近共线/单方位源)
+            self._try_clear(ch, force=True)
             # 未清除 -> 顺路再追一小步, 然后冷却, 让 TSP 先走别处
             self.pursue(ch, max_steps=3)
             if ch not in self.sim.cleared:
@@ -533,6 +545,12 @@ class Policy3:
                 self._measure(c, ch)
                 if self._try_clear(ch):
                     self.fin_log.append(("clear", ch, "mv", round(self.mv - mv0),
+                                         "meas", self.n_meas - n0))
+                    progressed = True
+                    continue
+                # finalize 是最后机会, MEC 未收敛也按 centroid 兜底强清一次
+                if self._try_clear(ch, force=True):
+                    self.fin_log.append(("clear_fb", ch, "mv", round(self.mv - mv0),
                                          "meas", self.n_meas - n0))
                     progressed = True
                     continue
