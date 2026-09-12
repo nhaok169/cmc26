@@ -1,0 +1,7234 @@
+{
+  "summary": {
+    "cleared": [
+      1,
+      4,
+      5,
+      7,
+      10,
+      11,
+      12,
+      13,
+      15,
+      17,
+      18,
+      19
+    ],
+    "n_cleared": 12,
+    "empty": [
+      2,
+      3,
+      6,
+      8,
+      9,
+      14,
+      16,
+      20
+    ],
+    "failed": [],
+    "left": [],
+    "clear_virtual_times": {
+      "13": 438.837669,
+      "17": 726.602712,
+      "5": 1021.023223,
+      "7": 1307.103287,
+      "1": 1632.509472,
+      "19": 2098.427777,
+      "11": 2505.399187,
+      "10": 2722.600009,
+      "12": 4600.919304,
+      "18": 4743.899412,
+      "4": 5732.774634,
+      "15": 10009.149776
+    },
+    "virtual_time_s": 10009.149776,
+    "avg_s": 834.0958146666667,
+    "wall_s": 5.049201488494873,
+    "n_listen": 27,
+    "idle_stopped": false,
+    "mode": "cert26",
+    "exit": {
+      "accepted": true,
+      "real_timestamp_ms": 1789209739800,
+      "virtual_time_s": 10009.149776,
+      "exit_reason": "user_exit"
+    }
+  },
+  "log": [
+    {
+      "path": "/enter",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "enter-19512-0001"
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209734751,
+        "virtual_time_s": 0,
+        "max_virtual_duration_s": 360000,
+        "max_real_duration_s": 1200,
+        "remaining_real_duration_s": 1200
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0002",
+        "position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "channel": 1
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209734756,
+        "virtual_time_s": 5,
+        "measure_result": "direction",
+        "svd_deg": 184.71
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0003",
+        "position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "channel": 2
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209734758,
+        "virtual_time_s": 11,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0004",
+        "position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "channel": 3
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209734781,
+        "virtual_time_s": 17,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0005",
+        "position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "channel": 4
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209734797,
+        "virtual_time_s": 23,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0006",
+        "position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "channel": 5
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209734812,
+        "virtual_time_s": 29,
+        "measure_result": "direction",
+        "svd_deg": 276.8
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0007",
+        "position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "channel": 6
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209734815,
+        "virtual_time_s": 35,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0008",
+        "position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "channel": 7
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209734843,
+        "virtual_time_s": 41,
+        "measure_result": "direction",
+        "svd_deg": 201.39
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0009",
+        "position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "channel": 8
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209734858,
+        "virtual_time_s": 47,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0010",
+        "position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "channel": 9
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209734873,
+        "virtual_time_s": 53,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0011",
+        "position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "channel": 10
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209734878,
+        "virtual_time_s": 59,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0012",
+        "position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "channel": 11
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209734880,
+        "virtual_time_s": 65,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0013",
+        "position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "channel": 12
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209734883,
+        "virtual_time_s": 71,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0014",
+        "position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "channel": 13
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209734904,
+        "virtual_time_s": 77,
+        "measure_result": "direction",
+        "svd_deg": 66.28
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0015",
+        "position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "channel": 14
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209734909,
+        "virtual_time_s": 83,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0016",
+        "position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209734937,
+        "virtual_time_s": 89,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0017",
+        "position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "channel": 16
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209734940,
+        "virtual_time_s": 95,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0018",
+        "position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "channel": 17
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209734967,
+        "virtual_time_s": 101,
+        "measure_result": "direction",
+        "svd_deg": 358.69
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0019",
+        "position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "channel": 18
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209734982,
+        "virtual_time_s": 107,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0020",
+        "position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "channel": 19
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209734998,
+        "virtual_time_s": 113,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0021",
+        "position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "channel": 20
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735002,
+        "virtual_time_s": 119,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0022",
+        "position": {
+          "x": 31.347739957674108,
+          "y": 270.2171704380498
+        },
+        "channel": 13
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735029,
+        "virtual_time_s": 179.405882,
+        "measure_result": "direction",
+        "svd_deg": 62.31
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0023",
+        "position": {
+          "x": 126.0412525829265,
+          "y": 536.7375986732812
+        },
+        "channel": 13
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735036,
+        "virtual_time_s": 240.974424,
+        "measure_result": "direction",
+        "svd_deg": 59.36
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0024",
+        "position": {
+          "x": 303.15652698098563,
+          "y": 757.2601135666595
+        },
+        "channel": 13
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735044,
+        "virtual_time_s": 302.542966,
+        "measure_result": "direction",
+        "svd_deg": 63.21
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0025",
+        "position": {
+          "x": 393.6520365662096,
+          "y": 1025.2350428882485
+        },
+        "channel": 13
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735075,
+        "virtual_time_s": 364.111508,
+        "measure_result": "direction",
+        "svd_deg": 55.15
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0026",
+        "position": {
+          "x": 506.9671505759389,
+          "y": 1117.9710751765829
+        },
+        "channel": 13
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735088,
+        "virtual_time_s": 398.396512,
+        "measure_result": "direction",
+        "svd_deg": 72.81
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0027",
+        "position": {
+          "x": 492.39725768253186,
+          "y": 1206.2191245662132
+        },
+        "channel": 13
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735097,
+        "virtual_time_s": 421.285056,
+        "measure_result": "direction",
+        "svd_deg": 33.05
+      }
+    },
+    {
+      "path": "/clear",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "clr-19512-0028",
+        "position": {
+          "x": 544.9590278671546,
+          "y": 1240.5187272592082
+        },
+        "channel": 13
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735122,
+        "virtual_time_s": 438.837669,
+        "clear_result": "success"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0029",
+        "position": {
+          "x": 544.9590278671546,
+          "y": 1240.5187272592082
+        },
+        "channel": 17
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735124,
+        "virtual_time_s": 444.837669,
+        "measure_result": "direction",
+        "svd_deg": 284.37
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0030",
+        "position": {
+          "x": 653.1987147094862,
+          "y": 979.2063276447352
+        },
+        "channel": 17
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735154,
+        "virtual_time_s": 506.406211,
+        "measure_result": "direction",
+        "svd_deg": 281.74
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0031",
+        "position": {
+          "x": 671.0073189823306,
+          "y": 696.9248128162697
+        },
+        "channel": 17
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735186,
+        "virtual_time_s": 567.974753,
+        "measure_result": "direction",
+        "svd_deg": 284.23
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0032",
+        "position": {
+          "x": 778.6081766926495,
+          "y": 435.3487140992736
+        },
+        "channel": 17
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735216,
+        "virtual_time_s": 629.543295,
+        "measure_result": "direction",
+        "svd_deg": 278.45
+      }
+    },
+    {
+      "path": "/clear",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "clr-19512-0033",
+        "position": {
+          "x": 848.8551613191813,
+          "y": -19.55651751305301
+        },
+        "channel": 17
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735248,
+        "virtual_time_s": 726.602712,
+        "clear_result": "success"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0034",
+        "position": {
+          "x": 848.8551613191813,
+          "y": -19.55651751305301
+        },
+        "channel": 5
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735263,
+        "virtual_time_s": 732.602712,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/clear",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "clr-19512-0035",
+        "position": {
+          "x": 848.8551613191813,
+          "y": -19.55651751305301
+        },
+        "channel": 5
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735269,
+        "virtual_time_s": 735.602712,
+        "clear_result": "no_target_in_range"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0036",
+        "position": {
+          "x": 110.22227240821331,
+          "y": -248.6987146431795
+        },
+        "channel": 5
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735272,
+        "virtual_time_s": 895.274583,
+        "measure_result": "direction",
+        "svd_deg": 268.03
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0037",
+        "position": {
+          "x": 141.53096210980257,
+          "y": -502.06621332336385
+        },
+        "channel": 5
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735281,
+        "virtual_time_s": 951.333499,
+        "measure_result": "direction",
+        "svd_deg": 257.7
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0038",
+        "position": {
+          "x": 78.17280899969882,
+          "y": -604.8863014977596
+        },
+        "channel": 5
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735289,
+        "virtual_time_s": 980.488189,
+        "measure_result": "direction",
+        "svd_deg": 276.0
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0039",
+        "position": {
+          "x": 126.31596187584199,
+          "y": -680.2669145965154
+        },
+        "channel": 5
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735294,
+        "virtual_time_s": 1003.376733,
+        "measure_result": "direction",
+        "svd_deg": 236.59
+      }
+    },
+    {
+      "path": "/clear",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "clr-19512-0040",
+        "position": {
+          "x": 91.56974722937667,
+          "y": -733.0972421447257
+        },
+        "channel": 5
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735310,
+        "virtual_time_s": 1021.023223,
+        "clear_result": "success"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0041",
+        "position": {
+          "x": 91.56974722937667,
+          "y": -733.0972421447257
+        },
+        "channel": 7
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735325,
+        "virtual_time_s": 1027.023223,
+        "measure_result": "direction",
+        "svd_deg": 166.29
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0042",
+        "position": {
+          "x": -189.93273652216695,
+          "y": -705.5953941756904
+        },
+        "channel": 7
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735330,
+        "virtual_time_s": 1088.591765,
+        "measure_result": "direction",
+        "svd_deg": 164.03
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0043",
+        "position": {
+          "x": -448.1210249306974,
+          "y": -590.1016379432712
+        },
+        "channel": 7
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735336,
+        "virtual_time_s": 1150.160307,
+        "measure_result": "direction",
+        "svd_deg": 167.26
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0044",
+        "position": {
+          "x": -730.0487439173429,
+          "y": -567.369254280597
+        },
+        "channel": 7
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735357,
+        "virtual_time_s": 1211.728849,
+        "measure_result": "direction",
+        "svd_deg": 161.25
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0045",
+        "position": {
+          "x": -891.1677429979545,
+          "y": -470.43495886051784
+        },
+        "channel": 7
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735388,
+        "virtual_time_s": 1254.335013,
+        "measure_result": "direction",
+        "svd_deg": 171.21
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0046",
+        "position": {
+          "x": -998.771158064299,
+          "y": -494.2716806230839
+        },
+        "channel": 7
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735420,
+        "virtual_time_s": 1281.377412,
+        "measure_result": "direction",
+        "svd_deg": 148.13
+      }
+    },
+    {
+      "path": "/clear",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "clr-19512-0047",
+        "position": {
+          "x": -1086.8745387422464,
+          "y": -439.71123577076787
+        },
+        "channel": 7
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735443,
+        "virtual_time_s": 1307.103287,
+        "clear_result": "success"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0048",
+        "position": {
+          "x": -1086.8745387422464,
+          "y": -439.71123577076787
+        },
+        "channel": 1
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735447,
+        "virtual_time_s": 1313.103287,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/clear",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "clr-19512-0049",
+        "position": {
+          "x": -1086.8745387422464,
+          "y": -439.71123577076787
+        },
+        "channel": 1
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735452,
+        "virtual_time_s": 1316.103287,
+        "clear_result": "no_target_in_range"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0050",
+        "position": {
+          "x": -252.55300210085076,
+          "y": -101.07908354277684
+        },
+        "channel": 1
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735456,
+        "virtual_time_s": 1501.188174,
+        "measure_result": "direction",
+        "svd_deg": 175.96
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0051",
+        "position": {
+          "x": -507.5271872881473,
+          "y": -123.17031020148173
+        },
+        "channel": 1
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735481,
+        "virtual_time_s": 1557.374054,
+        "measure_result": "direction",
+        "svd_deg": 166.33
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0052",
+        "position": {
+          "x": -613.1269297338029,
+          "y": -56.32032533726067
+        },
+        "channel": 1
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735495,
+        "virtual_time_s": 1587.370235,
+        "measure_result": "direction",
+        "svd_deg": 180.96
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0053",
+        "position": {
+          "x": -692.445525505186,
+          "y": -97.6550609098504
+        },
+        "channel": 1
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735508,
+        "virtual_time_s": 1610.258779,
+        "measure_result": "direction",
+        "svd_deg": 153.12
+      }
+    },
+    {
+      "path": "/clear",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "clr-19512-0054",
+        "position": {
+          "x": -769.4482656756536,
+          "y": -58.79327339205264
+        },
+        "channel": 1
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735521,
+        "virtual_time_s": 1632.509472,
+        "clear_result": "success"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0055",
+        "position": {
+          "x": -400.0,
+          "y": 4.898587196589413e-14
+        },
+        "channel": 2
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735810,
+        "virtual_time_s": 1713.3289,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0056",
+        "position": {
+          "x": -400.0,
+          "y": 4.898587196589413e-14
+        },
+        "channel": 3
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735824,
+        "virtual_time_s": 1719.3289,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0057",
+        "position": {
+          "x": -400.0,
+          "y": 4.898587196589413e-14
+        },
+        "channel": 4
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735839,
+        "virtual_time_s": 1725.3289,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0058",
+        "position": {
+          "x": -400.0,
+          "y": 4.898587196589413e-14
+        },
+        "channel": 6
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735855,
+        "virtual_time_s": 1731.3289,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0059",
+        "position": {
+          "x": -400.0,
+          "y": 4.898587196589413e-14
+        },
+        "channel": 8
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735870,
+        "virtual_time_s": 1737.3289,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0060",
+        "position": {
+          "x": -400.0,
+          "y": 4.898587196589413e-14
+        },
+        "channel": 9
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735886,
+        "virtual_time_s": 1743.3289,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0061",
+        "position": {
+          "x": -400.0,
+          "y": 4.898587196589413e-14
+        },
+        "channel": 10
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735891,
+        "virtual_time_s": 1749.3289,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0062",
+        "position": {
+          "x": -400.0,
+          "y": 4.898587196589413e-14
+        },
+        "channel": 11
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735894,
+        "virtual_time_s": 1755.3289,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0063",
+        "position": {
+          "x": -400.0,
+          "y": 4.898587196589413e-14
+        },
+        "channel": 12
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735917,
+        "virtual_time_s": 1761.3289,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0064",
+        "position": {
+          "x": -400.0,
+          "y": 4.898587196589413e-14
+        },
+        "channel": 14
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735933,
+        "virtual_time_s": 1767.3289,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0065",
+        "position": {
+          "x": -400.0,
+          "y": 4.898587196589413e-14
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735938,
+        "virtual_time_s": 1773.3289,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0066",
+        "position": {
+          "x": -400.0,
+          "y": 4.898587196589413e-14
+        },
+        "channel": 16
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735963,
+        "virtual_time_s": 1779.3289,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0067",
+        "position": {
+          "x": -400.0,
+          "y": 4.898587196589413e-14
+        },
+        "channel": 18
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735968,
+        "virtual_time_s": 1785.3289,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0068",
+        "position": {
+          "x": -400.0,
+          "y": 4.898587196589413e-14
+        },
+        "channel": 19
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735973,
+        "virtual_time_s": 1791.3289,
+        "measure_result": "direction",
+        "svd_deg": 87.6
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0069",
+        "position": {
+          "x": -400.0,
+          "y": 4.898587196589413e-14
+        },
+        "channel": 20
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209735995,
+        "virtual_time_s": 1797.3289,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0070",
+        "position": {
+          "x": -469.04215643831674,
+          "y": 263.1219881240392
+        },
+        "channel": 19
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736002,
+        "virtual_time_s": 1857.734782,
+        "measure_result": "direction",
+        "svd_deg": 84.19
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0071",
+        "position": {
+          "x": -480.49229685600636,
+          "y": 545.732841214318
+        },
+        "channel": 19
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736012,
+        "virtual_time_s": 1919.303324,
+        "measure_result": "direction",
+        "svd_deg": 81.37
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0072",
+        "position": {
+          "x": -398.93032922164076,
+          "y": 816.5605455497695
+        },
+        "channel": 19
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736033,
+        "virtual_time_s": 1980.871866,
+        "measure_result": "direction",
+        "svd_deg": 85.16
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0073",
+        "position": {
+          "x": -415.16311543320586,
+          "y": 1098.937061308091
+        },
+        "channel": 19
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736052,
+        "virtual_time_s": 2042.440408,
+        "measure_result": "direction",
+        "svd_deg": 74.14
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0074",
+        "position": {
+          "x": -349.39704401612,
+          "y": 1184.0580092442658
+        },
+        "channel": 19
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736089,
+        "virtual_time_s": 2068.953894,
+        "measure_result": "direction",
+        "svd_deg": 93.51
+      }
+    },
+    {
+      "path": "/clear",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "clr-19512-0075",
+        "position": {
+          "x": -356.58546366032715,
+          "y": 1306.2161039163882
+        },
+        "channel": 19
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736119,
+        "virtual_time_s": 2098.427777,
+        "clear_result": "success"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0076",
+        "position": {
+          "x": 7.960204194457796e-14,
+          "y": 1300.0
+        },
+        "channel": 18
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736123,
+        "virtual_time_s": 2175.755705,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0077",
+        "position": {
+          "x": 7.960204194457796e-14,
+          "y": 1300.0
+        },
+        "channel": 20
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736135,
+        "virtual_time_s": 2181.755705,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0078",
+        "position": {
+          "x": 7.960204194457796e-14,
+          "y": 1300.0
+        },
+        "channel": 16
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736137,
+        "virtual_time_s": 2187.755705,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0079",
+        "position": {
+          "x": 7.960204194457796e-14,
+          "y": 1300.0
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736140,
+        "virtual_time_s": 2193.755705,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0080",
+        "position": {
+          "x": 7.960204194457796e-14,
+          "y": 1300.0
+        },
+        "channel": 14
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736142,
+        "virtual_time_s": 2199.755705,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0081",
+        "position": {
+          "x": 7.960204194457796e-14,
+          "y": 1300.0
+        },
+        "channel": 12
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736167,
+        "virtual_time_s": 2205.755705,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0082",
+        "position": {
+          "x": 7.960204194457796e-14,
+          "y": 1300.0
+        },
+        "channel": 11
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736183,
+        "virtual_time_s": 2211.755705,
+        "measure_result": "direction",
+        "svd_deg": 346.3
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0083",
+        "position": {
+          "x": 7.960204194457796e-14,
+          "y": 1300.0
+        },
+        "channel": 10
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736198,
+        "virtual_time_s": 2217.755705,
+        "measure_result": "direction",
+        "svd_deg": 274.32
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0084",
+        "position": {
+          "x": 7.960204194457796e-14,
+          "y": 1300.0
+        },
+        "channel": 9
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736214,
+        "virtual_time_s": 2223.755705,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0085",
+        "position": {
+          "x": 7.960204194457796e-14,
+          "y": 1300.0
+        },
+        "channel": 8
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736220,
+        "virtual_time_s": 2229.755705,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0086",
+        "position": {
+          "x": 7.960204194457796e-14,
+          "y": 1300.0
+        },
+        "channel": 6
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736223,
+        "virtual_time_s": 2235.755705,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0087",
+        "position": {
+          "x": 7.960204194457796e-14,
+          "y": 1300.0
+        },
+        "channel": 4
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736245,
+        "virtual_time_s": 2241.755705,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0088",
+        "position": {
+          "x": 7.960204194457796e-14,
+          "y": 1300.0
+        },
+        "channel": 3
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736249,
+        "virtual_time_s": 2247.755705,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0089",
+        "position": {
+          "x": 7.960204194457796e-14,
+          "y": 1300.0
+        },
+        "channel": 2
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736253,
+        "virtual_time_s": 2253.755705,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0090",
+        "position": {
+          "x": 233.65571951413864,
+          "y": 1160.6981524231276
+        },
+        "channel": 11
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736277,
+        "virtual_time_s": 2314.161587,
+        "measure_result": "direction",
+        "svd_deg": 352.78
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0091",
+        "position": {
+          "x": 516.4627506552234,
+          "y": 1165.1907170765849
+        },
+        "channel": 11
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736285,
+        "virtual_time_s": 2375.730129,
+        "measure_result": "direction",
+        "svd_deg": 346.73
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0092",
+        "position": {
+          "x": 701.3191087214217,
+          "y": 1080.497380416495
+        },
+        "channel": 11
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736308,
+        "virtual_time_s": 2421.396987,
+        "measure_result": "direction",
+        "svd_deg": 354.6
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0093",
+        "position": {
+          "x": 847.9986461503668,
+          "y": 1106.8103946392373
+        },
+        "channel": 11
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736320,
+        "virtual_time_s": 2456.201189,
+        "measure_result": "direction",
+        "svd_deg": 341.86
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0094",
+        "position": {
+          "x": 914.6139083109945,
+          "y": 1042.8936518221317
+        },
+        "channel": 11
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736338,
+        "virtual_time_s": 2479.665147,
+        "measure_result": "direction",
+        "svd_deg": 4.8
+      }
+    },
+    {
+      "path": "/clear",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "clr-19512-0095",
+        "position": {
+          "x": 1017.9382409778683,
+          "y": 1051.3549195338542
+        },
+        "channel": 11
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736347,
+        "virtual_time_s": 2505.399187,
+        "clear_result": "success"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0096",
+        "position": {
+          "x": 1017.9382409778683,
+          "y": 1051.3549195338542
+        },
+        "channel": 10
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736351,
+        "virtual_time_s": 2511.399187,
+        "measure_result": "direction",
+        "svd_deg": 169.35
+      }
+    },
+    {
+      "path": "/clear",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "clr-19512-0097",
+        "position": {
+          "x": 4.712668239651496,
+          "y": 1241.9943962860707
+        },
+        "channel": 10
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736369,
+        "virtual_time_s": 2722.600009,
+        "clear_result": "success"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0098",
+        "position": {
+          "x": 1.1634144591899854e-13,
+          "y": 1900.0
+        },
+        "channel": 9
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736372,
+        "virtual_time_s": 2860.204505,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0099",
+        "position": {
+          "x": 1.1634144591899854e-13,
+          "y": 1900.0
+        },
+        "channel": 8
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736375,
+        "virtual_time_s": 2866.204505,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0100",
+        "position": {
+          "x": 1.1634144591899854e-13,
+          "y": 1900.0
+        },
+        "channel": 12
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736400,
+        "virtual_time_s": 2872.204505,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0101",
+        "position": {
+          "x": 1.1634144591899854e-13,
+          "y": 1900.0
+        },
+        "channel": 6
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736416,
+        "virtual_time_s": 2878.204505,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0102",
+        "position": {
+          "x": 1.1634144591899854e-13,
+          "y": 1900.0
+        },
+        "channel": 14
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736431,
+        "virtual_time_s": 2884.204505,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0103",
+        "position": {
+          "x": 1.1634144591899854e-13,
+          "y": 1900.0
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736447,
+        "virtual_time_s": 2890.204505,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0104",
+        "position": {
+          "x": 1.1634144591899854e-13,
+          "y": 1900.0
+        },
+        "channel": 4
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736462,
+        "virtual_time_s": 2896.204505,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0105",
+        "position": {
+          "x": 1.1634144591899854e-13,
+          "y": 1900.0
+        },
+        "channel": 16
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736466,
+        "virtual_time_s": 2902.204505,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0106",
+        "position": {
+          "x": 1.1634144591899854e-13,
+          "y": 1900.0
+        },
+        "channel": 3
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736471,
+        "virtual_time_s": 2908.204505,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0107",
+        "position": {
+          "x": 1.1634144591899854e-13,
+          "y": 1900.0
+        },
+        "channel": 2
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736474,
+        "virtual_time_s": 2914.204505,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0108",
+        "position": {
+          "x": 1.1634144591899854e-13,
+          "y": 1900.0
+        },
+        "channel": 18
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736493,
+        "virtual_time_s": 2920.204505,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0109",
+        "position": {
+          "x": 1.1634144591899854e-13,
+          "y": 1900.0
+        },
+        "channel": 20
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736508,
+        "virtual_time_s": 2926.204505,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0110",
+        "position": {
+          "x": -949.9999999999995,
+          "y": 1645.4482671904336
+        },
+        "channel": 20
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736512,
+        "virtual_time_s": 3127.906979,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0111",
+        "position": {
+          "x": -949.9999999999995,
+          "y": 1645.4482671904336
+        },
+        "channel": 18
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736541,
+        "virtual_time_s": 3133.906979,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0112",
+        "position": {
+          "x": -949.9999999999995,
+          "y": 1645.4482671904336
+        },
+        "channel": 16
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736544,
+        "virtual_time_s": 3139.906979,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0113",
+        "position": {
+          "x": -949.9999999999995,
+          "y": 1645.4482671904336
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736549,
+        "virtual_time_s": 3145.906979,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0114",
+        "position": {
+          "x": -949.9999999999995,
+          "y": 1645.4482671904336
+        },
+        "channel": 14
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736552,
+        "virtual_time_s": 3151.906979,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0115",
+        "position": {
+          "x": -949.9999999999995,
+          "y": 1645.4482671904336
+        },
+        "channel": 12
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736573,
+        "virtual_time_s": 3157.906979,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0116",
+        "position": {
+          "x": -949.9999999999995,
+          "y": 1645.4482671904336
+        },
+        "channel": 9
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736578,
+        "virtual_time_s": 3163.906979,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0117",
+        "position": {
+          "x": -949.9999999999995,
+          "y": 1645.4482671904336
+        },
+        "channel": 8
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736581,
+        "virtual_time_s": 3169.906979,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0118",
+        "position": {
+          "x": -949.9999999999995,
+          "y": 1645.4482671904336
+        },
+        "channel": 6
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736603,
+        "virtual_time_s": 3175.906979,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0119",
+        "position": {
+          "x": -949.9999999999995,
+          "y": 1645.4482671904336
+        },
+        "channel": 4
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736617,
+        "virtual_time_s": 3181.906979,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0120",
+        "position": {
+          "x": -949.9999999999995,
+          "y": 1645.4482671904336
+        },
+        "channel": 3
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736621,
+        "virtual_time_s": 3187.906979,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0121",
+        "position": {
+          "x": -949.9999999999995,
+          "y": 1645.4482671904336
+        },
+        "channel": 2
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736623,
+        "virtual_time_s": 3193.906979,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0122",
+        "position": {
+          "x": -919.2388155425117,
+          "y": 919.2388155425118
+        },
+        "channel": 2
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736647,
+        "virtual_time_s": 3344.279111,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0123",
+        "position": {
+          "x": -919.2388155425117,
+          "y": 919.2388155425118
+        },
+        "channel": 3
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736649,
+        "virtual_time_s": 3350.279111,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0124",
+        "position": {
+          "x": -919.2388155425117,
+          "y": 919.2388155425118
+        },
+        "channel": 4
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736663,
+        "virtual_time_s": 3356.279111,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0125",
+        "position": {
+          "x": -919.2388155425117,
+          "y": 919.2388155425118
+        },
+        "channel": 6
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736679,
+        "virtual_time_s": 3362.279111,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0126",
+        "position": {
+          "x": -919.2388155425117,
+          "y": 919.2388155425118
+        },
+        "channel": 8
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736683,
+        "virtual_time_s": 3368.279111,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0127",
+        "position": {
+          "x": -919.2388155425117,
+          "y": 919.2388155425118
+        },
+        "channel": 9
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736686,
+        "virtual_time_s": 3374.279111,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0128",
+        "position": {
+          "x": -919.2388155425117,
+          "y": 919.2388155425118
+        },
+        "channel": 12
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736710,
+        "virtual_time_s": 3380.279111,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0129",
+        "position": {
+          "x": -919.2388155425117,
+          "y": 919.2388155425118
+        },
+        "channel": 14
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736725,
+        "virtual_time_s": 3386.279111,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0130",
+        "position": {
+          "x": -919.2388155425117,
+          "y": 919.2388155425118
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736741,
+        "virtual_time_s": 3392.279111,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0131",
+        "position": {
+          "x": -919.2388155425117,
+          "y": 919.2388155425118
+        },
+        "channel": 16
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736756,
+        "virtual_time_s": 3398.279111,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0132",
+        "position": {
+          "x": -919.2388155425117,
+          "y": 919.2388155425118
+        },
+        "channel": 18
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736772,
+        "virtual_time_s": 3404.279111,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0133",
+        "position": {
+          "x": -919.2388155425117,
+          "y": 919.2388155425118
+        },
+        "channel": 20
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736787,
+        "virtual_time_s": 3410.279111,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0134",
+        "position": {
+          "x": -1645.4482671904336,
+          "y": 949.9999999999999
+        },
+        "channel": 20
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736803,
+        "virtual_time_s": 3560.651243,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0135",
+        "position": {
+          "x": -1645.4482671904336,
+          "y": 949.9999999999999
+        },
+        "channel": 18
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736818,
+        "virtual_time_s": 3566.651243,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0136",
+        "position": {
+          "x": -1645.4482671904336,
+          "y": 949.9999999999999
+        },
+        "channel": 16
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736833,
+        "virtual_time_s": 3572.651243,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0137",
+        "position": {
+          "x": -1645.4482671904336,
+          "y": 949.9999999999999
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736849,
+        "virtual_time_s": 3578.651243,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0138",
+        "position": {
+          "x": -1645.4482671904336,
+          "y": 949.9999999999999
+        },
+        "channel": 14
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736864,
+        "virtual_time_s": 3584.651243,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0139",
+        "position": {
+          "x": -1645.4482671904336,
+          "y": 949.9999999999999
+        },
+        "channel": 12
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736866,
+        "virtual_time_s": 3590.651243,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0140",
+        "position": {
+          "x": -1645.4482671904336,
+          "y": 949.9999999999999
+        },
+        "channel": 9
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736868,
+        "virtual_time_s": 3596.651243,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0141",
+        "position": {
+          "x": -1645.4482671904336,
+          "y": 949.9999999999999
+        },
+        "channel": 8
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736870,
+        "virtual_time_s": 3602.651243,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0142",
+        "position": {
+          "x": -1645.4482671904336,
+          "y": 949.9999999999999
+        },
+        "channel": 6
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736872,
+        "virtual_time_s": 3608.651243,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0143",
+        "position": {
+          "x": -1645.4482671904336,
+          "y": 949.9999999999999
+        },
+        "channel": 4
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736874,
+        "virtual_time_s": 3614.651243,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0144",
+        "position": {
+          "x": -1645.4482671904336,
+          "y": 949.9999999999999
+        },
+        "channel": 3
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736895,
+        "virtual_time_s": 3620.651243,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0145",
+        "position": {
+          "x": -1645.4482671904336,
+          "y": 949.9999999999999
+        },
+        "channel": 2
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736898,
+        "virtual_time_s": 3626.651243,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0146",
+        "position": {
+          "x": -1900.0,
+          "y": 2.326828918379971e-13
+        },
+        "channel": 2
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736901,
+        "virtual_time_s": 3828.353717,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0147",
+        "position": {
+          "x": -1900.0,
+          "y": 2.326828918379971e-13
+        },
+        "channel": 3
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736903,
+        "virtual_time_s": 3834.353717,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0148",
+        "position": {
+          "x": -1900.0,
+          "y": 2.326828918379971e-13
+        },
+        "channel": 4
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736905,
+        "virtual_time_s": 3840.353717,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0149",
+        "position": {
+          "x": -1900.0,
+          "y": 2.326828918379971e-13
+        },
+        "channel": 6
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736926,
+        "virtual_time_s": 3846.353717,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0150",
+        "position": {
+          "x": -1900.0,
+          "y": 2.326828918379971e-13
+        },
+        "channel": 8
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736929,
+        "virtual_time_s": 3852.353717,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0151",
+        "position": {
+          "x": -1900.0,
+          "y": 2.326828918379971e-13
+        },
+        "channel": 9
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736942,
+        "virtual_time_s": 3858.353717,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0152",
+        "position": {
+          "x": -1900.0,
+          "y": 2.326828918379971e-13
+        },
+        "channel": 12
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736945,
+        "virtual_time_s": 3864.353717,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0153",
+        "position": {
+          "x": -1900.0,
+          "y": 2.326828918379971e-13
+        },
+        "channel": 14
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736974,
+        "virtual_time_s": 3870.353717,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0154",
+        "position": {
+          "x": -1900.0,
+          "y": 2.326828918379971e-13
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209736979,
+        "virtual_time_s": 3876.353717,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0155",
+        "position": {
+          "x": -1900.0,
+          "y": 2.326828918379971e-13
+        },
+        "channel": 16
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737005,
+        "virtual_time_s": 3882.353717,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0156",
+        "position": {
+          "x": -1900.0,
+          "y": 2.326828918379971e-13
+        },
+        "channel": 18
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737020,
+        "virtual_time_s": 3888.353717,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0157",
+        "position": {
+          "x": -1900.0,
+          "y": 2.326828918379971e-13
+        },
+        "channel": 20
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737024,
+        "virtual_time_s": 3894.353717,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0158",
+        "position": {
+          "x": -1300.0,
+          "y": 1.5920408388915592e-13
+        },
+        "channel": 20
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737052,
+        "virtual_time_s": 4019.353717,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0159",
+        "position": {
+          "x": -1300.0,
+          "y": 1.5920408388915592e-13
+        },
+        "channel": 18
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737067,
+        "virtual_time_s": 4025.353717,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0160",
+        "position": {
+          "x": -1300.0,
+          "y": 1.5920408388915592e-13
+        },
+        "channel": 16
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737082,
+        "virtual_time_s": 4031.353717,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0161",
+        "position": {
+          "x": -1300.0,
+          "y": 1.5920408388915592e-13
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737098,
+        "virtual_time_s": 4037.353717,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0162",
+        "position": {
+          "x": -1300.0,
+          "y": 1.5920408388915592e-13
+        },
+        "channel": 14
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737113,
+        "virtual_time_s": 4043.353717,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0163",
+        "position": {
+          "x": -1300.0,
+          "y": 1.5920408388915592e-13
+        },
+        "channel": 12
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737128,
+        "virtual_time_s": 4049.353717,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0164",
+        "position": {
+          "x": -1300.0,
+          "y": 1.5920408388915592e-13
+        },
+        "channel": 9
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737132,
+        "virtual_time_s": 4055.353717,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0165",
+        "position": {
+          "x": -1300.0,
+          "y": 1.5920408388915592e-13
+        },
+        "channel": 8
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737160,
+        "virtual_time_s": 4061.353717,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0166",
+        "position": {
+          "x": -1300.0,
+          "y": 1.5920408388915592e-13
+        },
+        "channel": 6
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737175,
+        "virtual_time_s": 4067.353717,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0167",
+        "position": {
+          "x": -1300.0,
+          "y": 1.5920408388915592e-13
+        },
+        "channel": 4
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737181,
+        "virtual_time_s": 4073.353717,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0168",
+        "position": {
+          "x": -1300.0,
+          "y": 1.5920408388915592e-13
+        },
+        "channel": 3
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737206,
+        "virtual_time_s": 4079.353717,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0169",
+        "position": {
+          "x": -1300.0,
+          "y": 1.5920408388915592e-13
+        },
+        "channel": 2
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737211,
+        "virtual_time_s": 4085.353717,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0170",
+        "position": {
+          "x": -919.238815542512,
+          "y": -919.2388155425117
+        },
+        "channel": 2
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737216,
+        "virtual_time_s": 4289.349102,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0171",
+        "position": {
+          "x": -919.238815542512,
+          "y": -919.2388155425117
+        },
+        "channel": 3
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737237,
+        "virtual_time_s": 4295.349102,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0172",
+        "position": {
+          "x": -919.238815542512,
+          "y": -919.2388155425117
+        },
+        "channel": 4
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737241,
+        "virtual_time_s": 4301.349102,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0173",
+        "position": {
+          "x": -919.238815542512,
+          "y": -919.2388155425117
+        },
+        "channel": 6
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737268,
+        "virtual_time_s": 4307.349102,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0174",
+        "position": {
+          "x": -919.238815542512,
+          "y": -919.2388155425117
+        },
+        "channel": 8
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737283,
+        "virtual_time_s": 4313.349102,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0175",
+        "position": {
+          "x": -919.238815542512,
+          "y": -919.2388155425117
+        },
+        "channel": 9
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737299,
+        "virtual_time_s": 4319.349102,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0176",
+        "position": {
+          "x": -919.238815542512,
+          "y": -919.2388155425117
+        },
+        "channel": 12
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737302,
+        "virtual_time_s": 4325.349102,
+        "measure_result": "direction",
+        "svd_deg": 306.23
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0177",
+        "position": {
+          "x": -919.238815542512,
+          "y": -919.2388155425117
+        },
+        "channel": 14
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737305,
+        "virtual_time_s": 4331.349102,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0178",
+        "position": {
+          "x": -919.238815542512,
+          "y": -919.2388155425117
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737309,
+        "virtual_time_s": 4337.349102,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0179",
+        "position": {
+          "x": -919.238815542512,
+          "y": -919.2388155425117
+        },
+        "channel": 16
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737313,
+        "virtual_time_s": 4343.349102,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0180",
+        "position": {
+          "x": -919.238815542512,
+          "y": -919.2388155425117
+        },
+        "channel": 18
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737317,
+        "virtual_time_s": 4349.349102,
+        "measure_result": "direction",
+        "svd_deg": 346.14
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0181",
+        "position": {
+          "x": -919.238815542512,
+          "y": -919.2388155425117
+        },
+        "channel": 20
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737343,
+        "virtual_time_s": 4355.349102,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0182",
+        "position": {
+          "x": -701.0394300325439,
+          "y": -1081.6858166323204
+        },
+        "channel": 12
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737346,
+        "virtual_time_s": 4415.754984,
+        "measure_result": "direction",
+        "svd_deg": 300.27
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0183",
+        "position": {
+          "x": -525.3519110305778,
+          "y": -1303.3474860001518
+        },
+        "channel": 12
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737374,
+        "virtual_time_s": 4477.323526,
+        "measure_result": "direction",
+        "svd_deg": 295.84
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0184",
+        "position": {
+          "x": -456.918642640467,
+          "y": -1536.4293386388122
+        },
+        "channel": 12
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737405,
+        "virtual_time_s": 4530.907582,
+        "measure_result": "direction",
+        "svd_deg": 306.96
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0185",
+        "position": {
+          "x": -365.9171644915629,
+          "y": -1590.8406976847627
+        },
+        "channel": 12
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737437,
+        "virtual_time_s": 4557.113114,
+        "measure_result": "direction",
+        "svd_deg": 289.83
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0186",
+        "position": {
+          "x": -376.4068541560543,
+          "y": -1679.666180575331
+        },
+        "channel": 12
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737468,
+        "virtual_time_s": 4580.001658,
+        "measure_result": "direction",
+        "svd_deg": 320.2
+      }
+    },
+    {
+      "path": "/clear",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "clr-19512-0187",
+        "position": {
+          "x": -315.34447361554476,
+          "y": -1730.7119635683598
+        },
+        "channel": 12
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737481,
+        "virtual_time_s": 4600.919304,
+        "clear_result": "success"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0188",
+        "position": {
+          "x": -315.34447361554476,
+          "y": -1730.7119635683598
+        },
+        "channel": 18
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737485,
+        "virtual_time_s": 4606.919304,
+        "measure_result": "direction",
+        "svd_deg": 89.14
+      }
+    },
+    {
+      "path": "/clear",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "clr-19512-0189",
+        "position": {
+          "x": -305.68386831738235,
+          "y": -1070.882141785803
+        },
+        "channel": 18
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737490,
+        "virtual_time_s": 4743.899412,
+        "clear_result": "success"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0190",
+        "position": {
+          "x": -2.3880612583373384e-13,
+          "y": -1300.0
+        },
+        "channel": 16
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737493,
+        "virtual_time_s": 4826.302977,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0191",
+        "position": {
+          "x": -2.3880612583373384e-13,
+          "y": -1300.0
+        },
+        "channel": 20
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737496,
+        "virtual_time_s": 4832.302977,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0192",
+        "position": {
+          "x": -2.3880612583373384e-13,
+          "y": -1300.0
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737499,
+        "virtual_time_s": 4838.302977,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0193",
+        "position": {
+          "x": -2.3880612583373384e-13,
+          "y": -1300.0
+        },
+        "channel": 14
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737501,
+        "virtual_time_s": 4844.302977,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0194",
+        "position": {
+          "x": -2.3880612583373384e-13,
+          "y": -1300.0
+        },
+        "channel": 9
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737514,
+        "virtual_time_s": 4850.302977,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0195",
+        "position": {
+          "x": -2.3880612583373384e-13,
+          "y": -1300.0
+        },
+        "channel": 8
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737529,
+        "virtual_time_s": 4856.302977,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0196",
+        "position": {
+          "x": -2.3880612583373384e-13,
+          "y": -1300.0
+        },
+        "channel": 6
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737533,
+        "virtual_time_s": 4862.302977,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0197",
+        "position": {
+          "x": -2.3880612583373384e-13,
+          "y": -1300.0
+        },
+        "channel": 4
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737559,
+        "virtual_time_s": 4868.302977,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0198",
+        "position": {
+          "x": -2.3880612583373384e-13,
+          "y": -1300.0
+        },
+        "channel": 3
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737565,
+        "virtual_time_s": 4874.302977,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0199",
+        "position": {
+          "x": -2.3880612583373384e-13,
+          "y": -1300.0
+        },
+        "channel": 2
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737599,
+        "virtual_time_s": 4880.302977,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0200",
+        "position": {
+          "x": -3.4902433775699563e-13,
+          "y": -1900.0
+        },
+        "channel": 2
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737605,
+        "virtual_time_s": 5005.302977,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0201",
+        "position": {
+          "x": -3.4902433775699563e-13,
+          "y": -1900.0
+        },
+        "channel": 3
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737610,
+        "virtual_time_s": 5011.302977,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0202",
+        "position": {
+          "x": -3.4902433775699563e-13,
+          "y": -1900.0
+        },
+        "channel": 4
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737617,
+        "virtual_time_s": 5017.302977,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0203",
+        "position": {
+          "x": -3.4902433775699563e-13,
+          "y": -1900.0
+        },
+        "channel": 6
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737622,
+        "virtual_time_s": 5023.302977,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0204",
+        "position": {
+          "x": -3.4902433775699563e-13,
+          "y": -1900.0
+        },
+        "channel": 8
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737652,
+        "virtual_time_s": 5029.302977,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0205",
+        "position": {
+          "x": -3.4902433775699563e-13,
+          "y": -1900.0
+        },
+        "channel": 9
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737668,
+        "virtual_time_s": 5035.302977,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0206",
+        "position": {
+          "x": -3.4902433775699563e-13,
+          "y": -1900.0
+        },
+        "channel": 14
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737683,
+        "virtual_time_s": 5041.302977,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0207",
+        "position": {
+          "x": -3.4902433775699563e-13,
+          "y": -1900.0
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737699,
+        "virtual_time_s": 5047.302977,
+        "measure_result": "direction",
+        "svd_deg": 66.85
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0208",
+        "position": {
+          "x": -3.4902433775699563e-13,
+          "y": -1900.0
+        },
+        "channel": 16
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737705,
+        "virtual_time_s": 5053.302977,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0209",
+        "position": {
+          "x": -3.4902433775699563e-13,
+          "y": -1900.0
+        },
+        "channel": 20
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737709,
+        "virtual_time_s": 5059.302977,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0210",
+        "position": {
+          "x": 175.77461379837263,
+          "y": -1692.386693239492
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737715,
+        "virtual_time_s": 5119.708859,
+        "measure_result": "direction",
+        "svd_deg": 76.78
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0211",
+        "position": {
+          "x": 187.13338814923108,
+          "y": -1469.1255062208338
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737746,
+        "virtual_time_s": 5169.418849,
+        "measure_result": "direction",
+        "svd_deg": 68.86
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0212",
+        "position": {
+          "x": 273.5924410104296,
+          "y": -1356.437996664974
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737765,
+        "virtual_time_s": 5202.825639,
+        "measure_result": "direction",
+        "svd_deg": 80.4
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0213",
+        "position": {
+          "x": 249.26081078521344,
+          "y": -1260.4421381020682
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737787,
+        "virtual_time_s": 5227.631934,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/clear",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "clr-19512-0214",
+        "position": {
+          "x": 249.26081078521344,
+          "y": -1260.4421381020682
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737793,
+        "virtual_time_s": 5230.631934,
+        "clear_result": "no_target_in_range"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0215",
+        "position": {
+          "x": 269.146752462869,
+          "y": -1148.0170149721935
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737813,
+        "virtual_time_s": 5258.465995,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/clear",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "clr-19512-0216",
+        "position": {
+          "x": 269.146752462869,
+          "y": -1148.0170149721935
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737818,
+        "virtual_time_s": 5261.465995,
+        "clear_result": "no_target_in_range"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0217",
+        "position": {
+          "x": 249.26081078521344,
+          "y": -1260.4421381020682
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737833,
+        "virtual_time_s": 5289.300056,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/clear",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "clr-19512-0218",
+        "position": {
+          "x": 249.26081078521344,
+          "y": -1260.4421381020682
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737855,
+        "virtual_time_s": 5292.300056,
+        "clear_result": "no_target_in_range"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0219",
+        "position": {
+          "x": 269.146752462869,
+          "y": -1148.0170149721935
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737862,
+        "virtual_time_s": 5320.134117,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/clear",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "clr-19512-0220",
+        "position": {
+          "x": 269.146752462869,
+          "y": -1148.0170149721935
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737887,
+        "virtual_time_s": 5323.134117,
+        "clear_result": "no_target_in_range"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0221",
+        "position": {
+          "x": 249.26081078521344,
+          "y": -1260.4421381020682
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737894,
+        "virtual_time_s": 5350.968178,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/clear",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "clr-19512-0222",
+        "position": {
+          "x": 249.26081078521344,
+          "y": -1260.4421381020682
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737896,
+        "virtual_time_s": 5353.968178,
+        "clear_result": "no_target_in_range"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0223",
+        "position": {
+          "x": 269.146752462869,
+          "y": -1148.0170149721935
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737903,
+        "virtual_time_s": 5381.802239,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/clear",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "clr-19512-0224",
+        "position": {
+          "x": 269.146752462869,
+          "y": -1148.0170149721935
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737916,
+        "virtual_time_s": 5384.802239,
+        "clear_result": "no_target_in_range"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0225",
+        "position": {
+          "x": 249.26081078521344,
+          "y": -1260.4421381020682
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737922,
+        "virtual_time_s": 5412.6363,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/clear",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "clr-19512-0226",
+        "position": {
+          "x": 249.26081078521344,
+          "y": -1260.4421381020682
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737948,
+        "virtual_time_s": 5415.6363,
+        "clear_result": "no_target_in_range"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0227",
+        "position": {
+          "x": 919.2388155425116,
+          "y": -919.238815542512
+        },
+        "channel": 14
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737964,
+        "virtual_time_s": 5572.007871,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0228",
+        "position": {
+          "x": 919.2388155425116,
+          "y": -919.238815542512
+        },
+        "channel": 16
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737979,
+        "virtual_time_s": 5578.007871,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0229",
+        "position": {
+          "x": 919.2388155425116,
+          "y": -919.238815542512
+        },
+        "channel": 20
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209737995,
+        "virtual_time_s": 5584.007871,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0230",
+        "position": {
+          "x": 919.2388155425116,
+          "y": -919.238815542512
+        },
+        "channel": 9
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738010,
+        "virtual_time_s": 5590.007871,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0231",
+        "position": {
+          "x": 919.2388155425116,
+          "y": -919.238815542512
+        },
+        "channel": 8
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738026,
+        "virtual_time_s": 5596.007871,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0232",
+        "position": {
+          "x": 919.2388155425116,
+          "y": -919.238815542512
+        },
+        "channel": 6
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738057,
+        "virtual_time_s": 5602.007871,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0233",
+        "position": {
+          "x": 919.2388155425116,
+          "y": -919.238815542512
+        },
+        "channel": 4
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738061,
+        "virtual_time_s": 5608.007871,
+        "measure_result": "direction",
+        "svd_deg": 322.09
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0234",
+        "position": {
+          "x": 919.2388155425116,
+          "y": -919.238815542512
+        },
+        "channel": 3
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738088,
+        "virtual_time_s": 5614.007871,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0235",
+        "position": {
+          "x": 919.2388155425116,
+          "y": -919.238815542512
+        },
+        "channel": 2
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738103,
+        "virtual_time_s": 5620.007871,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0236",
+        "position": {
+          "x": 1075.2189661450739,
+          "y": -1142.1069214213073
+        },
+        "channel": 4
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738108,
+        "virtual_time_s": 5680.413753,
+        "measure_result": "direction",
+        "svd_deg": 344.67
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0237",
+        "position": {
+          "x": 1177.3188388045103,
+          "y": -1128.6200110520663
+        },
+        "channel": 4
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738117,
+        "virtual_time_s": 5706.011113,
+        "measure_result": "direction",
+        "svd_deg": 322.84
+      }
+    },
+    {
+      "path": "/clear",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "clr-19512-0238",
+        "position": {
+          "x": 1264.1880129522528,
+          "y": -1194.1563979126681
+        },
+        "channel": 4
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738125,
+        "virtual_time_s": 5732.774634,
+        "clear_result": "success"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0239",
+        "position": {
+          "x": 1645.448267190433,
+          "y": -950.0000000000008
+        },
+        "channel": 3
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738131,
+        "virtual_time_s": 5829.322241,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0240",
+        "position": {
+          "x": 1645.448267190433,
+          "y": -950.0000000000008
+        },
+        "channel": 2
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738135,
+        "virtual_time_s": 5835.322241,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0241",
+        "position": {
+          "x": 1645.448267190433,
+          "y": -950.0000000000008
+        },
+        "channel": 6
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738150,
+        "virtual_time_s": 5841.322241,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0242",
+        "position": {
+          "x": 1645.448267190433,
+          "y": -950.0000000000008
+        },
+        "channel": 8
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738153,
+        "virtual_time_s": 5847.322241,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0243",
+        "position": {
+          "x": 1645.448267190433,
+          "y": -950.0000000000008
+        },
+        "channel": 9
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738155,
+        "virtual_time_s": 5853.322241,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0244",
+        "position": {
+          "x": 1645.448267190433,
+          "y": -950.0000000000008
+        },
+        "channel": 14
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738157,
+        "virtual_time_s": 5859.322241,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0245",
+        "position": {
+          "x": 1645.448267190433,
+          "y": -950.0000000000008
+        },
+        "channel": 16
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738160,
+        "virtual_time_s": 5865.322241,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0246",
+        "position": {
+          "x": 1645.448267190433,
+          "y": -950.0000000000008
+        },
+        "channel": 20
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738162,
+        "virtual_time_s": 5871.322241,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0247",
+        "position": {
+          "x": 950.0000000000002,
+          "y": -1645.4482671904334
+        },
+        "channel": 20
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738180,
+        "virtual_time_s": 6073.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0248",
+        "position": {
+          "x": 950.0000000000002,
+          "y": -1645.4482671904334
+        },
+        "channel": 16
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738196,
+        "virtual_time_s": 6079.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0249",
+        "position": {
+          "x": 950.0000000000002,
+          "y": -1645.4482671904334
+        },
+        "channel": 14
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738212,
+        "virtual_time_s": 6085.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0250",
+        "position": {
+          "x": 950.0000000000002,
+          "y": -1645.4482671904334
+        },
+        "channel": 9
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738227,
+        "virtual_time_s": 6091.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0251",
+        "position": {
+          "x": 950.0000000000002,
+          "y": -1645.4482671904334
+        },
+        "channel": 8
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738243,
+        "virtual_time_s": 6097.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0252",
+        "position": {
+          "x": 950.0000000000002,
+          "y": -1645.4482671904334
+        },
+        "channel": 6
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738247,
+        "virtual_time_s": 6103.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0253",
+        "position": {
+          "x": 950.0000000000002,
+          "y": -1645.4482671904334
+        },
+        "channel": 3
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738273,
+        "virtual_time_s": 6109.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0254",
+        "position": {
+          "x": 950.0000000000002,
+          "y": -1645.4482671904334
+        },
+        "channel": 2
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738289,
+        "virtual_time_s": 6115.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0255",
+        "position": {
+          "x": 200.00000000000006,
+          "y": -346.41016151377545
+        },
+        "channel": 2
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738304,
+        "virtual_time_s": 6420.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0256",
+        "position": {
+          "x": 200.00000000000006,
+          "y": -346.41016151377545
+        },
+        "channel": 3
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738308,
+        "virtual_time_s": 6426.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0257",
+        "position": {
+          "x": 200.00000000000006,
+          "y": -346.41016151377545
+        },
+        "channel": 6
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738335,
+        "virtual_time_s": 6432.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0258",
+        "position": {
+          "x": 200.00000000000006,
+          "y": -346.41016151377545
+        },
+        "channel": 8
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738351,
+        "virtual_time_s": 6438.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0259",
+        "position": {
+          "x": 200.00000000000006,
+          "y": -346.41016151377545
+        },
+        "channel": 9
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738367,
+        "virtual_time_s": 6444.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0260",
+        "position": {
+          "x": 200.00000000000006,
+          "y": -346.41016151377545
+        },
+        "channel": 14
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738382,
+        "virtual_time_s": 6450.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0261",
+        "position": {
+          "x": 200.00000000000006,
+          "y": -346.41016151377545
+        },
+        "channel": 16
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738397,
+        "virtual_time_s": 6456.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0262",
+        "position": {
+          "x": 200.00000000000006,
+          "y": -346.41016151377545
+        },
+        "channel": 20
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738400,
+        "virtual_time_s": 6462.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0263",
+        "position": {
+          "x": 400.0,
+          "y": 0.0
+        },
+        "channel": 20
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738413,
+        "virtual_time_s": 6547.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0264",
+        "position": {
+          "x": 400.0,
+          "y": 0.0
+        },
+        "channel": 16
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738416,
+        "virtual_time_s": 6553.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0265",
+        "position": {
+          "x": 400.0,
+          "y": 0.0
+        },
+        "channel": 14
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738428,
+        "virtual_time_s": 6559.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0266",
+        "position": {
+          "x": 400.0,
+          "y": 0.0
+        },
+        "channel": 9
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738445,
+        "virtual_time_s": 6565.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0267",
+        "position": {
+          "x": 400.0,
+          "y": 0.0
+        },
+        "channel": 8
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738460,
+        "virtual_time_s": 6571.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0268",
+        "position": {
+          "x": 400.0,
+          "y": 0.0
+        },
+        "channel": 6
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738475,
+        "virtual_time_s": 6577.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0269",
+        "position": {
+          "x": 400.0,
+          "y": 0.0
+        },
+        "channel": 3
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738482,
+        "virtual_time_s": 6583.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0270",
+        "position": {
+          "x": 400.0,
+          "y": 0.0
+        },
+        "channel": 2
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738506,
+        "virtual_time_s": 6589.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0271",
+        "position": {
+          "x": 200.00000000000006,
+          "y": 346.41016151377545
+        },
+        "channel": 2
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738522,
+        "virtual_time_s": 6674.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0272",
+        "position": {
+          "x": 200.00000000000006,
+          "y": 346.41016151377545
+        },
+        "channel": 3
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738538,
+        "virtual_time_s": 6680.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0273",
+        "position": {
+          "x": 200.00000000000006,
+          "y": 346.41016151377545
+        },
+        "channel": 6
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738542,
+        "virtual_time_s": 6686.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0274",
+        "position": {
+          "x": 200.00000000000006,
+          "y": 346.41016151377545
+        },
+        "channel": 8
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738570,
+        "virtual_time_s": 6692.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0275",
+        "position": {
+          "x": 200.00000000000006,
+          "y": 346.41016151377545
+        },
+        "channel": 9
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738575,
+        "virtual_time_s": 6698.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0276",
+        "position": {
+          "x": 200.00000000000006,
+          "y": 346.41016151377545
+        },
+        "channel": 14
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738599,
+        "virtual_time_s": 6704.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0277",
+        "position": {
+          "x": 200.00000000000006,
+          "y": 346.41016151377545
+        },
+        "channel": 16
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738604,
+        "virtual_time_s": 6710.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0278",
+        "position": {
+          "x": 200.00000000000006,
+          "y": 346.41016151377545
+        },
+        "channel": 20
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738608,
+        "virtual_time_s": 6716.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0279",
+        "position": {
+          "x": -199.99999999999991,
+          "y": 346.4101615137755
+        },
+        "channel": 20
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738614,
+        "virtual_time_s": 6801.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0280",
+        "position": {
+          "x": -199.99999999999991,
+          "y": 346.4101615137755
+        },
+        "channel": 16
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738629,
+        "virtual_time_s": 6807.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0281",
+        "position": {
+          "x": -199.99999999999991,
+          "y": 346.4101615137755
+        },
+        "channel": 14
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738645,
+        "virtual_time_s": 6813.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0282",
+        "position": {
+          "x": -199.99999999999991,
+          "y": 346.4101615137755
+        },
+        "channel": 9
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738661,
+        "virtual_time_s": 6819.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0283",
+        "position": {
+          "x": -199.99999999999991,
+          "y": 346.4101615137755
+        },
+        "channel": 8
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738677,
+        "virtual_time_s": 6825.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0284",
+        "position": {
+          "x": -199.99999999999991,
+          "y": 346.4101615137755
+        },
+        "channel": 6
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738693,
+        "virtual_time_s": 6831.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0285",
+        "position": {
+          "x": -199.99999999999991,
+          "y": 346.4101615137755
+        },
+        "channel": 3
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738695,
+        "virtual_time_s": 6837.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0286",
+        "position": {
+          "x": -199.99999999999991,
+          "y": 346.4101615137755
+        },
+        "channel": 2
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738708,
+        "virtual_time_s": 6843.024715,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0287",
+        "position": {
+          "x": -200.00000000000017,
+          "y": -346.4101615137754
+        },
+        "channel": 2
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738712,
+        "virtual_time_s": 6986.58878,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0288",
+        "position": {
+          "x": -200.00000000000017,
+          "y": -346.4101615137754
+        },
+        "channel": 3
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738716,
+        "virtual_time_s": 6992.58878,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0289",
+        "position": {
+          "x": -200.00000000000017,
+          "y": -346.4101615137754
+        },
+        "channel": 6
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738739,
+        "virtual_time_s": 6998.58878,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0290",
+        "position": {
+          "x": -200.00000000000017,
+          "y": -346.4101615137754
+        },
+        "channel": 8
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738754,
+        "virtual_time_s": 7004.58878,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0291",
+        "position": {
+          "x": -200.00000000000017,
+          "y": -346.4101615137754
+        },
+        "channel": 9
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738758,
+        "virtual_time_s": 7010.58878,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0292",
+        "position": {
+          "x": -200.00000000000017,
+          "y": -346.4101615137754
+        },
+        "channel": 14
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738785,
+        "virtual_time_s": 7016.58878,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0293",
+        "position": {
+          "x": -200.00000000000017,
+          "y": -346.4101615137754
+        },
+        "channel": 16
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738789,
+        "virtual_time_s": 7022.58878,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0294",
+        "position": {
+          "x": -200.00000000000017,
+          "y": -346.4101615137754
+        },
+        "channel": 20
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738792,
+        "virtual_time_s": 7028.58878,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0295",
+        "position": {
+          "x": -950.0000000000008,
+          "y": -1645.4482671904332
+        },
+        "channel": 20
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738796,
+        "virtual_time_s": 7333.58878,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0296",
+        "position": {
+          "x": -950.0000000000008,
+          "y": -1645.4482671904332
+        },
+        "channel": 16
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738799,
+        "virtual_time_s": 7339.58878,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0297",
+        "position": {
+          "x": -950.0000000000008,
+          "y": -1645.4482671904332
+        },
+        "channel": 14
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738816,
+        "virtual_time_s": 7345.58878,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0298",
+        "position": {
+          "x": -950.0000000000008,
+          "y": -1645.4482671904332
+        },
+        "channel": 9
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738832,
+        "virtual_time_s": 7351.58878,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0299",
+        "position": {
+          "x": -950.0000000000008,
+          "y": -1645.4482671904332
+        },
+        "channel": 8
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738847,
+        "virtual_time_s": 7357.58878,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0300",
+        "position": {
+          "x": -950.0000000000008,
+          "y": -1645.4482671904332
+        },
+        "channel": 6
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738851,
+        "virtual_time_s": 7363.58878,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0301",
+        "position": {
+          "x": -950.0000000000008,
+          "y": -1645.4482671904332
+        },
+        "channel": 3
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738878,
+        "virtual_time_s": 7369.58878,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0302",
+        "position": {
+          "x": -950.0000000000008,
+          "y": -1645.4482671904332
+        },
+        "channel": 2
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738908,
+        "virtual_time_s": 7375.58878,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0303",
+        "position": {
+          "x": -1645.4482671904339,
+          "y": -949.9999999999994
+        },
+        "channel": 2
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738910,
+        "virtual_time_s": 7577.291254,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0304",
+        "position": {
+          "x": -1645.4482671904339,
+          "y": -949.9999999999994
+        },
+        "channel": 3
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738912,
+        "virtual_time_s": 7583.291254,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0305",
+        "position": {
+          "x": -1645.4482671904339,
+          "y": -949.9999999999994
+        },
+        "channel": 6
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738938,
+        "virtual_time_s": 7589.291254,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0306",
+        "position": {
+          "x": -1645.4482671904339,
+          "y": -949.9999999999994
+        },
+        "channel": 8
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738944,
+        "virtual_time_s": 7595.291254,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0307",
+        "position": {
+          "x": -1645.4482671904339,
+          "y": -949.9999999999994
+        },
+        "channel": 9
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738970,
+        "virtual_time_s": 7601.291254,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0308",
+        "position": {
+          "x": -1645.4482671904339,
+          "y": -949.9999999999994
+        },
+        "channel": 14
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738986,
+        "virtual_time_s": 7607.291254,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0309",
+        "position": {
+          "x": -1645.4482671904339,
+          "y": -949.9999999999994
+        },
+        "channel": 16
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209738990,
+        "virtual_time_s": 7613.291254,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0310",
+        "position": {
+          "x": -1645.4482671904339,
+          "y": -949.9999999999994
+        },
+        "channel": 20
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739017,
+        "virtual_time_s": 7619.291254,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0311",
+        "position": {
+          "x": 1300.0,
+          "y": 0.0
+        },
+        "channel": 20
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739032,
+        "virtual_time_s": 8243.263483,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0312",
+        "position": {
+          "x": 1300.0,
+          "y": 0.0
+        },
+        "channel": 16
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739049,
+        "virtual_time_s": 8249.263483,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0313",
+        "position": {
+          "x": 1300.0,
+          "y": 0.0
+        },
+        "channel": 14
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739064,
+        "virtual_time_s": 8255.263483,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0314",
+        "position": {
+          "x": 1300.0,
+          "y": 0.0
+        },
+        "channel": 9
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739080,
+        "virtual_time_s": 8261.263483,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0315",
+        "position": {
+          "x": 1300.0,
+          "y": 0.0
+        },
+        "channel": 8
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739096,
+        "virtual_time_s": 8267.263483,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0316",
+        "position": {
+          "x": 1300.0,
+          "y": 0.0
+        },
+        "channel": 6
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739100,
+        "virtual_time_s": 8273.263483,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0317",
+        "position": {
+          "x": 1300.0,
+          "y": 0.0
+        },
+        "channel": 3
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739103,
+        "virtual_time_s": 8279.263483,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0318",
+        "position": {
+          "x": 1300.0,
+          "y": 0.0
+        },
+        "channel": 2
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739127,
+        "virtual_time_s": 8285.263483,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0319",
+        "position": {
+          "x": 1900.0,
+          "y": 0.0
+        },
+        "channel": 2
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739143,
+        "virtual_time_s": 8410.263483,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0320",
+        "position": {
+          "x": 1900.0,
+          "y": 0.0
+        },
+        "channel": 3
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739145,
+        "virtual_time_s": 8416.263483,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0321",
+        "position": {
+          "x": 1900.0,
+          "y": 0.0
+        },
+        "channel": 6
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739147,
+        "virtual_time_s": 8422.263483,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0322",
+        "position": {
+          "x": 1900.0,
+          "y": 0.0
+        },
+        "channel": 8
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739149,
+        "virtual_time_s": 8428.263483,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0323",
+        "position": {
+          "x": 1900.0,
+          "y": 0.0
+        },
+        "channel": 9
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739151,
+        "virtual_time_s": 8434.263483,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0324",
+        "position": {
+          "x": 1900.0,
+          "y": 0.0
+        },
+        "channel": 14
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739153,
+        "virtual_time_s": 8440.263483,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0325",
+        "position": {
+          "x": 1900.0,
+          "y": 0.0
+        },
+        "channel": 16
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739154,
+        "virtual_time_s": 8446.263483,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0326",
+        "position": {
+          "x": 1900.0,
+          "y": 0.0
+        },
+        "channel": 20
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739160,
+        "virtual_time_s": 8452.263483,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0327",
+        "position": {
+          "x": 1645.4482671904336,
+          "y": 949.9999999999999
+        },
+        "channel": 20
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739175,
+        "virtual_time_s": 8653.965957,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0328",
+        "position": {
+          "x": 1645.4482671904336,
+          "y": 949.9999999999999
+        },
+        "channel": 16
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739191,
+        "virtual_time_s": 8659.965957,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0329",
+        "position": {
+          "x": 1645.4482671904336,
+          "y": 949.9999999999999
+        },
+        "channel": 14
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739207,
+        "virtual_time_s": 8665.965957,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0330",
+        "position": {
+          "x": 1645.4482671904336,
+          "y": 949.9999999999999
+        },
+        "channel": 9
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739222,
+        "virtual_time_s": 8671.965957,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0331",
+        "position": {
+          "x": 1645.4482671904336,
+          "y": 949.9999999999999
+        },
+        "channel": 8
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739228,
+        "virtual_time_s": 8677.965957,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0332",
+        "position": {
+          "x": 1645.4482671904336,
+          "y": 949.9999999999999
+        },
+        "channel": 6
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739233,
+        "virtual_time_s": 8683.965957,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0333",
+        "position": {
+          "x": 1645.4482671904336,
+          "y": 949.9999999999999
+        },
+        "channel": 3
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739237,
+        "virtual_time_s": 8689.965957,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0334",
+        "position": {
+          "x": 1645.4482671904336,
+          "y": 949.9999999999999
+        },
+        "channel": 2
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739253,
+        "virtual_time_s": 8695.965957,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0335",
+        "position": {
+          "x": 919.2388155425118,
+          "y": 919.2388155425118
+        },
+        "channel": 2
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739257,
+        "virtual_time_s": 8846.338089,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0336",
+        "position": {
+          "x": 919.2388155425118,
+          "y": 919.2388155425118
+        },
+        "channel": 3
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739260,
+        "virtual_time_s": 8852.338089,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0337",
+        "position": {
+          "x": 919.2388155425118,
+          "y": 919.2388155425118
+        },
+        "channel": 6
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739284,
+        "virtual_time_s": 8858.338089,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0338",
+        "position": {
+          "x": 919.2388155425118,
+          "y": 919.2388155425118
+        },
+        "channel": 8
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739300,
+        "virtual_time_s": 8864.338089,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0339",
+        "position": {
+          "x": 919.2388155425118,
+          "y": 919.2388155425118
+        },
+        "channel": 9
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739315,
+        "virtual_time_s": 8870.338089,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0340",
+        "position": {
+          "x": 919.2388155425118,
+          "y": 919.2388155425118
+        },
+        "channel": 14
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739319,
+        "virtual_time_s": 8876.338089,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0341",
+        "position": {
+          "x": 919.2388155425118,
+          "y": 919.2388155425118
+        },
+        "channel": 16
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739346,
+        "virtual_time_s": 8882.338089,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0342",
+        "position": {
+          "x": 919.2388155425118,
+          "y": 919.2388155425118
+        },
+        "channel": 20
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739361,
+        "virtual_time_s": 8888.338089,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0343",
+        "position": {
+          "x": 950.0000000000002,
+          "y": 1645.4482671904334
+        },
+        "channel": 20
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739376,
+        "virtual_time_s": 9038.710221,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0344",
+        "position": {
+          "x": 950.0000000000002,
+          "y": 1645.4482671904334
+        },
+        "channel": 16
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739380,
+        "virtual_time_s": 9044.710221,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0345",
+        "position": {
+          "x": 950.0000000000002,
+          "y": 1645.4482671904334
+        },
+        "channel": 14
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739407,
+        "virtual_time_s": 9050.710221,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0346",
+        "position": {
+          "x": 950.0000000000002,
+          "y": 1645.4482671904334
+        },
+        "channel": 9
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739409,
+        "virtual_time_s": 9056.710221,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0347",
+        "position": {
+          "x": 950.0000000000002,
+          "y": 1645.4482671904334
+        },
+        "channel": 8
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739437,
+        "virtual_time_s": 9062.710221,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0348",
+        "position": {
+          "x": 950.0000000000002,
+          "y": 1645.4482671904334
+        },
+        "channel": 6
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739441,
+        "virtual_time_s": 9068.710221,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0349",
+        "position": {
+          "x": 950.0000000000002,
+          "y": 1645.4482671904334
+        },
+        "channel": 3
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739469,
+        "virtual_time_s": 9074.710221,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0350",
+        "position": {
+          "x": 950.0000000000002,
+          "y": 1645.4482671904334
+        },
+        "channel": 2
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739473,
+        "virtual_time_s": 9080.710221,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0351",
+        "position": {
+          "x": 249.26081078521344,
+          "y": -1260.4421381020682
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739500,
+        "virtual_time_s": 9684.547472,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/clear",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "clr-19512-0352",
+        "position": {
+          "x": 249.26081078521344,
+          "y": -1260.4421381020682
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739507,
+        "virtual_time_s": 9687.547472,
+        "clear_result": "no_target_in_range"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0353",
+        "position": {
+          "x": 269.146752462869,
+          "y": -1148.0170149721935
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739528,
+        "virtual_time_s": 9715.381533,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/clear",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "clr-19512-0354",
+        "position": {
+          "x": 269.146752462869,
+          "y": -1148.0170149721935
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739547,
+        "virtual_time_s": 9718.381533,
+        "clear_result": "no_target_in_range"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0355",
+        "position": {
+          "x": 249.26081078521344,
+          "y": -1260.4421381020682
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739577,
+        "virtual_time_s": 9746.215594,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/clear",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "clr-19512-0356",
+        "position": {
+          "x": 249.26081078521344,
+          "y": -1260.4421381020682
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739579,
+        "virtual_time_s": 9749.215594,
+        "clear_result": "no_target_in_range"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0357",
+        "position": {
+          "x": 269.146752462869,
+          "y": -1148.0170149721935
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739608,
+        "virtual_time_s": 9777.049655,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/clear",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "clr-19512-0358",
+        "position": {
+          "x": 269.146752462869,
+          "y": -1148.0170149721935
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739611,
+        "virtual_time_s": 9780.049655,
+        "clear_result": "no_target_in_range"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0359",
+        "position": {
+          "x": 249.26081078521344,
+          "y": -1260.4421381020682
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739618,
+        "virtual_time_s": 9807.883716,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/clear",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "clr-19512-0360",
+        "position": {
+          "x": 249.26081078521344,
+          "y": -1260.4421381020682
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739620,
+        "virtual_time_s": 9810.883716,
+        "clear_result": "no_target_in_range"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0361",
+        "position": {
+          "x": 269.146752462869,
+          "y": -1148.0170149721935
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739627,
+        "virtual_time_s": 9838.717777,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/clear",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "clr-19512-0362",
+        "position": {
+          "x": 269.146752462869,
+          "y": -1148.0170149721935
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739630,
+        "virtual_time_s": 9841.717777,
+        "clear_result": "no_target_in_range"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0363",
+        "position": {
+          "x": 249.26081078521344,
+          "y": -1260.4421381020682
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739635,
+        "virtual_time_s": 9869.551838,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/clear",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "clr-19512-0364",
+        "position": {
+          "x": 249.26081078521344,
+          "y": -1260.4421381020682
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739654,
+        "virtual_time_s": 9872.551838,
+        "clear_result": "no_target_in_range"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0365",
+        "position": {
+          "x": 269.146752462869,
+          "y": -1148.0170149721935
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739686,
+        "virtual_time_s": 9900.385899,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/clear",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "clr-19512-0366",
+        "position": {
+          "x": 269.146752462869,
+          "y": -1148.0170149721935
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739692,
+        "virtual_time_s": 9903.385899,
+        "clear_result": "no_target_in_range"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0367",
+        "position": {
+          "x": 249.26081078521344,
+          "y": -1260.4421381020682
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739709,
+        "virtual_time_s": 9931.21996,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/clear",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "clr-19512-0368",
+        "position": {
+          "x": 249.26081078521344,
+          "y": -1260.4421381020682
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739714,
+        "virtual_time_s": 9934.21996,
+        "clear_result": "no_target_in_range"
+      }
+    },
+    {
+      "path": "/measure",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "meas-19512-0369",
+        "position": {
+          "x": 269.146752462869,
+          "y": -1148.0170149721935
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739748,
+        "virtual_time_s": 9962.054021,
+        "measure_result": "no_signal"
+      }
+    },
+    {
+      "path": "/clear",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "clr-19512-0370",
+        "position": {
+          "x": 269.146752462869,
+          "y": -1148.0170149721935
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739754,
+        "virtual_time_s": 9965.054021,
+        "clear_result": "no_target_in_range"
+      }
+    },
+    {
+      "path": "/clear",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "clr-19512-0371",
+        "position": {
+          "x": 282.566700841025,
+          "y": -1231.4230580799908
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739780,
+        "virtual_time_s": 9984.949776,
+        "clear_result": "no_target_in_range"
+      }
+    },
+    {
+      "path": "/clear",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "clr-19512-0372",
+        "position": {
+          "x": 286.2356132687792,
+          "y": -1209.7311452644396
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739786,
+        "virtual_time_s": 9992.349776,
+        "clear_result": "no_target_in_range"
+      }
+    },
+    {
+      "path": "/clear",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "clr-19512-0373",
+        "position": {
+          "x": 289.9045256965335,
+          "y": -1188.0392324488887
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739790,
+        "virtual_time_s": 9999.749776,
+        "clear_result": "no_target_in_range"
+      }
+    },
+    {
+      "path": "/clear",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "clr-19512-0374",
+        "position": {
+          "x": 293.57343812428775,
+          "y": -1166.3473196333375
+        },
+        "channel": 15
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739795,
+        "virtual_time_s": 10009.149776,
+        "clear_result": "success"
+      }
+    },
+    {
+      "path": "/exit",
+      "payload": {
+        "arena_id": "default",
+        "robot_id": "202601006115",
+        "request_id": "exit-19512-0375"
+      },
+      "response": {
+        "accepted": true,
+        "real_timestamp_ms": 1789209739800,
+        "virtual_time_s": 10009.149776,
+        "exit_reason": "user_exit"
+      }
+    }
+  ]
+}

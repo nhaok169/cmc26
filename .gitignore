@@ -15,13 +15,13 @@ simulator/模拟器操作演示.mp4
 simulator/JammersSimulatorData/*.sqlite3
 simulator/JammersSimulatorData/*.log
 
-# 本地旧稿
+# 本地旧稿与抽取
 _backup/
-
-# 第三问演练日志（含完整请求）
-q3/logs/
-
-# 临时抽取
+_tmp_pjx/
 _tmp_*.py
 _tmp_*.txt
+paper/_backup_*.docx
+
+# Word 锁
+~$*
 

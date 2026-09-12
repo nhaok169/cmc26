@@ -93,10 +93,23 @@ def k_expr(t, h, D, eps=0.0):
     return (d1 * d1 + d2 * d2 + 2 * d1 * d2 * abs(cg)) / (sg * sg)
 
 
+def _try_clear(v):
+    """仅当 MEC 半径 ≤ 20 m 才允许进圈清除。"""
+    if v is None or len(v) < 3:
+        return False, np.inf, None
+    r, C = mec(v)
+    if C is None or not np.isfinite(r) or r > 20.0:
+        return False, r, C
+    return True, r, C
+
+
 def episode(t, h, D, rng=None, rho_rule=lambda L: 300.0, max_meas=7):
-    """单目标一次完整定位清除流程.
-    测量坐标系: S1处测得示向度=0; 真实G=D*(cos e1, sin e1), e_i~U[-δ,δ](rng=None时e=0).
-    返回 (总时间s, 总测量次数). 失败救援: 长轴切割规则, rho=L的函数."""
+    """单目标一次完整定位清除流程（角度交会模型，不裁接收圆盘与目标圆域）.
+
+    测量坐标系: S1 处测得示向度=0; 真实 G=D*(cos e1, sin e1), e_i~U[-δ,δ]（rng=None 时 e=0）.
+    仅当定位区域 MEC 半径 ≤ 20 m 时计入清除时间。
+    返回 (总时间 s 或 inf, 测量次数, 是否成功清除).
+    """
     e1 = rng.uniform(-DELTA, DELTA) if rng is not None else 0.0
     G = np.array([D * np.cos(e1), D * np.sin(e1)])
     S1 = np.array([0., 0.])
@@ -119,13 +132,16 @@ def episode(t, h, D, rng=None, rho_rule=lambda L: 300.0, max_meas=7):
 
     while n < max_meas:
         v = region(HPs)
-        if len(v) < 3:
-            return np.inf, n
+        ok, _, C = _try_clear(v)
+        if ok:
+            T += np.linalg.norm(C - cur) / V + CLEAR_T
+            return T, n, True
+        if v is None or len(v) < 3:
+            return np.inf, n, False
         d2, ax = diam_and_axis(v)
         r, C = mec(v)
-        if r <= 20.0:
-            T += np.linalg.norm(C - cur) / V + CLEAR_T
-            return T, n
+        if C is None or not np.isfinite(r):
+            return np.inf, n, False
         rho = rho_rule(d2)
         nhat = np.array([-ax[1], ax[0]])
         if nhat @ (cur - C) < 0:
@@ -136,6 +152,31 @@ def episode(t, h, D, rng=None, rho_rule=lambda L: 300.0, max_meas=7):
         n += 1
         HPs += meas_at(Sn)
     v = region(HPs)
-    r, C = mec(v)
+    ok, _, C = _try_clear(v)
+    if not ok:
+        return np.inf, n, False
     T += np.linalg.norm(C - cur) / V + CLEAR_T
-    return T, n
+    return T, n, True
+
+
+def expected_time(t, h, Ds, w=None, rng=None, rho_rule=lambda L: 300.0, max_meas=7):
+    """面积先验下 E[T | 成功] 与成功概率。失败样本不进入平均时间。"""
+    Ds = np.asarray(Ds, float)
+    if w is None:
+        w = Ds.copy()
+    w = np.asarray(w, float)
+    w = w / w.sum()
+    Ts = np.empty(len(Ds), dtype=float)
+    ok = np.zeros(len(Ds), dtype=bool)
+    ns = np.zeros(len(Ds), dtype=float)
+    for i, D in enumerate(Ds):
+        T, n, suc = episode(t, h, float(D), rng=rng, rho_rule=rho_rule, max_meas=max_meas)
+        Ts[i], ns[i], ok[i] = T, n, suc
+    p = float(w[ok].sum()) if np.any(ok) else 0.0
+    if p <= 0.0:
+        return np.inf, 0.0, np.nan
+    ww = w[ok]
+    ww = ww / ww.sum()
+    et = float(Ts[ok] @ ww)
+    en = float(ns[ok] @ ww)
+    return et, p, en

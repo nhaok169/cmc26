@@ -8,7 +8,7 @@
 import numpy as np
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
-from geometry import (DELTA, wedge_hp, region, diam_and_axis, mec, k_expr, episode)
+from geometry import (DELTA, wedge_hp, region, diam_and_axis, mec, k_expr, episode, expected_time)
 
 # ================= 实验1: κ 分布 =================
 print("=" * 74)
@@ -62,23 +62,24 @@ print(f"=> {'MEC级保证成立(≤20)' if worst_r<=20 else 'MEC级保证被打�
 # ================= 实验2: E[T] 蒙特卡洛 =================
 print()
 print("=" * 74)
-print("实验2: E[T] 蒙特卡洛, e_i~U[-1°,1°] iid, 30 draws, f_D∝D, rho=300固定")
+print("实验2: E[T]|成功 蒙特卡洛, e_i~U[-1°,1°] iid, 30 draws, f_D∝D, rho=max(50,0.5L)")
 print("=" * 74)
 Ds = np.linspace(5, 1500, 40)
 w = Ds.copy(); w /= w.sum()
+rho_ad = lambda L: max(50.0, 0.5 * L)
 schools = [(550, 498, "minimax保证"), (675, 476, "P最优(α=1)"),
            (750, 450, "保守流派E[T]"), (500, 250, "时间流派E[T]")]
 for t, h, name in schools:
-    # 基线 e=0
-    T0 = np.array([episode(t, h, D)[0] for D in Ds])
-    # 蒙特卡洛
-    ETs = []
+    et0, p0, en0 = expected_time(t, h, Ds, w=w, rho_rule=rho_ad)
+    ETs, Ps = [], []
     rng = np.random.default_rng(2026)
     for k in range(30):
-        Tk = np.array([episode(t, h, D, rng=rng)[0] for D in Ds])
-        ETs.append(Tk @ w)
-    ETs = np.array(ETs)
-    print(f"{name:12s} (t,h)=({t},{h}):  E[T](e=0)={T0@w:5.0f}s  E[T](MC)={ETs.mean():5.0f}±{ETs.std():4.0f}s  (增幅{(ETs.mean()/(T0@w)-1)*100:+.1f}%)")
+        etk, pk, _ = expected_time(t, h, Ds, w=w, rng=rng, rho_rule=rho_ad)
+        ETs.append(etk); Ps.append(pk)
+    ETs, Ps = np.array(ETs), np.array(Ps)
+    print(f"{name:12s} (t,h)=({t},{h}):  E[T](e=0)={et0:5.1f}s P={p0:.3f}  "
+          f"E[T](MC)={ETs.mean():5.1f}±{ETs.std():4.1f}s  P(MC)={Ps.mean():.3f}  "
+          f"E[n]={en0:.2f}")
 
 # ================= 实验3: rho 规则 =================
 print()
@@ -90,18 +91,18 @@ scen = [((700, 462), 1500, "远目标/保守赌注"), ((500, 250), 1500, "远目
 for (t, h), D, name in scen:
     row = []
     for rho in (100, 150, 200, 250, 300, 400, 500, 600):
-        T, n = episode(t, h, D, rho_rule=lambda L, r=rho: r)
-        row.append(f"ρ={rho}:{T:4.0f}s/{n}测")
+        T, n, ok = episode(t, h, D, rho_rule=lambda L, r=rho: r)
+        row.append(f"rho={rho}:{T if ok else float('inf'):4.0f}s/{n}meas/{'ok' if ok else 'fail'}")
     print(f"{name} (t,h)=({t},{h}), D={D}:  " + "  ".join(row))
 
 print()
-print("实验3b: 自适应 rho = max(50, c·L长轴) vs 固定300 (e=0, f_D∝D)")
+print("实验3b: 自适应 rho = max(50, c·L长轴) vs 固定300 (e=0, f_D∝D；仅成功样本计时)")
 for (t, h, name) in [(500, 250, "时间流派"), (750, 450, "保守流派")]:
     for c in (0.5, 0.75, 1.0, 1.5, 2.0):
-        T = np.array([episode(t, h, D, rho_rule=lambda L, c=c: max(50.0, c * L))[0] for D in Ds])
-        print(f"{name}(t,h)=({t},{h}) rho={c:.2f}·L:  E[T]={T@w:5.0f}s")
-    T = np.array([episode(t, h, D)[0] for D in Ds])
-    print(f"{name}(t,h)=({t},{h}) rho=300固定: E[T]={T@w:5.0f}s")
+        et, p, _ = expected_time(t, h, Ds, w=w, rho_rule=lambda L, c=c: max(50.0, c * L))
+        print(f"{name}(t,h)=({t},{h}) rho={c:.2f}·L:  E[T]|ok={et:5.1f}s  P={p:.3f}")
+    et, p, _ = expected_time(t, h, Ds, w=w, rho_rule=lambda L: 300.0)
+    print(f"{name}(t,h)=({t},{h}) rho=300固定: E[T]|ok={et:5.1f}s  P={p:.3f}")
 
 # ================= 实验4: D_far 楔形边缘算例 =================
 print()

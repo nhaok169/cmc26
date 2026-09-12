@@ -34,7 +34,7 @@ class Simulator:
 
     def _new_id(self, prefix: str) -> str:
         self.seq += 1
-        return f"{prefix}-{self.seq:04d}"
+        return f"{prefix}-{os.getpid()}-{self.seq:04d}"
 
     def _post(self, path: str, payload: Dict[str, Any], retries: int = 4) -> Dict[str, Any]:
         data = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
@@ -74,13 +74,20 @@ class Simulator:
         raise ApiError(f"{path} 连接失败: {last_err}")
 
     def enter(self) -> Dict[str, Any]:
-        body = self._post(
-            "/enter",
-            {"arena_id": ARENA_ID, "robot_id": self.robot_id, "request_id": self._new_id("enter")},
-        )
-        if body.get("accepted") is not True:
-            raise ApiError(f"/enter 被拒绝: {body}")
-        return body
+        last = None
+        for k in range(6):
+            try:
+                body = self._post(
+                    "/enter",
+                    {"arena_id": ARENA_ID, "robot_id": self.robot_id, "request_id": self._new_id("enter")},
+                )
+                if body.get("accepted") is True:
+                    return body
+                last = ApiError(f"/enter 被拒绝: {body}")
+            except ApiError as e:
+                last = e
+            time.sleep(0.8 * (k + 1))
+        raise last if last else ApiError("/enter 失败")
 
     def measure(self, x: float, y: float, channel: int) -> Dict[str, Any]:
         body = self._post(
