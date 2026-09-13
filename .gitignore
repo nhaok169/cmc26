@@ -13,7 +13,11 @@ simulator/模拟器操作演示.mp4
 
 # 模拟器运行时本地队列
 simulator/JammersSimulatorData/*.sqlite3
+simulator/JammersSimulatorData/*.sqlite3-shm
+simulator/JammersSimulatorData/*.sqlite3-wal
 simulator/JammersSimulatorData/*.log
+_tmp_*.py
+_tmp_pjx/
 
 # 模拟器演练行为日志(本机产物, 不入库)
 simulator/JammersSimulatorData/behavior-logs/

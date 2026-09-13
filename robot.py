@@ -139,32 +139,42 @@ class Sim:
         # accepted=false: 多为测试已结束/窗口超时; 优雅收尾而不是崩溃
         raise TestEnded(f"动作被拒绝 {path} {rid}: HTTP {code} {resp}")
 
-    def enter(self, wait_s=600):
-        """等待测试窗口开启并进入; /enter 复用同一 request_id"""
-        body = {"arena_id": "default", "robot_id": self.team, "request_id": "enter-1"}
-        t_end = time.time() + wait_s
-        while True:
+    def try_enter(self, request_id):
+        """试一次 /enter; 成功返回 resp, 否则 (None, 原因)。"""
+        body = {"arena_id": "default", "robot_id": self.team, "request_id": request_id}
+        try:
+            r = requests.post(self.base + "/enter", json=body, timeout=5,
+                              headers={"Content-Type": "application/json; charset=utf-8"})
+            code, resp = r.status_code, None
             try:
-                r = requests.post(self.base + "/enter", json=body, timeout=5,
-                                  headers={"Content-Type": "application/json; charset=utf-8"})
-                code, resp = r.status_code, None
-                try:
-                    resp = r.json()
-                except ValueError:
-                    pass
-            except requests.RequestException as e:
-                code, resp = 0, repr(e)
-            if code == 200 and resp and resp.get("accepted"):
-                self.t0 = time.time()
-                self.vt = resp["virtual_time_s"]
-                self.log.write(json.dumps({"t": datetime.datetime.now().isoformat(),
-                                           "rid": "enter-1", "path": "/enter",
-                                           "http": code, "resp": resp}) + "\n")
-                print(f"[ENTER] ok, 剩余现实时间 {resp.get('remaining_real_duration_s')}s")
+                resp = r.json()
+            except ValueError:
+                pass
+        except requests.RequestException as e:
+            return None, repr(e)
+        if code == 200 and resp and resp.get("accepted"):
+            self.t0 = time.time()
+            self.vt = resp["virtual_time_s"]
+            self.log.write(json.dumps({"t": datetime.datetime.now().isoformat(),
+                                       "rid": request_id, "path": "/enter",
+                                       "http": code, "resp": resp}) + "\n")
+            self.log.flush()
+            print(f"[ENTER] ok, 剩余现实时间 {resp.get('remaining_real_duration_s')}s")
+            return resp, None
+        return None, f"HTTP {code} {resp}"
+
+    def enter(self, wait_s=600, request_id=None):
+        """等待测试窗口开启并进入; 同一次等待复用同一 request_id。
+        wait_s<=0 表示一直等到成功。"""
+        rid = request_id or "enter-1"
+        t_end = (time.time() + wait_s) if wait_s and wait_s > 0 else None
+        last = None
+        while True:
+            resp, last = self.try_enter(rid)
+            if resp is not None:
                 return resp
-            # 窗口未开/倒计时中: 连接被拒, 继续等
-            if time.time() > t_end:
-                raise RuntimeError(f"等待测试窗口超时({wait_s}s): HTTP {code} {resp}")
+            if t_end is not None and time.time() > t_end:
+                raise RuntimeError(f"等待测试窗口超时({wait_s}s): {last}")
             time.sleep(1.0)
 
     def measure(self, pos, ch):
@@ -193,6 +203,53 @@ class Sim:
 
     def elapsed_real(self):
         return time.time() - self.t0 if self.t0 else 0.0
+
+
+def watch_loop(base, team, problem, make_policy, label):
+    """持续监听官方窗口: 进局 → 跑策略 → 退出 → 再等下一局。Ctrl+C 停止。"""
+    log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs")
+    os.makedirs(log_dir, exist_ok=True)
+    print(f"watch: robot_id={team}, 问题{problem}, 接口 {base}")
+    print(f"策略: {label}")
+    print("持续等待测试窗口, Ctrl+C 停止")
+    n_fail = 0
+    game = 0
+    while True:
+        game += 1
+        stamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        log_path = os.path.join(log_dir, f"robot_p{problem}_{stamp}.jsonl")
+        log = open(log_path, "w", encoding="utf-8")
+        sim = Sim(base, team, log)
+        rid = f"enter-{stamp}-{game}"
+        while True:
+            resp, err = sim.try_enter(rid)
+            if resp is not None:
+                n_fail = 0
+                remain = resp.get("remaining_real_duration_s")
+                print(f"\n==== 第{game}局 remaining={remain}s "
+                      f"{time.strftime('%H:%M:%S')} ====")
+                print(f"日志: {log_path}")
+                break
+            n_fail += 1
+            if n_fail <= 2 or n_fail % 8 == 0:
+                print(f"enter wait ({n_fail}): {err}")
+            time.sleep(3.5)
+        try:
+            n, vt = make_policy(sim).run()
+            avg = (vt / n) if n else float("inf")
+            print(f"[DONE] cleared={n} vt={vt:.1f} avg={avg:.1f}s")
+        except TestEnded as e:
+            print(f"[END] {e}")
+        except Exception as e:
+            print(f"[ERR] {type(e).__name__}: {e}")
+        try:
+            sim.exit()
+            print("[EXIT] 已退出")
+        except Exception as e:
+            print(f"[EXIT] {e}")
+        log.close()
+        print("等待下一局...")
+        time.sleep(2.0)
 
 
 # ---------------- 定位数学 ----------------

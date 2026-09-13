@@ -34,6 +34,10 @@
 # 24 种子批量（权威成绩）
 python q4/score.py 24
 
-# 真实模拟器（演练/正式测试）
+# 真实模拟器（演练/正式测试，打一局退出）
 python q4/run_q4.py
+
+# 持续监听窗口（推荐）
+python q3/run_q3.py --watch
+python q4/run_q4.py --watch
 ```
