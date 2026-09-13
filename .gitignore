@@ -24,3 +24,6 @@ simulator/JammersSimulatorData/behavior-logs/
 
 # 本地旧稿
 _backup/
+
+# 参考资料(市售成品论文/AI提示词等, 体积大且涉嫌抄袭, 不入库)
+资料/

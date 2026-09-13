@@ -1,0 +1,13 @@
+监控正式测试队列: E:/Draft/MathModel/cmc26/simulator/JammersSimulatorData/formal-statistics-queue.sqlite3
+等待正式测试记录写入 statistics_tasks ... (Ctrl+C 停止)
+
+[11:38:52] 正式测试记录数: 1
+  #1 清除=11 avg=323.51s/个 程序运行=1589ms end=user_exit state=confirmed
+
+[11:39:25] 正式测试记录数: 2
+  #2 清除=16 avg=259.48s/个 程序运行=1743ms end=user_exit state=confirmed
+
+[11:39:46] 正式测试记录数: 3
+  #3 清除=15 avg=273.03s/个 程序运行=1294ms end=user_exit state=confirmed
+
+=== 已收集到 3 次正式测试，结果已保存到 formal_result_q3.json / .md ===

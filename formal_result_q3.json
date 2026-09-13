@@ -1,0 +1,47 @@
+[
+  {
+    "id": 1,
+    "team_no": "202601006115",
+    "entered": 1,
+    "end_reason": "user_exit",
+    "cleared_jammer_count": 11,
+    "virtual_time_us": 3558623627,
+    "avg_clear_time_s": 323.51,
+    "program_run_duration_ms": 1589,
+    "measure_accepted_count": 122,
+    "channel_switch_count": 101,
+    "clear_failure_count": 0,
+    "state": "confirmed",
+    "activation_ticket_sha256": "be9fdbbedb61660b"
+  },
+  {
+    "id": 2,
+    "team_no": "202601006115",
+    "entered": 1,
+    "end_reason": "user_exit",
+    "cleared_jammer_count": 16,
+    "virtual_time_us": 4151649566,
+    "avg_clear_time_s": 259.48,
+    "program_run_duration_ms": 1743,
+    "measure_accepted_count": 101,
+    "channel_switch_count": 84,
+    "clear_failure_count": 4,
+    "state": "confirmed",
+    "activation_ticket_sha256": "461695c5a1328cbf"
+  },
+  {
+    "id": 3,
+    "team_no": "202601006115",
+    "entered": 1,
+    "end_reason": "user_exit",
+    "cleared_jammer_count": 15,
+    "virtual_time_us": 4095394918,
+    "avg_clear_time_s": 273.03,
+    "program_run_duration_ms": 1294,
+    "measure_accepted_count": 137,
+    "channel_switch_count": 112,
+    "clear_failure_count": 0,
+    "state": "confirmed",
+    "activation_ticket_sha256": "18ad283a62a85672"
+  }
+]

@@ -1,0 +1,113 @@
+D:\python\Lib\site-packages\requests\__init__.py:113: RequestsDependencyWarning: urllib3 (2.2.3) or chardet (7.6.0)/charset_normalizer (3.4.0) doesn't match a supported version!
+  warnings.warn(
+watch: robot_id=202601006115, 问题4, 接口 http://127.0.0.1:2026
+策略: Q4 v3
+持续等待测试窗口, Ctrl+C 停止
+[ENTER] ok, 剩余现实时间 1200s
+
+==== 第1局 remaining=1200s 11:44:09 ====
+日志: E:\Draft\MathModel\cmc26\logs\robot_p4_20260913_114409.jsonl
+[DONE] cleared=10 vt=6704.1 avg=670.4s
+[EXIT] 已退出
+等待下一局...
+enter wait (1): ConnectionError(ProtocolError('Connection aborted.', ConnectionAbortedError(10053, '你的主机中的软件中止了一个已建立的连接。', None, 10053, None)))
+enter wait (2): ConnectionError(ProtocolError('Connection aborted.', ConnectionResetError(10054, '远程主机强迫关闭了一个现有的连接。', None, 10054, None)))
+[ENTER] ok, 剩余现实时间 1200s
+
+==== 第2局 remaining=1200s 11:44:22 ====
+日志: E:\Draft\MathModel\cmc26\logs\robot_p4_20260913_114415.jsonl
+[DONE] cleared=15 vt=6472.2 avg=431.5s
+[EXIT] 已退出
+等待下一局...
+enter wait (1): ConnectionError(ProtocolError('Connection aborted.', ConnectionResetError(10054, '远程主机强迫关闭了一个现有的连接。', None, 10054, None)))
+enter wait (2): ConnectionError(ProtocolError('Connection aborted.', ConnectionResetError(10054, '远程主机强迫关闭了一个现有的连接。', None, 10054, None)))
+[ENTER] ok, 剩余现实时间 1200s
+
+==== 第3局 remaining=1200s 11:44:37 ====
+日志: E:\Draft\MathModel\cmc26\logs\robot_p4_20260913_114427.jsonl
+[DONE] cleared=15 vt=8642.5 avg=576.2s
+[EXIT] 已退出
+等待下一局...
+enter wait (1): ConnectionError(ProtocolError('Connection aborted.', ConnectionAbortedError(10053, '你的主机中的软件中止了一个已建立的连接。', None, 10053, None)))
+enter wait (2): ConnectionError(ProtocolError('Connection aborted.', ConnectionResetError(10054, '远程主机强迫关闭了一个现有的连接。', None, 10054, None)))
+[ENTER] ok, 剩余现实时间 1200s
+
+==== 第4局 remaining=1200s 11:44:51 ====
+日志: E:\Draft\MathModel\cmc26\logs\robot_p4_20260913_114444.jsonl
+[DONE] cleared=12 vt=6897.2 avg=574.8s
+[EXIT] 已退出
+等待下一局...
+enter wait (1): ConnectionError(ProtocolError('Connection aborted.', ConnectionAbortedError(10053, '你的主机中的软件中止了一个已建立的连接。', None, 10053, None)))
+enter wait (2): ConnectionError(ProtocolError('Connection aborted.', ConnectionAbortedError(10053, '你的主机中的软件中止了一个已建立的连接。', None, 10053, None)))
+[ENTER] ok, 剩余现实时间 1200s
+
+==== 第5局 remaining=1200s 11:45:04 ====
+日志: E:\Draft\MathModel\cmc26\logs\robot_p4_20260913_114457.jsonl
+[DONE] cleared=10 vt=6686.0 avg=668.6s
+[EXIT] 已退出
+等待下一局...
+enter wait (1): ConnectionError(ProtocolError('Connection aborted.', ConnectionResetError(10054, '远程主机强迫关闭了一个现有的连接。', None, 10054, None)))
+enter wait (2): ConnectionError(ProtocolError('Connection aborted.', ConnectionAbortedError(10053, '你的主机中的软件中止了一个已建立的连接。', None, 10053, None)))
+[ENTER] ok, 剩余现实时间 1200s
+
+==== 第6局 remaining=1200s 11:45:18 ====
+日志: E:\Draft\MathModel\cmc26\logs\robot_p4_20260913_114511.jsonl
+[DONE] cleared=12 vt=7235.2 avg=602.9s
+[EXIT] 已退出
+等待下一局...
+enter wait (1): ConnectionError(ProtocolError('Connection aborted.', ConnectionAbortedError(10053, '你的主机中的软件中止了一个已建立的连接。', None, 10053, None)))
+enter wait (2): ConnectionError(ProtocolError('Connection aborted.', ConnectionResetError(10054, '远程主机强迫关闭了一个现有的连接。', None, 10054, None)))
+[ENTER] ok, 剩余现实时间 1200s
+
+==== 第7局 remaining=1200s 11:45:34 ====
+日志: E:\Draft\MathModel\cmc26\logs\robot_p4_20260913_114524.jsonl
+[DONE] cleared=11 vt=8585.0 avg=780.5s
+[EXIT] 已退出
+等待下一局...
+enter wait (1): ConnectionError(ProtocolError('Connection aborted.', ConnectionResetError(10054, '远程主机强迫关闭了一个现有的连接。', None, 10054, None)))
+enter wait (2): ConnectionError(ProtocolError('Connection aborted.', ConnectionAbortedError(10053, '你的主机中的软件中止了一个已建立的连接。', None, 10053, None)))
+[ENTER] ok, 剩余现实时间 1200s
+
+==== 第8局 remaining=1200s 11:45:53 ====
+日志: E:\Draft\MathModel\cmc26\logs\robot_p4_20260913_114542.jsonl
+[DONE] cleared=14 vt=6771.4 avg=483.7s
+[EXIT] 已退出
+等待下一局...
+enter wait (1): ConnectionError(ProtocolError('Connection aborted.', ConnectionAbortedError(10053, '你的主机中的软件中止了一个已建立的连接。', None, 10053, None)))
+enter wait (2): ConnectionError(ProtocolError('Connection aborted.', ConnectionResetError(10054, '远程主机强迫关闭了一个现有的连接。', None, 10054, None)))
+enter wait (8): ConnectionError(ProtocolError('Connection aborted.', ConnectionAbortedError(10053, '你的主机中的软件中止了一个已建立的连接。', None, 10053, None)))
+enter wait (16): ConnectionError(ProtocolError('Connection aborted.', ConnectionResetError(10054, '远程主机强迫关闭了一个现有的连接。', None, 10054, None)))
+enter wait (24): ConnectionError(ProtocolError('Connection aborted.', ConnectionAbortedError(10053, '你的主机中的软件中止了一个已建立的连接。', None, 10053, None)))
+enter wait (32): ConnectionError(ProtocolError('Connection aborted.', ConnectionResetError(10054, '远程主机强迫关闭了一个现有的连接。', None, 10054, None)))
+[ENTER] ok, 剩余现实时间 1200s
+
+==== 第9局 remaining=1200s 11:48:00 ====
+日志: E:\Draft\MathModel\cmc26\logs\robot_p4_20260913_114557.jsonl
+[DONE] cleared=12 vt=7001.6 avg=583.5s
+[EXIT] 已退出
+等待下一局...
+enter wait (1): ConnectionError(ProtocolError('Connection aborted.', ConnectionResetError(10054, '远程主机强迫关闭了一个现有的连接。', None, 10054, None)))
+enter wait (2): ConnectionError(ProtocolError('Connection aborted.', ConnectionAbortedError(10053, '你的主机中的软件中止了一个已建立的连接。', None, 10053, None)))
+[ENTER] ok, 剩余现实时间 1200s
+
+==== 第10局 remaining=1200s 11:48:17 ====
+日志: E:\Draft\MathModel\cmc26\logs\robot_p4_20260913_114806.jsonl
+[DONE] cleared=13 vt=6744.2 avg=518.8s
+[EXIT] 已退出
+等待下一局...
+enter wait (1): ConnectionError(ProtocolError('Connection aborted.', ConnectionAbortedError(10053, '你的主机中的软件中止了一个已建立的连接。', None, 10053, None)))
+enter wait (2): ConnectionError(ProtocolError('Connection aborted.', ConnectionResetError(10054, '远程主机强迫关闭了一个现有的连接。', None, 10054, None)))
+[ENTER] ok, 剩余现实时间 1200s
+
+==== 第11局 remaining=1200s 11:48:33 ====
+日志: E:\Draft\MathModel\cmc26\logs\robot_p4_20260913_114823.jsonl
+[DONE] cleared=10 vt=6985.2 avg=698.5s
+[EXIT] 已退出
+等待下一局...
+enter wait (1): ConnectionError(ProtocolError('Connection aborted.', ConnectionResetError(10054, '远程主机强迫关闭了一个现有的连接。', None, 10054, None)))
+enter wait (2): ConnectionError(ProtocolError('Connection aborted.', ConnectionAbortedError(10053, '你的主机中的软件中止了一个已建立的连接。', None, 10053, None)))
+enter wait (8): ConnectionError(ProtocolError('Connection aborted.', ConnectionResetError(10054, '远程主机强迫关闭了一个现有的连接。', None, 10054, None)))
+enter wait (16): ConnectionError(ProtocolError('Connection aborted.', ConnectionResetError(10054, '远程主机强迫关闭了一个现有的连接。', None, 10054, None)))
+enter wait (24): ConnectionError(ProtocolError('Connection aborted.', ConnectionAbortedError(10053, '你的主机中的软件中止了一个已建立的连接。', None, 10053, None)))
+enter wait (32): ConnectionError(ProtocolError('Connection aborted.', ConnectionResetError(10054, '远程主机强迫关闭了一个现有的连接。', None, 10054, None)))
+enter wait (40): ConnectionError(ProtocolError('Connection aborted.', ConnectionAbortedError(10053, '你的主机中的软件中止了一个已建立的连接。', None, 10053, None)))

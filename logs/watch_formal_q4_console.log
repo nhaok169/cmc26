@@ -1,0 +1,13 @@
+监控 Q4 正式测试队列 (upload_tasks.problem_no=4 关联 statistics_tasks)
+等待 Q4 正式测试记录写入 ... (Ctrl+C 停止)
+
+[11:48:04] Q4 正式测试记录数: 1
+  #1 2CS6-PYGG-YEXJ-CNMX 清除=11 avg=323.51s/个 程序运行=1589ms cfail=0 state=confirmed upload=intent_received
+
+[11:48:23] Q4 正式测试记录数: 2
+  #2 HDGN-FSKE-BGQ4-HXMH 清除=16 avg=259.48s/个 程序运行=1743ms cfail=4 state=confirmed upload=object_received
+
+[11:48:41] Q4 正式测试记录数: 3
+  #3 GGJ8-K8GP-DBCX-QET9 清除=15 avg=273.03s/个 程序运行=1294ms cfail=0 state=confirmed upload=object_received
+
+=== 已收集到 3 次 Q4 正式测试，结果保存到 formal_result_q4.json / .md ===
