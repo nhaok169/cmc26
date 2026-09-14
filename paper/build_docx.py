@@ -12,13 +12,13 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from docx import Document
 from docx.enum.table import WD_TABLE_ALIGNMENT
-from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_BREAK, WD_LINE_SPACING
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Cm, Pt, RGBColor
 
 ROOT = Path(__file__).resolve().parents[1]
-SRC = Path(__file__).resolve().parent / "B题_问题1-3.md"
+SRC = Path(__file__).resolve().parent / "B题_全文.md"
 OUT = Path(__file__).resolve().parent / "无线电干扰源的快速自动定位与清除.docx"
 EQ_DIR = Path(__file__).resolve().parent / "_eq"
 EQ_DIR.mkdir(exist_ok=True)
@@ -44,12 +44,16 @@ def set_run_font(run, east=CN_BODY, ascii_font=EN_FONT, size=12, bold=False, ita
     rFonts.set(qn("w:cs"), ascii_font)
 
 
-def set_paragraph_format(p, *, first_line=None, before=0, after=0, line=1.5, align=None, east=CN_BODY):
+def set_paragraph_format(p, *, first_line=None, before=0, after=0, line=1.5, align=None, east=CN_BODY, exact_pt=None):
     pf = p.paragraph_format
     pf.space_before = Pt(before)
     pf.space_after = Pt(after)
-    pf.line_spacing = line
-    pf.line_spacing_rule = WD_LINE_SPACING.MULTIPLE
+    if exact_pt is not None:
+        pf.line_spacing = Pt(exact_pt)
+        pf.line_spacing_rule = WD_LINE_SPACING.EXACTLY
+    else:
+        pf.line_spacing = line
+        pf.line_spacing_rule = WD_LINE_SPACING.MULTIPLE
     if first_line is None:
         pf.first_line_indent = Cm(0)
     else:
@@ -69,27 +73,65 @@ def set_paragraph_format(p, *, first_line=None, before=0, after=0, line=1.5, ali
     rFonts.set(qn("w:eastAsia"), east)
 
 
-def shade_cell(cell, fill="D9E2F3"):
-    tc = cell._tc
-    tcPr = tc.get_or_add_tcPr()
-    shd = OxmlElement("w:shd")
-    shd.set(qn("w:fill"), fill)
-    shd.set(qn("w:val"), "clear")
-    tcPr.append(shd)
+def _border_el(edge: str, val: str, sz: int, color: str = "000000"):
+    el = OxmlElement(f"w:{edge}")
+    el.set(qn("w:val"), val)
+    el.set(qn("w:sz"), str(sz if val != "nil" else 0))
+    el.set(qn("w:space"), "0")
+    el.set(qn("w:color"), color)
+    return el
 
 
-def set_cell_border(cell):
-    tc = cell._tc
-    tcPr = tc.get_or_add_tcPr()
+def _clear_tbl_borders(table):
+    tblPr = table._tbl.tblPr
+    old = tblPr.find(qn("w:tblBorders"))
+    if old is not None:
+        tblPr.remove(old)
+    borders = OxmlElement("w:tblBorders")
+    for edge in ("top", "left", "bottom", "right", "insideH", "insideV"):
+        borders.append(_border_el(edge, "nil", 0))
+    tblPr.append(borders)
+
+
+def set_three_line_cell(cell, *, top: int | None = None, bottom: int | None = None):
+    """科技论文三线表：仅顶线、栏线、底线，无竖线、无底纹。sz 单位为 1/8 磅。"""
+    tcPr = cell._tc.get_or_add_tcPr()
+    old = tcPr.find(qn("w:tcBorders"))
+    if old is not None:
+        tcPr.remove(old)
+    shd = tcPr.find(qn("w:shd"))
+    if shd is not None:
+        tcPr.remove(shd)
     tcBorders = OxmlElement("w:tcBorders")
-    for edge in ("top", "left", "bottom", "right"):
-        el = OxmlElement(f"w:{edge}")
-        el.set(qn("w:val"), "single")
-        el.set(qn("w:sz"), "4")
-        el.set(qn("w:space"), "0")
-        el.set(qn("w:color"), "5B9BD5")
-        tcBorders.append(el)
+    tcBorders.append(_border_el("top", "single" if top else "nil", top or 0))
+    tcBorders.append(_border_el("left", "nil", 0))
+    tcBorders.append(_border_el("bottom", "single" if bottom else "nil", bottom or 0))
+    tcBorders.append(_border_el("right", "nil", 0))
     tcPr.append(tcBorders)
+
+
+def add_page_break(doc):
+    p = doc.add_paragraph()
+    set_paragraph_format(p, first_line=0, before=0, after=0, line=1.0)
+    p.add_run().add_break(WD_BREAK.PAGE)
+
+
+def set_row_cant_split(row):
+    trPr = row._tr.get_or_add_trPr()
+    if trPr.find(qn("w:cantSplit")) is None:
+        trPr.append(OxmlElement("w:cantSplit"))
+
+
+def set_row_header(row):
+    trPr = row._tr.get_or_add_trPr()
+    if trPr.find(qn("w:tblHeader")) is None:
+        trPr.append(OxmlElement("w:tblHeader"))
+
+
+def set_cell_nowrap(cell):
+    tcPr = cell._tc.get_or_add_tcPr()
+    if tcPr.find(qn("w:noWrap")) is None:
+        tcPr.append(OxmlElement("w:noWrap"))
 
 
 def add_page_number(paragraph):
@@ -302,41 +344,45 @@ def add_mixed_runs(p, text: str, *, size=12, east=CN_BODY, bold=False, first_mat
             set_run_font(run, east=east, size=size, bold=bold)
 
 
-def add_body(doc, text: str, *, first=True, before=0, after=3, size=12):
+def add_body(doc, text: str, *, first=True, before=0, after=2, size=12, exact_pt=None):
     p = doc.add_paragraph()
-    set_paragraph_format(p, first_line=0.74 if first else 0, before=before, after=after, line=1.5)
+    set_paragraph_format(
+        p,
+        first_line=0.74 if first else 0,
+        before=before,
+        after=after,
+        line=1.25,
+        exact_pt=16 if exact_pt is None else exact_pt,
+    )
     add_mixed_runs(p, text, size=size)
     return p
 
 
 def add_caption(doc, text: str):
     p = doc.add_paragraph()
-    set_paragraph_format(p, first_line=0, before=3, after=10, line=1.25, align=WD_ALIGN_PARAGRAPH.CENTER)
-    add_mixed_runs(p, text, size=10.5)
+    set_paragraph_format(p, first_line=0, before=1, after=3, line=1.1, align=WD_ALIGN_PARAGRAPH.CENTER)
+    add_mixed_runs(p, text, size=10)
     return p
 
 
 def add_heading_cn(doc, text: str, level: int):
     p = doc.add_paragraph()
     if level == 1:
-        set_paragraph_format(p, first_line=0, before=14, after=8, line=1.5, east=CN_HEAD)
-        run = p.add_run(text)
-        set_run_font(run, east=CN_HEAD, size=14, bold=True)
+        set_paragraph_format(p, first_line=0, before=6, after=3, line=1.25, east=CN_HEAD)
+        add_mixed_runs(p, text, size=14, east=CN_HEAD, bold=True)
     elif level == 2:
-        set_paragraph_format(p, first_line=0, before=10, after=6, line=1.5, east=CN_HEAD)
-        run = p.add_run(text)
-        set_run_font(run, east=CN_HEAD, size=12, bold=True)
+        set_paragraph_format(p, first_line=0, before=6, after=3, line=1.25, east=CN_HEAD)
+        add_mixed_runs(p, text, size=12, east=CN_HEAD, bold=True)
     else:
-        set_paragraph_format(p, first_line=0, before=8, after=4, line=1.5, east=CN_HEAD)
-        run = p.add_run(text)
-        set_run_font(run, east=CN_HEAD, size=12, bold=True)
+        set_paragraph_format(p, first_line=0, before=5, after=2, line=1.25, east=CN_HEAD)
+        add_mixed_runs(p, text, size=12, east=CN_HEAD, bold=True)
     return p
 
 
 def add_display_math(doc, tex: str):
     """独立公式：写入居中的 Word 公式对象。"""
     p = doc.add_paragraph()
-    set_paragraph_format(p, first_line=0, before=6, after=6, line=1.15, align=WD_ALIGN_PARAGRAPH.CENTER)
+    set_paragraph_format(p, first_line=0, before=3, after=3, line=1.1, align=WD_ALIGN_PARAGRAPH.CENTER)
     body = tex.strip()
     if body.startswith("$$") and body.endswith("$$"):
         body = body[2:-2].strip()
@@ -344,49 +390,131 @@ def add_display_math(doc, tex: str):
     return p
 
 
-def add_image(doc, path: Path, width_cm=14.2):
+def add_image(doc, path: Path, width_cm=10.0):
     if not path.exists():
         add_body(doc, f"（缺图：{path}）", first=False)
         return
+    compact = {
+        "fig_q1_shape_ab.png": (8.0, 3),
+        "fig_q1_shape_cd.png": (8.0, 3),
+        "fig_q4_cert26.png": (9.0, 4),
+    }
+    before = 5
+    if path.name in compact:
+        width_cm, before = compact[path.name]
     p = doc.add_paragraph()
-    set_paragraph_format(p, first_line=0, before=8, after=2, line=1.0, align=WD_ALIGN_PARAGRAPH.CENTER)
+    set_paragraph_format(p, first_line=0, before=before, after=2, line=1.0, align=WD_ALIGN_PARAGRAPH.CENTER)
     run = p.add_run()
     run.add_picture(str(path), width=Cm(width_cm))
+
+
+def _set_table_widths(table, widths_cm: list[float]):
+    table.autofit = False
+    tbl = table._tbl
+    tblPr = tbl.tblPr
+    if tblPr is None:
+        tblPr = OxmlElement("w:tblPr")
+        tbl.insert(0, tblPr)
+    tblW = tblPr.find(qn("w:tblW"))
+    if tblW is None:
+        tblW = OxmlElement("w:tblW")
+        tblPr.append(tblW)
+    total = int(sum(widths_cm) * 567)
+    tblW.set(qn("w:w"), str(total))
+    tblW.set(qn("w:type"), "dxa")
+    grid = tbl.find(qn("w:tblGrid"))
+    if grid is not None:
+        for i, child in enumerate(list(grid)):
+            if i < len(widths_cm):
+                child.set(qn("w:w"), str(int(widths_cm[i] * 567)))
+    for row in table.rows:
+        for i, w in enumerate(widths_cm):
+            if i < len(row.cells):
+                row.cells[i].width = Cm(w)
 
 
 def add_table(doc, header: list[str], rows: list[list[str]], title: str | None = None):
     if title:
         p = doc.add_paragraph()
-        set_paragraph_format(p, first_line=0, before=8, after=4, line=1.25, align=WD_ALIGN_PARAGRAPH.CENTER)
+        set_paragraph_format(p, first_line=0, before=4, after=2, line=1.1, align=WD_ALIGN_PARAGRAPH.CENTER)
         add_mixed_runs(p, title, size=10.5, bold=True)
     table = doc.add_table(rows=1 + len(rows), cols=len(header))
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
-    table.autofit = True
+    table.autofit = False
+    _clear_tbl_borders(table)
+    is_symbol = any("首次出现" in (h or "") for h in header)
+    n_data = len(rows)
+    thick, thin = 12, 6  # 1.5 pt / 0.75 pt
     for j, h in enumerate(header):
         cell = table.rows[0].cells[j]
         cell.text = ""
         p = cell.paragraphs[0]
-        set_paragraph_format(p, first_line=0, before=2, after=2, line=1.15, align=WD_ALIGN_PARAGRAPH.CENTER)
+        set_paragraph_format(p, first_line=0, before=2, after=2, line=1.0, align=WD_ALIGN_PARAGRAPH.CENTER)
         add_mixed_runs(p, h, size=9, bold=True)
-        shade_cell(cell)
-        set_cell_border(cell)
+        set_three_line_cell(cell, top=thick, bottom=thin)
+        if is_symbol and j == len(header) - 1:
+            set_cell_nowrap(cell)
+    set_row_header(table.rows[0])
+    set_row_cant_split(table.rows[0])
     for i, row in enumerate(rows):
         ncols = len(header)
         while len(row) < ncols:
             row.append("")
         row = row[:ncols]
+        set_row_cant_split(table.rows[i + 1])
+        is_last = i == n_data - 1
         for j, val in enumerate(row):
             cell = table.rows[i + 1].cells[j]
             cell.text = ""
             p = cell.paragraphs[0]
-            set_paragraph_format(p, first_line=0, before=1, after=1, line=1.15, align=WD_ALIGN_PARAGRAPH.CENTER)
-            add_mixed_runs(p, val, size=9)
-            if i % 2 == 1:
-                shade_cell(cell, "F2F2F2")
-            set_cell_border(cell)
-    # 表后空行
+            set_paragraph_format(p, first_line=0, before=1, after=1, line=1.0, align=WD_ALIGN_PARAGRAPH.CENTER)
+            add_mixed_runs(p, val, size=8.5 if is_symbol else 9)
+            set_three_line_cell(cell, top=None, bottom=thick if is_last else None)
+            if is_symbol and j == ncols - 1:
+                set_cell_nowrap(cell)
+    if is_symbol and len(header) == 4:
+        _set_table_widths(table, [3.2, 8.0, 1.4, 2.6])
+    elif len(header) == 5:
+        _set_table_widths(table, [4.0, 1.8, 2.6, 3.0, 2.8])
     p = doc.add_paragraph()
-    set_paragraph_format(p, first_line=0, before=0, after=4, line=1.0)
+    set_paragraph_format(p, first_line=0, before=0, after=3, line=1.0)
+
+
+def add_code_file(doc, rel: str):
+    path = ROOT / rel.replace("\\", "/").strip()
+    p = doc.add_paragraph()
+    set_paragraph_format(p, first_line=0, before=8, after=4, line=1.25)
+    run = p.add_run(f"程序 {rel}")
+    set_run_font(run, east=CN_HEAD, size=10.5, bold=True)
+    if not path.exists():
+        add_body(doc, f"（缺文件：{rel}）", first=False)
+        return
+    raw = path.read_text(encoding="utf-8")
+    if raw.startswith("\ufeff"):
+        raw = raw[1:]
+    raw = re.sub(r"202601006115", "YOUR_TEAM_ID", raw)
+    lines = raw.replace("\t", "    ").splitlines()
+    chunk: list[str] = []
+    nchar = 0
+    def flush(buf: list[str]):
+        if not buf:
+            return
+        para = doc.add_paragraph()
+        set_paragraph_format(para, first_line=0, before=0, after=0, line=1.0)
+        run = para.add_run("\n".join(buf))
+        set_run_font(run, east=CN_BODY, ascii_font="Consolas", size=8)
+        pf = para.paragraph_format
+        pf.left_indent = Cm(0.2)
+    for ln in lines:
+        extra = len(ln) + 1
+        if nchar + extra > 3500 and chunk:
+            flush(chunk)
+            chunk, nchar = [], 0
+        chunk.append(ln)
+        nchar += extra
+    flush(chunk)
+    p = doc.add_paragraph()
+    set_paragraph_format(p, first_line=0, before=0, after=6, line=1.0)
 
 
 def split_table_row(line: str) -> list[str]:
@@ -447,12 +575,7 @@ def setup_doc() -> Document:
 
 def add_title_block(doc):
     p = doc.add_paragraph()
-    set_paragraph_format(p, first_line=0, before=6, after=4, line=1.3, align=WD_ALIGN_PARAGRAPH.CENTER, east=CN_HEAD)
-    run = p.add_run("2026年高教社杯全国大学生数学建模竞赛")
-    set_run_font(run, east=CN_HEAD, size=14, bold=True)
-
-    p = doc.add_paragraph()
-    set_paragraph_format(p, first_line=0, before=10, after=16, line=1.3, align=WD_ALIGN_PARAGRAPH.CENTER, east=CN_HEAD)
+    set_paragraph_format(p, first_line=0, before=18, after=14, line=1.3, align=WD_ALIGN_PARAGRAPH.CENTER, east=CN_HEAD)
     run = p.add_run("无线电干扰源的快速自动定位与清除")
     set_run_font(run, east=CN_HEAD, size=18, bold=True)
 
@@ -467,6 +590,7 @@ def convert(src: Path = SRC, out: Path = OUT):
     n = len(lines)
     pending_table_title = None
     skip_h1 = True  # markdown 首行标题已写入封面
+    in_abstract = False
 
     while i < n:
         line = lines[i].rstrip()
@@ -490,11 +614,15 @@ def convert(src: Path = SRC, out: Path = OUT):
         if stripped.startswith("## "):
             title = stripped[3:].strip()
             if title == "摘要":
+                in_abstract = True
                 p = doc.add_paragraph()
                 set_paragraph_format(p, first_line=0, before=8, after=6, line=1.5, align=WD_ALIGN_PARAGRAPH.CENTER, east=CN_HEAD)
                 run = p.add_run("摘  要")
                 set_run_font(run, east=CN_HEAD, size=14, bold=True)
             else:
+                in_abstract = False
+                if title == "附录":
+                    add_page_break(doc)
                 add_heading_cn(doc, title, 1)
             i += 1
             continue
@@ -520,6 +648,16 @@ def convert(src: Path = SRC, out: Path = OUT):
                 i += 1
             elif cap_alt:
                 add_caption(doc, cap_alt)
+            continue
+
+        if stripped.startswith("<!-- include-code:"):
+            rel = stripped.replace("<!-- include-code:", "").replace("-->", "").strip()
+            add_code_file(doc, rel)
+            i += 1
+            continue
+
+        if stripped.startswith(">"):
+            i += 1
             continue
 
         if stripped.startswith("|"):
@@ -577,16 +715,21 @@ def convert(src: Path = SRC, out: Path = OUT):
             pending_table_title = body.replace("**", "")
             continue
         if body.startswith("**关键词"):
+            in_abstract = False
             p = doc.add_paragraph()
-            set_paragraph_format(p, first_line=0.74, before=8, after=10, line=1.5)
+            set_paragraph_format(p, first_line=0.74, before=6, after=4, exact_pt=17)
             add_mixed_runs(p, body, size=12)
+            add_page_break(doc)
             continue
         if body.startswith("**附录"):
             add_heading_cn(doc, body.replace("**", ""), 2)
             continue
 
         first = not body.startswith("**图")
-        add_body(doc, body, first=first)
+        if re.match(r"^H\d+", body):
+            add_body(doc, body, first=False, before=1, after=1, exact_pt=17 if in_abstract else None)
+        else:
+            add_body(doc, body, first=first, exact_pt=17 if in_abstract else None)
         continue
 
     out.parent.mkdir(exist_ok=True)

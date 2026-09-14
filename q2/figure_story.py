@@ -42,8 +42,8 @@ E_TH = np.array([np.cos(TH1), np.sin(TH1)])
 N_TH = np.array([-np.sin(TH1), np.cos(TH1)])
 
 SCHOOLS = [
-    (550, 498, "minimax", sty.ROSE, "o"),
-    (675, 476, "概率", sty.PURPLE, "s"),
+    (550, 450, "minimax", sty.ROSE, "o"),
+    (675, 500, "概率", sty.PURPLE, "s"),
     (750, 450, "保守", sty.GREEN, "D"),
     (500, 250, "时间", sty.SAND, "^"),
 ]
@@ -150,7 +150,7 @@ def fig_wedge():
     """第一次测向：源只能落在 S1 示向度的楔形里，距离未知。"""
     fig, ax = sty.new_fig()
     O = np.array([0.0, 0.0])
-    d_draw = np.deg2rad(7.0)
+    d_draw = np.deg2rad(8.0)
     ax.add_patch(Circle(O, 1800, fc="#F4F4F4", ec="none", alpha=0.9, zorder=0))
     ax.add_patch(Circle(O, 1800, fill=False, ec=sty.ARENA, lw=1.15, zorder=2))
     ax.add_patch(Circle(S1_W, 1500, fill=False, ec=sty.BLUE, lw=1.0, ls="--", zorder=2))
@@ -173,15 +173,14 @@ def fig_wedge():
     ax.annotate(r"$S_1$", S1_W, textcoords="offset points", xytext=(-36, 12),
                 fontsize=11, color=sty.BLUE)
     ax.plot(0, 0, "+", color=sty.INK, ms=8, zorder=6)
-    ax.annotate("场地圆心", (50, -120), fontsize=9, color=sty.MUTED)
+    ax.annotate("场地圆心", (80, -220), fontsize=9, color=sty.MUTED, ha="left")
 
     for dist, lab in [(450, ""), (950, ""), (1400, "")]:
         g = S1_W + dist * E_TH
         ax.plot(*g, "o", mfc="white", mec=sty.INK, ms=6, zorder=6)
     ax.annotate("距离未知，源可能在楔形内任一点",
-                S1_W + 980 * E_TH,
-                textcoords="offset points", xytext=(18, -28),
-                fontsize=9, color=sty.MUTED)
+                (200, 80),
+                fontsize=9, color=sty.MUTED, ha="left")
 
     ax.set_xlim(-1950, 1950)
     ax.set_ylim(-1950, 1950)
@@ -356,7 +355,7 @@ def fig_candidate_world():
 
     fig, ax = sty.new_fig()
     ax.add_patch(Circle((0, 0), 1800, fc="#F7F7F7", ec=sty.ARENA, lw=1.1, zorder=0))
-    rays(ax, S1_W, TH1, np.deg2rad(7.0), 1650, sty.ROSE, lw=0.9)
+    rays(ax, S1_W, TH1, np.deg2rad(8.0), 1650, sty.ROSE, lw=0.9)
     tip = S1_W + 1700 * E_TH
     ax.annotate(
         "", xy=tip, xytext=S1_W,
@@ -380,9 +379,17 @@ def fig_candidate_world():
     ax.annotate(r"$S_1$", S1_W, textcoords="offset points", xytext=(-32, 10),
                 fontsize=11, color=sty.BLUE)
 
+    offsets = {
+        "minimax": (10, 12),
+        "概率": (12, -6),
+        "保守": (12, 10),
+        "时间": (-52, -18),
+    }
     for t, h, name, col, mk in SCHOOLS:
         p = world_s2(t, h)
-        ax.plot(*p, mk, color=col, ms=8, zorder=8, label=rf"{name} $({t:.0f},{h:.0f})$")
+        ax.plot(*p, mk, color=col, ms=9, zorder=8, label=rf"{name} $({t:.0f},{h:.0f})$")
+        dx, dy = offsets.get(name, (8, 8))
+        ax.annotate(name, p, textcoords="offset points", xytext=(dx, dy), fontsize=8, color=col)
         p2 = world_s2(t, -h)
         ax.plot(*p2, mk, color=col, ms=6, mfc="white", zorder=7)
 

@@ -86,12 +86,14 @@ def new_fig(nrows=1, ncols=1, **kwargs):
     return plt.subplots(nrows, ncols, **kwargs)
 
 
-def save(fig, path, dpi=DPI):
+def save(fig, path, dpi=DPI, size=None):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    fig.set_size_inches(W_IN, H, forward=True)
-    fig.savefig(str(path), dpi=dpi, bbox_inches=None, facecolor="white")
-    fig.savefig(str(path.with_suffix(".pdf")), bbox_inches=None, facecolor="white")
+    if size is None:
+        size = (W_IN, H)
+    fig.set_size_inches(size[0], size[1], forward=True)
+    fig.savefig(str(path), dpi=dpi, bbox_inches="tight", facecolor="white", pad_inches=0.04)
+    fig.savefig(str(path.with_suffix(".pdf")), bbox_inches="tight", facecolor="white", pad_inches=0.04)
     plt.close(fig)
     print("saved", path)
 

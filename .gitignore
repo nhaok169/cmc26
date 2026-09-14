@@ -1,27 +1,41 @@
 __pycache__/
 *.pyc
+*.pyo
 *.swp
 ~$*
 .DS_Store
+Thumbs.db
 
-# 登录凭据，不要上传
+# 登录凭据
 账号.txt
 **/账号.txt
 
-# GitHub 单文件上限 100MB
+# 参考资料与过程产物（体积大，不入库）
+bib/
+文献/
+资料/
+logs/
+**/logs/
+paper/_archive/
+paper/_eq/
+paper/_backup_*.docx
+paper/*_公式.docx
+submit/_frozen/
+submit/_staging/
+submit/备份_*/
+
+# 模拟器本地数据
 simulator/模拟器操作演示.mp4
+simulator/Jammers-simulator-full/
+simulator/JammersSimulatorData/
+simulator/*.jlog
+*.jlog
+*.psum
 
-# 模拟器运行时本地队列
-simulator/JammersSimulatorData/*.sqlite3
-simulator/JammersSimulatorData/*.log
-
-# 本地旧稿与抽取
-_backup/
-_tmp_pjx/
+# 临时脚本
 _tmp_*.py
 _tmp_*.txt
-paper/_backup_*.docx
-
-# Word 锁
-~$*
-
+paper/_check*.py
+paper/_pages.py
+paper/_upd*.py
+paper/_audit*.py

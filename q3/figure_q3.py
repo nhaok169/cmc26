@@ -10,7 +10,8 @@ from collections import Counter
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.patches import Circle
+from matplotlib.gridspec import GridSpec
+from matplotlib.patches import Arc, Circle
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, "..", "paper"))
@@ -81,8 +82,26 @@ def parse_log(path):
     }
 
 
+def cover_d(r, n=6, R=ARENA_R):
+    r = np.asarray(r, float)
+    return np.sqrt(R ** 2 + r ** 2 - 2.0 * R * r * np.cos(np.pi / n))
+
+
 def fig_coverage():
-    fig, ax = fs.new_fig()
+    """图18：(a) 覆盖网；(b) 最坏点余弦三角形 + d(r)–r。"""
+    cosn = math.cos(math.pi / 6.0)
+    bcoef = 2.0 * ARENA_R * cosn
+    disc = bcoef ** 2 - 4.0 * (ARENA_R ** 2 - COVER_R ** 2)
+    r_star = 0.5 * (bcoef - math.sqrt(disc))
+    d_ring = float(cover_d(RING_R))
+    print("coverage: r*={:.2f} d(1150)={:.2f}".format(r_star, d_ring))
+
+    fig = plt.figure(figsize=(fs.W_IN, fs.H), constrained_layout=True)
+    gs = GridSpec(2, 2, figure=fig, width_ratios=[1.18, 1.0], height_ratios=[1.05, 1.0])
+    ax = fig.add_subplot(gs[:, 0])
+    bx = fig.add_subplot(gs[0, 1])
+    cx = fig.add_subplot(gs[1, 1])
+
     th = np.linspace(0, 2 * np.pi, 360)
     ax.plot(ARENA_R * np.cos(th), ARENA_R * np.sin(th), color=fs.INK, lw=1.2, label="目标圆 1800 m")
     ax.add_patch(Circle((0, 0), COVER_R, fc=fs.BLUE, ec="none", alpha=0.08, lw=0))
@@ -91,19 +110,67 @@ def fig_coverage():
     for i, p in enumerate(rings):
         ax.add_patch(Circle(p, COVER_R, fc=fs.SAND, ec="none", alpha=0.07, lw=0))
         ax.plot(p[0], p[1], "s", color=fs.SAND, ms=7, zorder=5)
-        ax.annotate(f"$A_{i}$", p, textcoords="offset points", xytext=(7, 7), fontsize=9, color=fs.SAND)
+        ax.annotate(f"$A_{i}$", p, textcoords="offset points", xytext=(7, 7), fontsize=8, color=fs.SAND)
     ax.plot(0, 0, "o", color=fs.BLUE, ms=8, zorder=6)
-    ax.annotate("$O$", (0, 0), textcoords="offset points", xytext=(-16, -14), fontsize=11, color=fs.BLUE)
+    ax.annotate("$O$", (0, 0), textcoords="offset points", xytext=(-16, -14), fontsize=10, color=fs.BLUE)
     ang = math.pi / 6
     w = ARENA_R * np.array([math.cos(ang), math.sin(ang)])
     a0 = rings[0]
-    ax.plot(w[0], w[1], "*", color=fs.ROSE, ms=12, zorder=7)
+    ax.plot(w[0], w[1], "*", color=fs.ROSE, ms=11, zorder=7)
     ax.plot([w[0], a0[0]], [w[1], a0[1]], color=fs.ROSE, lw=1.0, ls=":")
-    ax.annotate("最差点", w, textcoords="offset points", xytext=(-52, 10), fontsize=9, color=fs.ROSE)
+    ax.annotate("最差点", w, textcoords="offset points", xytext=(12, 8), fontsize=8, color=fs.ROSE)
     ax.set_xlim(-1950, 1950)
     ax.set_ylim(-1950, 1950)
-    ax.legend(loc="lower left", fontsize=8.5)
-    fs.style_map(ax, title="覆盖网：原点 + 1150 m 六等分点")
+    ax.legend(loc="lower left", fontsize=7.5)
+    fs.style_map(ax, title=r"(a) 原点 + $1150$ m 六等分点")
+
+    # (b) 上：O–A0–W 余弦三角形。作图用 r=1150，OA 边标 r
+    O = np.array([0.0, 0.0])
+    A0 = np.array([RING_R, 0.0])
+    Wpt = ARENA_R * np.array([math.cos(ang), math.sin(ang)])
+    bx.plot([O[0], A0[0]], [O[1], A0[1]], color=fs.INK, lw=1.35, zorder=3)
+    bx.plot([O[0], Wpt[0]], [O[1], Wpt[1]], color=fs.INK, lw=1.35, zorder=3)
+    bx.plot([A0[0], Wpt[0]], [A0[1], Wpt[1]], color=fs.ROSE, lw=1.5, zorder=4)
+    bx.plot(*O, "o", color=fs.BLUE, ms=6, zorder=6)
+    bx.plot(*A0, "s", color=fs.SAND, ms=6, zorder=6)
+    bx.plot(*Wpt, "*", color=fs.ROSE, ms=10, zorder=6)
+    bx.annotate(r"$O$", O, textcoords="offset points", xytext=(-12, -13), fontsize=8, color=fs.BLUE)
+    bx.annotate(r"$A_0$", A0, textcoords="offset points", xytext=(-4, -14), fontsize=8, color=fs.SAND)
+    bx.annotate(r"$W$", Wpt, textcoords="offset points", xytext=(4, 4), fontsize=8, color=fs.ROSE)
+    bx.annotate(r"$r$", (0.52 * RING_R, -95), fontsize=8, ha="center", color=fs.INK)
+    mid_ow = 0.5 * (O + Wpt) + np.array([-70, 40])
+    bx.annotate(r"$1800$", mid_ow, fontsize=8, color=fs.INK, ha="center")
+    mid_aw = 0.5 * (A0 + Wpt) + np.array([55, -8])
+    bx.annotate(r"$d(r)$", mid_aw, fontsize=8, color=fs.ROSE, ha="left")
+    bx.add_patch(Arc(O, 380, 380, angle=0, theta1=0, theta2=30, color=fs.ROSE, lw=1.15, zorder=5))
+    bx.annotate(r"$30^\circ$", (230, 48), fontsize=8, color=fs.ROSE)
+    bx.set_xlim(-220, 1780)
+    bx.set_ylim(-280, 1180)
+    fs.style_map(bx, title=r"(b) 最坏点余弦三角形")
+
+    rs = np.linspace(500.0, 1400.0, 240)
+    ds = cover_d(rs)
+    cx.plot(rs, ds, color=fs.BLUE, lw=1.55, zorder=3)
+    cx.axhline(COVER_R, color=fs.MUTED, ls="--", lw=1.05, zorder=2)
+    cx.annotate(r"$d=1000$", (520, COVER_R), textcoords="offset points",
+                xytext=(4, 5), fontsize=7, color=fs.MUTED)
+    cx.axvline(r_star, color=fs.ROSE, ls=":", lw=0.9, zorder=2)
+    cx.plot(r_star, COVER_R, "o", color=fs.ROSE, ms=5.5, zorder=5)
+    cx.annotate(
+        r"$r^*\approx 1123$", (r_star, COVER_R),
+        textcoords="offset points", xytext=(-52, 10), fontsize=7.5, color=fs.ROSE,
+    )
+    cx.plot(RING_R, d_ring, "s", color=fs.SAND, ms=5.5, zorder=5)
+    cx.annotate(
+        r"$r=1150$，$d=988.5$",
+        (RING_R, d_ring),
+        textcoords="offset points", xytext=(10, -16), fontsize=7.5, color=fs.SAND,
+    )
+    cx.set_xlim(500, 1480)
+    cx.set_ylim(860, 1450)
+    cx.set_xlabel(r"$r$ / m")
+    cx.set_ylabel(r"$d(r)$ / m")
+    fs.style_xy(cx, title=r"$d(r)$–$r$（$n=6$）")
     fs.save(fig, os.path.join(OUT, "fig_q3_cover.png"))
 
 
@@ -121,9 +188,12 @@ def fig_traj(data):
     if heard:
         h = np.array(heard)
         ax.plot(h[:, 0], h[:, 1], "+", color=fs.BLUE, ms=7, zorder=3, label="测到示向度")
-    for x, y, ch in clears:
+    for i, (x, y, ch) in enumerate(clears):
         ax.plot(x, y, "*", color=fs.GREEN, ms=11, zorder=6)
-        ax.annotate(str(ch), (x, y), textcoords="offset points", xytext=(5, 4), fontsize=8, color=fs.GREEN)
+        dx, dy = (6, 5) if (i % 2 == 0) else (6, -12)
+        if x > 900:
+            dx = -16
+        ax.annotate(str(ch), (x, y), textcoords="offset points", xytext=(dx, dy), fontsize=7.5, color=fs.GREEN)
     ax.set_xlim(-1950, 1950)
     ax.set_ylim(-1950, 1950)
     if heard:
